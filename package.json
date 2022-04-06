@@ -1,10 +1,11 @@
 {
   "name": "reflectivelearningchatbots",
+  
   "version": "1.0.0",
   "description": "Program to create interactive chatbots for reflective learning",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,10 @@
   },
   "homepage": "https://github.com/RationalityEnhancement/ReflectiveLearningChatbots#readme",
   "dependencies": {
+    "chai": "^4.3.6",
+    "dotenv": "^16.0.0",
+    "jest": "^27.5.1",
+    "mocha": "^9.2.2",
     "moment-timezone": "^0.5.34",
     "mongoose": "^6.2.10",
     "node-schedule": "^2.1.0",

@@ -1,7 +1,11 @@
 {
-  "experiment_name" : "test_expt",
-  "experiment_conditions" : ["Control", "Experimental"],
+  "experimentName" : "DayOne",
+  "experimentId" : "12345",
+  "experimentConditions" : ["Control", "Experimental"],
+  "conditionAssignments" : [0.5, 0.5],
+  "assignmentScheme" : "balanced",
   "debug": false,
+
   "startMessages": [
     "Hi, I am Constructive Thinking Bot.",
     "I am here to help you think more constructively. First, I will give you a short introduction to constructive thinking. If you already know about constructive thinking, feel free to skip over the next message.",

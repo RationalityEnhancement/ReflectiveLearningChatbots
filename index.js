@@ -1,12 +1,14 @@
 require('dotenv').config();
 const mongo = require('mongoose');
-const Telegraf = require('telegraf');
+const { Telegraf, Markup } = require('telegraf');
 const schedule = require('node-schedule');
 const moment = require('moment-timezone');
-const config = require('./config.json');
-const timezones = require('./timezones.json').timezones;
-const participants = require('./apiControllers/participantApiController');
-const experiments = require('./apiControllers/experimentApiController');
+const config = require('./json/config.json');
+const timezones = require('./json/timezones.json').timezones;
+const participants = require('./src/apiControllers/participantApiController');
+const experiments = require('./src/apiControllers/experimentApiController');
+const { checkConfig } = require('./src/configChecker');
+const { PIDtoConditionMap } = require('./json/PIDCondMap')
 const {
   shareDataMenu,
   frequentTimezonesMenu,
@@ -16,7 +18,15 @@ const {
   frequencyMenu,
   removeMenu,
   constructivenessMenu
-} = require('./menus');
+} = require('./src/menus');
+
+const {
+  assignToCondition
+} = require('./src/experimentUtils')
+
+// Validate the config file to ensure that it has all the necessary information
+// This throws an error and aborts execution if there is something missing/wrong
+checkConfig();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const scheduledJobs = {};
@@ -35,6 +45,29 @@ mongo.connect(process.env.DB_CONNECTION_STRING, { useNewUrlParser: true, useUnif
 console.log('Listening to humans');
 
 
+
+/*
+  Assigns to an experiment condition based on input parameters. If there exists
+  a pre-existing mapping between PID and condition number, return that. Otherwise
+  assigned randomly to one of the conditions, or balance according to the 
+  given condition assignment ratios.
+
+  In:
+    participantId -> Id of participant
+    pidMap -> object mapping PIDs to condition indices
+    conditionAssignments -> array of same length containing ratios of group
+                            sizes
+    currentAssignment -> array of same length containing number of participants
+                          already assigned to each corresponding condition
+    assignmentScheme -> "balanced" or "random"
+
+  Out:
+    index of the assigned condition, selected according to the above scheme. If PID
+    exists in numbers are exceeded 
+
+*/
+
+
 //-----------------
 //--- bot setup ---
 //-----------------
@@ -44,6 +77,24 @@ bot.catch((err, ctx) => {
   console.error(`Encountered an error for ${ctx.updateType}.`, err);
 });
 
+bot.start(ctx => {
+  // Check if experiment has already been initialized
+  experiments.get(config.experimentId).then(experiment => {
+    // If not, add the experiment to the database
+    if(!experiment){
+      experiments.add(config.experimentId).then(() => {
+        experiment.updateField(config.experimentId, 'experimentName', config.experimentName);
+        experiment.updateField(config.experimentId, 'experimentConditions', config.experimentConditions);
+        experiment.updateField(config.experimentId, 'conditionAssignments', config.conditionAssignments);
+        experiment.updateField(config.experimentId, 'assignedToConditions', new Array(config.experimentConditions.length))
+      }, error => {
+        console.log('Failed to add experiment ' + config.experimentId);
+        console.log(error);
+      })
+    }
+  })
+})
+/**
 // handle /delete_me command
 bot.command('delete_me', ctx => {
   participants.get(ctx.from.id).then(participant => {
@@ -228,13 +279,15 @@ let scheduleNew = function(ctx, freq) {
     );
     participants.updateField(ctx.from.id, 'weeklyScheduleExpression', weeklyExpression);
     console.log('w: ' + weeklyExpression);
+    
+
+    
 
     let start = participant.dayStart, end = participant.dayEnd;
     freq = freq.replace(/\D/g, '');
     freq = freq.length === 0 ? '' : parseInt(freq);
     mins = participant.debug ? '*' : '0';
-    const expression = `${freq === 30 ? '*/30' : mins} ${start.substr(0, 2)}-${end.substr(0, 2)}/${freq === 30 ? 1 : freq} * * *`;
-    //const expression = '*/1 * * * *';
+    
     scheduledJobs[`d_${ctx.from.id}`] = schedule.scheduleJob(
       { rule: expression, tz: participant.timezone || defaultTimezone },
       () => {
@@ -368,3 +421,5 @@ bot.on('voice', ctx => {
 });
 
 bot.launch();
+
+**/

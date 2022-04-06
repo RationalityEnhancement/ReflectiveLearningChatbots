@@ -1,8 +1,9 @@
 const { Schema, model } = require('mongoose');
 
 exports.ParticipantSchema = new Schema({
-  expt_name: String,
+  experimentId: String,
   chatId: Number,
+  participantId: String,
   timezone: String,
   stillAsk: Boolean,
   shareData: String,

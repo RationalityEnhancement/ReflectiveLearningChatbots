@@ -1,0 +1,25 @@
+{
+  "name": "reflectivelearningchatbots",
+  "version": "1.0.0",
+  "description": "Program to create interactive chatbots for reflective learning",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RationalityEnhancement/ReflectiveLearningChatbots.git"
+  },
+  "author": "Srinidhi Srinivas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RationalityEnhancement/ReflectiveLearningChatbots/issues"
+  },
+  "homepage": "https://github.com/RationalityEnhancement/ReflectiveLearningChatbots#readme",
+  "dependencies": {
+    "moment-timezone": "^0.5.34",
+    "mongoose": "^6.2.10",
+    "node-schedule": "^2.1.0",
+    "telegraf": "^4.7.0"
+  }
+}

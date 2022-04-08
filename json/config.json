@@ -5,6 +5,33 @@
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "balanced",
   "debug": false,
+  "languages" : ["English", "Deutsch"],
+  "defaultLanguage" : "English",
+  "languageSelectionQuestion" : "Hello, I am the Reflective Learning Bot! Please select a language\n Hallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus",
+  "experiments" : {
+    "English" : {
+      "startMessages" : ["Hello, I am a bot"]
+    },
+    "German" : {
+      "startMessages" : ["Hallo, ich bin Roboter"]
+    }
+  },
+  "phrases" : {
+    "terminateMultipleChoice" : {
+      "English" : "Finished Choosing",
+      "German" : "Fertig"
+    },
+    "answerValidation" : {
+      "option" : {
+        "English" : "Please select only from the options",
+        "German" : "Bitte wählen Sie nur von den Optionen aus"
+      }, 
+      "number" : {
+        "English" : "Please enter a number",
+        "German" : "Bitte geben Sie eine Zahl ein"
+      }
+    }
+  },
 
   "startMessages": [
     "Hi, I am Constructive Thinking Bot.",

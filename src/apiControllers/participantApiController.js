@@ -87,8 +87,32 @@ exports.updateField = (chatId, field, value) => {
     }
   });
 }
+exports.updateParameter = (chatId, param, value) => {
+  Participant.findOne({ chatId }, (err, participant) => {
+    if (err) {
+      console.error(err);
+      return err;
+    }
 
-exports.updateLastAnswerField = (chatId, field, value, addNewAnswer = false) => {
+    try {
+      let updatedParams = participant.parameters;
+      updatedParams[param] = value;
+      participant.parameters = updatedParams;
+      participant.save(err => {
+        if (err) {
+          return err;
+        }
+
+        return participant;
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  });
+}
+
+
+exports.addAnswer = (chatId, answer) => {
   Participant.findOne({ chatId }, (err, participant) => {
     if (err) {
       console.error(err);
@@ -96,32 +120,21 @@ exports.updateLastAnswerField = (chatId, field, value, addNewAnswer = false) => 
     }
 
     try{
-      if (addNewAnswer) {
-        participant.answers.push({});
-      }
+      
+      participant.answers.push(answer);
+      
 
-      if (participant.shareData === 'Opt out.'
-      || field === 'text' &&  participant.shareData === 'Anonymously share the choices only.') {
-        value = '---opted.out---'
-      }
+      participant.save(err => {
+        if (err) {
+          return err;
+        }
 
-      participant.answers[participant.answers.length - 1][field] = value;
-      if (field === 'text') {
-        participant.answers[participant.answers.length - 1].timestamp = moment()
-        .tz(participant.timezone || defaultTimezone).format();
-      }
-    } catch (err) {
+        return participant;
+      });
+    } catch (err){
       console.error(err);
     }
-
-    participant.save(err => {
-      if (err) {
-        return err;
-      }
-
-      return participant;
-    });
-  });
+  })
 }
 
 exports.removeAll = () => {

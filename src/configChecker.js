@@ -32,5 +32,8 @@ module.exports.checkConfig = () => {
   
   assert(config.conditionAssignments.every(val => !isNaN(val)), "condition assignments should be numbers");
   
+  // TODO: Validate languages
+  // TODO: Validate parameter names
+  // TODO: Validate presence of all phrases
   console.log('Config file valid');
 }

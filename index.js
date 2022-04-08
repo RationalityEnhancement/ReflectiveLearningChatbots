@@ -9,16 +9,11 @@ const participants = require('./src/apiControllers/participantApiController');
 const experiments = require('./src/apiControllers/experimentApiController');
 const { checkConfig } = require('./src/configChecker');
 const { PIDtoConditionMap } = require('./json/PIDCondMap')
+
 const {
-  shareDataMenu,
-  frequentTimezonesMenu,
-  allTimezonesMenu,
-  dayStartMenu,
-  dayEndMenu,
-  frequencyMenu,
-  removeMenu,
-  constructivenessMenu
-} = require('./src/menus');
+  singleChoice,
+  multipleChoice
+} = require('./src/keyboards');
 
 const {
   assignToCondition
@@ -42,30 +37,8 @@ mongo.connect(process.env.DB_CONNECTION_STRING, { useNewUrlParser: true, useUnif
     console.log('\x1b[42m\x1b[30m%s\x1b[0m', `Connected to the database`);
   }
 });
-console.log('Listening to humans');
 
 
-
-/*
-  Assigns to an experiment condition based on input parameters. If there exists
-  a pre-existing mapping between PID and condition number, return that. Otherwise
-  assigned randomly to one of the conditions, or balance according to the 
-  given condition assignment ratios.
-
-  In:
-    participantId -> Id of participant
-    pidMap -> object mapping PIDs to condition indices
-    conditionAssignments -> array of same length containing ratios of group
-                            sizes
-    currentAssignment -> array of same length containing number of participants
-                          already assigned to each corresponding condition
-    assignmentScheme -> "balanced" or "random"
-
-  Out:
-    index of the assigned condition, selected according to the above scheme. If PID
-    exists in numbers are exceeded 
-
-*/
 
 
 //-----------------
@@ -77,11 +50,38 @@ bot.catch((err, ctx) => {
   console.error(`Encountered an error for ${ctx.updateType}.`, err);
 });
 
-bot.start(ctx => {
+bot.command('log_part', ctx => {
+  console.log('Logging participant.');
+  participants.get(ctx.from.id).then(participant => {
+    console.log(participant);
+  })
+});
+bot.command('log_exp', ctx => {
+  console.log('Logging experiment.');
+  experiments.get(config.experimentId).then(experiment => {
+    console.log(experiment);
+  })
+});
+
+bot.command('delete_me', ctx => {
+  participants.get(ctx.from.id).then(participant => {
+    
+    participants.remove(ctx.from.id).then(() => {
+      ctx.reply('Successfully deleted all your data. To use the bot again, use /start.');
+      console.log(`${ctx.from.id} removed`);
+      
+    });
+  });
+
+});
+
+bot.start(async ctx => {
+  console.log('Starting');
   // Check if experiment has already been initialized
   experiments.get(config.experimentId).then(experiment => {
     // If not, add the experiment to the database
     if(!experiment){
+      console.log('addingExperiment');
       experiments.add(config.experimentId).then(() => {
         experiment.updateField(config.experimentId, 'experimentName', config.experimentName);
         experiment.updateField(config.experimentId, 'experimentConditions', config.experimentConditions);
@@ -93,7 +93,87 @@ bot.start(ctx => {
       })
     }
   })
-})
+
+  console.log('checking part');
+  // Check if the participant has already been added
+  await participants.get(ctx.from.id).then(participant => {
+    if (!participant) {
+      console.log('adding part');
+      participants.add(ctx.from.id).then(() => {
+        participants.updateField(ctx.from.id, 'experimentId', config.experimentId);
+        participants.updateField(ctx.from.id, 'parameters', { "language" : config.defaultLanguage });
+        participants.updateField(ctx.from.id, 'currentState', 'starting');
+      });
+    }
+  });
+
+  console.log('asking lang question');
+  // Ask the language question
+  curQuestion = {
+    id: 'lang',
+    text: config.languageSelectionQuestion,
+    qType: "singleChoice",
+    options: config.languages,
+    saveAnswerTo: "language"
+  };  
+
+  sendQuestion(ctx, curQuestion);
+  
+
+});
+
+let sendQuestion = (ctx, question) => {
+  participants.updateField(ctx.from.id, 'currentState', 'awaitingAnswer');
+  participants.updateField(ctx.from.id, 'currentQuestion', question);
+  
+  switch(question.qType){
+    case 'singleChoice':
+      ctx.replyWithHTML(question.text, singleChoice(question.options));
+      break;
+    default:
+      throw "ERROR: Question type not recognized"
+  }
+}
+
+// Handling any answer
+bot.on('text', ctx => {
+  const messageText = ctx.message.text;
+  // Ignore commands
+  if(messageText.charAt[0] === '/') return;
+  participants.get(ctx.from.id).then(participant => {
+    if(participant.currentState == 'awaitingAnswer'){
+      const answerText = ctx.message.text;
+      const currentQuestion = participant.currentQuestion;
+      // Validate answer
+      switch(currentQuestion.qType){
+        case 'singleChoice':
+          if(currentQuestion.options.includes(answerText)){
+            if(currentQuestion.saveAnswerTo){
+              participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, answerText);
+            }
+            const answer = {
+              qId: currentQuestion.id,
+              timeStamp: new Date(),
+              answer: [answerText]
+            };
+            participants.addAnswer(ctx.from.id, answer);
+            participants.updateField(ctx.from.id, "currentState", "notAwaitingAnswer");
+          } else {
+            ctx.reply(config.phrases.answerValidation.option[participant.parameters.language]);
+            sendQuestion(ctx, currentQuestion)
+          } 
+          break;
+        default:
+          throw "ERROR: Question type not recognized"
+      }
+    }
+  });
+});
+
+
+
+console.log('Listening to humans');
+bot.launch();
 /**
 // handle /delete_me command
 bot.command('delete_me', ctx => {

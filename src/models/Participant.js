@@ -4,22 +4,25 @@ exports.ParticipantSchema = new Schema({
   experimentId: String,
   chatId: Number,
   participantId: String,
-  timezone: String,
-  stillAsk: Boolean,
-  shareData: String,
-  dayStart: String,
-  dayEnd: String,
-  frequency: String,
-  answers: [{
-    category: String,
-    question: String,
-    text: String,
-    timestamp: String
-  }],
-  nextCategory: String,
+  conditionIdx: Number,
+  parameters: {
+    language: String
+  },
   debug: Boolean,
-  dailyScheduleExpression: String,
-  weeklyScheduleExpression: String
+  currentQuestion: {
+    id: String,
+    text: String,
+    qType: String,
+    options: [String],
+    saveAnswerTo: String,
+  },
+  currentState: String,
+  answers: 
+  [{
+    qId: String, 
+    timeStamp: Date,
+    answer: [String]
+  }]
 });
 
 exports.Participant = model('Participant', exports.ParticipantSchema, 'experiment3_participants');

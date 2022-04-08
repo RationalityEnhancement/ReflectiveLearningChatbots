@@ -10,7 +10,7 @@ exports.getAll = () => {
   }
 }
 
-exports.get = experiment_name => {
+exports.get = async (experiment_name) => {
   try {
     return Experiment.findOne({ experiment_name });
   } catch (err) {
@@ -18,11 +18,11 @@ exports.get = experiment_name => {
   }
 }
 
-exports.add = experiment_name => {
+exports.add = async (experimentId) => {
   try {
     const experiment = new Experiment();
-    console.log(experiment);
-    experiment.experiment_name = experiment_name;
+    // console.log(experiment);
+    experiment.experimentId = experimentId;
     
 
     return experiment.save();
@@ -32,24 +32,47 @@ exports.add = experiment_name => {
 }
 
 
-exports.updateField = (experiment_name, field, value) => {
-  Experiment.findOne({ experiment_name }, (err, experiment) => {
-    if (err) {
-      console.error(err);
-      return err;
-    }
+exports.updateField = async (experimentId, field, value) => {
+  console.log('update field called')
+  try{
+    let experiment = await Experiment.findOne({ experimentId });
+    experiment[field] = value;
+    let savedExp = await experiment.save();
+    return savedExp;
+  } catch (err) {
+    console.error(err);
+  }
+}
 
-    try {
-      experiment[field] = value;
-      experiment.save(err => {
-        if (err) {
-          return err;
-        }
+exports.updateConditionAssignees = async (experimentId, conditionIdx, updateVal) => {
+  try{
+    const field = "currentlyAssignedToCondition";
+    let experiment = await Experiment.findOne({ experimentId });
+    let curAssigned = experiment[field];
+    
+    curAssigned[conditionIdx] += updateVal;
+    if(curAssigned[conditionIdx] < 0) curAssigned[conditionIdx] = 0;
+    experiment[field] = curAssigned;
+   
+    let savedExp = await experiment.save();
+    return savedExp;
 
-        return experiment;
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  });
+  } catch (err) {
+    console.error(err);
+  }
+}
+exports.removeAll = async () => {
+  try {
+    return Experiment.deleteMany({});
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+exports.remove = async chatId => {
+  try {
+    return Experiment.deleteOne({ chatId });
+  } catch (err) {
+    console.error(err);
+  }
 }

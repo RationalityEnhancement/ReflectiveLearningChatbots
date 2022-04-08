@@ -3,11 +3,62 @@
   "experimentId" : "12345",
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
-  "assignmentScheme" : "balanced",
+  "assignmentScheme" : "pid",
   "debug": false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "languageSelectionQuestion" : "Hello, I am the Reflective Learning Bot! Please select a language\n Hallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus",
+  "setupQuestions": {
+    "English" : [
+      {
+        "qId" : "pIdQuestion",
+        "start" : true,
+        "text" : "Please enter your Participant ID as provided to you.",
+        "qType" : "freeform",
+        "saveAnswerTo" : "pid",
+        "replyMessages" : ["Thank you, participant ID has been registered"],
+        "nextQuestion" : "setupQuestions.timezoneQuestion"
+      },
+      {
+        "qId" : "timezoneQuestion",
+        "text" : "Please choose your current time zone.",
+        "qType" : "singleChoice",
+        "options" : [
+          "Europe/Berlin",
+          "US/Pacific",
+          "US/Mountain",
+          "US/Central",
+          "US/Eastern"
+        ],
+        "replyMessages" : ["Thank you, time zone has been registered."],
+        "saveAnswerTo" : "timezone"
+      }
+    ],
+
+    "Deutsch" : [
+      {
+        "qId" : "pIdQuestion",
+        "start" : true,
+        "text" : "Bitte geben Sie Ihre Teilnehmer-ID ein, die Ihnen verteilt wurde.",
+        "qType" : "freeform",
+        "saveAnswerTo" : "pid",
+        "nextQuestion" : "setupQuestions.timezoneQuestion"
+      },
+      {
+        "qId" : "timezoneQuestion",
+        "text" : "Bitte wählen Sie Ihre aktuelle Zeitzone aus.",
+        "qType" : "singleChoice",
+        "options" : [
+          "Europe/Berlin",
+          "US/Pacific",
+          "US/Mountain",
+          "US/Central",
+          "US/Eastern"
+        ],
+        "saveAnswerTo" : "timezone"
+      }
+    ]
+  },
   "experiments" : {
     "English" : {
       "startMessages" : ["Hello, I am a bot"]

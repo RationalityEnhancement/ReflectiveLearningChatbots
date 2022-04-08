@@ -33,6 +33,14 @@ describe('Experiment Controller API: ', () =>{
 		
 		
 	});
+	it('Should initialize an experiment', async() => {
+		let savedExp = await experiments.initializeExperiment(testId, 'TestName', ["Control", "Experiment"], [1,1]);
+		let newExp = await experiments.get(testId);
+		expect(newExp['experimentName']).to.equal('TestName');
+		expect(newExp['experimentConditions']).to.eql(["Control", "Experiment"]);
+		expect(newExp['conditionAssignments']).to.eql([1,1]);
+		expect(newExp['currentlyAssignedToCondition']).to.eql([0,0]);
+	})
 	it('Should update String field', async () => {
 		
 		const testName = 'TestyBob'

@@ -3,14 +3,15 @@ const { Schema, model } = require('mongoose');
 exports.ParticipantSchema = new Schema({
   experimentId: String,
   chatId: Number,
-  participantId: String,
   conditionIdx: Number,
   parameters: {
-    language: String
+    language: String,
+    pId: String,
+    timezone: String
   },
   debug: Boolean,
   currentQuestion: {
-    id: String,
+    qId: String,
     text: String,
     qType: String,
     options: [String],
@@ -20,6 +21,7 @@ exports.ParticipantSchema = new Schema({
   answers: 
   [{
     qId: String, 
+    text: String,
     timeStamp: Date,
     answer: [String]
   }]

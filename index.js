@@ -9,11 +9,9 @@ const participants = require('./src/apiControllers/participantApiController');
 const experiments = require('./src/apiControllers/experimentApiController');
 const { checkConfig } = require('./src/configChecker');
 const { PIDtoConditionMap } = require('./json/PIDCondMap')
+const MessageSender = require('./src/messageSender')
 
-const {
-  singleChoice,
-  multipleChoice
-} = require('./src/keyboards');
+const InputOptions = require('./src/keyboards');
 
 const {
   assignToCondition
@@ -50,124 +48,149 @@ bot.catch((err, ctx) => {
   console.error(`Encountered an error for ${ctx.updateType}.`, err);
 });
 
-bot.command('log_part', ctx => {
-  console.log('Logging participant.');
-  participants.get(ctx.from.id).then(participant => {
-    console.log(participant);
-  })
+bot.command('log_part', async ctx => {
+  try{
+    console.log('Logging participant.');
+    let participant = await participants.get(ctx.from.id);
+    console.log(participant);  
+  } catch (err){
+    console.log('Failed to log participant');
+    console.error(err);
+  }
+  
 });
-bot.command('log_exp', ctx => {
-  console.log('Logging experiment.');
-  experiments.get(config.experimentId).then(experiment => {
+
+bot.command('log_exp', async ctx => {
+  try{
+    console.log('Logging experiment.');
+    let experiment = await experiments.get(config.experimentId);
     console.log(experiment);
-  })
+  } catch(err){
+    console.log('Failed to log experiment');
+    console.error(err);
+  }
 });
 
-bot.command('delete_me', ctx => {
-  participants.get(ctx.from.id).then(participant => {
-    
-    participants.remove(ctx.from.id).then(() => {
-      ctx.reply('Successfully deleted all your data. To use the bot again, use /start.');
-      console.log(`${ctx.from.id} removed`);
-      
-    });
-  });
+bot.command('delete_me', async ctx => {
+  
+  try{
+    let participant = await participants.get(ctx.from.id);
+    if(!participant) {
+      console.log('Participant does not exist!')
+      return;
+    }
+    let conditionIdx = participant["conditionIdx"];
+    await participants.remove(ctx.from.id);
+    await experiments.updateConditionAssignees(config.experimentId, conditionIdx, -1);
+    ctx.reply('Successfully deleted all your data. To use the bot again, use /start.');
+    console.log(`${ctx.from.id} removed`);
 
+  } catch(err){
+    console.log('Failed to delete participant');
+    console.error(err);
+  }
 });
 
 bot.start(async ctx => {
   console.log('Starting');
   // Check if experiment has already been initialized
-  experiments.get(config.experimentId).then(experiment => {
-    // If not, add the experiment to the database
-    if(!experiment){
-      console.log('addingExperiment');
-      experiments.add(config.experimentId).then(() => {
-        experiment.updateField(config.experimentId, 'experimentName', config.experimentName);
-        experiment.updateField(config.experimentId, 'experimentConditions', config.experimentConditions);
-        experiment.updateField(config.experimentId, 'conditionAssignments', config.conditionAssignments);
-        experiment.updateField(config.experimentId, 'assignedToConditions', new Array(config.experimentConditions.length))
-      }, error => {
-        console.log('Failed to add experiment ' + config.experimentId);
-        console.log(error);
-      })
-    }
-  })
+  let experiment = await experiments.get(config.experimentId);
+  // If not, add the experiment to the database
+  if(!experiment){
+    try{
+      let experiment = await experiments.add(config.experimentId);
+      await experiments.initializeExperiment(config.experimentId, config.experimentName, config.experimentConditions, config.conditionAssignments);
+    } catch(err){
+      console.log('Failed to initialize new experiment');
+      console.error(err);
+    } 
+  }
 
   console.log('checking part');
   // Check if the participant has already been added
-  await participants.get(ctx.from.id).then(participant => {
-    if (!participant) {
+  let participant = await participants.get(ctx.from.id);
+  // If not, add and initialize the participant
+  if(!participant){
+    try{
       console.log('adding part');
-      participants.add(ctx.from.id).then(() => {
-        participants.updateField(ctx.from.id, 'experimentId', config.experimentId);
-        participants.updateField(ctx.from.id, 'parameters', { "language" : config.defaultLanguage });
-        participants.updateField(ctx.from.id, 'currentState', 'starting');
-      });
+      await participants.add(ctx.from.id);
+      await participants.updateField(ctx.from.id, 'experimentId', config.experimentId);
+      await participants.updateField(ctx.from.id, 'parameters', { "language" : config.defaultLanguage });
+      await participants.updateField(ctx.from.id, 'currentState', 'starting');
+    } catch(err){
+      console.log('Failed to initialize new participant');
+      console.error(err);
     }
-  });
+  }
 
   console.log('asking lang question');
   // Ask the language question
   curQuestion = {
-    id: 'lang',
+    qId: 'lang',
     text: config.languageSelectionQuestion,
     qType: "singleChoice",
     options: config.languages,
-    saveAnswerTo: "language"
+    saveAnswerTo: "language",
   };  
 
-  sendQuestion(ctx, curQuestion);
-  
+  try{
+    await MessageSender.sendQuestion(ctx, curQuestion);    
+  } catch(err){
+    console.log('Failed to send language question');
+    console.error(err);
+  }
 
 });
 
-let sendQuestion = (ctx, question) => {
-  participants.updateField(ctx.from.id, 'currentState', 'awaitingAnswer');
-  participants.updateField(ctx.from.id, 'currentQuestion', question);
-  
-  switch(question.qType){
-    case 'singleChoice':
-      ctx.replyWithHTML(question.text, singleChoice(question.options));
-      break;
-    default:
-      throw "ERROR: Question type not recognized"
-  }
-}
 
 // Handling any answer
-bot.on('text', ctx => {
+bot.on('text', async ctx => {
   const messageText = ctx.message.text;
   // Ignore commands
   if(messageText.charAt[0] === '/') return;
-  participants.get(ctx.from.id).then(participant => {
-    if(participant.currentState == 'awaitingAnswer'){
-      const answerText = ctx.message.text;
-      const currentQuestion = participant.currentQuestion;
-      // Validate answer
-      switch(currentQuestion.qType){
-        case 'singleChoice':
-          if(currentQuestion.options.includes(answerText)){
-            if(currentQuestion.saveAnswerTo){
-              participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, answerText);
-            }
-            const answer = {
-              qId: currentQuestion.id,
-              timeStamp: new Date(),
-              answer: [answerText]
-            };
-            participants.addAnswer(ctx.from.id, answer);
-            participants.updateField(ctx.from.id, "currentState", "notAwaitingAnswer");
-          } else {
-            ctx.reply(config.phrases.answerValidation.option[participant.parameters.language]);
-            sendQuestion(ctx, currentQuestion)
-          } 
-          break;
-        default:
-          throw "ERROR: Question type not recognized"
-      }
+
+  // Get the participant
+  let participant;
+  try{
+    participant = await participants.get(ctx.from.id); 
+  } catch(err){
+    console.log('Answer handler: failed to find participant');
+    console.error(err);
+  }
+
+  // Process an answer only if an answer is expected
+  if(participant.currentState == 'awaitingAnswer'){
+    const answerText = ctx.message.text;
+    const currentQuestion = participant.currentQuestion;
+
+    // Validate answer
+    if(!("qType" in currentQuestion)){
+      throw "ERROR: Question is missing question type"
     }
-  });
+    switch(currentQuestion["qType"]){
+      case 'singleChoice':
+        if(currentQuestion.options.includes(answerText)){
+          if(currentQuestion.saveAnswerTo){
+            await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, answerText);
+          }
+          const answer = {
+            qId: currentQuestion.id,
+            timeStamp: new Date(),
+            answer: [answerText]
+          };
+          await participants.addAnswer(ctx.from.id, answer);
+          await participants.updateField(ctx.from.id, "currentState", "answerReceived");
+
+        } else {
+          ctx.reply(config.phrases.answerValidation.option[participant.parameters.language]);
+          await MessageSender.sendQuestion(ctx, currentQuestion)
+        } 
+        break;
+      default:
+        throw "ERROR: Question type not recognized"
+    }
+    }
+  
 });
 
 

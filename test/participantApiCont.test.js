@@ -1,14 +1,14 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
-const experiments = require('../src/apiControllers/experimentApiController');
+const participants = require('../src/apiControllers/participantApiController');
 
 const mongo = require('mongoose');
 
 const expect = require('chai').expect;
 
 
-const testId = '123';
-describe('Experiment Controller API: ', () =>{
+const testId = 123;
+describe('Participant Controller API: ', () =>{
 		
 
 	it('Should connect to memory server', async () => {
@@ -24,60 +24,80 @@ describe('Experiment Controller API: ', () =>{
 		expect(result).to.equal(1);
 	});
 	
-	it('Should add and get experiment', async () => {
+	it('Should add and get participant', async () => {
 		
-		await experiments.add(testId);
-		var experiment = await experiments.get(testId);
-		expect(experiment).to.not.be.null;
-		expect(experiment.experimentId).to.equal(testId);
+		await participants.add(testId);
+		var participant = await participants.get(testId);
+		expect(participant).to.not.be.null;
+		expect(participant.chatId).to.equal(testId);
 		
+		
+	});
+	it('Should initialize a participant', async() => {
+		const testExptId = '98867';
+		const testDefaultLang = 'Shona';
+		const expectedParams = {
+			"language": "Shona",
+		};
+		let savedPart = await participants.initializeParticipant(testId, testExptId, testDefaultLang);
+		let newPart = await participants.get(testId);
+		expect(newPart['experimentId']).to.equal(testExptId);
+		expect(newPart['parameters']['language']).to.eql("Shona");
+		expect(newPart['currentState']).to.equal("starting");
+	})
+	it('Should update Number field', async () => {
+		
+		const testCondIdx = 2;
+		await participants.updateField(testId, 'conditionIdx', testCondIdx);
+		
+		let participant = await participants.get(testId)
+		
+		expect(participant.conditionIdx).to.equal(testCondIdx);
 		
 	});
 	it('Should update String field', async () => {
 		
-		const testName = 'TestyBob'
-		let exp1 = await experiments.updateField(testId, 'experimentName', testName);
+		const testState = 'peem';
+		await participants.updateField(testId, 'currentState', testState);
 		
-		let exp2 = await experiments.get(testId)
+		let participant = await participants.get(testId)
 		
-		expect(exp2.experimentName).to.equal(testName);
-		
-	});
-
-	it('Should update array field', async () => {
-		
-		const testArray = [2,2];
-		let exp1 = await experiments.updateField(testId, 'currentlyAssignedToCondition', testArray);
-		let exp2 = await experiments.get(testId);
-		expect(exp2.currentlyAssignedToCondition).to.eql(testArray);	
+		expect(participant.currentState).to.equal(testState);
 		
 	});
 
-	it('Should add participant to condition', async () => {
+	it('Should update parameter', async () => {
 		
-		const testCondIdx = 1;
-		let exp1 = await experiments.updateConditionAssignees(testId, testCondIdx, 1);
-		let exp2 = await experiments.get(testId)
-		expect(exp2["currentlyAssignedToCondition"]).to.eql([2,3]);
+		const paramField = 'timezone';
+		const paramValue = 'zbeengo';
+		
+		await participants.updateParameter(testId, paramField, paramValue);
+		let part = await participants.get(testId);
+		expect(part.parameters[paramField]).to.equal(paramValue);	
+		
 	});
 
-	it('Should decrease assigned to condition', async () => {
-		const testCondIdx = 0;
-		await experiments.updateConditionAssignees(testId, testCondIdx, -1);
-		let experiment = await experiments.get(testId)
-		expect(experiment["currentlyAssignedToCondition"]).to.eql([1,3]);
-	});
-	it('Should decrease assigned to condition - edge case 0', async () => {
-		const testCondIdx = 0;
-		await experiments.updateConditionAssignees(testId, testCondIdx, -2);
-		let experiment = await experiments.get(testId)
-		expect(experiment["currentlyAssignedToCondition"]).to.eql([0,3]);
+
+	it('Should add an answer', async () => {
+		const testAnswer = {
+			qId : "Zombotron",
+			text: "Are you a zombie please?",
+			timeStamp: new Date(),
+			answer: ["yes","no","maybe so"]
+		}
+		await participants.addAnswer(testId, testAnswer);
+		let participant = await participants.get(testId)
+		// console.log(participant["answers"]);
+		expect(participant["answers"][0]['qId']).to.eql(testAnswer.qId);
+		expect(participant["answers"][0]['text']).to.eql(testAnswer.text);
+		expect(participant["answers"][0]['timeStamp']).to.eql(testAnswer.timeStamp);
+		expect(participant["answers"][0]['answer']).to.eql(testAnswer.answer);
 	});
 
-	it('Should remove experiment', async () => {
-		await experiments.remove(testId);
-		let experiment = await experiments.get(testId);
-		expect(experiment).to.be.null;
+	it('Should remove participant', async () => {
+		await participants.remove(testId);
+		let participant = await participants.get(testId);
+		expect(participant).to.be.null;
 		
 	});
 

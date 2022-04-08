@@ -12,7 +12,7 @@
                             sizes
     currentAssignment -> array of same length containing number of participants
                           already assigned to each corresponding condition
-    assignmentScheme -> "balanced" or "random"
+    assignmentScheme -> "balanced", "random", or "pid"
 
   Out:
     index of the assigned condition, selected according to the above scheme. If PID
@@ -20,8 +20,10 @@
 
 */
 module.exports.assignToCondition = (participantId, pidMap, conditionAssignments, currentAssignments, assignmentScheme) => {
-  if(participantId in pidMap){
+  if(assignmentScheme === "pid" && participantId in pidMap){
     return pidMap[participantId];
+  } else {
+    assignmentScheme = "balanced";
   }
   if(assignmentScheme === "balanced" && currentAssignments.some(val => val > 0)){
     totalParts = currentAssignments.reduce((a, b) => a + b, 0);

@@ -9,13 +9,13 @@ const currentAssignments2 = [1,1,1]
 const currentAssignments3 = [20,20,35]
 describe('Condition assignment', () => {
 	describe('Pid Map', () => {
-		it('assigns to condition by PID - balanced', () => {
-			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments,"balanced")
+		it('assigns to condition by PID', () => {
+			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments,"pid")
 			expect(result).to.equal(0);
 		})
-		it('assigns to condition by PID - random', () => {
-			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments,"random")
-			expect(result).to.equal(0);
+		it('assigns to condition by balanced when PID not recognized', () => {
+			const result = experimentUtils.assignToCondition('1235', map, conditionAssignments, currentAssignments,"pid")
+			expect(result).to.equal(1);
 		})
 	})
 	describe('Natural assignment', () => {

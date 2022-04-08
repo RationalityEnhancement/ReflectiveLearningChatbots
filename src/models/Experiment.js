@@ -4,7 +4,7 @@ exports.ExperimentSchema = new Schema({
   experimentName: String,
   experimentId: String,
   experimentConditions: [String],
-  conditionAssigments: [Number],
+  conditionAssignments: [Number],
   currentlyAssignedToCondition: [Number],
   lastAssignedCondition: Number
 });

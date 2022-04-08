@@ -14,7 +14,7 @@ let assert = (exp, errorMsg) => {
 
 module.exports.checkConfig = () => {
   // const validAssignmentTypes = ["relative", "absolute"];
-  const validAssignmentSchemes = ["balanced", "random"];
+  const validAssignmentSchemes = ["balanced", "random", "pid"];
   
   assert("experimentName" in config, "config missing experiment name");
   assert(config.experimentName.length > 0, "config missing experiment name");
@@ -35,5 +35,6 @@ module.exports.checkConfig = () => {
   // TODO: Validate languages
   // TODO: Validate parameter names
   // TODO: Validate presence of all phrases
+  // TODO: Validate presence of options depending on question type
   console.log('Config file valid');
 }

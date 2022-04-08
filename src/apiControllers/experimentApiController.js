@@ -2,7 +2,7 @@ const { Experiment } = require('../models/Experiment');
 const moment = require('moment-timezone');
 const defaultTimezone = 'Europe/Berlin';
 
-exports.getAll = () => {
+exports.getAll = async () => {
   try {
     return Experiment.find();
   } catch (err) {
@@ -10,9 +10,9 @@ exports.getAll = () => {
   }
 }
 
-exports.get = async (experiment_name) => {
+exports.get = async (experimentId) => {
   try {
-    return Experiment.findOne({ experiment_name });
+    return Experiment.findOne({ experimentId });
   } catch (err) {
     console.error(err);
   }
@@ -33,10 +33,24 @@ exports.add = async (experimentId) => {
 
 
 exports.updateField = async (experimentId, field, value) => {
-  console.log('update field called')
+  
   try{
     let experiment = await Experiment.findOne({ experimentId });
     experiment[field] = value;
+    let savedExp = await experiment.save();
+    return savedExp;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+exports.initializeExperiment = async (experimentId, experimentName, experimentConditions, conditionAssignments) => {
+  try{
+    let experiment = await Experiment.findOne({ experimentId });
+    experiment["experimentName"] = experimentName;
+    experiment["experimentConditions"] = experimentConditions;
+    experiment["conditionAssignments"] = conditionAssignments;
+    experiment["currentlyAssignedToCondition"] = new Array(experimentConditions.length).fill(0);
     let savedExp = await experiment.save();
     return savedExp;
   } catch (err) {

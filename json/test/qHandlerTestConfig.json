@@ -8,7 +8,7 @@
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "languageSelectionQuestion" : "LanguageQuestion",
-  "questionChains" : {
+  "questionCategories" : {
     "chain1": [
       {
         "qId": "q1",

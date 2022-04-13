@@ -4,7 +4,8 @@
   "description": "Program to create interactive chatbots for reflective learning",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --exit"
+    "test": "mocha --exit",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",

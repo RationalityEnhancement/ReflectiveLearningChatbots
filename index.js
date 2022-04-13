@@ -172,7 +172,7 @@ bot.start(async ctx => {
   }
 
   // Start the setup question chain
-  let curQuestionObj = qHandler.getFirstQuestionInChain("setupQuestions");
+  let curQuestionObj = qHandler.getFirstQuestionInCategory("setupQuestions");
   if(curQuestionObj.returnCode == -1){
     throw "ERROR: " + curQuestionObj.data;
   } else {
@@ -257,7 +257,6 @@ bot.on('text', async ctx => {
         await participants.updateField(ctx.from.id, "currentState", "answerReceived");
         await MessageSender.sendReplies(ctx, currentQuestion);
         await sendNextQuestion(ctx);
-        console.log('returning');
         return;
 
       default:

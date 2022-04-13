@@ -26,7 +26,7 @@ function QuestionHandler(config){
      * Validates the question ID and fetches the question from the config
      * file based on the question ID
      *
-     * @param qId qId String of the form <questionChain>.<questionId>
+     * @param qId qId String of the form <questionCategory>.<questionId>
      * @returns {returnCode, data}
      *          if success, returnCode is 1, data  contains selectedQuestion
      *          if failure, returnCode is -1 data contains errorMsg
@@ -43,25 +43,25 @@ function QuestionHandler(config){
             let errorMsg = "Question ID is of incorrect form or does not exist";
             return returnError(errorMsg)
         }
-        const chainName = components[0];
+        const categoryName = components[0];
         const id_ = components[1];
 
-        if(!(chainName in config.questionChains)){
-            return returnError("Question chain " + chainName + " doesn't exist");
+        if(!(categoryName in config.questionCategories)){
+            return returnError("Question category " + categoryName + " doesn't exist");
         }
 
-        const chain = config.questionChains[chainName];
+        const category = config.questionCategories[categoryName];
         let selectedQuestion;
 
-        for(let i = 0; i < chain.length; i++){
-            let currentQuestion = chain[i];
+        for(let i = 0; i < category.length; i++){
+            let currentQuestion = category[i];
             if(currentQuestion.qId == id_){
                 selectedQuestion = currentQuestion;
                 break;
             }
         }
         if(!selectedQuestion){
-            return returnError("Question with qId " + id_ + " doesn't exist in chain " + chainName)
+            return returnError("Question with qId " + id_ + " doesn't exist in category " + categoryName)
         }
         return returnSuccess(selectedQuestion);
 
@@ -72,14 +72,14 @@ function QuestionHandler(config){
      * and user preferences
      *
      * constructedQuestion = {
-     *     qId: "<questionChainName>.<questionID>,
+     *     qId: "<questionCategoryName>.<questionID>,
      *     qType: "<questionType>",
      *     text: "<questionTextInPreferredLanguage>",
      *     <otherOptionalParameters> : [see variables languageDepOptionalParams
      *                                     and otherOptionalParams]
      * }
      *
-     * @param qId Question ID of the form <questionChain>.<questionID>
+     * @param qId Question ID of the form <questionCategory>.<questionID>
      * @param language Selected language of the user
      * @returns {returnCode, data}
      *          if success, returnCode is 1, data  contains constructedQuestion
@@ -123,33 +123,33 @@ function QuestionHandler(config){
     }
 
     /**
-     * Returns starting question of the question chain as defined in the config file
+     * Returns starting question of the question category as defined in the config file
      * It is the question that contains the "start" field set to the value "true"
      *
-     * @param chainName the question chain from which first question is to be found
+     * @param categoryName the question category from which first question is to be found
      * @param language language in which the question should be presented
      * @returns {returnCode, data}
      *          if success, returnCode is 1, data  contains constructedQuestion
      *          if failure, returnCode is -1 data contains errorMsg
      */
-    this.getFirstQuestionInChain = (chainName, language) => {
-        if(!(chainName in config.questionChains)){
-            return returnError("Question chain " + chainName + " doesn't exist");
+    this.getFirstQuestionInCategory = (categoryName, language) => {
+        if(!(categoryName in config.questionCategories)){
+            return returnError("Question category " + categoryName + " doesn't exist");
         }
-        const chain = config.questionChains[chainName];
+        const category = config.questionCategories[categoryName];
         let selectedQuestion;
 
-        for(let i = 0; i < chain.length; i++){
-            let currentQuestion = chain[i];
+        for(let i = 0; i < category.length; i++){
+            let currentQuestion = category[i];
             if(currentQuestion.start){
                 selectedQuestion = currentQuestion;
                 break;
             }
         }
         if(!selectedQuestion){
-            return returnError("Starting question doesn't exist in chain " + chainName)
+            return returnError("Starting question doesn't exist in category " + categoryName)
         }
-        let fullId = chainName + "." + selectedQuestion.qId;
+        let fullId = categoryName + "." + selectedQuestion.qId;
         return this.constructQuestionByID(fullId, language);
     }
 }

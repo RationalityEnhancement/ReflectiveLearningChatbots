@@ -34,7 +34,7 @@ describe('Constructing questions', () => {
         expect(result.returnCode).to.equal(-1);
         expect(typeof result.data).to.equal("string");
     })
-    it('fails when chain doesnt exist', () => {
+    it('fails when category doesnt exist', () => {
         const result = qHandler.constructQuestionByID("chain3.q1", "Deutsch");
         expect(result.returnCode).to.equal(-1);
         expect(typeof result.data).to.equal("string");
@@ -67,14 +67,14 @@ describe('Constructing questions', () => {
 });
 
 describe('Getting first question', () => {
-    it('returns first question in chain', () => {
-        const result = qHandler.getFirstQuestionInChain("chain1","Deutsch");
+    it('returns first question in category', () => {
+        const result = qHandler.getFirstQuestionInCategory("chain1","Deutsch");
         expect(result.returnCode).to.equal(1);
         expect(result.data.qId).to.eql("chain1.q1");
         expect(result.data.text).to.eql("DeutschQ1");
     })
-    it('fails when no first question in chain', () => {
-        const result = qHandler.getFirstQuestionInChain("chain2","Deutsch");
+    it('fails when no first question in category', () => {
+        const result = qHandler.getFirstQuestionInCategory("chain2","Deutsch");
         expect(result.returnCode).to.equal(-1);
         expect(typeof result.data).to.eql("string");
     })

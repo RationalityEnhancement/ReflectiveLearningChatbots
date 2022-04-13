@@ -5,8 +5,7 @@ const InputOptions = require('./keyboards');
 
 
 module.exports.sendQuestion = async (ctx, question) => {
-  await participants.updateField(ctx.from.id, 'currentState', 'awaitingAnswer');
-  await participants.updateField(ctx.from.id, 'currentQuestion', question);
+
   
   switch(question.qType){
     case 'singleChoice':
@@ -15,6 +14,8 @@ module.exports.sendQuestion = async (ctx, question) => {
     default:
       throw "ERROR: Question type not recognized"
   }
+  await participants.updateField(ctx.from.id, 'currentState', 'awaitingAnswer');
+  await participants.updateField(ctx.from.id, 'currentQuestion', question);
 }
 module.exports.sendReplies = async (ctx, question) => {
 	if(!question.replyMessages) return question;
@@ -23,8 +24,7 @@ module.exports.sendReplies = async (ctx, question) => {
 		const reply = question.replyMessages[i];
 		ctx.replyWithHTML(reply);
 		await new Promise(res => {
-			setTimeout(()=>{}, 1000)
+			setTimeout(()=>{}, delayMs)
 		});
 	}
-  	
 }

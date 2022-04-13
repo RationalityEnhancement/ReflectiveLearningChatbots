@@ -7,6 +7,7 @@ const conditionAssignments2 = [1, 1, 2];
 const currentAssignments = [2,1];
 const currentAssignments2 = [1,1,1]
 const currentAssignments3 = [20,20,35]
+
 describe('Condition assignment', () => {
 	describe('Pid Map', () => {
 		it('assigns to condition by PID', () => {

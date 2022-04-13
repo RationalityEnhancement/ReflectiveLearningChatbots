@@ -8,163 +8,60 @@
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "languageSelectionQuestion" : "Hello, I am the Reflective Learning Bot! Please select a language\n Hallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus",
-  "setupQuestions": {
-    "English" : [
+  "questionChains" : {
+    "setupQuestions": [
       {
-        "qId" : "pIdQuestion",
-        "start" : true,
-        "text" : "Please enter your Participant ID as provided to you.",
-        "qType" : "freeform",
-        "saveAnswerTo" : "pid",
-        "replyMessages" : ["Thank you, participant ID has been registered"],
-        "nextQuestion" : "setupQuestions.timezoneQuestion"
+        "qId": "pIdQuestion",
+        "start": true,
+        "text": {
+          "English": "Please enter your Participant ID as provided to you.",
+          "Deutsch": "Bitte geben Sie Ihre Teilnehmer-ID ein, die Ihnen verteilt wurde."
+        },
+        "qType": "freeform",
+        "saveAnswerTo": "pid",
+        "replyMessages": {
+          "English": [
+            "Thank you, participant ID has been registered"
+          ],
+          "Deutsch": [
+            "Danke, Teilnehmer-ID ist registriert worden"
+          ]
+        },
+        "nextQuestion": "setupQuestions.timezoneQuestion"
       },
       {
-        "qId" : "timezoneQuestion",
-        "text" : "Please choose your current time zone.",
-        "qType" : "singleChoice",
-        "options" : [
-          "Europe/Berlin",
-          "US/Pacific",
-          "US/Mountain",
-          "US/Central",
-          "US/Eastern"
-        ],
-        "replyMessages" : ["Thank you, time zone has been registered."],
-        "saveAnswerTo" : "timezone"
-      }
-    ],
-
-    "Deutsch" : [
-      {
-        "qId" : "pIdQuestion",
-        "start" : true,
-        "text" : "Bitte geben Sie Ihre Teilnehmer-ID ein, die Ihnen verteilt wurde.",
-        "qType" : "freeform",
-        "saveAnswerTo" : "pid",
-        "nextQuestion" : "setupQuestions.timezoneQuestion"
-      },
-      {
-        "qId" : "timezoneQuestion",
-        "text" : "Bitte wählen Sie Ihre aktuelle Zeitzone aus.",
-        "qType" : "singleChoice",
-        "options" : [
-          "Europe/Berlin",
-          "US/Pacific",
-          "US/Mountain",
-          "US/Central",
-          "US/Eastern"
-        ],
-        "saveAnswerTo" : "timezone"
+        "qId": "timezoneQuestion",
+        "text": {
+          "English": "Please choose your current time zone.",
+          "Deutsch": "Bitte wählen Sie Ihre aktuelle Zeitzone aus."
+        },
+        "qType": "singleChoice",
+        "options": {
+          "English": [
+            "Europe/Berlin",
+            "US/Pacific",
+            "US/Mountain",
+            "US/Central",
+            "US/Eastern"
+          ],
+          "Deutsch": [
+            "Europa/Berlin",
+            "US/Pacific",
+            "US/Mountain",
+            "US/Central",
+            "US/Eastern"
+          ]
+        },
+        "replyMessages": {
+          "English": [
+            "Thank you, time zone has been registered."
+          ],
+          "Deutsch": [
+            "Danke, Zeitzone ist registriert worden"
+          ]
+        },
+        "saveAnswerTo": "timezone"
       }
     ]
-  },
-  "experiments" : {
-    "English" : {
-      "startMessages" : ["Hello, I am a bot"]
-    },
-    "German" : {
-      "startMessages" : ["Hallo, ich bin Roboter"]
-    }
-  },
-  "phrases" : {
-    "terminateMultipleChoice" : {
-      "English" : "Finished Choosing",
-      "German" : "Fertig"
-    },
-    "answerValidation" : {
-      "option" : {
-        "English" : "Please select only from the options",
-        "German" : "Bitte wählen Sie nur von den Optionen aus"
-      }, 
-      "number" : {
-        "English" : "Please enter a number",
-        "German" : "Bitte geben Sie eine Zahl ein"
-      }
-    }
-  },
-
-  "startMessages": [
-    "Hi, I am Constructive Thinking Bot.",
-    "I am here to help you think more constructively. First, I will give you a short introduction to constructive thinking. If you already know about constructive thinking, feel free to skip over the next message.",
-    "Researchers have found that the way we think and reflect about the world determines how we feel about it. Unconstructive thinking dwells on negative emotions and worries, without helping us to make progress on improving things that we can change. Constructive thinking helps us learn from our experiences, find ways to improve our situation, and make the best out of each situation.\nFor instance, Paul just realized that he forgot his lunch.\nPaul’s first thought is unconstructive: “I will be hungry and unable to concentrate and therefore fail my exam.”\nBut Paul knows that constructive thinking can help him deal with the situation, so he finds a way to think constructively: “I will get the healthiest item from the vending machine and create a system for remembering lunches better after I am done with my exam.”\n",
-    "My job as Constructive Thinking Bot is to help remind you to consider how you can think about things more constructively, when you struggle.",
-    "I was created by researchers who work to help people work towards enhanced well-being. My purpose is to help people, but in order to do that the best I can, the researchers need data about how people use me. All data will be collected anonymously, which means that the researchers will not be able to connect your data to you as a person. Therefore, one condition of using me is that you consent to some data being collected by the app, namely your ratings of how constructive your thoughts were. Additionally, the researchers would be very grateful if you are willing to share the data on the thoughts you record having in the app, which can help them to make me better and more helpful in the future. However, if you don’t feel comfortable with that, you may opt out.\nIf you would like to anonymously share all the data you enter about your thoughts to support research select the first option.\nIf you don’t feel comfortable sharing your thoughts for research and prefer to opt to only share data on your answers to multiple choice questions select the second option.\nIf you don’t feel comfortable sharing any of your answers select the third option."
-  ],
-  "shareDataOptions": [
-    "Anonymously share all the data.",
-    "Anonymously share the choices only.",
-    "Opt out."
-  ],
-  "timezoneQuestion": "What is your timezone?",
-  "frequentTimezones": [
-    "Europe/Berlin",
-    "US/Pacific",
-    "US/Mountain",
-    "US/Central",
-    "US/Eastern",
-    "other"
-  ],
-  "customDayStartAndEnd": false,
-  "defaultDayStart": "09:00",
-  "dayStartQuestion": "When does your day usually start?",
-  "dayStartOptions": [
-    "05:00",
-    "06:00",
-    "07:00",
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00"
-  ],
-  "defaultDayEnd": "21:00",
-  "dayEndQuestion": "When does your day usually end?",
-  "dayEndOptions": [
-    "17:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00",
-    "22:00",
-    "23:00"
-  ],
-  "customFrequency": false,
-  "defaultFrequency": "Once every 3 hours",
-  "frequencyQuestion": "How frequently do you want to be asked questions?",
-  "frequencyOptions": [
-    "Once every 30 minutes",
-    "Once every 1 hour",
-    "Once every 3 hours",
-    "Once every 6 hours",
-    "Once every 12 hours",
-    "Once every day"
-  ],
-  "questions": [
-    {
-      "category": "thought",
-      "text": "What is one of your recent thoughts?",
-      "options": [],
-      "feedback": []
-    },
-    {
-      "category": "constructiveness",
-      "text": "How constructive is this thought? (You can scroll to see all the answer options)",
-      "options": [
-        "Very constructive",
-        "Constructive",
-        "Unconstructive",
-        "Very unconstructive",
-        "Not applicable",
-        "Please remind me what that means"
-      ],
-      "feedback": [
-        ["Congratulations on your good thinking!", "🎉"],
-        ["Congratulations on your good thinking!", "🎉"],
-        ["What would be a more constructive way to think about this?"],
-        ["What would be a more constructive way to think about this?"],
-        ["No problem."],
-        ["Researchers have found that the way we think and reflect about the world determines how we feel about it. Unconstructive thinking dwells on negative emotions and worries, without helping us to make progress on improving things that we can change. Constructive thinking helps us learn from our experiences, find ways to improve our situation, and make the best out of each situation.\nFor instance, Paul just realized that he forgot his lunch.\nPaul’s first thought is unconstructive: “I will be hungry and unable to concentrate and therefore fail my exam.”\nBut Paul knows that constructive thinking can help him deal with the situation, so he finds a way to think constructively: “I will get the healthiest item from the vending machine and create a system for remembering lunches better after I am done with my exam.”"]
-      ]
-    }
-  ]
+  }
 }

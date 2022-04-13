@@ -1,7 +1,17 @@
+/**
+ * Class to write data about the current experiment to the
+ * MongoDB database
+ *
+ * Primary identifier of the experiment document is the
+ * experiment ID defined in the config file
+ */
+
 const { Experiment } = require('../models/Experiment');
 const moment = require('moment-timezone');
 const defaultTimezone = 'Europe/Berlin';
 
+
+// Get all documents
 exports.getAll = async () => {
   try {
     return Experiment.find();
@@ -10,6 +20,7 @@ exports.getAll = async () => {
   }
 }
 
+// Get a single document by experimentId
 exports.get = async (experimentId) => {
   try {
     return Experiment.findOne({ experimentId });
@@ -18,6 +29,7 @@ exports.get = async (experimentId) => {
   }
 }
 
+// Add a new document with a given experiment ID
 exports.add = async (experimentId) => {
   try {
     const experiment = new Experiment();
@@ -31,7 +43,7 @@ exports.add = async (experimentId) => {
   }
 }
 
-
+// Update the field of a document with a new value
 exports.updateField = async (experimentId, field, value) => {
   
   try{
@@ -44,6 +56,7 @@ exports.updateField = async (experimentId, field, value) => {
   }
 }
 
+// Initialize the experiment document with some basic essential information
 exports.initializeExperiment = async (experimentId, experimentName, experimentConditions, conditionAssignments) => {
   try{
     let experiment = await Experiment.findOne({ experimentId });
@@ -58,6 +71,8 @@ exports.initializeExperiment = async (experimentId, experimentName, experimentCo
   }
 }
 
+// Update the number of participants assigned to each condition (usually +1 or -1)
+// Condition is indexed by the index of that particular condition in the array
 exports.updateConditionAssignees = async (experimentId, conditionIdx, updateVal) => {
   try{
     const field = "currentlyAssignedToCondition";
@@ -75,6 +90,8 @@ exports.updateConditionAssignees = async (experimentId, conditionIdx, updateVal)
     console.error(err);
   }
 }
+
+// Remove all documents
 exports.removeAll = async () => {
   try {
     return Experiment.deleteMany({});
@@ -83,9 +100,10 @@ exports.removeAll = async () => {
   }
 }
 
-exports.remove = async chatId => {
+// Remove a single document by ID
+exports.remove = async experimentId => {
   try {
-    return Experiment.deleteOne({ chatId });
+    return Experiment.deleteOne({ experimentId });
   } catch (err) {
     console.error(err);
   }

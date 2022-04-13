@@ -31,7 +31,8 @@ module.exports.checkConfig = () => {
   assert(validAssignmentSchemes.includes(config.assignmentScheme), "assignmentScheme is invalid");
   
   assert(config.conditionAssignments.every(val => !isNaN(val)), "condition assignments should be numbers");
-  
+
+  // TODO: Check parameter data types are valid
   // TODO: Validate presence of all languages in all questions
   // TODO: Validate parameter names
   // TODO: Validate presence of all phrases

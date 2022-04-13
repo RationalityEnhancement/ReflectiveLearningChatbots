@@ -1,14 +1,17 @@
 const { Schema, model } = require('mongoose');
+const config = require('../../json/config.json');
+const dataTypeMap = {
+  "string" : String,
+  "number" : Number,
+  "boolean" : Boolean,
+  "date" : Date
+};
 
-exports.ParticipantSchema = new Schema({
+let schemaObject = {
   experimentId: String,
   chatId: Number,
   conditionIdx: Number,
-  parameters: {
-    language: String,
-    pId: String,
-    timezone: String
-  },
+  parameters: {},
   debug: Boolean,
   currentQuestion: {
     qId: String,
@@ -20,13 +23,20 @@ exports.ParticipantSchema = new Schema({
     nextQuestion: String
   },
   currentState: String,
-  answers: 
-  [{
-    qId: String, 
-    text: String,
-    timeStamp: Date,
-    answer: [String]
-  }]
-});
+  answers:
+      [{
+        qId: String,
+        text: String,
+        timeStamp: Date,
+        answer: [String]
+      }]
+}
+
+for(const[key, value] of Object.entries(config.participantParameters)){
+  if(value in dataTypeMap)
+    schemaObject["parameters"][key] = dataTypeMap[value];
+}
+
+exports.ParticipantSchema = new Schema(schemaObject);
 
 exports.Participant = model('Participant', exports.ParticipantSchema, 'experiment3_participants');

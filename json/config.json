@@ -4,6 +4,11 @@
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
+  "participantParameters" : {
+    "language" : "string",
+    "pId" : "string",
+    "timezone" : "string"
+  },
   "debug": false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",

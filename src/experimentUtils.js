@@ -1,5 +1,5 @@
 
-/*
+/**
   Assigns to an experiment condition based on input parameters. If there exists
   a pre-existing mapping between PID and condition number, return that. Otherwise
   assigned randomly to one of the conditions, or balance according to the 

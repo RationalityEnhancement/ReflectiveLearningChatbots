@@ -1,7 +1,16 @@
+/**
+ * Class to write data about the current experiment to the
+ * MongoDB database.
+ *
+ * Primary identifier of a participant document is the
+ * Telegram chat id
+ */
+
 const { Participant } = require('../models/Participant');
 const moment = require('moment-timezone');
 const defaultTimezone = 'Europe/Berlin';
 
+// Get all documents
 exports.getAll = async () => {
   try {
     return Participant.find();
@@ -10,6 +19,7 @@ exports.getAll = async () => {
   }
 }
 
+// Get a single document by chatID
 exports.get = async (chatId) => {
   try {
     return Participant.findOne({ chatId });
@@ -18,6 +28,7 @@ exports.get = async (chatId) => {
   }
 }
 
+// Add a new document with a given chat ID
 exports.add = async (chatId) => {
   try {
     const participant = new Participant();
@@ -28,6 +39,8 @@ exports.add = async (chatId) => {
   }
 }
 
+
+// Initialize the experiment document with some basic essential information
 exports.initializeParticipant = async (chatId, experimentId, defaultLanguage) => {
   try{
     const participant = await Participant.findOne({ chatId });
@@ -43,6 +56,7 @@ exports.initializeParticipant = async (chatId, experimentId, defaultLanguage) =>
   }
 }
 
+// Update the field of a document with a new value
 exports.updateField = async (chatId, field, value) => {
   try{
     let participant = await Participant.findOne({ chatId });  
@@ -54,6 +68,7 @@ exports.updateField = async (chatId, field, value) => {
   }
 }
 
+// Update the 'parameters' field of the participant with a new value
 exports.updateParameter = async (chatId, param, value) => {
 
   try{
@@ -68,7 +83,8 @@ exports.updateParameter = async (chatId, param, value) => {
   }
 }
 
-
+// Add an answer to the end of a chronological list of answers
+// given by the participants in response to question prompts
 exports.addAnswer = async (chatId, answer) => {
   try{
     let participant = await Participant.findOne({ chatId });  
@@ -81,6 +97,7 @@ exports.addAnswer = async (chatId, answer) => {
   }
 }
 
+// Remove all records
 exports.removeAll = async () => {
   try {
     return Participant.deleteMany({});
@@ -89,6 +106,7 @@ exports.removeAll = async () => {
   }
 }
 
+// remove a single record by chat ID
 exports.remove = async chatId => {
   try {
     return Participant.deleteOne({ chatId });

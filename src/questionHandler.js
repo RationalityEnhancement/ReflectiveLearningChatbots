@@ -3,6 +3,7 @@
 /**
  * Question handler class that takes in a config as a parameter
  *
+ *
  * @param config variable containing a valid config json file loaded
  *              using 'require('...json')'
  */
@@ -69,6 +70,14 @@ function QuestionHandler(config){
     /**
      * Constructing a question from the config file by the given question ID
      * and user preferences
+     *
+     * constructedQuestion = {
+     *     qId: "<questionChainName>.<questionID>,
+     *     qType: "<questionType>",
+     *     text: "<questionTextInPreferredLanguage>",
+     *     <otherOptionalParameters> : [see variables languageDepOptionalParams
+     *                                     and otherOptionalParams]
+     * }
      *
      * @param qId Question ID of the form <questionChain>.<questionID>
      * @param language Selected language of the user

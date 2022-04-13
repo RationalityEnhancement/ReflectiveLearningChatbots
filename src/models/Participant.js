@@ -16,6 +16,8 @@ exports.ParticipantSchema = new Schema({
     qType: String,
     options: [String],
     saveAnswerTo: String,
+    replyMessages: [String],
+    nextQuestion: String
   },
   currentState: String,
   answers: 

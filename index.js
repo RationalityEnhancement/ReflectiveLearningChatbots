@@ -10,6 +10,7 @@ const experiments = require('./src/apiControllers/experimentApiController');
 const { checkConfig } = require('./src/configChecker');
 const { PIDtoConditionMap } = require('./json/PIDCondMap')
 const MessageSender = require('./src/messageSender')
+const QuestionHandler = require('./src/questionHandler');
 
 const InputOptions = require('./src/keyboards');
 
@@ -21,6 +22,7 @@ const {
 // This throws an error and aborts execution if there is something missing/wrong
 checkConfig();
 
+const qHandler = new QuestionHandler(config);
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const scheduledJobs = {};
 const defaultTimezone = 'Europe/Berlin';
@@ -36,7 +38,53 @@ mongo.connect(process.env.DB_CONNECTION_STRING, { useNewUrlParser: true, useUnif
   }
 });
 
+//----------------------
+//-- helper functions --
+//----------------------
 
+// Fetch the participant with error handling
+let getParticipant = async (ctx) => {
+  let participant;
+  try{
+    participant = await participants.get(ctx.from.id);
+    return participant;
+  } catch(err){
+    console.log('Failed to get participant info from DB');
+    console.error(err);
+  }
+}
+
+// Fetch the experiment from database with error handling
+let getExperiment = async (experimentId) => {
+  let experiment;
+  try{
+    experiment = await experiments.get(experimentId);
+    return experiment;
+  } catch(err){
+    console.log('Failed to get experiment info from DB');
+    console.error(err);
+  }
+}
+
+// Send the next question
+let sendNextQuestion = async (ctx) => {
+  // Get the updated participant
+
+  let participant = await getParticipant(ctx)
+  let currentQuestion = participant.currentQuestion;
+
+  // if the next question is not undefined
+  if(!!currentQuestion.nextQuestion){
+    let nextQObj = qHandler.constructQuestionByID(currentQuestion.nextQuestion, participant.parameters.language);
+    if(nextQObj.returnCode == -1){
+      throw "ERROR: " + nextQObj.data;
+    } else {
+      let nextQ = nextQObj.data;
+      await MessageSender.sendQuestion(ctx, nextQ);
+    }
+  }
+  return;
+}
 
 
 //-----------------
@@ -94,11 +142,12 @@ bot.command('delete_me', async ctx => {
 bot.start(async ctx => {
   console.log('Starting');
   // Check if experiment has already been initialized
-  let experiment = await experiments.get(config.experimentId);
-  // If not, add the experiment to the database
+  let experiment = await getExperiment(config.experimentId);
+  // If not, add the experiment to the database and initialize
+  //  with basic information
   if(!experiment){
     try{
-      let experiment = await experiments.add(config.experimentId);
+      await experiments.add(config.experimentId);
       await experiments.initializeExperiment(config.experimentId, config.experimentName, config.experimentConditions, config.conditionAssignments);
     } catch(err){
       console.log('Failed to initialize new experiment');
@@ -106,13 +155,12 @@ bot.start(async ctx => {
     } 
   }
 
-  console.log('checking part');
   // Check if the participant has already been added
-  let participant = await participants.get(ctx.from.id);
-  // If not, add and initialize the participant
+  let participant = await getParticipant(ctx);
+
+  // If not, add and initialize the participant with basic information
   if(!participant){
     try{
-      console.log('adding part');
       await participants.add(ctx.from.id);
       await participants.updateField(ctx.from.id, 'experimentId', config.experimentId);
       await participants.updateField(ctx.from.id, 'parameters', { "language" : config.defaultLanguage });
@@ -123,25 +171,20 @@ bot.start(async ctx => {
     }
   }
 
-  console.log('asking lang question');
-  // Ask the language question
-  curQuestion = {
-    qId: 'lang',
-    text: config.languageSelectionQuestion,
-    qType: "singleChoice",
-    options: config.languages,
-    saveAnswerTo: "language",
-  };  
-
-  try{
-    await MessageSender.sendQuestion(ctx, curQuestion);    
-  } catch(err){
-    console.log('Failed to send language question');
-    console.error(err);
+  // Start the setup question chain
+  let curQuestionObj = qHandler.getFirstQuestionInChain("setupQuestions");
+  if(curQuestionObj.returnCode == -1){
+    throw "ERROR: " + curQuestionObj.data;
+  } else {
+    let curQuestion = curQuestionObj.data;
+    try{
+      await MessageSender.sendQuestion(ctx, curQuestion);
+    } catch(err){
+      console.log('Failed to send language question');
+      console.error(err);
+    }
   }
-
 });
-
 
 // Handling any answer
 bot.on('text', async ctx => {
@@ -150,46 +193,77 @@ bot.on('text', async ctx => {
   if(messageText.charAt[0] === '/') return;
 
   // Get the participant
-  let participant;
-  try{
-    participant = await participants.get(ctx.from.id); 
-  } catch(err){
-    console.log('Answer handler: failed to find participant');
-    console.error(err);
-  }
+  let participant = await getParticipant(ctx);
 
   // Process an answer only if an answer is expected
   if(participant.currentState == 'awaitingAnswer'){
     const answerText = ctx.message.text;
     const currentQuestion = participant.currentQuestion;
 
-    // Validate answer
+    // Validate answer if the question type is recognized
     if(!("qType" in currentQuestion)){
+      console.error(currentQuestion);
       throw "ERROR: Question is missing question type"
+      return;
     }
     switch(currentQuestion["qType"]){
+      // If the expected answer is one from a list of possible answers
       case 'singleChoice':
+        // Process answer if it is one of the valid options
         if(currentQuestion.options.includes(answerText)){
+          // Save the answer to participant parameters if that options is specified
           if(currentQuestion.saveAnswerTo){
             await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, answerText);
           }
+          // TODO: Remove keyboard if answer is acceptable, in case they typed in a correct answer
+          // Add the answer to the list of answers in the database
           const answer = {
             qId: currentQuestion.id,
+            text: currentQuestion.text,
             timeStamp: new Date(),
             answer: [answerText]
           };
           await participants.addAnswer(ctx.from.id, answer);
           await participants.updateField(ctx.from.id, "currentState", "answerReceived");
 
+          // Send replies to the answer, if any
+          await MessageSender.sendReplies(ctx, currentQuestion);
+
+          // Send the next question, if any
+          await sendNextQuestion(ctx);
+          return;
+
         } else {
+          // TODO: change this to add validation prompts to the question?
+          // If the answer is not valid, resend the question.
           ctx.reply(config.phrases.answerValidation.option[participant.parameters.language]);
           await MessageSender.sendQuestion(ctx, currentQuestion)
         } 
         break;
+
+        // Question with free text input
+      case 'freeform':
+
+        if(currentQuestion.saveAnswerTo){
+          await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, answerText);
+        }
+        const answer = {
+          qId: currentQuestion.id,
+          text: currentQuestion.text,
+          timeStamp: new Date(),
+          answer: [answerText]
+        };
+        await participants.addAnswer(ctx.from.id, answer);
+        await participants.updateField(ctx.from.id, "currentState", "answerReceived");
+        await MessageSender.sendReplies(ctx, currentQuestion);
+        await sendNextQuestion(ctx);
+        console.log('returning');
+        return;
+
       default:
         throw "ERROR: Question type not recognized"
     }
-    }
+  }
   
 });
 

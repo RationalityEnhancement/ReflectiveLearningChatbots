@@ -7,18 +7,31 @@
   "debug": false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
-  "languageSelectionQuestion" : "Hello, I am the Reflective Learning Bot! Please select a language\n Hallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus",
   "questionChains" : {
     "setupQuestions": [
       {
+        "qId" : "langQuestion",
+        "text" : {
+          "English" : "Hello, I am the Reflective Learning Bot! Please select a language\n\nHallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus",
+          "Deutsch" : "Hello, I am the Reflective Learning Bot! Please select a language\n\nHallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus"
+        },
+        "qType" : "singleChoice",
+        "options" : {
+          "English" : ["English", "Deutsch"],
+          "Deutsch" : ["English", "Deutsch"]
+        },
+        "saveAnswerTo" : "language",
+        "nextQuestion" : "setupQuestions.pIdQuestion",
+        "start" : true
+      },
+      {
         "qId": "pIdQuestion",
-        "start": true,
         "text": {
-          "English": "Please enter your Participant ID as provided to you.",
-          "Deutsch": "Bitte geben Sie Ihre Teilnehmer-ID ein, die Ihnen verteilt wurde."
+          "English": "Thank you for choosing your language\nPlease enter your Participant ID as provided to you.",
+          "Deutsch": "Danke, dass Sie eine Sprache ausgewählt haben.\nBitte geben Sie Ihre Teilnehmer-ID ein, die Ihnen verteilt wurde."
         },
         "qType": "freeform",
-        "saveAnswerTo": "pid",
+        "saveAnswerTo": "pId",
         "replyMessages": {
           "English": [
             "Thank you, participant ID has been registered"

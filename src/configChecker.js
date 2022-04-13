@@ -37,8 +37,8 @@ module.exports.checkConfig = () => {
   // TODO: Validate presence of all phrases
   // TODO: Validate presence of options depending on question type
   // TODO: Check if setup questions are present
-  // TODO: Check if all nextquestions are valid question IDs
+  // TODO: Check if all nextquestions are valid question IDs or question chain
   // TODO: Check for duplicate question IDs
-  // TODO: Check if each question chain has a start question
+  // TODO: Check if each question chain has only one start question
   console.log('Config file valid');
 }

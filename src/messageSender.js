@@ -21,7 +21,7 @@ module.exports.sendQuestion = async (ctx, question) => {
         await ctx.replyWithHTML(question.text);
         break;
     default:
-        throw "ERROR: Question type not recognized"
+        throw "Message Sender: Question type not recognized"
   }
   await participants.updateField(ctx.from.id, 'currentState', 'awaitingAnswer');
   await participants.updateField(ctx.from.id, 'currentQuestion', question);

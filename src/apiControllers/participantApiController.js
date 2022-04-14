@@ -97,6 +97,19 @@ exports.addAnswer = async (chatId, answer) => {
   }
 }
 
+exports.addScheduledQuestion = async (chatId, jobInfo) => {
+  try{
+    let participant = await Participant.findOne({ chatId });
+    participant.scheduledOperations["questions"].push(jobInfo);
+
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled question');
+    console.error(err);
+  }
+}
+
 // Remove all records
 exports.removeAll = async () => {
   try {

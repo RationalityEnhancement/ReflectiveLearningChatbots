@@ -24,12 +24,22 @@ let schemaObject = {
   },
   currentState: String,
   answers:
-      [{
+    [{
+      qId: String,
+      text: String,
+      timeStamp: Date,
+      answer: [String]
+    }],
+  scheduledOperations : {
+    questions : [
+      {
+        jobId : String,
         qId: String,
-        text: String,
-        timeStamp: Date,
-        answer: [String]
-      }]
+        atTime : String,
+        onDays : [String]
+      }
+    ]
+  }
 }
 
 for(const[key, value] of Object.entries(config.participantParameters)){

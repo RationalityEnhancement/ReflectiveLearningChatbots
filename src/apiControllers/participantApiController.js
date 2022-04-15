@@ -109,6 +109,27 @@ exports.addScheduledQuestion = async (chatId, jobInfo) => {
     console.error(err);
   }
 }
+exports.removeScheduledQuestion = async (chatId, jobId) => {
+  try{
+    let participant = await Participant.findOne({ chatId });
+    let scheduledQs = participant.scheduledOperations["questions"];
+    let jobIdx = -1;
+    for(let i = 0; i < scheduledQs.length; i++){
+      let scheduledQ = scheduledQs[i];
+      if(scheduledQ.jobId === jobId){
+        jobIdx = i;
+        break;
+      }
+    }
+    if(jobIdx != -1) participant.scheduledOperations["questions"].splice(jobIdx,1);
+
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled question');
+    console.error(err);
+  }
+}
 
 // Remove all records
 exports.removeAll = async () => {

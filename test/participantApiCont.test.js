@@ -4,7 +4,7 @@ const participants = require('../src/apiControllers/participantApiController');
 
 const mongo = require('mongoose');
 
-const expect = require('chai').expect;
+const {assert, expect} = require('chai');
 
 
 const testId = 123;
@@ -93,14 +93,15 @@ describe('Participant Controller API: ', () =>{
 		expect(participant["answers"][0]['timeStamp']).to.eql(testAnswer.timeStamp);
 		expect(participant["answers"][0]['answer']).to.eql(testAnswer.answer);
 	});
-	it('Should add a scheduled question', async () => {
-		const testJob = {
-			jobId: "testJobJa",
-			qId : "speep.Zombotron",
-			atTime: "10:00",
-			onDays: ["Mon", "Tue", "Wed"]
+	const testJob = {
+		jobId: "testJobJa",
+		qId : "speep.Zombotron",
+		atTime: "10:00",
+		onDays: ["Mon", "Tue", "Wed"]
 
-		}
+	}
+	it('Should add a scheduled question', async () => {
+
 		await participants.addScheduledQuestion(testId, testJob);
 		let participant = await participants.get(testId)
 		let scheduledQs = participant["scheduledOperations"]["questions"];
@@ -109,6 +110,39 @@ describe('Participant Controller API: ', () =>{
 		expect(scheduledQs[0]['atTime']).to.eql(testJob.atTime);
 		expect(scheduledQs[0]['onDays']).to.eql(testJob.onDays);
 	});
+	it('Should return normally if removed question doesnt exist', async () => {
+		let DBHasJob = (jobArray, jobId) => {
+			let foundJob = false;
+			for(let i = 0; i < jobArray.length; i++){
+				if(jobArray[i]["jobId"] === jobId){
+					foundJob = true;
+					break;
+				}
+			}
+			return foundJob;
+		}
+		await participants.removeScheduledQuestion(testId, 'fakeJobId');
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["questions"];
+		assert(DBHasJob(scheduledQs, testJob.jobId));
+	});
+	it('Should remove a scheduled question', async () => {
+		let DBHasJob = (jobArray, jobId) => {
+			let foundJob = false;
+			for(let i = 0; i < jobArray.length; i++){
+				if(jobArray[i]["jobId"] === jobId){
+					foundJob = true;
+					break;
+				}
+			}
+			return foundJob;
+		}
+		await participants.removeScheduledQuestion(testId, testJob.jobId);
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["questions"];
+		assert(!DBHasJob(scheduledQs, testJob.jobId));
+	});
+
 
 	it('Should remove participant', async () => {
 		await participants.remove(testId);

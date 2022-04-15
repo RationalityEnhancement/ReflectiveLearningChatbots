@@ -2,6 +2,7 @@ const participants = require('./apiControllers/participantApiController');
 const scheduler = require('node-schedule');
 const QuestionHandler = require('./questionHandler')
 const MessageSender = require('./messageSender')
+const assert = require('chai').assert
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -11,24 +12,128 @@ class ScheduleHandler{
         "schedules" : {}
     };
 
+    static async removeAllJobsForParticipant(chatId){
+        let scheduledQs = this.scheduledOperations["questions"];
+        let partJobIDList = [];
+        for(const [jobId, job] of Object.entries(scheduledQs)){
+            if(jobId.startsWith(''+chatId)){
+                partJobIDList.push(jobId);
+            }
+        }
+        let failedRemovals = [];
+        let succeededRemovals = [];
+        for(let i = 0; i < partJobIDList.length; i++){
+            let returnObj = await this.removeJobByID(partJobIDList[i]);
+            if(returnObj.returnCode === -1){
+                failedRemovals.push(returnObj.data);
+            } else {
+                succeededRemovals.push(returnObj.data)
+            }
+        }
+        if(failedRemovals.length > 0) {
+            if(succeededRemovals.length === 0){
+                return this.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                    failedRemovals.join('\n'));
+            }
+            return this.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+                failedRemovals.join('\n'), succeededRemovals);
+        }
+        return this.returnSuccess(succeededRemovals)
+
+    }
+
+    static async removeJobByID(jobId){
+        let chatId;
+        try{
+            chatId = jobId.split('_')[0];
+            assert(!isNaN(parseInt(chatId)));
+            await participants.removeScheduledQuestion(chatId, jobId);
+
+        } catch(err) {
+            return this.returnFailure("Scheduler: Cannot remove job " + jobId);
+        }
+        return this.cancelQuestionByJobID(jobId);
+
+    }
+    static cancelQuestionByJobID(jobId){
+        try{
+            this.scheduledOperations["questions"][jobId].cancel();
+            delete this.scheduledOperations["questions"][jobId];
+        } catch(err){
+            return this.returnFailure("Scheduler: Failed to cancel job " + jobId);
+        }
+        return this.returnSuccess(jobId)
+    }
+    static async rescheduleAllOperations(ctx, config){
+        let participant = await participants.get(ctx.from.id);
+        let scheduledOperations = participant.scheduledOperations;
+        let scheduledQuestions = scheduledOperations["questions"];
+        const qHandler = new QuestionHandler(config);
+        let failedQuestions = [];
+        let succeededQuestions = [];
+        for(let i = 0; i < scheduledQuestions.length; i++){
+            let jobInfo = scheduledQuestions[i];
+            let questionInfo = {
+                qId : jobInfo.qId,
+                atTime : jobInfo.atTime,
+                onDays : jobInfo.onDays
+            }
+            let returnObj = await this.scheduleOneQuestion(ctx, qHandler, questionInfo, false);
+            if(returnObj.returnCode === -1){
+                failedQuestions.push(returnObj.data);
+            } else if(returnObj.returnCode === 1){
+                succeededQuestions.push(returnObj.data);
+            }
+        }
+
+        if(failedQuestions.length > 0) {
+            if(succeededQuestions.length === 0){
+                return this.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                    failedQuestions.join('\n'));
+            }
+            return this.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+                failedQuestions.join('\n'), succeededQuestions);
+        }
+        return this.returnSuccess(succeededQuestions)
+    }
     static async scheduleAllQuestions(ctx, config){
         const qHandler = new QuestionHandler(config);
         let scheduledQuestionsList = config["scheduledQuestions"];
+        let failedQuestions = [];
+        let succeededQuestions = [];
         for(let i = 0; i < scheduledQuestionsList.length; i++){
             let scheduledQuestionInfo = scheduledQuestionsList[i];
             let scheduleObj = await this.scheduleOneQuestion(ctx, qHandler, scheduledQuestionInfo,true);
             if(scheduleObj.returnCode === -1){
-                return this.returnFailure(scheduleObj.data);
+                failedQuestions.push(scheduleObj.data)
+            } else if(scheduleObj.returnCode === 1){
+                succeededQuestions.push(scheduleObj.data)
             }
         }
-        return this.returnSuccess("")
+
+        if(failedQuestions.length > 0) {
+            if(succeededQuestions.length === 0){
+                return this.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                    failedQuestions.join('\n'));
+            }
+            return this.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+                failedQuestions.join('\n'), succeededQuestions);
+        }
+        return this.returnSuccess(succeededQuestions)
     }
-    // TODO: Create return handler class
+    // TODO: Create return handler class with objects returning both fData and sData
     static returnSuccess(data){
         return {
             returnCode : 1,
             data : data
         };
+    }
+    static returnPartialFailure(failData, successData){
+        return {
+            returnCode : 0,
+            failData : failData,
+            successData : successData
+        }
     }
     static returnFailure(data){
         return {
@@ -36,19 +141,19 @@ class ScheduleHandler{
             data : data
         };
     }
-    static getRecurrenceRule(questionInfo){
+    static buildRecurrenceRule(questionInfo){
         let scheduleHours, scheduleMins;
         try{
             let scheduleTime = questionInfo.atTime;
             let scheduleTimeSplit = scheduleTime.split(":");
-            if(scheduleTimeSplit.length != 2) throw "Scheduler: Time format wrong"
+            if(scheduleTimeSplit.length !== 2) throw "Scheduler: Time format wrong"
             scheduleHours = parseInt(scheduleTimeSplit[0]);
             scheduleMins = parseInt(scheduleTimeSplit[1]);
             // console.log(scheduleTimeSplit);
             // console.log(scheduleHours);
             // console.log(scheduleMins);
         } catch (err){
-            let errorMsg = "Scheduler: Time in the inappropriate format or not specified"
+            let errorMsg = "Scheduler: " + questionInfo.qId + " - Time in the inappropriate format or not specified"
             return this.returnFailure(errorMsg);
         }
         let scheduleDayIndices = [];
@@ -57,7 +162,7 @@ class ScheduleHandler{
             let scheduleDays = questionInfo.onDays;
             for(let i = 0; i < scheduleDays.length; i++){
                 let idx = this.dayIndexOrdering.indexOf(scheduleDays[i]);
-                if(idx === -1) throw "Scheduler: Day not recognized";
+                if(idx === -1) throw "Scheduler: " + questionInfo.qId + " - Day not recognized";
                 else {
                     if(!scheduleDayIndices.includes(idx)){
                         scheduleDayIndices.push(idx)
@@ -65,7 +170,7 @@ class ScheduleHandler{
                 }
             }
         } catch(err){
-            let errorMsg = "Scheduler: On days in incorrect format or not specified"
+            let errorMsg = "Scheduler: " + questionInfo.qId + " - On days in incorrect format or not specified"
             return this.returnFailure(errorMsg)
         }
         let rule = new scheduler.RecurrenceRule();
@@ -90,12 +195,12 @@ class ScheduleHandler{
         if(!("qId" in questionInfo)){
             return this.returnFailure("Scheduler: Question ID not specified")
         }
-        let recurrenceRuleObj = this.getRecurrenceRule(questionInfo);
+        let recurrenceRuleObj = this.buildRecurrenceRule(questionInfo);
         if(recurrenceRuleObj.returnCode === -1) {
             return this.returnFailure(recurrenceRuleObj.data)
         }
         let recRule = recurrenceRuleObj.data;
-        let jobId = questionInfo.qId + "_" + ctx.from.id + "_" + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
+        let jobId = ctx.from.id + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
 
         // Assuming error handling in API Controller
         let participant = await participants.get(ctx.from.id);

@@ -11,3 +11,7 @@ module.exports.multipleChoice = (options, language) => {
 	options.push(terminateKeyword);
 	return Markup.keyboard(options).resize();
 };
+
+module.exports.removeKeyboard = () => {
+	return Markup.removeKeyboard();
+}

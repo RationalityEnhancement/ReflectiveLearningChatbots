@@ -124,6 +124,7 @@ bot.command('log_part', async ctx => {
   
 });
 
+
 bot.command('log_exp', async ctx => {
   try{
     console.log('Logging experiment.');
@@ -154,6 +155,16 @@ bot.command('delete_me', async ctx => {
     console.error(err);
   }
 });
+
+// Repeat a question that has an outstanding answer
+bot.command('repeat', async ctx => {
+  let participant = await getParticipant(ctx);
+  if(participant.currentState === "awaitingAnswer"){
+    let currentQuestion = participant.currentQuestion;
+    await MessageSender.sendQuestion(ctx, currentQuestion)
+  }
+
+})
 
 bot.start(async ctx => {
   console.log('Starting');
@@ -211,6 +222,9 @@ bot.on('text', async ctx => {
   // Get the participant
   let participant = await getParticipant(ctx);
 
+  // Participant has not started yet
+  if(!participant) return;
+
   // Process an answer only if an answer is expected
   if(participant.currentState == 'awaitingAnswer'){
     const answerText = ctx.message.text;
@@ -252,7 +266,7 @@ bot.on('text', async ctx => {
         } else {
           // TODO: change this to add validation prompts to the question?
           // If the answer is not valid, resend the question.
-          ctx.reply(config.phrases.answerValidation.option[participant.parameters.language]);
+          await ctx.reply(config.phrases.answerValidation.option[participant.parameters.language]);
           await MessageSender.sendQuestion(ctx, currentQuestion)
         } 
         break;

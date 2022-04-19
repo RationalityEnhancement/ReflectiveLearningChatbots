@@ -12,6 +12,14 @@
   "debug": false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
+  "phrases" : {
+    "answerValidation" : {
+      "option" : {
+        "English" : "Please pick from the given options",
+        "Deutsch" : "Bitte wählen Sie nur aus den vorgebenen Optionen"
+      }
+    }
+  },
   "questionCategories" : {
     "setupQuestions": [
       {

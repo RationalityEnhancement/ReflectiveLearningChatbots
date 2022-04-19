@@ -18,7 +18,7 @@ module.exports.sendQuestion = async (ctx, question) => {
         await ctx.replyWithHTML(question.text, InputOptions.singleChoice(question.options));
         break;
     case 'freeform':
-        await ctx.replyWithHTML(question.text);
+        await ctx.replyWithHTML(question.text, InputOptions.removeKeyboard());
         break;
     default:
         throw "Message Sender: Question type not recognized"
@@ -46,9 +46,12 @@ module.exports.sendReplies = async (ctx, question) => {
         await new Promise(res => {
             setTimeout(res, delayMs)
         });
-		await ctx.replyWithHTML(reply);
+		await ctx.replyWithHTML(reply, InputOptions.removeKeyboard());
 
 	}
+    await new Promise(res => {
+        setTimeout(res, delayMs)
+    });
 }
 
 module.exports.sendMessage = async (ctx, message) => {

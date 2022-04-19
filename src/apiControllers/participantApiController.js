@@ -131,6 +131,33 @@ exports.removeScheduledQuestion = async (chatId, jobId) => {
   }
 }
 
+exports.addToCurrentAnswer = async (chatId, answerPart) => {
+  try{
+    let participant = await Participant.findOne({ chatId });
+    let ans = participant.currentAnswer;
+    if(!ans.includes(answerPart)){
+      participant.currentAnswer.push(answerPart);
+    }
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled question');
+    console.error(err);
+  }
+}
+
+exports.eraseCurrentAnswer = async (chatId) => {
+  try{
+    let participant = await Participant.findOne({ chatId });
+    participant.currentAnswer = [];
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled question');
+    console.error(err);
+  }
+}
+
 // Remove all records
 exports.removeAll = async () => {
   try {
@@ -148,3 +175,5 @@ exports.remove = async chatId => {
     console.error(err);
   }
 }
+
+

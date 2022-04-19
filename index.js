@@ -1,10 +1,7 @@
 require('dotenv').config();
 const mongo = require('mongoose');
-const { Telegraf, Markup } = require('telegraf');
-const schedule = require('node-schedule');
-const moment = require('moment-timezone');
+const { Telegraf } = require('telegraf');
 const config = require('./json/config.json');
-const timezones = require('./json/timezones.json').timezones;
 const participants = require('./src/apiControllers/participantApiController');
 const experiments = require('./src/apiControllers/experimentApiController');
 const { checkConfig } = require('./src/configChecker');
@@ -12,8 +9,6 @@ const { PIDtoConditionMap } = require('./json/PIDCondMap')
 const MessageSender = require('./src/messageSender')
 const QuestionHandler = require('./src/questionHandler');
 const ScheduleHandler = require('./src/scheduleHandler');
-
-const InputOptions = require('./src/keyboards');
 
 const {
   assignToCondition
@@ -25,8 +20,6 @@ checkConfig();
 
 const qHandler = new QuestionHandler(config);
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const scheduledJobs = {};
-const defaultTimezone = 'Europe/Berlin';
 
 //----------------------
 //--- database setup ---
@@ -72,14 +65,13 @@ let sendNextQuestion = async (ctx, nextQuestionId, language) => {
   // Get the updated participant
 
   let nextQObj = qHandler.constructQuestionByID(nextQuestionId, language);
-  if(nextQObj.returnCode == -1){
+  if(nextQObj.returnCode === -1){
     throw "ERROR: " + nextQObj.data;
   } else {
     let nextQ = nextQObj.data;
     await MessageSender.sendQuestion(ctx, nextQ);
   }
 
-  return;
 }
 
 
@@ -159,6 +151,11 @@ bot.command('delete_me', async ctx => {
 // Repeat a question that has an outstanding answer
 bot.command('repeat', async ctx => {
   let participant = await getParticipant(ctx);
+  if(participant.currentState === "answering"){
+    await participants.eraseCurrentAnswer(ctx.from.id);
+    await participants.updateField(ctx.from.id, "currentState", "awaitingAnswer");
+    participant.currentState = "awaitingAnswer";
+  }
   if(participant.currentState === "awaitingAnswer"){
     let currentQuestion = participant.currentQuestion;
     await MessageSender.sendQuestion(ctx, currentQuestion)
@@ -199,8 +196,8 @@ bot.start(async ctx => {
   }
 
   // Start the setup question chain
-  let curQuestionObj = qHandler.getFirstQuestionInCategory("setupQuestions");
-  if(curQuestionObj.returnCode == -1){
+  let curQuestionObj = qHandler.getFirstQuestionInCategory("setupQuestions", config.defaultLanguage);
+  if(curQuestionObj.returnCode === -1){
     throw "ERROR: " + curQuestionObj.data;
   } else {
     let curQuestion = curQuestionObj.data;
@@ -225,15 +222,16 @@ bot.on('text', async ctx => {
   // Participant has not started yet
   if(!participant) return;
 
+  const answerText = ctx.message.text;
+  const currentQuestion = participant.currentQuestion;
+
   // Process an answer only if an answer is expected
-  if(participant.currentState == 'awaitingAnswer'){
-    const answerText = ctx.message.text;
-    const currentQuestion = participant.currentQuestion;
+  if(participant.currentState === 'awaitingAnswer'){
 
     // Validate answer if the question type is recognized
     if(!("qType" in currentQuestion)){
-      console.error(currentQuestion);
-      throw "ERROR: Question is missing question type"
+      console.log(currentQuestion);
+      console.error("ERROR: Question is missing question type");
       return;
     }
     switch(currentQuestion["qType"]){
@@ -266,9 +264,45 @@ bot.on('text', async ctx => {
         } else {
           // TODO: change this to add validation prompts to the question?
           // If the answer is not valid, resend the question.
-          await ctx.reply(config.phrases.answerValidation.option[participant.parameters.language]);
+          await MessageSender.sendMessage(ctx, config.phrases.answerValidation.option[participant.parameters.language]);
           await MessageSender.sendQuestion(ctx, currentQuestion)
         } 
+        break;
+
+      // In case of multi-choice, let user pick as many as possible
+      case 'multiChoice' :
+        if(currentQuestion.options.includes(answerText)){
+          // Save the answer to participant's current answer
+
+          await participants.updateField(ctx.from.id,"currentState", "answering");
+          await participants.addToCurrentAnswer(ctx.from.id, answerText);
+
+        } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
+          const answer = {
+            qId: currentQuestion.id,
+            text: currentQuestion.text,
+            timeStamp: new Date(),
+            answer: [answerText]
+          };
+          // Save the answer to participant parameters if that options is specified
+          if(currentQuestion.saveAnswerTo){
+            await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, [answerText]);
+          }
+          await participants.addAnswer(ctx.from.id, answer);
+          await participants.updateField(ctx.from.id, "currentState", "answerReceived");
+
+          // Send replies to the answer, if any
+          await MessageSender.sendReplies(ctx, currentQuestion);
+
+          // Send the next question, if any
+          await processNextAction(ctx);
+          return;
+        } else {
+          // TODO: change this to add validation prompts to the question?
+          // If the answer is not valid, resend the question.
+          await MessageSender.sendMessage(ctx, config.phrases.answerValidation.option[participant.parameters.language]);
+          await MessageSender.sendQuestion(ctx, currentQuestion)
+        }
         break;
 
         // Question with free text input
@@ -291,6 +325,38 @@ bot.on('text', async ctx => {
 
       default:
         throw "ERROR: Question type not recognized"
+    }
+  } else if (participant.currentState === "answering"){
+    if(currentQuestion.options.includes(answerText)){
+      // Save the answer to participant's current answer
+      await participants.addToCurrentAnswer(ctx.from.id, answerText);
+
+    } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
+      const answer = {
+        qId: currentQuestion.id,
+        text: currentQuestion.text,
+        timeStamp: new Date(),
+        answer: participant.currentAnswer
+      };
+      await participants.addAnswer(ctx.from.id, answer);
+      await participants.updateField(ctx.from.id, "currentState", "answerReceived");
+      // Save the answer to participant parameters if that options is specified
+      if(currentQuestion.saveAnswerTo){
+        await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, participant.currentAnswer);
+      }
+
+      await MessageSender.sendMessage(ctx, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
+      // Send replies to the answer, if any
+      await MessageSender.sendReplies(ctx, currentQuestion);
+
+      // Send the next question, if any
+      await processNextAction(ctx);
+
+    } else {
+      // TODO: Don't restart if wrong option entered?
+      // If the answer is not valid, resend the question.
+      await MessageSender.sendMessage(ctx, config.phrases.answerValidation.option[participant.parameters.language]);
+      await MessageSender.sendQuestion(ctx, currentQuestion)
     }
   }
   

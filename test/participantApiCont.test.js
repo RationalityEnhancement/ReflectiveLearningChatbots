@@ -142,6 +142,34 @@ describe('Participant Controller API: ', () =>{
 		let scheduledQs = participant["scheduledOperations"]["questions"];
 		assert(!DBHasJob(scheduledQs, testJob.jobId));
 	});
+	it('Should add an answer to current answer', async () => {
+
+		await participants.addToCurrentAnswer(testId, "answer1");
+		let participant = await participants.get(testId)
+		let cAnswer = participant["currentAnswer"];
+		expect(cAnswer).to.eql(["answer1"]);
+	});
+	it('Should add an answer to current answer 2', async () => {
+
+		await participants.addToCurrentAnswer(testId, "answer2");
+		let participant = await participants.get(testId)
+		let cAnswer = participant["currentAnswer"];
+		expect(cAnswer).to.eql(["answer1", "answer2"]);
+	});
+	it('Should add not add duplicate to current answer', async () => {
+
+		await participants.addToCurrentAnswer(testId, "answer2");
+		let participant = await participants.get(testId)
+		let cAnswer = participant["currentAnswer"];
+		expect(cAnswer).to.eql(["answer1", "answer2"]);
+	});
+	it('Should add erase the current answer', async () => {
+
+		await participants.eraseCurrentAnswer(testId);
+		let participant = await participants.get(testId)
+		let cAnswer = participant["currentAnswer"];
+		expect(cAnswer).to.eql([]);
+	});
 
 
 	it('Should remove participant', async () => {

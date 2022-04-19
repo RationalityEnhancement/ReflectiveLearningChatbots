@@ -1,0 +1,178 @@
+{
+  "experimentName" : "DayOne",
+  "experimentId" : "12345",
+  "experimentConditions" : ["Control", "Experimental"],
+  "conditionAssignments" : [0.5, 0.5],
+  "assignmentScheme" : "pid",
+  "participantParameters" : {
+    "language" : "string",
+    "pId" : "string",
+    "timezone" : "string"
+  },
+  "debug": false,
+  "languages" : ["English", "Deutsch"],
+  "defaultLanguage" : "English",
+  "phrases" : {
+    "answerValidation" : {
+      "option" : {
+        "English" : "Please pick from the given options",
+        "Deutsch" : "Bitte wählen Sie nur aus den vorgebenen Optionen"
+      }
+    }
+  },
+  "questionCategories" : {
+    "setupQuestions": [
+      {
+        "qId" : "langQuestion",
+        "text" : {
+          "English" : "Hello, I am the Reflective Learning Bot! Please select a language\n\nHallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus",
+          "Deutsch" : "Hello, I am the Reflective Learning Bot! Please select a language\n\nHallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus"
+        },
+        "qType" : "singleChoice",
+        "options" : {
+          "English" : ["English", "Deutsch"],
+          "Deutsch" : ["English", "Deutsch"]
+        },
+        "saveAnswerTo" : "language",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "setupQuestions.pIdQuestion"
+        },
+        "start" : true
+      },
+      {
+        "qId": "pIdQuestion",
+        "text": {
+          "English": "Thank you for choosing your language\nPlease enter your Participant ID as provided to you.",
+          "Deutsch": "Danke, dass Sie eine Sprache ausgewählt haben.\nBitte geben Sie Ihre Teilnehmer-ID ein, die Ihnen verteilt wurde."
+        },
+        "qType": "freeform",
+        "saveAnswerTo": "pId",
+        "replyMessages": {
+          "English": [
+            "Thank you, participant ID has been registered"
+          ],
+          "Deutsch": [
+            "Danke, Teilnehmer-ID ist registriert worden"
+          ]
+        },
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "setupQuestions.timezoneQuestion"
+        }
+      },
+      {
+        "qId": "timezoneQuestion",
+        "text": {
+          "English": "Please choose your current time zone.",
+          "Deutsch": "Bitte wählen Sie Ihre aktuelle Zeitzone aus."
+        },
+        "qType": "singleChoice",
+        "options": {
+          "English": [
+            "Europe/Berlin",
+            "US/Pacific",
+            "US/Mountain",
+            "US/Central",
+            "US/Eastern"
+          ],
+          "Deutsch": [
+            "Europa/Berlin",
+            "US/Pacific",
+            "US/Mountain",
+            "US/Central",
+            "US/Eastern"
+          ]
+        },
+        "replyMessages": {
+          "English": [
+            "Thank you, time zone has been registered."
+          ],
+          "Deutsch": [
+            "Danke, Zeitzone ist registriert worden"
+          ]
+        },
+
+        "nextAction" : {
+          "aType" : "scheduleQuestions",
+          "data" : ""
+        },
+
+        "saveAnswerTo": "timezone"
+      }
+    ],
+    "morningQuestions" : [
+      {
+        "qId" : "mainGoal",
+        "text" : {
+          "English" : "What is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+          "Deutsch" : "Was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
+        },
+        "qType" : "freeform",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "morningQuestions.addGoal"
+        }
+      },
+      {
+        "qId" : "addGoal",
+        "text" : {
+          "English" : "What else would you like to accomplish today?",
+          "Deutsch" : "Was sonst möchten Sie heute erledigen?"
+        },
+        "qType" : "freeform"
+      }
+    ],
+    "eveningQuestions" : [
+      {
+        "qId" : "numGoals",
+        "text" : {
+          "English" : "How many goals did you set today?",
+          "Deutsch" : "Wie viele Ziele haben Sie sich heute gesetzt?"
+        },
+        "qType" : "freeform",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "eveningQuestions.focus"
+        },
+        "start" : true
+      },
+      {
+        "qId" : "focus",
+        "text" : {
+          "English" : "How did you decide which things to focus on today?",
+          "Deutsch" : "Wie haben Sie entschieden, worauf Sie sich heute fokussieren wollten?"
+        },
+        "qType" : "freeform",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "eveningQuestions.relevance"
+        }
+      },
+      {
+        "qId" : "relevance",
+        "text" : {
+          "English" : "How relevant were the goals you pursued today to the long-term goals of your project(s), your team, and your organization?",
+          "Deutsch" : "Wie relevant waren Ihre heutigen Ziele für die Langzeitziel von Ihrem Projekt, Team, und Ihrer Organisation?"
+        },
+        "qType" : "option",
+        "options" : {
+          "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
+          "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
+        }
+      }
+    ]
+  },
+  "scheduledQuestions" : [
+    {
+      "qId" : "morningQuestions.mainGoal",
+      "atTime" : "16:21",
+      "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    },
+    {
+      "qId" : "eveningQuestions.numGoals",
+      "atTime" : "16:22",
+      "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    }
+  ]
+}

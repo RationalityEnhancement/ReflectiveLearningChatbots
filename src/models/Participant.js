@@ -4,7 +4,8 @@ const dataTypeMap = {
   "string" : String,
   "number" : Number,
   "boolean" : Boolean,
-  "date" : Date
+  "date" : Date,
+  "stringArray" : [String]
 };
 
 let schemaObject = {
@@ -13,6 +14,7 @@ let schemaObject = {
   conditionIdx: Number,
   parameters: {},
   debug: Boolean,
+  currentAnswer: [String],
   currentQuestion: {
     qId: String,
     text: String,

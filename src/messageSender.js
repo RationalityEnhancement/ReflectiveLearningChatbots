@@ -12,19 +12,33 @@ const InputOptions = require('./keyboards');
  * @returns {Promise<void>}
  */
 module.exports.sendQuestion = async (ctx, question) => {
-
-  switch(question.qType){
-    case 'singleChoice':
-        await ctx.replyWithHTML(question.text, InputOptions.singleChoice(question.options));
-        break;
-    case 'freeform':
-        await ctx.replyWithHTML(question.text, InputOptions.removeKeyboard());
-        break;
-    default:
-        throw "Message Sender: Question type not recognized"
-  }
-  await participants.updateField(ctx.from.id, 'currentState', 'awaitingAnswer');
-  await participants.updateField(ctx.from.id, 'currentQuestion', question);
+    let participant = await participants.get(ctx.from.id);
+    let language = participant.parameters.language;
+    let delayMs = 300;
+    switch(question.qType){
+        case 'singleChoice':
+            await ctx.replyWithHTML(question.text, InputOptions.removeKeyboard());
+            await new Promise(res => {
+                setTimeout(res, delayMs)
+            });
+            await ctx.replyWithHTML(config.phrases.keyboards.singleChoice[language], InputOptions.singleChoice(question.options));
+            break;
+        case 'multiChoice':
+            await ctx.replyWithHTML(question.text, InputOptions.removeKeyboard());
+            await new Promise(res => {
+                setTimeout(res, delayMs)
+            });
+            await ctx.replyWithHTML(config.phrases.keyboards.multiChoice[language], InputOptions.multiChoice(question.options, language));
+            break;
+        case 'freeform':
+            await ctx.replyWithHTML(question.text, InputOptions.removeKeyboard());
+            break;
+        default:
+            throw "Message Sender: Question type not recognized"
+    }
+    await participants.updateField(ctx.from.id, 'currentState', 'awaitingAnswer');
+    await participants.eraseCurrentAnswer(ctx.from.id)
+    await participants.updateField(ctx.from.id, 'currentQuestion', question);
 }
 
 /**
@@ -55,5 +69,5 @@ module.exports.sendReplies = async (ctx, question) => {
 }
 
 module.exports.sendMessage = async (ctx, message) => {
-    await ctx.replyWithHTML(message);
+    await ctx.replyWithHTML(message, InputOptions.removeKeyboard());
 }

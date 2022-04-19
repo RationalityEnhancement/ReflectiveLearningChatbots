@@ -21,7 +21,10 @@
           "Deutsch" : "Was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
         },
         "qType" : "freeform",
-        "nextQuestion" : "morningQuestions.addGoal",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "morningQuestions.addGoal"
+        },
         "start" : true
       },
       {
@@ -41,7 +44,10 @@
           "Deutsch" : "Wie viele Ziele haben Sie sich heute gesetzt?"
         },
         "qType" : "freeform",
-        "nextQuestion" : "eveningQuestions.focus",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "eveningQuestions.focus"
+        },
         "start" : true
       },
       {

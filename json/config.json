@@ -26,7 +26,10 @@
           "Deutsch" : ["English", "Deutsch"]
         },
         "saveAnswerTo" : "language",
-        "nextQuestion" : "setupQuestions.pIdQuestion",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "setupQuestions.pIdQuestion"
+        },
         "start" : true
       },
       {
@@ -45,7 +48,10 @@
             "Danke, Teilnehmer-ID ist registriert worden"
           ]
         },
-        "nextQuestion": "setupQuestions.timezoneQuestion"
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "setupQuestions.timezoneQuestion"
+        }
       },
       {
         "qId": "timezoneQuestion",
@@ -78,6 +84,12 @@
             "Danke, Zeitzone ist registriert worden"
           ]
         },
+
+        "nextAction" : {
+          "aType" : "scheduleQuestions",
+          "data" : ""
+        },
+
         "saveAnswerTo": "timezone"
       }
     ],
@@ -89,8 +101,10 @@
           "Deutsch" : "Was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
         },
         "qType" : "freeform",
-        "nextQuestion" : "morningQuestions.addGoal",
-        "start" : true
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "morningQuestions.addGoal"
+        }
       },
       {
         "qId" : "addGoal",
@@ -109,7 +123,10 @@
           "Deutsch" : "Wie viele Ziele haben Sie sich heute gesetzt?"
         },
         "qType" : "freeform",
-        "nextQuestion" : "eveningQuestions.focus",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "eveningQuestions.focus"
+        },
         "start" : true
       },
       {
@@ -125,12 +142,12 @@
   "scheduledQuestions" : [
     {
       "qId" : "morningQuestions.mainGoal",
-      "atTime" : "09:00",
+      "atTime" : "16:21",
       "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     },
     {
       "qId" : "eveningQuestions.numGoals",
-      "atTime" : "18:00",
+      "atTime" : "16:22",
       "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     }
   ]

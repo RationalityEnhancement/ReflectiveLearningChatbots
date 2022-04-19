@@ -37,7 +37,7 @@ function QuestionHandler(config){
         try{
             components = qId.split('.');
         } catch(err) {
-            return { "returnCode" : -1, "data": "Question ID not a string"};
+            return { "returnCode" : -1, "data": "QHandler: Question ID not a string"};
         }
         if(components.length != 2){
             let errorMsg = "QHandler: Question ID is of incorrect form or does not exist";
@@ -108,7 +108,7 @@ function QuestionHandler(config){
 
 
         const languageDepOptionalParams = ["options", "replyMessages"];
-        const otherOptionalParams = ["saveAnswerTo", "nextQuestion"];
+        const otherOptionalParams = ["saveAnswerTo", "nextAction"];
 
         for(let i = 0; i < languageDepOptionalParams.length; i++){
             field = languageDepOptionalParams[i];
@@ -128,7 +128,7 @@ function QuestionHandler(config){
      *
      * @param categoryName the question category from which first question is to be found
      * @param language language in which the question should be presented
-     * @returns {returnCode, data}
+     * @returns {{returnCode: number, data}}
      *          if success, returnCode is 1, data  contains constructedQuestion
      *          if failure, returnCode is -1 data contains errorMsg
      */
@@ -151,6 +151,16 @@ function QuestionHandler(config){
         }
         let fullId = categoryName + "." + selectedQuestion.qId;
         return this.constructQuestionByID(fullId, language);
+    }
+
+    this.getScheduledQuestions = () => {
+        if(!("scheduledQuestions" in config)){
+            return returnError("QHandler: Scheduled questions not found");
+        }
+        let schQList = config["scheduledQuestions"];
+
+
+
     }
 }
 

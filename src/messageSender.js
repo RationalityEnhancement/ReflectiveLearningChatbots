@@ -50,3 +50,7 @@ module.exports.sendReplies = async (ctx, question) => {
 
 	}
 }
+
+module.exports.sendMessage = async (ctx, message) => {
+    await ctx.replyWithHTML(message);
+}

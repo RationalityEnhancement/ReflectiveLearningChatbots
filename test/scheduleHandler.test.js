@@ -315,7 +315,7 @@ describe('Scheduling one question', () =>{
     describe('Rescheduling jobs', () => {
         let rescheduleReturnObj;
         it('Should return success and a list of scheduled jobs', async () => {
-            rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperations(testCtx, testConfig);
+            rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperationsForID(testCtx, testConfig);
             expect(rescheduleReturnObj.returnCode).to.equal(1);
         });
         it('Should return list of rescheduled jobs', () => {

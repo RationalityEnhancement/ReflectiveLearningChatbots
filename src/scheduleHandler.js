@@ -64,7 +64,8 @@ class ScheduleHandler{
         }
         return this.returnSuccess(jobId)
     }
-    static async rescheduleAllOperations(ctx, config){
+    // TODO: Add to reschedule for all participants.
+    static async rescheduleAllOperationsForID(ctx, config){
         let participant = await participants.get(ctx.from.id);
         let scheduledOperations = participant.scheduledOperations;
         let scheduledQuestions = scheduledOperations["questions"];
@@ -96,7 +97,7 @@ class ScheduleHandler{
         }
         return this.returnSuccess(succeededQuestions)
     }
-    static async scheduleAllQuestions(ctx, config){
+    static async scheduleAllQuestions(ctx, config, debug = false){
         const qHandler = new QuestionHandler(config);
         let scheduledQuestionsList = config["scheduledQuestions"];
         let failedQuestions = [];
@@ -107,6 +108,10 @@ class ScheduleHandler{
             if(scheduleObj.returnCode === -1){
                 failedQuestions.push(scheduleObj.data)
             } else if(scheduleObj.returnCode === 1){
+                if(debug) {
+                    await MessageSender.sendMessage(ctx, "Q scheduled for " + scheduledQuestionInfo.atTime +
+                        " on " + scheduledQuestionInfo.onDays.join(', '));
+                }
                 succeededQuestions.push(scheduleObj.data)
             }
         }
@@ -149,9 +154,7 @@ class ScheduleHandler{
             if(scheduleTimeSplit.length !== 2) throw "Scheduler: Time format wrong"
             scheduleHours = parseInt(scheduleTimeSplit[0]);
             scheduleMins = parseInt(scheduleTimeSplit[1]);
-            // console.log(scheduleTimeSplit);
-            // console.log(scheduleHours);
-            // console.log(scheduleMins);
+
         } catch (err){
             let errorMsg = "Scheduler: " + questionInfo.qId + " - Time in the inappropriate format or not specified"
             return this.returnFailure(errorMsg);

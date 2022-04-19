@@ -11,6 +11,7 @@ const { checkConfig } = require('./src/configChecker');
 const { PIDtoConditionMap } = require('./json/PIDCondMap')
 const MessageSender = require('./src/messageSender')
 const QuestionHandler = require('./src/questionHandler');
+const ScheduleHandler = require('./src/scheduleHandler');
 
 const InputOptions = require('./src/keyboards');
 
@@ -67,25 +68,40 @@ let getExperiment = async (experimentId) => {
 }
 
 // Send the next question
-let sendNextQuestion = async (ctx) => {
+let sendNextQuestion = async (ctx, nextQuestionId, language) => {
   // Get the updated participant
 
-  let participant = await getParticipant(ctx)
-  let currentQuestion = participant.currentQuestion;
-
-  // if the next question is not undefined
-  if(!!currentQuestion.nextQuestion){
-    let nextQObj = qHandler.constructQuestionByID(currentQuestion.nextQuestion, participant.parameters.language);
-    if(nextQObj.returnCode == -1){
-      throw "ERROR: " + nextQObj.data;
-    } else {
-      let nextQ = nextQObj.data;
-      await MessageSender.sendQuestion(ctx, nextQ);
-    }
+  let nextQObj = qHandler.constructQuestionByID(nextQuestionId, language);
+  if(nextQObj.returnCode == -1){
+    throw "ERROR: " + nextQObj.data;
+  } else {
+    let nextQ = nextQObj.data;
+    await MessageSender.sendQuestion(ctx, nextQ);
   }
+
   return;
 }
 
+
+// Process what happens next based on the nextAction of the question
+let processNextAction = async (ctx) => {
+  let participant = await getParticipant(ctx)
+  let currentQuestion = participant.currentQuestion;
+
+  if(!!currentQuestion.nextAction.aType){
+    let action = currentQuestion.nextAction;
+    switch(action["aType"]){
+      case "sendQuestion":
+        await sendNextQuestion(ctx, action.data, participant.parameters.language);
+        break;
+      case "scheduleQuestions":
+        await ScheduleHandler.scheduleAllQuestions(ctx, config, true);
+        break;
+      default:
+        console.log("action type not recognized");
+    }
+  }
+}
 
 //-----------------
 //--- bot setup ---
@@ -230,7 +246,7 @@ bot.on('text', async ctx => {
           await MessageSender.sendReplies(ctx, currentQuestion);
 
           // Send the next question, if any
-          await sendNextQuestion(ctx);
+          await processNextAction(ctx);
           return;
 
         } else {
@@ -256,7 +272,7 @@ bot.on('text', async ctx => {
         await participants.addAnswer(ctx.from.id, answer);
         await participants.updateField(ctx.from.id, "currentState", "answerReceived");
         await MessageSender.sendReplies(ctx, currentQuestion);
-        await sendNextQuestion(ctx);
+        await processNextAction(ctx);
         return;
 
       default:

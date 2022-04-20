@@ -15,8 +15,8 @@
   "phrases" : {
     "answerValidation" : {
       "option" : {
-        "English" : "Please pick from the given options",
-        "Deutsch" : "Bitte wählen Sie nur aus den vorgebenen Optionen"
+        "English" : "Choosing aborted. Please pick from the given options",
+        "Deutsch" : "Wahl abgebrochen. Bitte wählen Sie nur aus den vorgebenen Optionen"
       }
     },
     "keyboards" : {
@@ -60,12 +60,12 @@
         "saveAnswerTo": "language",
         "nextAction": {
           "aType": "sendQuestion",
-          "data": "setupQuestions.pIdQuestion"
+          "data": "setupQuestions.groupsQuestion"
         },
         "start": true
       },
       {
-        "qId": "groups",
+        "qId": "groupsQuestion",
         "text": {
           "English": "Thank you for choosing your language\nPlease select the groups you are part of.",
           "Deutsch": "Danke, dass Sie eine Sprache ausgewählt haben.\nBitte wählen Sie die Gruppen aus, denen Sie angehören."

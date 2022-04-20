@@ -1,0 +1,75 @@
+{
+  "experimentName" : "DayOne",
+  "experimentId" : "12345",
+  "experimentConditions" : ["Control", "Experimental"],
+  "conditionAssignments" : [0.5, 0.5],
+  "assignmentScheme" : "pid",
+  "participantParameters" : {
+    "language" : "string",
+    "pId" : "string",
+    "timezone" : "string"
+  },
+  "debug": false,
+  "languages" : ["English", "Deutsch"],
+  "defaultLanguage" : "English",
+  "questionCategories" : {
+    "morningQuestions" : [
+      {
+        "qId" : "mainGoal",
+        "text" : {
+          "English" : "What is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+          "Deutsch" : "Was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
+        },
+        "qType" : "freeform",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "morningQuestions.addGoal"
+        },
+        "start" : true
+      },
+      {
+        "qId" : "addGoal",
+        "text" : {
+          "English" : "What else would you like to accomplish today?",
+          "Deutsch" : "Was sonst möchten Sie heute erledigen?"
+        },
+        "qType" : "freeform"
+      }
+    ],
+    "eveningQuestions" : [
+      {
+        "qId" : "numGoals",
+        "text" : {
+          "English" : "How many goals did you set today?",
+          "Deutsch" : "Wie viele Ziele haben Sie sich heute gesetzt?"
+        },
+        "qType" : "freeform",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "eveningQuestions.focus"
+        },
+        "start" : true
+      },
+      {
+        "qId" : "focus",
+        "text" : {
+          "English" : "How did you decide which things to focus on today?",
+          "Deutsch" : "Wie haben Sie entschieden, worauf Sie sich heute fokussieren wollten?"
+        },
+        "qType" : "freeform"
+      }
+    ]
+  },
+  "scheduledQuestions" : [
+    {
+      "qId" : "morningQuestions.mainGoal",
+      "atTime" : "fail",
+      "onDays" : ["Mon", "Tue"]
+    },
+    {
+      "qId" : "eveningQuestions.numGoals",
+      "atTime" : "18:00",
+      "onDays" : ["Mon", "Tue"]
+    }
+  ]
+}

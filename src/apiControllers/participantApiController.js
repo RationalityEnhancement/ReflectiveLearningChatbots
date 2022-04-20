@@ -97,6 +97,67 @@ exports.addAnswer = async (chatId, answer) => {
   }
 }
 
+exports.addScheduledQuestion = async (chatId, jobInfo) => {
+  try{
+    let participant = await Participant.findOne({ chatId });
+    participant.scheduledOperations["questions"].push(jobInfo);
+
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled question');
+    console.error(err);
+  }
+}
+exports.removeScheduledQuestion = async (chatId, jobId) => {
+  try{
+    let participant = await Participant.findOne({ chatId });
+    let scheduledQs = participant.scheduledOperations["questions"];
+    let jobIdx = -1;
+    for(let i = 0; i < scheduledQs.length; i++){
+      let scheduledQ = scheduledQs[i];
+      if(scheduledQ.jobId === jobId){
+        jobIdx = i;
+        break;
+      }
+    }
+    if(jobIdx != -1) participant.scheduledOperations["questions"].splice(jobIdx,1);
+
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled question');
+    console.error(err);
+  }
+}
+
+exports.addToCurrentAnswer = async (chatId, answerPart) => {
+  try{
+    let participant = await Participant.findOne({ chatId });
+    let ans = participant.currentAnswer;
+    if(!ans.includes(answerPart)){
+      participant.currentAnswer.push(answerPart);
+    }
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled question');
+    console.error(err);
+  }
+}
+
+exports.eraseCurrentAnswer = async (chatId) => {
+  try{
+    let participant = await Participant.findOne({ chatId });
+    participant.currentAnswer = [];
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled question');
+    console.error(err);
+  }
+}
+
 // Remove all records
 exports.removeAll = async () => {
   try {
@@ -114,3 +175,5 @@ exports.remove = async chatId => {
     console.error(err);
   }
 }
+
+

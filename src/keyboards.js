@@ -6,8 +6,13 @@ module.exports.singleChoice = (options) => {
 	return Markup.keyboard(options).oneTime().resize();
 };
 
-module.exports.multipleChoice = (options, language) => {
-	const terminateKeyword = config.phrases.terminateMultipleChoice[language];
-	options.push(terminateKeyword);
-	return Markup.keyboard(options).resize();
+module.exports.multiChoice = (options, language) => {
+	const terminateKeyword = config.phrases.keyboards.terminateMultipleChoice[language];
+	let optionsCopy = options.slice()
+	optionsCopy.push(terminateKeyword);
+	return Markup.keyboard(optionsCopy);
 };
+
+module.exports.removeKeyboard = () => {
+	return Markup.removeKeyboard();
+}

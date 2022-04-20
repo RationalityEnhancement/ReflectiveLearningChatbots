@@ -64,7 +64,12 @@ questionCategories :                                    // Categories under whic
 |  |  |
 |  |  |- nextAction :                                   // Optional: next action to execute after question has 
 |  |  |  |- aType : "scheduleQuestions"                 // been answered. This schedules all of the questions 
-|                                                       // listed in "scheduledQuestions"
+|  |  |                                                 // listed in "scheduledQuestions"
+|  |  |
+|  |  |- replyMessages :                                // Optional: Messages to send when answer is received
+|  |  |  |                                              // List of messages to be specified in all languages
+|  |  |  |- English : ["Received","Thanks"]
+|  |  |  |- Deutsch : ["Erhalten","Danke"]
 |                                                   
 |- morningQuestions :                                   // Creating another question category 
 |  |                                                    

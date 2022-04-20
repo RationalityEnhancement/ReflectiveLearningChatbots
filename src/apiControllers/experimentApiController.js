@@ -59,6 +59,8 @@ exports.updateField = async (experimentId, field, value) => {
 // Initialize the experiment document with some basic essential information
 exports.initializeExperiment = async (experimentId, experimentName, experimentConditions, conditionAssignments) => {
   try{
+    if (!experimentConditions) experimentConditions = [];
+    if (!conditionAssignments) conditionAssignments = [];
     let experiment = await Experiment.findOne({ experimentId });
     experiment["experimentName"] = experimentName;
     experiment["experimentConditions"] = experimentConditions;

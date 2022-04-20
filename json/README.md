@@ -61,8 +61,6 @@ questionCategories :                                    // Categories under whic
 |  |  |                                    
 |  |  |- saveAnswerTo : "pid"                           // Optional: save the answer to one of the custom parameters
 |  |  |
-|  |  |- start : true                                   // First question in category. Exactly one question in category
-|  |  |                                                 //  must have this
 |  |  |
 |  |  |- nextAction :                                   // Optional: next action to execute after question has 
 |  |  |  |- aType : "scheduleQuestions"                 // been answered. This schedules all of the questions 

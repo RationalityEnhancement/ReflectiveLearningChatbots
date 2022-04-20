@@ -16,7 +16,7 @@ const {
 
 // Validate the config file to ensure that it has all the necessary information
 // This throws an error and aborts execution if there is something missing/wrong
-checkConfig();
+// checkConfig();
 
 const qHandler = new QuestionHandler(config);
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -87,7 +87,7 @@ let processNextAction = async (ctx) => {
         await sendNextQuestion(ctx, action.data, participant.parameters.language);
         break;
       case "scheduleQuestions":
-        await ScheduleHandler.scheduleAllQuestions(ctx, config, true);
+        await ScheduleHandler.scheduleAllQuestions(ctx, config, false);
         break;
       default:
         console.log("action type not recognized");

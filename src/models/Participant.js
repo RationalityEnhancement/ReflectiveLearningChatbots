@@ -4,7 +4,8 @@ const dataTypeMap = {
   "string" : String,
   "number" : Number,
   "boolean" : Boolean,
-  "date" : Date
+  "date" : Date,
+  "stringArray" : [String]
 };
 
 let schemaObject = {
@@ -13,6 +14,7 @@ let schemaObject = {
   conditionIdx: Number,
   parameters: {},
   debug: Boolean,
+  currentAnswer: [String],
   currentQuestion: {
     qId: String,
     text: String,
@@ -20,16 +22,29 @@ let schemaObject = {
     options: [String],
     saveAnswerTo: String,
     replyMessages: [String],
-    nextQuestion: String
+    nextAction: {
+      aType: String,
+      data: String
+    }
   },
   currentState: String,
   answers:
-      [{
+    [{
+      qId: String,
+      text: String,
+      timeStamp: Date,
+      answer: [String]
+    }],
+  scheduledOperations : {
+    questions : [
+      {
+        jobId : String,
         qId: String,
-        text: String,
-        timeStamp: Date,
-        answer: [String]
-      }]
+        atTime : String,
+        onDays : [String]
+      }
+    ]
+  }
 }
 
 for(const[key, value] of Object.entries(config.participantParameters)){

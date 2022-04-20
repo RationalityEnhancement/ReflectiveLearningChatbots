@@ -15,7 +15,7 @@
   "phrases" : {
     "answerValidation" : {
       "option" : {
-        "English" : "Please pick only from the given options",
+        "English" : "Please pick from the given options",
         "Deutsch" : "Bitte wählen Sie nur aus den vorgebenen Optionen"
       }
     },
@@ -25,8 +25,8 @@
         "Deutsch" : "Bitte wählen Sie eine aus den vorgebenen Optionen"
       },
       "multiChoice" : {
-        "English" : "Please choose as many options as you like. Click Done to finish choosing.",
-        "Deutsch" : "Bitte wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
+        "English" : "Please choosing as many options as you like. Click Done to finish choosing.",
+        "Deutsch" : "Bitte wählen Sie Ihre gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
       },
       "terminateMultipleChoice" : {
         "English" : "Done",
@@ -34,7 +34,7 @@
       },
       "finishedChoosingReply" : {
         "English" : "Your choices have been registered",
-        "Deutsch" : "Ihre Wahlen sind erfasst worden"
+        "Deutsch" : "Ihre Wahlen sind vermerkt worden"
       }
     }
   },
@@ -43,8 +43,8 @@
       {
         "qId" : "langQuestion",
         "text" : {
-          "English" : "Hello, I am the Reflective Learning Bot! Which language do you prefer?\n\nHallo, ich bin der Reflective-Learning-Roboter. Welche Sprache bevorzugen Sie?",
-          "Deutsch" : "Hello, I am the Reflective Learning Bot! Which language do you prefer?\n\nHallo, ich bin der Reflective-Learning-Roboter. Welche Sprache bevorzugen Sie"
+          "English" : "Hello, I am the Reflective Learning Bot! Please select a language\n\nHallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus",
+          "Deutsch" : "Hello, I am the Reflective Learning Bot! Please select a language\n\nHallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus"
         },
         "qType" : "singleChoice",
         "options" : {
@@ -82,8 +82,8 @@
       {
         "qId": "timezoneQuestion",
         "text": {
-          "English": "Which time zone are you currently in?",
-          "Deutsch": "In welcher Zeitzone befinden Sie sich jetzt?"
+          "English": "Please choose your current time zone.",
+          "Deutsch": "Bitte wählen Sie Ihre aktuelle Zeitzone aus."
         },
         "qType": "singleChoice",
         "options": {
@@ -107,7 +107,7 @@
             "Thank you, time zone has been registered."
           ],
           "Deutsch": [
-            "Danke, Zeitzone ist erfasst worden"
+            "Danke, Zeitzone ist registriert worden"
           ]
         },
 
@@ -161,86 +161,6 @@
           "English" : "How did you decide which things to focus on today?",
           "Deutsch" : "Wie haben Sie entschieden, worauf Sie sich heute fokussieren wollten?"
         },
-        "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.relevance"
-        }
-      },
-      {
-        "qId" : "relevance",
-        "text" : {
-          "English" : "How relevant were the goals you pursued today to the long-term goals of your project(s), your team, and your organization?",
-          "Deutsch" : "Wie relevant waren Ihre heutigen Ziele für die Langzeitziel von Ihrem Projekt, Team, und Ihrer Organisation?"
-        },
-        "qType" : "singleChoice",
-        "options" : {
-          "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
-          "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
-        },
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.emotions"
-        }
-      },
-      {
-        "qId" : "emotions",
-        "text" : {
-          "English" : "How do you feel about that? Please select any or all of the emotions you are experiencing at least a little bit.",
-          "Deutsch" : "Wie fühlen Sie sich darüber? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
-        },
-        "qType" : "multiChoice",
-        "options" : {
-          "English" : ["Sad", "Frustrated", "Discontent", "Content", "Happy", "Proud", "Excited"],
-          "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Zufrieden", "Froh", "Stolz", "Begeistert"]
-        },
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.emotionsReflection"
-        }
-      },
-      {
-        "qId" : "emotionsReflection",
-        "text" : {
-          "English" : "Why did you feel that way?",
-          "Deutsch" : "Warum haben Sie sich so gefühlt?"
-        },
-        "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.advice"
-        }
-      },
-      {
-        "qId" : "advice",
-        "text" : {
-          "English" : "Based on your recent experience with goal setting, which advice would you give to a new colleague who is just starting to work in a similar role?",
-          "Deutsch" : "Basierend auf Ihrer neuen Erfahrung mit Zielsetzung, welchen Ratschlag würden Sie einem neuen Kollegen geben, der neulich in einer ähnlichen Rolle anfängt?"
-        },
-        "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.plan"
-        }
-      },
-      {
-        "qId" : "plan",
-        "text" : {
-          "English" : "What concretely will you do will you do differently tomorrow, and when will you do it?",
-          "Deutsch" : "Was konkretes werden Sie morgen anders tun, und wann?"
-        },
-        "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.planRemember"
-        }
-      },
-      {
-        "qId" : "planRemember",
-        "text" : {
-          "English" : "How will you remember this plan when the time comes to execute it?",
-          "Deutsch" : "Wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
-        },
         "qType" : "freeform"
       }
     ]
@@ -248,12 +168,12 @@
   "scheduledQuestions" : [
     {
       "qId" : "morningQuestions.mainGoal",
-      "atTime" : "13:42",
+      "atTime" : "16:21",
       "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     },
     {
       "qId" : "eveningQuestions.numGoals",
-      "atTime" : "13:43",
+      "atTime" : "16:22",
       "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     }
   ]

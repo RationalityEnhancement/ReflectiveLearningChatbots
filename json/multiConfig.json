@@ -1,0 +1,121 @@
+{
+  "experimentName" : "DayOne",
+  "experimentId" : "12345",
+  "experimentConditions" : ["Control", "Experimental"],
+  "conditionAssignments" : [0.5, 0.5],
+  "assignmentScheme" : "pid",
+  "participantParameters" : {
+    "language" : "string",
+    "groups" : "stringArray",
+    "timezone" : "string"
+  },
+  "debug": false,
+  "languages" : ["English", "Deutsch"],
+  "defaultLanguage" : "English",
+  "phrases" : {
+    "answerValidation" : {
+      "option" : {
+        "English" : "Choosing aborted. Please pick from the given options",
+        "Deutsch" : "Wahl abgebrochen. Bitte wählen Sie nur aus den vorgebenen Optionen"
+      }
+    },
+    "keyboards" : {
+      "singleChoice" : {
+        "English" : "Please pick one from the given options",
+        "Deutsch" : "Bitte wählen Sie eine aus den vorgebenen Optionen"
+      },
+      "multiChoice" : {
+        "English" : "Please choosing as many options as you like. Click Done to finish choosing.",
+        "Deutsch" : "Bitte wählen Sie Ihre gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
+      },
+      "terminateMultipleChoice" : {
+        "English" : "Done",
+        "Deutsch" : "Fertig"
+      },
+      "finishedChoosingReply" : {
+        "English" : "Your choices have been registered",
+        "Deutsch" : "Ihre Wahlen sind vermerkt worden"
+      }
+    }
+  },
+  "questionCategories" : {
+    "setupQuestions": [
+      {
+        "qId": "langQuestion",
+        "text": {
+          "English": "Hello, I am the Reflective Learning Bot! Please select a language\n\nHallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus",
+          "Deutsch": "Hello, I am the Reflective Learning Bot! Please select a language\n\nHallo, ich bin der Reflective-Learning-Roboter. Wählen Sie eine Sprache aus"
+        },
+        "qType": "singleChoice",
+        "options": {
+          "English": [
+            "English",
+            "Deutsch"
+          ],
+          "Deutsch": [
+            "English",
+            "Deutsch"
+          ]
+        },
+        "saveAnswerTo": "language",
+        "nextAction": {
+          "aType": "sendQuestion",
+          "data": "setupQuestions.groupsQuestion"
+        },
+        "start": true
+      },
+      {
+        "qId": "groupsQuestion",
+        "text": {
+          "English": "Thank you for choosing your language\nPlease select the groups you are part of.",
+          "Deutsch": "Danke, dass Sie eine Sprache ausgewählt haben.\nBitte wählen Sie die Gruppen aus, denen Sie angehören."
+        },
+        "qType": "multiChoice",
+        "saveAnswerTo": "groups",
+        "options": {
+          "English": [
+            "Leaders",
+            "Followers",
+            "Janitors",
+            "Monkeys"
+          ],
+          "Deutsch": [
+            "Anleiter",
+            "Folger",
+            "Portier",
+            "Affen"
+          ]
+        },
+        "nextAction": {
+          "aType": "sendQuestion",
+          "data": "setupQuestions.timezoneQuestion"
+        }
+      },
+      {
+        "qId": "timezoneQuestion",
+        "text": {
+          "English": "Please choose your current time zone.",
+          "Deutsch": "Bitte wählen Sie Ihre aktuelle Zeitzone aus."
+        },
+        "qType": "singleChoice",
+        "options": {
+          "English": [
+            "Europe/Berlin",
+            "US/Pacific",
+            "US/Mountain",
+            "US/Central",
+            "US/Eastern"
+          ],
+          "Deutsch": [
+            "Europa/Berlin",
+            "US/Pacific",
+            "US/Mountain",
+            "US/Central",
+            "US/Eastern"
+          ]
+        },
+        "saveAnswerTo": "timezone"
+      }
+    ]
+  }
+}

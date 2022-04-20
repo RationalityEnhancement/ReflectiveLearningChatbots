@@ -37,17 +37,17 @@ function QuestionHandler(config){
         try{
             components = qId.split('.');
         } catch(err) {
-            return { "returnCode" : -1, "data": "Question ID not a string"};
+            return { "returnCode" : -1, "data": "QHandler: Question ID not a string"};
         }
         if(components.length != 2){
-            let errorMsg = "Question ID is of incorrect form or does not exist";
+            let errorMsg = "QHandler: Question ID is of incorrect form or does not exist";
             return returnError(errorMsg)
         }
         const categoryName = components[0];
         const id_ = components[1];
 
         if(!(categoryName in config.questionCategories)){
-            return returnError("Question category " + categoryName + " doesn't exist");
+            return returnError("QHandler: Question category " + categoryName + " doesn't exist");
         }
 
         const category = config.questionCategories[categoryName];
@@ -61,7 +61,7 @@ function QuestionHandler(config){
             }
         }
         if(!selectedQuestion){
-            return returnError("Question with qId " + id_ + " doesn't exist in category " + categoryName)
+            return returnError("QHandler: Question with qId " + id_ + " doesn't exist in category " + categoryName)
         }
         return returnSuccess(selectedQuestion);
 
@@ -108,7 +108,7 @@ function QuestionHandler(config){
 
 
         const languageDepOptionalParams = ["options", "replyMessages"];
-        const otherOptionalParams = ["saveAnswerTo", "nextQuestion"];
+        const otherOptionalParams = ["saveAnswerTo", "nextAction"];
 
         for(let i = 0; i < languageDepOptionalParams.length; i++){
             field = languageDepOptionalParams[i];
@@ -128,13 +128,13 @@ function QuestionHandler(config){
      *
      * @param categoryName the question category from which first question is to be found
      * @param language language in which the question should be presented
-     * @returns {returnCode, data}
+     * @returns {{returnCode: number, data}}
      *          if success, returnCode is 1, data  contains constructedQuestion
      *          if failure, returnCode is -1 data contains errorMsg
      */
     this.getFirstQuestionInCategory = (categoryName, language) => {
         if(!(categoryName in config.questionCategories)){
-            return returnError("Question category " + categoryName + " doesn't exist");
+            return returnError("QHandler: Question category " + categoryName + " doesn't exist");
         }
         const category = config.questionCategories[categoryName];
         let selectedQuestion;
@@ -147,10 +147,20 @@ function QuestionHandler(config){
             }
         }
         if(!selectedQuestion){
-            return returnError("Starting question doesn't exist in category " + categoryName)
+            return returnError("QHandler: Starting question doesn't exist in category " + categoryName)
         }
         let fullId = categoryName + "." + selectedQuestion.qId;
         return this.constructQuestionByID(fullId, language);
+    }
+
+    this.getScheduledQuestions = () => {
+        if(!("scheduledQuestions" in config)){
+            return returnError("QHandler: Scheduled questions not found");
+        }
+        let schQList = config["scheduledQuestions"];
+
+
+
     }
 }
 

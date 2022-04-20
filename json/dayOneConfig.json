@@ -248,12 +248,12 @@
   "scheduledQuestions" : [
     {
       "qId" : "morningQuestions.mainGoal",
-      "atTime" : "13:42",
+      "atTime" : "16:21",
       "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     },
     {
       "qId" : "eveningQuestions.numGoals",
-      "atTime" : "13:43",
+      "atTime" : "16:22",
       "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     }
   ]

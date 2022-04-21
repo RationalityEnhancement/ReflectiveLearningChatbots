@@ -94,7 +94,7 @@ scheduledQuestions :                                    // List of questions tha
 |- [0]                                                  // First question to be scheduled in list
 |  |- qId : "morningQuestions.feelings"                 // Mandatory: Valid <questionCategory>.<qId>
 |  |
-|  |- atTime : "09:00"                                  // Mandatory: time in 24-hr format - "HH:MM"
+|  |- atTime : "10:00"                                  // Mandatory: time in 24-hr format - "HH:MM"
 |  |                                                    //   Question specified in PID asked at this time
 |  |- onDays : ["Mon","Tue","Wed"]                      // Mandatory: Days on which question should be asked
                                                         //   [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
@@ -142,7 +142,7 @@ This experiment config file will result in a chatbot that has the following func
   * Then ask immediately after to type in PID (`setupQuestions.pid`)
     * This will be stored to the `pid` variable of participant parameters
 * After setup questions are complete, questions specified in `scheduledQuestions` are scheduled for the given times.
-  * On Monday, Tuesday, and Wednesday at 09:00, the chatbot will ask the user to select multiple emotions they are feeling.
+  * On Monday, Tuesday, and Wednesday at 10:00, the chatbot will ask the user to select multiple emotions they are feeling.
 
 ![git1](https://user-images.githubusercontent.com/42759570/164409102-dc514ae1-9681-4f9c-a668-42b120cf5e13.png)
 ![git2](https://user-images.githubusercontent.com/42759570/164409111-4a689baf-b3cd-4699-b567-83477c5e6c82.png)

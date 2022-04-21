@@ -56,7 +56,7 @@
         }
       }
     ],
-    "afternoonQuestions": [
+    "morningQuestions": [
       {
         "qId": "feelings",
         "text": {
@@ -82,8 +82,8 @@
   },
   "scheduledQuestions" : [
     {
-      "qId" : "afternoonQuestions.feelings",
-      "atTime" : "15:15",
+      "qId" : "morningQuestions.feelings",
+      "atTime" : "10:00",
       "onDays" : ["Mon", "Tue", "Wed"]
     }
   ],

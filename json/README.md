@@ -131,6 +131,13 @@ phrases                                                 // Mandatory phrases to 
 |  |  |                                                 //   registered (for multiChoice questions)
 |  |  |- English: "Choices registered"          
 |  |  |- Deutsch: "Wahlen erfasst"
+|
+|- schedule :                                           // Phrases related to telling the user about scheduled questions
+|  |                                                    
+|  |- scheduleNotif                                     // Message to user about a question being scheduled, and on which
+|  |  |                                                 //  times and days
+|  |  |- English: "Questions scheduled"            
+|  |  |- Deutsch: "Frage geplant"   
                                                                                   
 ```
 

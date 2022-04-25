@@ -41,13 +41,17 @@ DB_CONNECTION_STRING=mongodb+srv://username:Password@cluster0.iblwy.mongodb.net/
 
 To be able to interact with the bot on Telegram, the bot server (which is defined in this software) must be hosted and running. This can be done on your own computer. This also means that as long as this software is running in your computer, anybody anywhere can interact with your bot. However, if this software is not running on any device, then the bot cannot be interacted with. 
 
-Starting the bot server on your own computer is easy. In the terminal, run the command `npm start`. You can now interact with the bot on Telegram as long as this terminal window is open and the server is still running.
+Starting the bot server on your own computer is easy. In the terminal, run the command `npm run start`. You can now interact with the bot on Telegram as long as this terminal window is open and the server is still running.
 
 ### Interacting with the Bot on Telegram
 
 * Open Telegram and start a chat with the bot username defined by you when you set up the bot.
 * Type `/start` to start chatting!
-
+* Type `/repeat` to have the bot repeat the last question, as long as an answer has not yet been provided.
+* Type `/delete_me` to erase your data from the database
+  * For the experimenter/developer: use this command to start interaction with the bot afresh.
+* Type `/log_part` to log the user information that is stored in the database
+  * This will output to the terminal, where you have run the start command
 More commands coming soon!
 
 ### Defining your Own Experiment

@@ -36,6 +36,12 @@
         "English" : "Your choices have been registered",
         "Deutsch" : "Ihre Wahlen sind erfasst worden"
       }
+    },
+    "schedule" : {
+      "scheduleNotif" : {
+        "English" : "Question scheduled for the following time:",
+        "Deutsch" : "Frage geplant zur folgenden Zeit:"
+      }
     }
   },
   "questionCategories" : {
@@ -248,12 +254,12 @@
   "scheduledQuestions" : [
     {
       "qId" : "morningQuestions.mainGoal",
-      "atTime" : "13:42",
+      "atTime" : "18:32",
       "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     },
     {
       "qId" : "eveningQuestions.numGoals",
-      "atTime" : "13:43",
+      "atTime" : "18:33",
       "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     }
   ]

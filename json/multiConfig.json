@@ -36,6 +36,12 @@
         "English" : "Your choices have been registered",
         "Deutsch" : "Ihre Wahlen sind vermerkt worden"
       }
+    },
+    "schedule" : {
+      "scheduleNotif" : {
+        "English" : "Question scheduled for the following time:",
+        "Deutsch" : "Frage geplant zur folgenden Zeit:"
+      }
     }
   },
   "questionCategories" : {

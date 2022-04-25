@@ -99,6 +99,7 @@ class ScheduleHandler{
     }
     static async scheduleAllQuestions(ctx, config, debug = false){
         const qHandler = new QuestionHandler(config);
+        const participant = await participants.get(ctx.from.id);
         let scheduledQuestionsList = config["scheduledQuestions"];
         let failedQuestions = [];
         let succeededQuestions = [];
@@ -109,8 +110,9 @@ class ScheduleHandler{
                 failedQuestions.push(scheduleObj.data)
             } else if(scheduleObj.returnCode === 1){
                 if(debug) {
-                    await MessageSender.sendMessage(ctx, "Q scheduled for " + scheduledQuestionInfo.atTime +
-                        " on " + scheduledQuestionInfo.onDays.join(', '));
+                    await MessageSender.sendMessage(ctx,
+                        config.phrases.schedule.scheduleNotif[participant.parameters.language]
+                        + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '));
                 }
                 succeededQuestions.push(scheduleObj.data)
             }

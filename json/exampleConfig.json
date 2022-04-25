@@ -111,6 +111,12 @@
         "English" : "Choices registered",
         "Deutsch" : "Wahlen erfasst"
       }
+    },
+    "schedule" : {
+      "scheduleNotif" : {
+        "English" : "Question scheduled",
+        "Deutsch" : "Frage geplant"
+      }
     }
   }
 }

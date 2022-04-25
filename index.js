@@ -87,7 +87,7 @@ let processNextAction = async (ctx) => {
         await sendNextQuestion(ctx, action.data, participant.parameters.language);
         break;
       case "scheduleQuestions":
-        await ScheduleHandler.scheduleAllQuestions(ctx, config, false);
+        await ScheduleHandler.scheduleAllQuestions(ctx, config, true);
         break;
       default:
         console.log("action type not recognized");

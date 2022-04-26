@@ -148,6 +148,7 @@ bot.command('delete_me', async ctx => {
       return;
     }
     let conditionIdx = participant["conditionIdx"];
+    await ScheduleHandler.removeAllJobsForParticipant(ctx.from.id);
     await participants.remove(ctx.from.id);
     await experiments.updateConditionAssignees(config.experimentId, conditionIdx, -1);
     ctx.reply('Successfully deleted all your data. To use the bot again, use /start.');

@@ -10,8 +10,11 @@ Setting up this repository assumes basic knowledge and installation of [Git](htt
 
 ### Database
 
-* Create an account on [MongoDB Cloud](https://www.mongodb.com/cloud), if you don't have one already.
-* Follow instructions to create a new project (free version works as well) and a database within it.
+* Create an account on [MongoDB Cloud](https://www.mongodb.com/cloud), if you don't have one already. 
+ * Follow instructions to create a new project in MongoDB Atlas.
+* If you already have an account, log in to MongoDB Cloud and navigate to MongoDB Atlas. 
+ * Navigate to your organization, where you will find an overview of all your projects. Click on "New Project" in the top right.
+* Follow instructions to create a database cluster within this project. The free (shared) version with default settings will work as well.
 * You will be asked to create a user+password to ensure restricted access to the database. Once this is done, creating the cluster may take a few minutes.
 * Navigate to the 'Clusters' tab and click on 'CONNECT'. Choose the third option (MongoDB Compass), and copy the connection string starting with _mongodb+srv://_.
 * The connection string will have a part _\<password\>_ which should be replaced with the password of the user created above. Save this connection string for later.

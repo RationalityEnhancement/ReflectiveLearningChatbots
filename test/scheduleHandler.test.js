@@ -450,6 +450,57 @@ describe('Scheduling one question', () =>{
             expect(result).to.equal(0);
         });
     })
+    describe('Overriding scheduling time for intervals', () => {
+        let testScheduledQs = [{
+            qId : "test1",
+            atTime : "09:00",
+            onDays : ["Mon", "Tue"]
+        }, {
+            qId : "test2",
+            atTime : "09:59",
+            onDays : ["Mon", "Tue"]
+        },{
+            qId : "test3",
+            atTime : "23:59",
+            onDays : ["Mon", "Tue"]
+        }
+        ];
+        let testDate = new Date();
+        let allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        it('Should schedule normally', ()=>{
+            testDate.setHours(9);
+            testDate.setMinutes(0);
+            ScheduleHandler.overrideScheduleForIntervals(testScheduledQs, testDate, 3);
+            expect(testScheduledQs[0].atTime).to.equal("09:03");
+            expect(testScheduledQs[0].onDays).to.eql(allDays);
+            expect(testScheduledQs[1].atTime).to.equal("09:06");
+            expect(testScheduledQs[1].onDays).to.eql(allDays);
+            expect(testScheduledQs[2].atTime).to.equal("09:09");
+            expect(testScheduledQs[2].onDays).to.eql(allDays);
+        })
+        it('Should roll over the hour', ()=>{
+            testDate.setHours(9);
+            testDate.setMinutes(58);
+            ScheduleHandler.overrideScheduleForIntervals(testScheduledQs, testDate, 3);
+            expect(testScheduledQs[0].atTime).to.equal("10:01");
+            expect(testScheduledQs[0].onDays).to.eql(allDays);
+            expect(testScheduledQs[1].atTime).to.equal("10:04");
+            expect(testScheduledQs[1].onDays).to.eql(allDays);
+            expect(testScheduledQs[2].atTime).to.equal("10:07");
+            expect(testScheduledQs[2].onDays).to.eql(allDays);
+        })
+        it('Should roll over the day', ()=>{
+            testDate.setHours(23);
+            testDate.setMinutes(58);
+            ScheduleHandler.overrideScheduleForIntervals(testScheduledQs, testDate, 3);
+            expect(testScheduledQs[0].atTime).to.equal("00:01");
+            expect(testScheduledQs[0].onDays).to.eql(allDays);
+            expect(testScheduledQs[1].atTime).to.equal("00:04");
+            expect(testScheduledQs[1].onDays).to.eql(allDays);
+            expect(testScheduledQs[2].atTime).to.equal("00:07");
+            expect(testScheduledQs[2].onDays).to.eql(allDays);
+        })
+    })
 
 
 });

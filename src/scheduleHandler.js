@@ -109,10 +109,11 @@ class ScheduleHandler{
             if(scheduleObj.returnCode === -1){
                 failedQuestions.push(scheduleObj.data)
             } else if(scheduleObj.returnCode === 1){
-                if(debug) {
+                // TODO: send a message about the scheduled messages anyway, or only when debug mode?
+                if(debug || !debug) {
                     await MessageSender.sendMessage(ctx,
                         config.phrases.schedule.scheduleNotif[participant.parameters.language]
-                        + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '));
+                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '));
                 }
                 succeededQuestions.push(scheduleObj.data)
             }
@@ -147,6 +148,29 @@ class ScheduleHandler{
             returnCode : -1,
             data : data
         };
+    }
+    // Schedule questions at regular intervals from current time
+    // Ignores original scheduled questions for debugging purposes
+    static overrideScheduleForIntervals(scheduledQuestions, startTime, interval){
+        let now = startTime;
+        let minutes = now.getMinutes();
+        let hours = now.getHours();
+        for(let i = 0; i < scheduledQuestions.length; i++) {
+            let qHours = hours;
+            let qMins = minutes + ((i + 1) * interval);
+            if (qMins >= 60) {
+                qHours += 1;
+                qMins -= 60;
+            }
+            qHours %= 24;
+            let timeString = (qHours < 10 ? '0' : '') + qHours + ':' + (qMins < 10 ? '0' : '') + (qMins);
+            let newSchedObj = {
+                qId: scheduledQuestions[i].qId,
+                atTime: timeString,
+                onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            };
+            scheduledQuestions[i] = newSchedObj;
+        }
     }
     static buildRecurrenceRule(questionInfo){
         let scheduleHours, scheduleMins;

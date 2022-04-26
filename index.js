@@ -74,7 +74,6 @@ let sendNextQuestion = async (ctx, nextQuestionId, language) => {
 
 }
 
-
 // Process what happens next based on the nextAction of the question
 let processNextAction = async (ctx) => {
   let participant = await getParticipant(ctx)
@@ -87,7 +86,12 @@ let processNextAction = async (ctx) => {
         await sendNextQuestion(ctx, action.data, participant.parameters.language);
         break;
       case "scheduleQuestions":
-        await ScheduleHandler.scheduleAllQuestions(ctx, config, true);
+        // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
+        let debug = !!config.debug;
+        if(debug){
+          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, new Date(), 1);
+        }
+        await ScheduleHandler.scheduleAllQuestions(ctx, config, debug);
         break;
       default:
         console.log("action type not recognized");

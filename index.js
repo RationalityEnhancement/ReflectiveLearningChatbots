@@ -12,8 +12,8 @@ const ScheduleHandler = require('./src/scheduleHandler');
 const express = require('express');
 const expressApp = express();
 const BOT_TOKEN =  process.env.BOT_TOKEN;
-const PORT = process.env.PORT || 3000;
-const URL = process.env.URL || "https://glacial-fjord-21996.herokuapp.com"
+const PORT = process.env.PORT || 5000;
+const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
 
 const {
   assignToCondition

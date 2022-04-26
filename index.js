@@ -19,7 +19,7 @@ const {
   assignToCondition
 } = require('./src/experimentUtils')
 
-
+const local = process.argv[2];
 
 
 // Validate the config file to ensure that it has all the necessary information
@@ -382,12 +382,20 @@ console.log('Listening to humans');
 // bot.telegram.setWebhook(`${URL}/bot${BOT_TOKEN}`);
 // expressApp.use(bot.webhookCallback(`/bot${BOT_TOKEN}`));
 
-bot.launch({
-  webhook: {
-    domain: URL,
-    port: PORT
-  }
-})
+if(!!local && local === "-l"){
+  console.log('Local launch')
+  bot.launch();
+} else {
+  console.log('Server launch');
+  bot.launch({
+    webhook: {
+      domain: URL,
+      port: PORT
+    }
+  });
+}
+
+
 // bot.launch();
 /**
 // handle /delete_me command

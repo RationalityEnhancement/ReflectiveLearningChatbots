@@ -28,8 +28,9 @@ Setting up this repository assumes basic knowledge and installation of [Git](htt
 
 ### Software Setup
 * Download and install [Node.js](https://nodejs.org/en/download/releases/). If possible, download version 17.9.0. This would minimize compatibility issues, as the chatbot software in this repository is built on that version.
-  *   (TODO : add more specific information about how to download specific version)
-* Use git to clone this repository into a local directory of your choice. Navigate to this directory.
+  *   Windows: download file "node-v17.9.0-x86.msi"
+  *   macOS: download file "node-v17.9.0.pkg"
+* Use git to clone this repository into a local directory of your choice. Navigate to the directory in which you have cloned this repository.
 * Open a [terminal](https://geekiam.io/what-is-a-terminal-window/) of your choice.
 * Run the command `npm install`
 * Copy the file [.env_template](./.env_template) and paste it in the same directory. Rename this to "_.env_" (without quotes).

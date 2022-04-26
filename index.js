@@ -98,7 +98,7 @@ let processNextAction = async (ctx) => {
         // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
         let debug = !!config.debug;
         if(debug){
-          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, new Date(), 1);
+          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, new Date(), 3);
         }
         await ScheduleHandler.scheduleAllQuestions(ctx, config, debug);
         break;

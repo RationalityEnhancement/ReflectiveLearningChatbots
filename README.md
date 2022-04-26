@@ -22,13 +22,15 @@ Setting up this repository assumes basic knowledge and installation of [Git](htt
 
 ### Creating a Bot
 
-* Download and install Telegram
+* Download and install Telegram. Using the Desktop client or Website app will make copying information easier.
 * Start a chat with the bot [@BotFather](https://t.me/botfather)
-* Follow the instructions to name your bot, etc., and obtain the 'bot token'. Save this bot token for later.
+* Follow the instructions to name your bot, etc., and obtain the 'bot token' (HTTP API Token). Save this bot token for later.
 
 ### Software Setup
-* Download and install [Node.js](https://nodejs.org/en/download/current/). If possible, download version 17.9.0. This would minimize compatibility issues, as the chatbot software in this repository is built on that version.
-* Use git to clone this repository into a local directory of your choice. Navigate to this directory.
+* Download and install [Node.js](https://nodejs.org/en/download/releases/). If possible, download version 17.9.0. This would minimize compatibility issues, as the chatbot software in this repository is built on that version.
+  *   Windows: download file "node-v17.9.0-x86.msi"
+  *   macOS: download file "node-v17.9.0.pkg"
+* Use git to clone this repository into a local directory of your choice. Navigate to the directory in which you have cloned this repository.
 * Open a [terminal](https://geekiam.io/what-is-a-terminal-window/) of your choice.
 * Run the command `npm install`
 * Copy the file [.env_template](./.env_template) and paste it in the same directory. Rename this to "_.env_" (without quotes).

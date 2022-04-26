@@ -9,17 +9,26 @@ const { PIDtoConditionMap } = require('./json/PIDCondMap')
 const MessageSender = require('./src/messageSender')
 const QuestionHandler = require('./src/questionHandler');
 const ScheduleHandler = require('./src/scheduleHandler');
+const express = require('express');
+const expressApp = express();
+const BOT_TOKEN =  process.env.BOT_TOKEN;
+const PORT = process.env.PORT || 3000;
+const URL = process.env.URL || "https://glacial-fjord-21996.herokuapp.com"
 
 const {
   assignToCondition
 } = require('./src/experimentUtils')
+
+
+
 
 // Validate the config file to ensure that it has all the necessary information
 // This throws an error and aborts execution if there is something missing/wrong
 // checkConfig();
 
 const qHandler = new QuestionHandler(config);
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const bot = new Telegraf(BOT_TOKEN);
+
 
 //----------------------
 //--- database setup ---
@@ -369,7 +378,17 @@ bot.on('text', async ctx => {
 
 
 console.log('Listening to humans');
-bot.launch();
+
+// bot.telegram.setWebhook(`${URL}/bot${BOT_TOKEN}`);
+// expressApp.use(bot.webhookCallback(`/bot${BOT_TOKEN}`));
+
+bot.launch({
+  webhook: {
+    domain: URL,
+    port: PORT
+  }
+})
+// bot.launch();
 /**
 // handle /delete_me command
 bot.command('delete_me', ctx => {

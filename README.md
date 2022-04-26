@@ -11,9 +11,9 @@ Setting up this repository assumes basic knowledge and installation of [Git](htt
 ### Database
 
 * Create an account on [MongoDB Cloud](https://www.mongodb.com/cloud), if you don't have one already. 
- * Follow instructions to create a new project in MongoDB Atlas.
+  * Follow instructions to create a new project in MongoDB Atlas.
 * If you already have an account, log in to MongoDB Cloud and navigate to MongoDB Atlas. 
- * Navigate to your organization, where you will find an overview of all your projects. Click on "New Project" in the top right.
+  * Navigate to your organization, where you will find an overview of all your projects. Click on "New Project" in the top right.
 * Follow instructions to create a database cluster within this project. The free (shared) version with default settings will work as well.
 * You will be asked to create a user+password to ensure restricted access to the database. Once this is done, creating the cluster may take a few minutes.
 * Navigate to the 'Clusters' tab and click on 'CONNECT'. Choose the third option (MongoDB Compass), and copy the connection string starting with _mongodb+srv://_.
@@ -29,7 +29,7 @@ Setting up this repository assumes basic knowledge and installation of [Git](htt
 ### Software Setup
 * Download and install [Node.js](https://nodejs.org/en/download/current/). If possible, download version 17.9.0. This would minimize compatibility issues, as the chatbot software in this repository is built on that version.
 * Use git to clone this repository into a local directory of your choice. Navigate to this directory.
-* Open a [terminal](https://en.wikipedia.org/wiki/Terminal_emulator) of your choice.
+* Open a [terminal](https://geekiam.io/what-is-a-terminal-window/) of your choice.
 * Run the command `npm install`
 * Copy the file [.env_template](./.env_template) and paste it in the same directory. Rename this to "_.env_" (without quotes).
 * Open the _.env_ file with a text editor, enter the bot token and the database connection strings respectively after the '=' sign, and save this file. It should now look similar to this:

@@ -14,11 +14,11 @@ Setting up this repository assumes basic knowledge and installation of [Git](htt
   * Follow instructions to create a new project in MongoDB Atlas.
 * If you already have an account, log in to MongoDB Cloud and navigate to MongoDB Atlas. 
   * Navigate to your organization, where you will find an overview of all your projects. Click on "New Project" in the top right.
-* Follow instructions to create a database cluster within this project. The free (shared) version with default settings will work as well.
+* Follow instructions to create a database cluster within this project. The free (shared) version with default settings will work.
 * You will be asked to create a user+password to ensure restricted access to the database. Once this is done, creating the cluster may take a few minutes.
-* Navigate to the 'Clusters' tab and click on 'CONNECT'. Choose the third option (MongoDB Compass), and copy the connection string starting with _mongodb+srv://_.
-* The connection string will have a part _\<password\>_ which should be replaced with the password of the user created above. Save this connection string for later.
-* On the left, choose 'Network Access', click 'ADD IP ADDRESS', and add the address 0.0.0.0. This will ensure that the database is accessible by any user that has the user password
+* Navigate to the 'Database' tab under 'Deployment' and click on 'Connect' next to your new cluster. Choose the third option (MongoDB Compass), and copy the connection string starting with _mongodb+srv://_ under step (2). Downloading MongoDB Compass (step 1) is not necessary.
+* The connection string will have a part _\<password\>_ which should be replaced with the password of the user created above. If the database has multiple users, then the _\<user\>_ part will also have to be replaced with the corresponding username created when the cluster is created. Save this connection string for later.
+* On the left, choose 'Network Access', click 'ADD IP ADDRESS', and add the address "0.0.0.0" without quotes or click 'Allow Access from Anywhere' to automatically do this. This will ensure that the database is accessible by anyone that has the database connection string.
 
 ### Creating a Bot
 
@@ -33,7 +33,10 @@ Setting up this repository assumes basic knowledge and installation of [Git](htt
 * Use git to clone this repository into a local directory of your choice. Navigate to the directory in which you have cloned this repository.
 * Open a [terminal](https://geekiam.io/what-is-a-terminal-window/) of your choice.
 * Run the command `npm install`
-* Copy the file [.env_template](./.env_template) and paste it in the same directory. Rename this to "_.env_" (without quotes).
+* Copy the file [.env_template](./.env_template) to another file in the same directory with the name "_.env_" (without quotes). 
+  * macOS Terminal - `cp .env_template .env`
+  * Windows Command Prompt - `copy .env_template .env`
+  * This file may be hidden, so you would not be able to see it immediately. `ls -a` on macOS Terminal and `dir /a:h` on Windows Command Prompt will reveal these files.
 * Open the _.env_ file with a text editor, enter the bot token and the database connection strings respectively after the '=' sign, and save this file. It should now look similar to this:
 
 ```
@@ -61,7 +64,7 @@ More commands coming soon!
 
 ### Defining your Own Experiment
 
-Head on over to [this page](/json) and take note of the instructions there!
+Head on over to [this page](/json/README.md) and take note of the instructions there!
 
 ### Deploying the Server to Heroku
 

@@ -1,7 +1,7 @@
 const { Telegraf, Markup } = require('telegraf');
 const config = require('../json/config.json');
 const participants = require('./apiControllers/participantApiController');
-const InputOptions = require('./keyboards');
+const InputOptions = require('./inputOptions');
 
 /**
  * Sends a question to the bot user based on the type of question

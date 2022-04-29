@@ -64,6 +64,9 @@ class ScheduleHandler{
         }
         return this.returnSuccess(jobId)
     }
+    static async rescheduleAllOperations(){
+
+    }
     // TODO: Add to reschedule for all participants.
     static async rescheduleAllOperationsForID(ctx, config){
         let participant = await participants.get(ctx.from.id);

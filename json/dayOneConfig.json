@@ -9,7 +9,7 @@
     "pId" : "string",
     "timezone" : "string"
   },
-  "debug": false,
+  "debug": true,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {
@@ -49,8 +49,8 @@
       {
         "qId" : "langQuestion",
         "text" : {
-          "English" : "Hello, I am the Reflective Learning Bot! Which language do you prefer?\n\nHallo, ich bin der Reflective-Learning-Roboter. Welche Sprache bevorzugen Sie?",
-          "Deutsch" : "Hello, I am the Reflective Learning Bot! Which language do you prefer?\n\nHallo, ich bin der Reflective-Learning-Roboter. Welche Sprache bevorzugen Sie"
+          "English" : "Hello, I am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
+          "Deutsch" : "Hello, I am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
         },
         "qType" : "singleChoice",
         "options" : {
@@ -200,8 +200,8 @@
         },
         "qType" : "multiChoice",
         "options" : {
-          "English" : ["Sad", "Frustrated", "Discontent", "Content", "Happy", "Proud", "Excited"],
-          "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Zufrieden", "Froh", "Stolz", "Begeistert"]
+          "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
+          "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
         },
         "nextAction" : {
           "aType" : "sendQuestion",
@@ -229,14 +229,26 @@
         "qType" : "freeform",
         "nextAction" : {
           "aType" : "sendQuestion",
-          "data" : "eveningQuestions.plan"
+          "data" : "eveningQuestions.planWhat"
         }
       },
       {
-        "qId" : "plan",
+        "qId" : "planWhat",
         "text" : {
-          "English" : "What concretely will you do will you do differently tomorrow, and when will you do it?",
-          "Deutsch" : "Was konkretes werden Sie morgen anders tun, und wann?"
+          "English" : "What concretely will you do will you do differently tomorrow?",
+          "Deutsch" : "Was konkretes werden Sie morgen anders tun?"
+        },
+        "qType" : "freeform",
+        "nextAction" : {
+          "aType" : "sendQuestion",
+          "data" : "eveningQuestions.planWhen"
+        }
+      },
+      {
+        "qId" : "planWhen",
+        "text" : {
+          "English" : "When will you do it?",
+          "Deutsch" : "Wann werden Sie es tun?"
         },
         "qType" : "freeform",
         "nextAction" : {
@@ -252,7 +264,7 @@
         },
         "qType" : "freeform",
         "replyMessages" : {
-          "English" : ["Good reflecting! See you tomorrow."],
+          "English" : ["Well reflected! See you tomorrow."],
           "Deutsch" : ["Gut reflektiert! Bis morgen."]
         }
       }

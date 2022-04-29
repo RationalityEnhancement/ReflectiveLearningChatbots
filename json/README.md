@@ -2,7 +2,15 @@
 
 _(up to date for first prototype)_
 
-An experiment is completely defined by a JSON file. This will have to be named "_config.json_" without quotes. The remainder of this description will show you the mandatory and optional features an experiment requires to run.
+An experiment is completely defined by a JSON file. This will have to be named "_config.json_" without quotes. This file will contain the following information that has to be provided by the experimenter: 
+
+* Experiment information - name, unique identifier, languages available, parameters to store for each participant
+* Questions to ask the participant. Experimenter specifies different categories of questions, each of which is a list of questions. A mandatory category is 'setupQuestions', which sets some mandatory information of the participant such as language, timezone, participant ID, etc.
+  * Each question category is a list of questions
+    * Each questions is a JSON object containing a unique identifier for the question, text of the question, type of input expected from the user, and which question to ask next in sequence among other things
+* Phrases that are required to be translated into every available language for the sake of bot functionality. No categories here should be added or removed. The existing phrases should simply be translated into all the possible languages the bot should offer.
+
+The remainder of this description will show you the mandatory and optional features an experiment requires to run.
 
 Follow this documentation along with an [example experiment configuration](./exampleConfig.json) to see how the following example would translate into an actual document. 
 

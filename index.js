@@ -44,10 +44,10 @@ mongo.connect(process.env.DB_CONNECTION_STRING, { useNewUrlParser: true, useUnif
 //----------------------
 
 // Fetch the participant with error handling
-let getParticipant = async (ctx) => {
+let getParticipant = async (chatId) => {
   let participant;
   try{
-    participant = await participants.get(ctx.from.id);
+    participant = await participants.get(chatId);
     return participant;
   } catch(err){
     console.log('Failed to get participant info from DB');
@@ -68,7 +68,7 @@ let getExperiment = async (experimentId) => {
 }
 
 // Send the next question
-let sendNextQuestion = async (ctx, nextQuestionId, language) => {
+let sendNextQuestion = async (bot, chatId, nextQuestionId, language) => {
   // Get the updated participant
 
   let nextQObj = qHandler.constructQuestionByID(nextQuestionId, language);
@@ -76,29 +76,29 @@ let sendNextQuestion = async (ctx, nextQuestionId, language) => {
     throw "ERROR: " + nextQObj.data;
   } else {
     let nextQ = nextQObj.data;
-    await MessageSender.sendQuestion(ctx, nextQ);
+    await MessageSender.sendQuestion(bot, chatId, nextQ);
   }
 
 }
 
 // Process what happens next based on the nextAction of the question
-let processNextAction = async (ctx) => {
-  let participant = await getParticipant(ctx)
+let processNextAction = async (bot, chatId) => {
+  let participant = await getParticipant(chatId)
   let currentQuestion = participant.currentQuestion;
 
   if(!!currentQuestion.nextAction.aType){
     let action = currentQuestion.nextAction;
     switch(action["aType"]){
       case "sendQuestion":
-        await sendNextQuestion(ctx, action.data, participant.parameters.language);
+        await sendNextQuestion(bot, chatId, action.data, participant.parameters.language);
         break;
       case "scheduleQuestions":
         // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
         let debug = !!config.debug;
         if(debug){
-          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, new Date(), 3);
+          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, new Date(), 1);
         }
-        await ScheduleHandler.scheduleAllQuestions(ctx, config, debug);
+        await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
         break;
       default:
         console.log("action type not recognized");
@@ -162,7 +162,7 @@ bot.command('delete_me', async ctx => {
 
 // Repeat a question that has an outstanding answer
 bot.command('repeat', async ctx => {
-  let participant = await getParticipant(ctx);
+  let participant = await getParticipant(ctx.from.id);
   if(participant.currentState === "answering"){
     await participants.eraseCurrentAnswer(ctx.from.id);
     await participants.updateField(ctx.from.id, "currentState", "awaitingAnswer");
@@ -170,7 +170,7 @@ bot.command('repeat', async ctx => {
   }
   if(participant.currentState === "awaitingAnswer"){
     let currentQuestion = participant.currentQuestion;
-    await MessageSender.sendQuestion(ctx, currentQuestion)
+    await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
   }
 
 })
@@ -192,7 +192,7 @@ bot.start(async ctx => {
   }
 
   // Check if the participant has already been added
-  let participant = await getParticipant(ctx);
+  let participant = await getParticipant(ctx.from.id);
 
   // If not, add and initialize the participant with basic information
   if(!participant){
@@ -214,7 +214,7 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      await MessageSender.sendQuestion(ctx, curQuestion);
+      await MessageSender.sendQuestion(bot, ctx.from.id, curQuestion);
     } catch(err){
       console.log('Failed to send language question');
       console.error(err);
@@ -229,7 +229,7 @@ bot.on('text', async ctx => {
   if(messageText.charAt[0] === '/') return;
 
   // Get the participant
-  let participant = await getParticipant(ctx);
+  let participant = await getParticipant(ctx.from.id);
 
   // Participant has not started yet
   if(!participant) return;
@@ -267,17 +267,17 @@ bot.on('text', async ctx => {
           await participants.updateField(ctx.from.id, "currentState", "answerReceived");
 
           // Send replies to the answer, if any
-          await MessageSender.sendReplies(ctx, currentQuestion);
+          await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
 
           // Send the next question, if any
-          await processNextAction(ctx);
+          await processNextAction(bot, ctx.from.id);
           return;
 
         } else {
           // TODO: change this to add validation prompts to the question?
           // If the answer is not valid, resend the question.
-          await MessageSender.sendMessage(ctx, config.phrases.answerValidation.option[participant.parameters.language]);
-          await MessageSender.sendQuestion(ctx, currentQuestion)
+          await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.answerValidation.option[participant.parameters.language]);
+          await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
         } 
         break;
 
@@ -304,16 +304,16 @@ bot.on('text', async ctx => {
           await participants.updateField(ctx.from.id, "currentState", "answerReceived");
 
           // Send replies to the answer, if any
-          await MessageSender.sendReplies(ctx, currentQuestion);
+          await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
 
           // Send the next question, if any
-          await processNextAction(ctx);
+          await processNextAction(bot, ctx.from.id);
           return;
         } else {
           // TODO: change this to add validation prompts to the question?
           // If the answer is not valid, resend the question.
-          await MessageSender.sendMessage(ctx, config.phrases.answerValidation.option[participant.parameters.language]);
-          await MessageSender.sendQuestion(ctx, currentQuestion)
+          await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.answerValidation.option[participant.parameters.language]);
+          await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
         }
         break;
 
@@ -331,8 +331,8 @@ bot.on('text', async ctx => {
         };
         await participants.addAnswer(ctx.from.id, answer);
         await participants.updateField(ctx.from.id, "currentState", "answerReceived");
-        await MessageSender.sendReplies(ctx, currentQuestion);
-        await processNextAction(ctx);
+        await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
+        await processNextAction(bot, ctx.from.id);
         return;
 
       default:
@@ -357,18 +357,18 @@ bot.on('text', async ctx => {
         await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, participant.currentAnswer);
       }
 
-      await MessageSender.sendMessage(ctx, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
+      await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
       // Send replies to the answer, if any
-      await MessageSender.sendReplies(ctx, currentQuestion);
+      await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
 
       // Send the next question, if any
-      await processNextAction(ctx);
+      await processNextAction(bot, ctx.from.id);
 
     } else {
       // TODO: Don't restart if wrong option entered?
       // If the answer is not valid, resend the question.
-      await MessageSender.sendMessage(ctx, config.phrases.answerValidation.option[participant.parameters.language]);
-      await MessageSender.sendQuestion(ctx, currentQuestion)
+      await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.answerValidation.option[participant.parameters.language]);
+      await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
     }
   }
   

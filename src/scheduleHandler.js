@@ -68,8 +68,8 @@ class ScheduleHandler{
 
     }
     // TODO: Add to reschedule for all participants.
-    static async rescheduleAllOperationsForID(ctx, config){
-        let participant = await participants.get(ctx.from.id);
+    static async rescheduleAllOperationsForID(bot, chatId, config){
+        let participant = await participants.get(chatId);
         let scheduledOperations = participant.scheduledOperations;
         let scheduledQuestions = scheduledOperations["questions"];
         const qHandler = new QuestionHandler(config);
@@ -82,7 +82,7 @@ class ScheduleHandler{
                 atTime : jobInfo.atTime,
                 onDays : jobInfo.onDays
             }
-            let returnObj = await this.scheduleOneQuestion(ctx, qHandler, questionInfo, false);
+            let returnObj = await this.scheduleOneQuestion(bot, chatId, qHandler, questionInfo, false);
             if(returnObj.returnCode === -1){
                 failedQuestions.push(returnObj.data);
             } else if(returnObj.returnCode === 1){
@@ -100,21 +100,21 @@ class ScheduleHandler{
         }
         return this.returnSuccess(succeededQuestions)
     }
-    static async scheduleAllQuestions(ctx, config, debug = false){
+    static async scheduleAllQuestions(bot, chatId, config, debug = false){
         const qHandler = new QuestionHandler(config);
-        const participant = await participants.get(ctx.from.id);
+        const participant = await participants.get(chatId);
         let scheduledQuestionsList = config["scheduledQuestions"];
         let failedQuestions = [];
         let succeededQuestions = [];
         for(let i = 0; i < scheduledQuestionsList.length; i++){
             let scheduledQuestionInfo = scheduledQuestionsList[i];
-            let scheduleObj = await this.scheduleOneQuestion(ctx, qHandler, scheduledQuestionInfo,true);
+            let scheduleObj = await this.scheduleOneQuestion(bot, chatId, qHandler, scheduledQuestionInfo,true);
             if(scheduleObj.returnCode === -1){
                 failedQuestions.push(scheduleObj.data)
             } else if(scheduleObj.returnCode === 1){
                 // TODO: send a message about the scheduled messages anyway, or only when debug mode?
                 if(debug || !debug) {
-                    await MessageSender.sendMessage(ctx,
+                    await MessageSender.sendMessage(bot, chatId,
                         config.phrases.schedule.scheduleNotif[participant.parameters.language]
                         + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '));
                 }
@@ -223,7 +223,7 @@ class ScheduleHandler{
         await participants.addScheduledQuestion(chatId, jobInfo);
 
     }
-    static async scheduleOneQuestion(ctx, qHandler, questionInfo, isNew = true){
+    static async scheduleOneQuestion(bot, chatId, qHandler, questionInfo, isNew = true){
         if(!("qId" in questionInfo)){
             return this.returnFailure("Scheduler: Question ID not specified")
         }
@@ -232,10 +232,10 @@ class ScheduleHandler{
             return this.returnFailure(recurrenceRuleObj.data)
         }
         let recRule = recurrenceRuleObj.data;
-        let jobId = ctx.from.id + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
+        let jobId = chatId + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
 
         // Assuming error handling in API Controller
-        let participant = await participants.get(ctx.from.id);
+        let participant = await participants.get(chatId);
         let questionObj = qHandler.constructQuestionByID(questionInfo.qId, participant.parameters.language);
         if(questionObj.returnCode === -1) {
             return this.returnFailure(questionObj.data);
@@ -244,10 +244,10 @@ class ScheduleHandler{
         let job;
         try{
             job = scheduler.scheduleJob(recRule, async function(){
-                await MessageSender.sendQuestion(ctx, question);
+                await MessageSender.sendQuestion(bot, chatId, question);
             })
             this.scheduledOperations["questions"][jobId] = job;
-            if(isNew) await this.writeOperationInfoToDB(ctx.from.id, jobId, questionInfo);
+            if(isNew) await this.writeOperationInfoToDB(chatId, jobId, questionInfo);
         } catch(err){
             let errorMsg = "Scheduler: Unable to schedule with given params"
             return this.returnFailure(errorMsg);

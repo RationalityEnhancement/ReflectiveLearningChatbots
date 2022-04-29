@@ -1,4 +1,3 @@
-const { Telegraf, Markup } = require('telegraf');
 const config = require('../json/config.json');
 const participants = require('./apiControllers/participantApiController');
 const InputOptions = require('./inputOptions');
@@ -7,49 +6,66 @@ const InputOptions = require('./inputOptions');
  * Sends a question to the bot user based on the type of question
  * and the text as specified in the question object (see questionHandler.js)
  *
- * @param ctx current telegram context
+ * @param bot current telegram bot instance
+ * @param chatId telegram chatId of user to send message to
  * @param question question object
  * @returns {Promise<void>}
  */
-module.exports.sendQuestion = async (ctx, question) => {
-    let participant = await participants.get(ctx.from.id);
+module.exports.sendQuestion = async (bot, chatId, question) => {
+    let participant = await participants.get(chatId);
     let language = participant.parameters.language;
     let delayMs = 300;
     switch(question.qType){
         case 'singleChoice':
-            await ctx.replyWithHTML(question.text, InputOptions.removeKeyboard());
+            await bot.telegram.sendMessage(chatId, question.text, {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
             await new Promise(res => {
                 setTimeout(res, delayMs)
             });
-            await ctx.replyWithHTML(config.phrases.keyboards.singleChoice[language], InputOptions.singleChoice(question.options));
+            await bot.telegram.sendMessage(chatId, config.phrases.keyboards.singleChoice[language], {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.singleChoice(question.options).reply_markup
+            });
             break;
         case 'multiChoice':
-            await ctx.replyWithHTML(question.text, InputOptions.removeKeyboard());
+            await bot.telegram.sendMessage(chatId, question.text, {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
             await new Promise(res => {
                 setTimeout(res, delayMs)
             });
-            await ctx.replyWithHTML(config.phrases.keyboards.multiChoice[language], InputOptions.multiChoice(question.options, language));
+            await bot.telegram.sendMessage(chatId, config.phrases.keyboards.multiChoice[language], {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.multiChoice(question.options, language).reply_markup
+            });
             break;
         case 'freeform':
-            await ctx.replyWithHTML(question.text, InputOptions.removeKeyboard());
+            await bot.telegram.sendMessage(chatId, question.text, {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
             break;
         default:
             throw "Message Sender: Question type not recognized"
     }
-    await participants.updateField(ctx.from.id, 'currentState', 'awaitingAnswer');
-    await participants.eraseCurrentAnswer(ctx.from.id)
-    await participants.updateField(ctx.from.id, 'currentQuestion', question);
+    await participants.updateField(chatId, 'currentState', 'awaitingAnswer');
+    await participants.eraseCurrentAnswer(chatId)
+    await participants.updateField(chatId, 'currentQuestion', question);
 }
 
 /**
  * Sends list of replies from question.replyMessages, with delay in between
  * each message
  *
- * @param ctx current telegram context
+ * @param bot current telegram bot instance
+ * @param chatId chatId of user to send message to
  * @param question question object
  * @returns {Promise<*>}
  */
-module.exports.sendReplies = async (ctx, question) => {
+module.exports.sendReplies = async (bot, chatId, question) => {
 	if(!question.replyMessages) return question;
 
     // TODO: Set reply delay based on length of message?
@@ -60,7 +76,10 @@ module.exports.sendReplies = async (ctx, question) => {
         await new Promise(res => {
             setTimeout(res, delayMs)
         });
-		await ctx.replyWithHTML(reply, InputOptions.removeKeyboard());
+		await bot.telegram.sendMessage(chatId, reply, {
+            parse_mode: "HTML",
+            reply_markup: InputOptions.removeKeyboard().reply_markup
+        });
 
 	}
     await new Promise(res => {
@@ -68,6 +87,17 @@ module.exports.sendReplies = async (ctx, question) => {
     });
 }
 
-module.exports.sendMessage = async (ctx, message) => {
-    await ctx.replyWithHTML(message, InputOptions.removeKeyboard());
+/**
+ * Sends simple message
+ *
+ * @param bot current telegram bot instance
+ * @param chatId chatId of user to send message to
+ * @param message message to be sent
+ * @returns {Promise<*>}
+ */
+module.exports.sendMessage = async (bot, chatId, message) => {
+    await bot.telegram.sendMessage(chatId, message, {
+        parse_mode: "HTML",
+        reply_markup: InputOptions.removeKeyboard().reply_markup
+    });
 }

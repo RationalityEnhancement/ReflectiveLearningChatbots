@@ -12,6 +12,7 @@ const ScheduleHandler = require('./src/scheduleHandler');
 const BOT_TOKEN =  process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
+const moment = require('moment-timezone')
 
 const {
   assignToCondition
@@ -97,7 +98,8 @@ let processNextAction = async (bot, chatId) => {
         // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
         let debug = !!config.debug;
         if(debug){
-          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, new Date(), 1);
+          let now = moment.tz(participant.parameters.tz);
+          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, now, 1);
         }
         await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
         break;

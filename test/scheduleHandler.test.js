@@ -17,11 +17,14 @@ const qHandler = new QuestionHandler(testConfig);
 const ScheduleHandler = require('../src/scheduleHandler')
 
 const testId = 123;
-const testCtx = {
-    from : {
-        id: testId
+const testBot = {
+    telegram: {
+        sendMessage: () => {
+            return;
+        }
     }
 };
+
 describe('Scheduling one question', () =>{
 
     describe('Connecting to DB',  () => {
@@ -62,7 +65,7 @@ describe('Scheduling one question', () =>{
 
         let returnObj, returnJob;
         it('Should succeed',  async () => {
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testCtx, qHandler, questionInfo, true)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, true)
             expect(returnObj.returnCode).to.equal(1);
         });
         it('Should return jobId and job',  () => {
@@ -103,7 +106,7 @@ describe('Scheduling one question', () =>{
 
         let returnObj, returnJob;
         it('Should succeed',  async () => {
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testCtx, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
             expect(returnObj.returnCode).to.equal(1);
         });
         it('Should return jobId and job',  () => {
@@ -144,7 +147,7 @@ describe('Scheduling one question', () =>{
                 atTime: '10:00',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testCtx, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
             expect(returnObj.returnCode).to.equal(-1);
             console.log(returnObj.data);
         });
@@ -153,7 +156,7 @@ describe('Scheduling one question', () =>{
                 atTime: '10:00',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testCtx, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
             expect(returnObj.returnCode).to.equal(-1);
             console.log(returnObj.data);
         });
@@ -163,7 +166,7 @@ describe('Scheduling one question', () =>{
                 atTime: '1000',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testCtx, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
             expect(returnObj.returnCode).to.equal(-1);
             console.log(returnObj.data);
         });
@@ -173,7 +176,7 @@ describe('Scheduling one question', () =>{
                 atTime: 'beans',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testCtx, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
             expect(returnObj.returnCode).to.equal(-1);
             console.log(returnObj.data);
         });
@@ -182,7 +185,7 @@ describe('Scheduling one question', () =>{
                 qId: 'morningQuestions.mainGoal',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testCtx, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
             expect(returnObj.returnCode).to.equal(-1);
             console.log(returnObj.data);
         });
@@ -192,7 +195,7 @@ describe('Scheduling one question', () =>{
                 atTime: '10:00',
                 onDays: ["Mon", "Frog"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testCtx, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
             expect(returnObj.returnCode).to.equal(-1);
             console.log(returnObj.data);
         });
@@ -201,7 +204,7 @@ describe('Scheduling one question', () =>{
                 qId: 'morningQuestions.mainGoal',
                 atTime: '10:00'
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testCtx, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
             expect(returnObj.returnCode).to.equal(-1);
             console.log(returnObj.data);
         });
@@ -224,7 +227,7 @@ describe('Scheduling one question', () =>{
     describe('Scheduling all questions normally', () => {
 
         it('Should return success', async () => {
-            scheduleAllReturnObj = await ScheduleHandler.scheduleAllQuestions(testCtx, testConfig);
+            scheduleAllReturnObj = await ScheduleHandler.scheduleAllQuestions(testBot, testId, testConfig);
             expect(scheduleAllReturnObj.returnCode).to.equal(1);
         });
         it('Should return list of scheduled jobs', () => {
@@ -315,7 +318,7 @@ describe('Scheduling one question', () =>{
     describe('Rescheduling jobs', () => {
         let rescheduleReturnObj;
         it('Should return success and a list of scheduled jobs', async () => {
-            rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperationsForID(testCtx, testConfig);
+            rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperationsForID(testBot, testId, testConfig);
             expect(rescheduleReturnObj.returnCode).to.equal(1);
         });
         it('Should return list of rescheduled jobs', () => {
@@ -348,7 +351,7 @@ describe('Scheduling one question', () =>{
     describe('Scheduling all questions but with fails', () => {
 
         it('Should return partial failure', async () => {
-            scheduleAllReturnObj = await ScheduleHandler.scheduleAllQuestions(testCtx, failConfig);
+            scheduleAllReturnObj = await ScheduleHandler.scheduleAllQuestions(testBot, testId, failConfig);
             expect(scheduleAllReturnObj.returnCode).to.equal(0);
             console.log(scheduleAllReturnObj.failData)
         });

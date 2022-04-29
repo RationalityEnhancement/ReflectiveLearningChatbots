@@ -39,6 +39,7 @@ mongo.connect(process.env.DB_CONNECTION_STRING, { useNewUrlParser: true, useUnif
   }
 });
 
+
 //----------------------
 //-- helper functions --
 //----------------------
@@ -374,7 +375,8 @@ bot.on('text', async ctx => {
   
 });
 
-
+// Reschedule all operations after server restart
+ScheduleHandler.rescheduleAllOperations(bot, config);
 
 console.log('Listening to humans');
 

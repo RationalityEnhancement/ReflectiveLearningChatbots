@@ -42,6 +42,35 @@ class ScheduleHandler{
 
     }
 
+    static async cancelAllJobsForParticipant(chatId){
+        let scheduledQs = this.scheduledOperations["questions"];
+        let partJobIDList = [];
+        for(const [jobId, job] of Object.entries(scheduledQs)){
+            if(jobId.startsWith(''+chatId)){
+                partJobIDList.push(jobId);
+            }
+        }
+        let failedRemovals = [];
+        let succeededRemovals = [];
+        for(let i = 0; i < partJobIDList.length; i++){
+            let returnObj = await this.cancelQuestionByJobID(partJobIDList[i]);
+            if(returnObj.returnCode === -1){
+                failedRemovals.push(returnObj.data);
+            } else {
+                succeededRemovals.push(returnObj.data)
+            }
+        }
+        if(failedRemovals.length > 0) {
+            if(succeededRemovals.length === 0){
+                return this.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                    failedRemovals.join('\n'));
+            }
+            return this.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+                failedRemovals.join('\n'), succeededRemovals);
+        }
+        return this.returnSuccess(succeededRemovals)
+    }
+
     static async removeJobByID(jobId){
         let chatId;
         try{
@@ -64,10 +93,32 @@ class ScheduleHandler{
         }
         return this.returnSuccess(jobId)
     }
-    static async rescheduleAllOperations(){
 
+    static async rescheduleAllOperations(bot, config){
+        let allParticipants = await participants.getAll();
+        let failedParticipants = [];
+        let succeededParticipants = [];
+        for(let i = 0; i < allParticipants.length; i++){
+            let curPart = allParticipants[i];
+            let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.chatId, config);
+            if(returnObj.returnCode === 1){
+                // Append returned jobs to array of succeeded jobs
+                succeededParticipants.push(...returnObj.data);
+            } else {
+                failedParticipants.push(curPart.chatId);
+            }
+        }
+
+        if(failedParticipants.length > 0) {
+            if(succeededParticipants.length === 0){
+                return this.returnFailure("Scheduler: failed to reschedule all for the following participants:\n"+
+                    failedParticipants.join('\n'));
+            }
+            return this.returnPartialFailure("Scheduler: failed to reschedule all for the following participants:\n"+
+                failedParticipants.join('\n'), succeededParticipants);
+        }
+        return this.returnSuccess(succeededParticipants)
     }
-    // TODO: Add to reschedule for all participants.
     static async rescheduleAllOperationsForID(bot, chatId, config){
         let participant = await participants.get(chatId);
         let scheduledOperations = participant.scheduledOperations;
@@ -92,10 +143,10 @@ class ScheduleHandler{
 
         if(failedQuestions.length > 0) {
             if(succeededQuestions.length === 0){
-                return this.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                return this.returnFailure("Scheduler: failed to reschedule the following questions:\n"+
                     failedQuestions.join('\n'));
             }
-            return this.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+            return this.returnPartialFailure("Scheduler: failed to reschedule the following questions:\n"+
                 failedQuestions.join('\n'), succeededQuestions);
         }
         return this.returnSuccess(succeededQuestions)
@@ -219,9 +270,11 @@ class ScheduleHandler{
             atTime: questionInfo.atTime,
             onDays: questionInfo.onDays
         }
-
-        await participants.addScheduledQuestion(chatId, jobInfo);
-
+        // Check if already not in scheduledQuestions
+        let alreadyInDB = await participants.hasScheduledQuestion(chatId, jobInfo);
+        if(!alreadyInDB){
+            await participants.addScheduledQuestion(chatId, jobInfo);
+        }
     }
     static async scheduleOneQuestion(bot, chatId, qHandler, questionInfo, isNew = true){
         if(!("qId" in questionInfo)){

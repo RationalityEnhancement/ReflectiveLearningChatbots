@@ -110,6 +110,25 @@ describe('Participant Controller API: ', () =>{
 		expect(scheduledQs[0]['atTime']).to.eql(testJob.atTime);
 		expect(scheduledQs[0]['onDays']).to.eql(testJob.onDays);
 	});
+	it('Should have the scheduled question', async () => {
+		let hasQ = await participants.hasScheduledQuestion(testId, testJob);
+		assert(hasQ);
+	})
+	it('Should not have a question that wasnt scheduled', async () => {
+		let fakeJob = {};
+		fakeJob = Object.assign(fakeJob, testJob);
+		fakeJob.qId = "fakeQuestion";
+		let hasQ = await participants.hasScheduledQuestion(testId, fakeJob);
+		assert(!hasQ);
+	})
+	it('Should not add the same scheduled question again', async () => {
+
+		let participant = await participants.get(testId);
+		expect(participant.scheduledOperations["questions"].length).to.equal(1);
+		await participants.addScheduledQuestion(testId, testJob);
+		participant = await participants.get(testId)
+		expect(participant.scheduledOperations["questions"].length).to.equal(1);
+	});
 	it('Should return normally if removed question doesnt exist', async () => {
 		let DBHasJob = (jobArray, jobId) => {
 			let foundJob = false;

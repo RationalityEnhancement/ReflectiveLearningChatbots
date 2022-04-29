@@ -7,6 +7,7 @@
  */
 
 const { Participant } = require('../models/Participant');
+const lodash = require('lodash');
 const moment = require('moment-timezone');
 const defaultTimezone = 'Europe/Berlin';
 
@@ -97,11 +98,40 @@ exports.addAnswer = async (chatId, answer) => {
   }
 }
 
+exports.hasScheduledQuestion = async (chatId, jobInfo) => {
+  try{
+    let exists = false;
+    let participant = await Participant.findOne({chatId});
+    let scheduledQuestions = participant.scheduledOperations["questions"];
+    for(let i = 0; i < scheduledQuestions.length; i++){
+      let curQ = scheduledQuestions[i];
+      let allEqual = true;
+      for(const [key, value] of Object.entries(jobInfo)){
+        if(!lodash.isEqual(jobInfo[key], curQ[key])){
+          allEqual = false;
+          break;
+        }
+      }
+      if(allEqual){
+        exists = true;
+        break;
+      }
+    }
+    return exists;
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to check if scheduled question exists');
+    console.error(err);
+  }
+}
+
 exports.addScheduledQuestion = async (chatId, jobInfo) => {
   try{
     let participant = await Participant.findOne({ chatId });
-    participant.scheduledOperations["questions"].push(jobInfo);
-
+    let hasQAlready = await exports.hasScheduledQuestion(chatId, jobInfo)
+    if(!hasQAlready){
+      participant.scheduledOperations["questions"].push(jobInfo);
+    }
     return participant.save();
   }
   catch(err){

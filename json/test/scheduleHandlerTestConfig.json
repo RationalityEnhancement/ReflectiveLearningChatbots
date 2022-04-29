@@ -12,6 +12,38 @@
   "debug": false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
+  "phrases" : {
+    "answerValidation" : {
+      "option" : {
+        "English" : "Please pick <b>only from the given options</b>",
+        "Deutsch" : "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      }
+    },
+    "keyboards" : {
+      "singleChoice" : {
+        "English" : "Please pick one from the given options",
+        "Deutsch" : "Bitte wählen Sie eine aus den vorgebenen Optionen"
+      },
+      "multiChoice" : {
+        "English" : "Please choose as many options as you like. Click Done to finish choosing.",
+        "Deutsch" : "Bitte wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
+      },
+      "terminateMultipleChoice" : {
+        "English" : "Done",
+        "Deutsch" : "Fertig"
+      },
+      "finishedChoosingReply" : {
+        "English" : "Your choices have been registered",
+        "Deutsch" : "Ihre Wahlen sind erfasst worden"
+      }
+    },
+    "schedule" : {
+      "scheduleNotif" : {
+        "English" : "Question scheduled for the following time:",
+        "Deutsch" : "Frage geplant zur folgenden Zeit:"
+      }
+    }
+  },
   "questionCategories" : {
     "morningQuestions" : [
       {

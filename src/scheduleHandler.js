@@ -3,6 +3,7 @@ const scheduler = require('node-schedule');
 const QuestionHandler = require('./questionHandler')
 const MessageSender = require('./messageSender')
 const assert = require('chai').assert
+const moment = require('moment-timezone');
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -131,7 +132,8 @@ class ScheduleHandler{
             let questionInfo = {
                 qId : jobInfo.qId,
                 atTime : jobInfo.atTime,
-                onDays : jobInfo.onDays
+                onDays : jobInfo.onDays,
+                tz: participant.parameters.timezone
             }
             let returnObj = await this.scheduleOneQuestion(bot, chatId, qHandler, questionInfo, false);
             if(returnObj.returnCode === -1){
@@ -159,6 +161,7 @@ class ScheduleHandler{
         let succeededQuestions = [];
         for(let i = 0; i < scheduledQuestionsList.length; i++){
             let scheduledQuestionInfo = scheduledQuestionsList[i];
+            scheduledQuestionInfo["tz"] = participant.parameters.timezone;
             let scheduleObj = await this.scheduleOneQuestion(bot, chatId, qHandler, scheduledQuestionInfo,true);
             if(scheduleObj.returnCode === -1){
                 failedQuestions.push(scheduleObj.data)
@@ -207,8 +210,8 @@ class ScheduleHandler{
     // Ignores original scheduled questions for debugging purposes
     static overrideScheduleForIntervals(scheduledQuestions, startTime, interval){
         let now = startTime;
-        let minutes = now.getMinutes();
-        let hours = now.getHours();
+        let minutes = now.minutes;
+        let hours = now.hours;
         for(let i = 0; i < scheduledQuestions.length; i++) {
             let qHours = hours;
             let qMins = minutes + ((i + 1) * interval);
@@ -221,7 +224,8 @@ class ScheduleHandler{
             let newSchedObj = {
                 qId: scheduledQuestions[i].qId,
                 atTime: timeString,
-                onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                tz: scheduledQuestions[i].tz
             };
             scheduledQuestions[i] = newSchedObj;
         }
@@ -260,6 +264,7 @@ class ScheduleHandler{
         rule.dayOfWeek = scheduleDayIndices;
         rule.hour = scheduleHours;
         rule.minute = scheduleMins;
+        rule.tz = questionInfo.tz;
 
         return this.returnSuccess(rule)
     }
@@ -268,7 +273,8 @@ class ScheduleHandler{
             jobId: jobId,
             qId: questionInfo.qId,
             atTime: questionInfo.atTime,
-            onDays: questionInfo.onDays
+            onDays: questionInfo.onDays,
+            tz: questionInfo.tz
         }
         // Check if already not in scheduledQuestions
         let alreadyInDB = await participants.hasScheduledQuestion(chatId, jobInfo);

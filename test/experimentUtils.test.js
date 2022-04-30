@@ -1,5 +1,7 @@
 const experimentUtils = require('../src/experimentUtils');
 const expect = require('chai').expect
+const moment = require('moment-timezone');
+const {getNowDateObject} = require("../src/experimentUtils");
 
 const map = {'1234': 0};
 const conditionAssignments = [0.5, 0.5]
@@ -57,4 +59,34 @@ describe('Condition assignment', () => {
 		    expect(relDiffs.every(val => Math.abs(val) < 0.05)).to.be.true;
 		})
 	})
+})
+
+describe('Date functions', () => {
+	it('Should parse a moment date string properly (ahead of UTC)', () => {
+		let dateString = "2022-04-29T01:32:34+02:00";
+		let dateObj = experimentUtils.parseMomentDateString(dateString);
+
+		expect(dateObj.days).to.equal(29);
+		expect(dateObj.years).to.equal(2022);
+		expect(dateObj.months).to.equal(4);
+		expect(dateObj.hours).to.equal(1);
+		expect(dateObj.minutes).to.equal(32);
+		expect(dateObj.seconds).to.equal(34);
+
+	})
+
+	it('Should parse a moment date string properly (behind of UTC)', () => {
+		let dateString = "2022-04-29T01:32:34-02:00";
+		let dateObj = experimentUtils.parseMomentDateString(dateString);
+
+		expect(dateObj.days).to.equal(29);
+		expect(dateObj.years).to.equal(2022);
+		expect(dateObj.months).to.equal(4);
+		expect(dateObj.hours).to.equal(1);
+		expect(dateObj.minutes).to.equal(32);
+		expect(dateObj.seconds).to.equal(34);
+
+	})
+
+
 })

@@ -1,3 +1,4 @@
+const moment = require('moment-timezone')
 
 /**
   Assigns to an experiment condition based on input parameters. If there exists
@@ -41,4 +42,47 @@ module.exports.assignToCondition = (participantId, pidMap, conditionAssignments,
   } else {
     return Math.floor(Math.random() * conditionAssignments.length);
   }
+}
+
+/**
+ * Takes a moment date string (moment.tz().format()) and converts it into a date object to access
+ *  the numbers directly
+ *
+ * @param dateString moment date string of the format "YYYY-MM-DDTHH:MM:SS+OH:OM" (OH, OM = offset hours, minutes)
+ *                                                 or "YYYY-MM-DDTHH:MM:SS-OH:OM"
+ * @returns {{}} date object with following int properties: hours, minutes, seconds, years, months, days
+ */
+
+let parseMomentDateString = (dateString) => {
+  let dateObj = {};
+  let dateTimeSplit = dateString.split(/[T]/)
+  let date = dateTimeSplit[0];
+  let time = dateTimeSplit[1];
+
+  let dateSplit = date.split('-');
+  dateObj.years = parseInt(dateSplit[0]);
+  dateObj.months = parseInt(dateSplit[1]);
+  dateObj.days = parseInt(dateSplit[2]);
+
+  let timeSplit = time.split(/[-\+:]/);
+  dateObj.hours = parseInt(timeSplit[0]);
+  dateObj.minutes = parseInt(timeSplit[1]);
+  dateObj.seconds = parseInt(timeSplit[2]);
+
+  return dateObj;
+}
+
+module.exports.parseMomentDateString = parseMomentDateString;
+
+/**
+ * Takes a given timezone in tz-database format and returns a date object
+ *
+ * @param timezone string in tz database format (see Wikipedia)
+ * @returns {{}} date object with following int properties: hours, minutes, seconds, years, months, days
+ */
+module.exports.getNowDateObject = (timezone) => {
+  let now = moment.tz(timezone);
+  let dateObj = parseMomentDateString(now.format());
+
+  return dateObj;
 }

@@ -41,7 +41,8 @@ let schemaObject = {
         jobId : String,
         qId: String,
         atTime : String,
-        onDays : [String]
+        onDays : [String],
+        tz : String
       }
     ]
   }

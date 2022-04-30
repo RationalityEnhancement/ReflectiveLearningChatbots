@@ -101,7 +101,6 @@ let processNextAction = async (bot, chatId) => {
         if(debug){
           let nowDateObj = experimentUtils.getNowDateObject(participant.parameters.timezone);
           ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, nowDateObj, 1);
-          console.log(config.scheduledQuestions);
         }
         await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
         break;

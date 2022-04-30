@@ -1,9 +1,12 @@
 {
   "experimentName" : "ExampleExperiment",
   "experimentId" : "experiment123",
-  "participantParameters" : {
+  "mandatoryParameters" : {
     "language" : "string",
-    "pid" : "string"
+    "timezone" : "string"
+  },
+  "customParameters" : {
+    "pId" : "string"
   },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",

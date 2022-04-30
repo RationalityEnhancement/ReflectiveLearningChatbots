@@ -4,10 +4,12 @@
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
-  "participantParameters" : {
+  "mandatoryParameters" : {
     "language" : "string",
-    "pId" : "string",
     "timezone" : "string"
+  },
+  "customParameters" : {
+    "pId" : "string"
   },
   "debug": true,
   "languages" : ["English", "Deutsch"],

@@ -1,0 +1,4 @@
+{
+  "likert5Options" : ["Strongly Disagree", "Disagree", "Neither", "Agree", "Strongly Agree"],
+  "likert7Options" : ["Strongly Disagree", "Somewhat Disagree" ,"Disagree", "Neither", "Agree", "Somewhat Agree", "Strongly Agree"]
+}

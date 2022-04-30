@@ -224,8 +224,7 @@ class ScheduleHandler{
             let newSchedObj = {
                 qId: scheduledQuestions[i].qId,
                 atTime: timeString,
-                onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                tz: scheduledQuestions[i].tz
+                onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
             };
             scheduledQuestions[i] = newSchedObj;
         }

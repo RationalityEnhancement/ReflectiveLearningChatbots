@@ -48,7 +48,11 @@ let schemaObject = {
   }
 }
 
-for(const[key, value] of Object.entries(config.participantParameters)){
+for(const[key, value] of Object.entries(config.customParameters)){
+  if(value in dataTypeMap)
+    schemaObject["parameters"][key] = dataTypeMap[value];
+}
+for(const[key, value] of Object.entries(config.mandatoryParameters)){
   if(value in dataTypeMap)
     schemaObject["parameters"][key] = dataTypeMap[value];
 }

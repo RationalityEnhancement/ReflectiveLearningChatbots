@@ -210,8 +210,8 @@ class ScheduleHandler{
     // Ignores original scheduled questions for debugging purposes
     static overrideScheduleForIntervals(scheduledQuestions, startTime, interval){
         let now = startTime;
-        let minutes = now.getMinutes();
-        let hours = now.getHours();
+        let minutes = now.minutes;
+        let hours = now.hours;
         for(let i = 0; i < scheduledQuestions.length; i++) {
             let qHours = hours;
             let qMins = minutes + ((i + 1) * interval);
@@ -225,7 +225,7 @@ class ScheduleHandler{
                 qId: scheduledQuestions[i].qId,
                 atTime: timeString,
                 onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                tz: scheduledQuestions[i].tz;
+                tz: scheduledQuestions[i].tz
             };
             scheduledQuestions[i] = newSchedObj;
         }

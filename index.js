@@ -17,6 +17,7 @@ const moment = require('moment-timezone')
 const {
   assignToCondition
 } = require('./src/experimentUtils')
+const experimentUtils = require("./src/experimentUtils");
 
 const local = process.argv[2];
 
@@ -98,8 +99,9 @@ let processNextAction = async (bot, chatId) => {
         // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
         let debug = !!config.debug;
         if(debug){
-          let now = moment.tz(participant.parameters.tz);
-          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, now, 1);
+          let nowDateObj = experimentUtils.getNowDateObject(participant.parameters.timezone);
+          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, nowDateObj, 1);
+          console.log(config.scheduledQuestions);
         }
         await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
         break;

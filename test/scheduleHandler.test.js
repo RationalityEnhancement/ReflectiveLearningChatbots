@@ -707,11 +707,11 @@ describe('Scheduling one question', () =>{
             onDays : ["Mon", "Tue"]
         }
         ];
-        let testDate = new Date();
+        let testDate = {};
         let allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        it('Should schedule normally', ()=>{
-            testDate.setHours(9);
-            testDate.setMinutes(0);
+        it('Should overwrite normally', ()=>{
+            testDate.hours = 9;
+            testDate.minutes = 0;
             ScheduleHandler.overrideScheduleForIntervals(testScheduledQs, testDate, 3);
             expect(testScheduledQs[0].atTime).to.equal("09:03");
             expect(testScheduledQs[0].onDays).to.eql(allDays);
@@ -721,8 +721,8 @@ describe('Scheduling one question', () =>{
             expect(testScheduledQs[2].onDays).to.eql(allDays);
         })
         it('Should roll over the hour', ()=>{
-            testDate.setHours(9);
-            testDate.setMinutes(58);
+            testDate.hours = 9;
+            testDate.minutes = 58;
             ScheduleHandler.overrideScheduleForIntervals(testScheduledQs, testDate, 3);
             expect(testScheduledQs[0].atTime).to.equal("10:01");
             expect(testScheduledQs[0].onDays).to.eql(allDays);
@@ -732,8 +732,8 @@ describe('Scheduling one question', () =>{
             expect(testScheduledQs[2].onDays).to.eql(allDays);
         })
         it('Should roll over the day', ()=>{
-            testDate.setHours(23);
-            testDate.setMinutes(58);
+            testDate.hours = 23;
+            testDate.minutes = 58;
             ScheduleHandler.overrideScheduleForIntervals(testScheduledQs, testDate, 3);
             expect(testScheduledQs[0].atTime).to.equal("00:01");
             expect(testScheduledQs[0].onDays).to.eql(allDays);

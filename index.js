@@ -29,7 +29,6 @@ const local = process.argv[2];
 // checkConfig();
 
 const qHandler = new QuestionHandler(config);
-const aHandler = new AnswerHandler(config);
 const bot = new Telegraf(BOT_TOKEN);
 
 
@@ -245,141 +244,40 @@ bot.on('text', async ctx => {
   if(!participant) return;
 
   const answerText = ctx.message.text;
-  const currentQuestion = participant.currentQuestion;
 
-  // Process an answer only if an answer is expected
-  if(participant.currentState === 'awaitingAnswer'){
-
-    // Validate answer if the question type is recognized
-    if(!("qType" in currentQuestion)){
-      console.log(currentQuestion);
-      console.error("ERROR: Question is missing question type");
-      return;
-    }
-    switch(currentQuestion["qType"]){
-      // If the expected answer is one from a list of possible answers
-      case 'singleChoice':
-        // Process answer if it is one of the valid options
-        if(currentQuestion.options.includes(answerText)){
-          // Save the answer to participant parameters if that options is specified
-          if(currentQuestion.saveAnswerTo){
-            await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, answerText);
-          }
-          // TODO: Remove keyboard if answer is acceptable, in case they typed in a correct answer
-          // Add the answer to the list of answers in the database
-          const answer = {
-            qId: currentQuestion.id,
-            text: currentQuestion.text,
-            timeStamp: new Date(),
-            answer: [answerText]
-          };
-          await participants.addAnswer(ctx.from.id, answer);
-          await participants.updateField(ctx.from.id, "currentState", "answerReceived");
-
-          // Send replies to the answer, if any
-          await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
-
-          // Send the next question, if any
-          await processNextAction(bot, ctx.from.id);
-          return;
-
-        } else {
-          // TODO: change this to add validation prompts to the question?
-          // If the answer is not valid, resend the question.
-          await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.answerValidation.option[participant.parameters.language]);
-          await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
-        } 
-        break;
-
-      // In case of multi-choice, let user pick as many as possible
-      case 'multiChoice' :
-        if(currentQuestion.options.includes(answerText)){
-          // Save the answer to participant's current answer
-
-          await participants.updateField(ctx.from.id,"currentState", "answering");
-          await participants.addToCurrentAnswer(ctx.from.id, answerText);
-
-        } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
-          const answer = {
-            qId: currentQuestion.id,
-            text: currentQuestion.text,
-            timeStamp: new Date(),
-            answer: [answerText]
-          };
-          // Save the answer to participant parameters if that options is specified
-          if(currentQuestion.saveAnswerTo){
-            await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, [answerText]);
-          }
-          await participants.addAnswer(ctx.from.id, answer);
-          await participants.updateField(ctx.from.id, "currentState", "answerReceived");
-
-          // Send replies to the answer, if any
-          await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
-
-          // Send the next question, if any
-          await processNextAction(bot, ctx.from.id);
-          return;
-        } else {
-          // TODO: change this to add validation prompts to the question?
-          // If the answer is not valid, resend the question.
-          await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.answerValidation.option[participant.parameters.language]);
-          await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
+  // Handle the answer and respond appropriately
+  let answerHandlerObj = await AnswerHandler.processAnswer(participant, answerText);
+  switch(answerHandlerObj.returnCode){
+    // Answer was valid
+    case DevConfig.SUCCESS_CODE:
+      if(answerHandlerObj.data === DevConfig.NEXT_ACTION_STRING){
+        // Move on to the next actions
+        // Send this message only if participant has finished choosing from multi-choice
+        if(participant.currentQuestion.qType === "multiChoice"){
+          await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
         }
-        break;
-
-        // Question with free text input
-      case 'freeform':
-
-        if(currentQuestion.saveAnswerTo){
-          await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, answerText);
-        }
-        const answer = {
-          qId: currentQuestion.id,
-          text: currentQuestion.text,
-          timeStamp: new Date(),
-          answer: [answerText]
-        };
-        await participants.addAnswer(ctx.from.id, answer);
-        await participants.updateField(ctx.from.id, "currentState", "answerReceived");
-        await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
+        // Send replies to the answer, if any
+        await MessageSender.sendReplies(bot, ctx.from.id, participant.currentQuestion);
+        // Send the next question, if any
         await processNextAction(bot, ctx.from.id);
-        return;
-
-      default:
-        throw "ERROR: Question type not recognized"
-    }
-  } else if (participant.currentState === "answering"){
-    if(currentQuestion.options.includes(answerText)){
-      // Save the answer to participant's current answer
-      await participants.addToCurrentAnswer(ctx.from.id, answerText);
-
-    } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
-      const answer = {
-        qId: currentQuestion.id,
-        text: currentQuestion.text,
-        timeStamp: new Date(),
-        answer: participant.currentAnswer
-      };
-      await participants.addAnswer(ctx.from.id, answer);
-      await participants.updateField(ctx.from.id, "currentState", "answerReceived");
-      // Save the answer to participant parameters if that options is specified
-      if(currentQuestion.saveAnswerTo){
-        await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, participant.currentAnswer);
       }
+      break;
 
-      await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
-      // Send replies to the answer, if any
-      await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
+    // Answer was invalid (not part of options, etc.)
+    case DevConfig.PARTIAL_FAILURE_CODE:
+      // Repeat the question
+      if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
+        await MessageSender.sendMessage(bot, ctx.from.id, answerHandlerObj.failData);
+        await MessageSender.sendQuestion(bot, ctx.from.id, participant.currentQuestion)
+      }
+      break;
 
-      // Send the next question, if any
-      await processNextAction(bot, ctx.from.id);
-
-    } else {
-      // TODO: Don't restart if wrong option entered?
-      // If the answer is not valid, resend the question.
-      await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.answerValidation.option[participant.parameters.language]);
-      await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
-    }
+    // Failure occurred
+    case DevConfig.FAILURE_CODE:
+      throw "ERROR: " + answerHandlerObj.data;
+      break;
+    default:
+      throw "ERROR: Answer Handler did not respond appropriately"
   }
   
 });

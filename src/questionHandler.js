@@ -1,8 +1,10 @@
-// TODO: Add devconfig for error codes
+const ReturnMethods = require('./returnMethods');
+const DevConfig = require('../json/devConfig.json')
 
 /**
  * Question handler class that takes in a config as a parameter
- *
+ *  Purpose of the class is to deal with questions as defined in the config
+ *  file
  *
  * @param config variable containing a valid config json file loaded
  *              using 'require('...json')'
@@ -10,18 +12,6 @@
 
 function QuestionHandler(config){
 
-    let returnError = (data) => {
-        return {
-            "returnCode" : -1,
-            "data" : data
-        };
-    }
-    let returnSuccess = (data) => {
-        return {
-            "returnCode" : 1,
-            "data" : data
-        }
-    }
     /**
      * Validates the question ID and fetches the question from the config
      * file based on the question ID
@@ -39,15 +29,15 @@ function QuestionHandler(config){
         } catch(err) {
             return { "returnCode" : -1, "data": "QHandler: Question ID not a string"};
         }
-        if(components.length != 2){
+        if(components.length !== 2){
             let errorMsg = "QHandler: Question ID is of incorrect form or does not exist";
-            return returnError(errorMsg)
+            return ReturnMethods.returnFailure(errorMsg)
         }
         const categoryName = components[0];
         const id_ = components[1];
 
         if(!(categoryName in config.questionCategories)){
-            return returnError("QHandler: Question category " + categoryName + " doesn't exist");
+            return ReturnMethods.returnFailure("QHandler: Question category " + categoryName + " doesn't exist");
         }
 
         const category = config.questionCategories[categoryName];
@@ -55,16 +45,15 @@ function QuestionHandler(config){
 
         for(let i = 0; i < category.length; i++){
             let currentQuestion = category[i];
-            if(currentQuestion.qId == id_){
+            if(currentQuestion.qId === id_){
                 selectedQuestion = currentQuestion;
                 break;
             }
         }
         if(!selectedQuestion){
-            return returnError("QHandler: Question with qId " + id_ + " doesn't exist in category " + categoryName)
+            return ReturnMethods.returnFailure("QHandler: Question with qId " + id_ + " doesn't exist in category " + categoryName)
         }
-        return returnSuccess(selectedQuestion);
-
+        return ReturnMethods.returnSuccess(selectedQuestion);
     }
 
     /**
@@ -94,8 +83,8 @@ function QuestionHandler(config){
 
         let selectedQuestionObj = getQuestionById(qId);
 
-        if(selectedQuestionObj.returnCode == -1) {
-            return returnError(selectedQuestionObj.data);
+        if(selectedQuestionObj.returnCode === DevConfig.FAILURE_CODE) {
+            return ReturnMethods.returnFailure(selectedQuestionObj.data);
         } else {
             selectedQuestion = selectedQuestionObj.data;
         }
@@ -106,19 +95,18 @@ function QuestionHandler(config){
             "qType" : selectedQuestion.qType,
         }
 
-
         const languageDepOptionalParams = ["options", "replyMessages"];
         const otherOptionalParams = ["saveAnswerTo", "nextAction"];
 
         for(let i = 0; i < languageDepOptionalParams.length; i++){
-            field = languageDepOptionalParams[i];
+            let field = languageDepOptionalParams[i];
             if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field][language];
         }
         for(let i = 0; i < otherOptionalParams.length; i++){
-            field = otherOptionalParams[i];
+            let field = otherOptionalParams[i];
             if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field];
         }
-        return returnSuccess(constructedQuestion);
+        return ReturnMethods.returnSuccess(constructedQuestion);
 
     }
 
@@ -147,7 +135,7 @@ function QuestionHandler(config){
             }
         }
         if(!selectedQuestion){
-            return returnError("QHandler: Starting question doesn't exist in category " + categoryName)
+            return ReturnMethods.returnFailure("QHandler: Starting question doesn't exist in category " + categoryName)
         }
         let fullId = categoryName + "." + selectedQuestion.qId;
         return this.constructQuestionByID(fullId, language);
@@ -155,12 +143,11 @@ function QuestionHandler(config){
 
     this.getScheduledQuestions = () => {
         if(!("scheduledQuestions" in config)){
-            return returnError("QHandler: Scheduled questions not found");
+            return ReturnMethods.returnFailure("QHandler: Scheduled questions not found");
         }
         let schQList = config["scheduledQuestions"];
 
-
-
+        return ReturnMethods.returnSuccess(schQList);
     }
 }
 

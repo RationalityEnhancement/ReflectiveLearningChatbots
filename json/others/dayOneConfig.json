@@ -17,8 +17,8 @@
   "phrases" : {
     "answerValidation" : {
       "option" : {
-        "English" : "Please pick only from the given options",
-        "Deutsch" : "Bitte wählen Sie nur aus den vorgebenen Optionen"
+        "English" : "Please pick <b>only from the given options</b>",
+        "Deutsch" : "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
       }
     },
     "keyboards" : {
@@ -103,7 +103,7 @@
             "US/Eastern"
           ],
           "Deutsch": [
-            "Europa/Berlin",
+            "Europe/Berlin",
             "US/Pacific",
             "US/Mountain",
             "US/Central",

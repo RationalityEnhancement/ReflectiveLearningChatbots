@@ -7,7 +7,7 @@ const mongo = require('mongoose');
 const { assert, expect } = require('chai');
 
 const testConfig = require('../json/test/scheduleHandlerTestConfig.json');
-
+const DevConfig = require('../json/devConfig.json');
 const failConfig = require('../json/test/scheduleHandlerTestConfigFail.json');
 
 const QuestionHandler = require('../src/questionHandler');
@@ -77,7 +77,7 @@ describe('Scheduling one question', () =>{
         let returnObj, returnJob;
         it('Should succeed',  async () => {
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, true)
-            expect(returnObj.returnCode).to.equal(1);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return jobId and job',  () => {
             returnJob =  returnObj.data;
@@ -119,7 +119,7 @@ describe('Scheduling one question', () =>{
         let returnObj, returnJob;
         it('Should succeed',  async () => {
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId2, qHandler, questionInfo, true)
-            expect(returnObj.returnCode).to.equal(1);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return jobId and job',  () => {
             returnJob =  returnObj.data;
@@ -161,7 +161,7 @@ describe('Scheduling one question', () =>{
         let returnObj, returnJob;
         it('Should succeed',  async () => {
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
-            expect(returnObj.returnCode).to.equal(1);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return jobId and job',  () => {
             returnJob =  returnObj.data;
@@ -219,7 +219,7 @@ describe('Scheduling one question', () =>{
                 onDays: ["Mon", "Tue"]
             };
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
-            expect(returnObj.returnCode).to.equal(-1);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
         it('Should fail without qId',  async () => {
@@ -228,7 +228,7 @@ describe('Scheduling one question', () =>{
                 onDays: ["Mon", "Tue"]
             };
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
-            expect(returnObj.returnCode).to.equal(-1);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
         it('Should fail with incorrect time format',  async () => {
@@ -238,7 +238,7 @@ describe('Scheduling one question', () =>{
                 onDays: ["Mon", "Tue"]
             };
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
-            expect(returnObj.returnCode).to.equal(-1);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
         it('Should fail with incorrect time format 2',  async () => {
@@ -248,7 +248,7 @@ describe('Scheduling one question', () =>{
                 onDays: ["Mon", "Tue"]
             };
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
-            expect(returnObj.returnCode).to.equal(-1);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
         it('Should fail without time',  async () => {
@@ -257,7 +257,7 @@ describe('Scheduling one question', () =>{
                 onDays: ["Mon", "Tue"]
             };
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
-            expect(returnObj.returnCode).to.equal(-1);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
         it('Should fail with incorrect day',  async () => {
@@ -267,7 +267,7 @@ describe('Scheduling one question', () =>{
                 onDays: ["Mon", "Frog"]
             };
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
-            expect(returnObj.returnCode).to.equal(-1);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
         it('Should fail without on days',  async () => {
@@ -276,7 +276,7 @@ describe('Scheduling one question', () =>{
                 atTime: '10:00'
             };
             returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
-            expect(returnObj.returnCode).to.equal(-1);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
 
@@ -314,7 +314,7 @@ describe('Scheduling one question', () =>{
 
         it('Should return success', async () => {
             scheduleAllReturnObj = await ScheduleHandler.scheduleAllQuestions(testBot, testId, testConfig);
-            expect(scheduleAllReturnObj.returnCode).to.equal(1);
+            expect(scheduleAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of scheduled jobs', () => {
             assert(Array.isArray(scheduleAllReturnObj.data));
@@ -368,7 +368,7 @@ describe('Scheduling one question', () =>{
             let cancelReturnObj = ScheduleHandler.cancelQuestionByJobID(jobId);
 
             let participant = await participants.get(testId);
-            expect(cancelReturnObj.returnCode).to.equal(1);
+            expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
@@ -377,7 +377,7 @@ describe('Scheduling one question', () =>{
             assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
             let cancelReturnObj = ScheduleHandler.cancelQuestionByJobID(jobId);
             let participant = await participants.get(testId);
-            expect(cancelReturnObj.returnCode).to.equal(1);
+            expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
@@ -386,7 +386,7 @@ describe('Scheduling one question', () =>{
             assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
             let cancelReturnObj = ScheduleHandler.cancelQuestionByJobID(jobId);
             let participant = await participants.get(testId2);
-            expect(cancelReturnObj.returnCode).to.equal(1);
+            expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
@@ -423,7 +423,7 @@ describe('Scheduling one question', () =>{
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId);
             participant = await participants.get(testId);
 
-            expect(removeReturnObj.returnCode).to.equal(1);
+            expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
             assert(!DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
@@ -438,7 +438,7 @@ describe('Scheduling one question', () =>{
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId);
             participant = await participants.get(testId);
 
-            expect(removeReturnObj.returnCode).to.equal(1);
+            expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
             assert(!DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
@@ -462,7 +462,7 @@ describe('Scheduling one question', () =>{
         let rescheduleReturnObj;
         it('Should return success and a list of scheduled jobs', async () => {
             rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperationsForID(testBot, testId, testConfig);
-            expect(rescheduleReturnObj.returnCode).to.equal(1);
+            expect(rescheduleReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of rescheduled jobs', () => {
             assert(Array.isArray(rescheduleReturnObj.data));
@@ -508,7 +508,7 @@ describe('Scheduling one question', () =>{
         let rescheduleReturnObj;
         it('Should return success and a list of scheduled jobs', async () => {
             rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperations(testBot, testConfig);
-            expect(rescheduleReturnObj.returnCode).to.equal(1);
+            expect(rescheduleReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of rescheduled jobs', () => {
             assert(Array.isArray(rescheduleReturnObj.data));
@@ -644,7 +644,7 @@ describe('Scheduling one question', () =>{
         });
         it('Should remove all and return successful', async () => {
             removeAllReturnObj = await ScheduleHandler.removeAllJobsForParticipant(testId);
-            expect(removeAllReturnObj.returnCode).to.equal(1);
+            expect(removeAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should have no jobs with chat id in scheduled questions after',  () => {
             let scheduledQs = ScheduleHandler.scheduledOperations["questions"];

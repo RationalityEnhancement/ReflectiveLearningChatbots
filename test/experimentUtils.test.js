@@ -2,6 +2,7 @@ const experimentUtils = require('../src/experimentUtils');
 const expect = require('chai').expect
 const moment = require('moment-timezone');
 const {getNowDateObject} = require("../src/experimentUtils");
+const DevConfig = require('../json/devConfig.json')
 
 const map = {'1234': 0};
 const conditionAssignments = [0.5, 0.5]
@@ -11,48 +12,134 @@ const currentAssignments2 = [1,1,1]
 const currentAssignments3 = [20,20,35]
 
 describe('Condition assignment', () => {
-	describe('Pid Map', () => {
-		it('assigns to condition by PID', () => {
+
+	describe('Resolving assignment scheme', () => {
+		let testPIDMap = {
+			"123" : 0,
+			"321" : 1
+		}
+		let testCondRatios = [1,1];
+		it('returns balanced when balanced conditions are met', () => {
+			let ass = experimentUtils.resolveAssignmentScheme("123", testPIDMap, "balanced", [1,1]);
+			expect(ass).to.equal("balanced");
+		})
+		it('returns random when balanced conditions are not met', () => {
+			let ass = experimentUtils.resolveAssignmentScheme("123", testPIDMap, "balanced", [0,0]);
+			expect(ass).to.equal("random");
+		})
+		it('returns PID when both pid conditions are met', () => {
+			let ass = experimentUtils.resolveAssignmentScheme("123", testPIDMap, "pid", [0,0]);
+			expect(ass).to.equal("pid");
+		});
+		it('returns balanced when PID undefined are met but balanced cond met', () => {
+			let ass = experimentUtils.resolveAssignmentScheme(undefined, testPIDMap, "pid", [1,1]);
+			expect(ass).to.equal("balanced");
+		})
+		it('returns balanced when PID not in map but balanced cond met', () => {
+			let ass = experimentUtils.resolveAssignmentScheme("egg", testPIDMap, "pid", [1,1]);
+			expect(ass).to.equal("balanced");
+		})
+		it('returns balanced when PID map not valid but balanced cond met', () => {
+			let ass = experimentUtils.resolveAssignmentScheme("123", undefined, "pid", [1,1]);
+			expect(ass).to.equal("balanced");
+		})
+		it('returns random when PID condition not met and balanced cond not met', () => {
+			let ass = experimentUtils.resolveAssignmentScheme("123", undefined, "pid", [0,0]);
+			expect(ass).to.equal("random");
+		})
+		it('returns random when random selected', () => {
+			let ass = experimentUtils.resolveAssignmentScheme("123", testPIDMap, "random", [1,1]);
+			expect(ass).to.equal("random");
+		})
+	})
+	describe('Fails appropriately', () => {
+		it('Should pass when everything valid', () => {
 			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments,"pid")
-			expect(result).to.equal(0);
+			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+		});
+		it('Should fail when assignmentScheme not valid', () => {
+			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments,"george")
+			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+			expect(typeof result.data).to.equal("string");
+		});
+
+		it('Should fail when conditionAssignments undefined', () => {
+			const result = experimentUtils.assignToCondition('1234', map, undefined, currentAssignments,"pid")
+			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+			expect(typeof result.data).to.equal("string");
+		});
+		it('Should fail when conditionAssignments empty', () => {
+			const result = experimentUtils.assignToCondition('1234', map, [], currentAssignments,"pid")
+			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+			expect(typeof result.data).to.equal("string");
+		});
+		it('Should fail when conditionAssignments all zero', () => {
+			const result = experimentUtils.assignToCondition('1234', map, [0,0], currentAssignments,"pid")
+			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+			expect(typeof result.data).to.equal("string");
+		});
+		it('Should fail when currentAssignments undefined', () => {
+			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, undefined,"pid")
+			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+			expect(typeof result.data).to.equal("string");
+		});
+		it('Should fail when currentAssignments empty', () => {
+			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, [],"pid")
+			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+			expect(typeof result.data).to.equal("string");
+		});
+		it('Should fail when currentAssignments and conditionAssignments unequal length', () => {
+			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments2,"pid")
+			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+			expect(typeof result.data).to.equal("string");
+		});
+	})
+	describe('Pid Map', () => {
+		it('assigns to condition by PID successfully', () => {
+			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments,"pid")
+			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			expect(result.data).to.equal(0);
 		})
 		it('assigns to condition by balanced when PID not recognized', () => {
 			const result = experimentUtils.assignToCondition('1235', map, conditionAssignments, currentAssignments,"pid")
-			expect(result).to.equal(1);
+			expect(result.returnCode).to.equal(1);
+			expect(result.data).to.equal(DevConfig.SUCCESS_CODE);
 		})
 	})
 	describe('Natural assignment', () => {
 		it('balances by condition - 1', () => {
 			const result = experimentUtils.assignToCondition('1235', map, conditionAssignments, currentAssignments,"balanced")
-			expect(result).to.equal(1);
+			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			expect(result.data).to.equal(1);
 		})
 		it('balances by condition - 2', () => {
 			const result = experimentUtils.assignToCondition('1235', map, conditionAssignments2, currentAssignments2,"balanced")
-			expect(result).to.equal(2);
+			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			expect(result.data).to.equal(2);
 		})
 		it('balances by condition - 3', () => {
 			const result = experimentUtils.assignToCondition('1235', map, conditionAssignments2, currentAssignments3,"balanced")
-			expect(result).to.equal(2);
+			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			expect(result.data).to.equal(2);
 		})
 		it('tends to the natural balance', () => {
 			const numParts = 100;
 			const curAssignments = [0,0,0];
 			const conAssignments = [5,3,2];
 		    
-		    relParts = conAssignments.reduce((a, b) => a + b, 0);
-		    relReqAssignments = conAssignments.map(n => parseFloat(n / relParts));
+		    let relParts = conAssignments.reduce((a, b) => a + b, 0);
+		    let relReqAssignments = conAssignments.map(n => parseFloat(n / relParts));
 
 		    for(let i = 0; i < numParts; i++){
 		    	let assignment = experimentUtils.assignToCondition('1235', map, conAssignments, curAssignments, "balanced");
-		    	
-		    	curAssignments[assignment] += 1;
-
+		    	expect(assignment.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+		    	curAssignments[assignment.data] += 1;
 		    }
 
-		    totalParts = curAssignments.reduce((a, b) => a + b, 0);
-		    relCurAssignments = curAssignments.map(n => parseFloat(n / totalParts));
+		    let totalParts = curAssignments.reduce((a, b) => a + b, 0);
+		    let relCurAssignments = curAssignments.map(n => parseFloat(n / totalParts));
 
-		    relDiffs = [];
+		    let relDiffs = [];
 		    for(let i=0; i < relCurAssignments.length; i++){
 		      relDiffs.push(relReqAssignments[i] - relCurAssignments[i]);
 		    }
@@ -64,8 +151,9 @@ describe('Condition assignment', () => {
 describe('Date functions', () => {
 	it('Should parse a moment date string properly (ahead of UTC)', () => {
 		let dateString = "2022-04-29T01:32:34+02:00";
-		let dateObj = experimentUtils.parseMomentDateString(dateString);
-
+		let dateObjObj = experimentUtils.parseMomentDateString(dateString);
+		let dateObj = dateObjObj.data;
+		expect(dateObjObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
 		expect(dateObj.days).to.equal(29);
 		expect(dateObj.years).to.equal(2022);
 		expect(dateObj.months).to.equal(4);
@@ -77,8 +165,9 @@ describe('Date functions', () => {
 
 	it('Should parse a moment date string properly (behind of UTC)', () => {
 		let dateString = "2022-04-29T01:32:34-02:00";
-		let dateObj = experimentUtils.parseMomentDateString(dateString);
-
+		let dateObjObj = experimentUtils.parseMomentDateString(dateString);
+		let dateObj = dateObjObj.data;
+		expect(dateObjObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
 		expect(dateObj.days).to.equal(29);
 		expect(dateObj.years).to.equal(2022);
 		expect(dateObj.months).to.equal(4);

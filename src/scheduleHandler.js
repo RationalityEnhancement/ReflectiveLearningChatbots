@@ -1,8 +1,10 @@
 const participants = require('./apiControllers/participantApiController');
 const scheduler = require('node-schedule');
 const QuestionHandler = require('./questionHandler')
+const ReturnMethods = require('./returnMethods');
 const MessageSender = require('./messageSender')
 const assert = require('chai').assert
+const DevConfig = require('../json/devConfig.json');
 const moment = require('moment-timezone');
 
 class ScheduleHandler{
@@ -25,7 +27,7 @@ class ScheduleHandler{
         let succeededRemovals = [];
         for(let i = 0; i < partJobIDList.length; i++){
             let returnObj = await this.removeJobByID(partJobIDList[i]);
-            if(returnObj.returnCode === -1){
+            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedRemovals.push(returnObj.data);
             } else {
                 succeededRemovals.push(returnObj.data)
@@ -33,13 +35,13 @@ class ScheduleHandler{
         }
         if(failedRemovals.length > 0) {
             if(succeededRemovals.length === 0){
-                return this.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
                     failedRemovals.join('\n'));
             }
-            return this.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
                 failedRemovals.join('\n'), succeededRemovals);
         }
-        return this.returnSuccess(succeededRemovals)
+        return ReturnMethods.returnSuccess(succeededRemovals)
 
     }
 
@@ -55,7 +57,7 @@ class ScheduleHandler{
         let succeededRemovals = [];
         for(let i = 0; i < partJobIDList.length; i++){
             let returnObj = await this.cancelQuestionByJobID(partJobIDList[i]);
-            if(returnObj.returnCode === -1){
+            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedRemovals.push(returnObj.data);
             } else {
                 succeededRemovals.push(returnObj.data)
@@ -63,13 +65,13 @@ class ScheduleHandler{
         }
         if(failedRemovals.length > 0) {
             if(succeededRemovals.length === 0){
-                return this.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
                     failedRemovals.join('\n'));
             }
-            return this.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
                 failedRemovals.join('\n'), succeededRemovals);
         }
-        return this.returnSuccess(succeededRemovals)
+        return ReturnMethods.returnSuccess(succeededRemovals)
     }
 
     static async removeJobByID(jobId){
@@ -80,7 +82,7 @@ class ScheduleHandler{
             await participants.removeScheduledQuestion(chatId, jobId);
 
         } catch(err) {
-            return this.returnFailure("Scheduler: Cannot remove job " + jobId);
+            return ReturnMethods.returnFailure("Scheduler: Cannot remove job " + jobId);
         }
         return this.cancelQuestionByJobID(jobId);
 
@@ -90,9 +92,9 @@ class ScheduleHandler{
             this.scheduledOperations["questions"][jobId].cancel();
             delete this.scheduledOperations["questions"][jobId];
         } catch(err){
-            return this.returnFailure("Scheduler: Failed to cancel job " + jobId);
+            return ReturnMethods.returnFailure("Scheduler: Failed to cancel job " + jobId);
         }
-        return this.returnSuccess(jobId)
+        return ReturnMethods.returnSuccess(jobId)
     }
 
     static async rescheduleAllOperations(bot, config){
@@ -102,7 +104,7 @@ class ScheduleHandler{
         for(let i = 0; i < allParticipants.length; i++){
             let curPart = allParticipants[i];
             let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.chatId, config);
-            if(returnObj.returnCode === 1){
+            if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
                 // Append returned jobs to array of succeeded jobs
                 succeededParticipants.push(...returnObj.data);
             } else {
@@ -112,13 +114,13 @@ class ScheduleHandler{
 
         if(failedParticipants.length > 0) {
             if(succeededParticipants.length === 0){
-                return this.returnFailure("Scheduler: failed to reschedule all for the following participants:\n"+
+                return ReturnMethods.returnFailure("Scheduler: failed to reschedule all for the following participants:\n"+
                     failedParticipants.join('\n'));
             }
-            return this.returnPartialFailure("Scheduler: failed to reschedule all for the following participants:\n"+
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to reschedule all for the following participants:\n"+
                 failedParticipants.join('\n'), succeededParticipants);
         }
-        return this.returnSuccess(succeededParticipants)
+        return ReturnMethods.returnSuccess(succeededParticipants)
     }
     static async rescheduleAllOperationsForID(bot, chatId, config){
         let participant = await participants.get(chatId);
@@ -136,22 +138,22 @@ class ScheduleHandler{
                 tz: participant.parameters.timezone
             }
             let returnObj = await this.scheduleOneQuestion(bot, chatId, qHandler, questionInfo, false);
-            if(returnObj.returnCode === -1){
+            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedQuestions.push(returnObj.data);
-            } else if(returnObj.returnCode === 1){
+            } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
                 succeededQuestions.push(returnObj.data);
             }
         }
 
         if(failedQuestions.length > 0) {
             if(succeededQuestions.length === 0){
-                return this.returnFailure("Scheduler: failed to reschedule the following questions:\n"+
+                return ReturnMethods.returnFailure("Scheduler: failed to reschedule the following questions:\n"+
                     failedQuestions.join('\n'));
             }
-            return this.returnPartialFailure("Scheduler: failed to reschedule the following questions:\n"+
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to reschedule the following questions:\n"+
                 failedQuestions.join('\n'), succeededQuestions);
         }
-        return this.returnSuccess(succeededQuestions)
+        return ReturnMethods.returnSuccess(succeededQuestions)
     }
     static async scheduleAllQuestions(bot, chatId, config, debug = false){
         const qHandler = new QuestionHandler(config);
@@ -163,9 +165,9 @@ class ScheduleHandler{
             let scheduledQuestionInfo = scheduledQuestionsList[i];
             scheduledQuestionInfo["tz"] = participant.parameters.timezone;
             let scheduleObj = await this.scheduleOneQuestion(bot, chatId, qHandler, scheduledQuestionInfo,true);
-            if(scheduleObj.returnCode === -1){
+            if(scheduleObj.returnCode === DevConfig.FAILURE_CODE){
                 failedQuestions.push(scheduleObj.data)
-            } else if(scheduleObj.returnCode === 1){
+            } else if(scheduleObj.returnCode === DevConfig.SUCCESS_CODE){
                 // TODO: send a message about the scheduled messages anyway, or only when debug mode?
                 if(debug || !debug) {
                     await MessageSender.sendMessage(bot, chatId,
@@ -178,34 +180,15 @@ class ScheduleHandler{
 
         if(failedQuestions.length > 0) {
             if(succeededQuestions.length === 0){
-                return this.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
                     failedQuestions.join('\n'));
             }
-            return this.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
                 failedQuestions.join('\n'), succeededQuestions);
         }
-        return this.returnSuccess(succeededQuestions)
+        return ReturnMethods.returnSuccess(succeededQuestions)
     }
-    // TODO: Create return handler class with objects returning both fData and sData
-    static returnSuccess(data){
-        return {
-            returnCode : 1,
-            data : data
-        };
-    }
-    static returnPartialFailure(failData, successData){
-        return {
-            returnCode : 0,
-            failData : failData,
-            successData : successData
-        }
-    }
-    static returnFailure(data){
-        return {
-            returnCode : -1,
-            data : data
-        };
-    }
+   
     // Schedule questions at regular intervals from current time
     // Ignores original scheduled questions for debugging purposes
     static overrideScheduleForIntervals(scheduledQuestions, startTime, interval){
@@ -240,7 +223,7 @@ class ScheduleHandler{
 
         } catch (err){
             let errorMsg = "Scheduler: " + questionInfo.qId + " - Time in the inappropriate format or not specified"
-            return this.returnFailure(errorMsg);
+            return ReturnMethods.returnFailure(errorMsg);
         }
         let scheduleDayIndices = [];
 
@@ -257,7 +240,7 @@ class ScheduleHandler{
             }
         } catch(err){
             let errorMsg = "Scheduler: " + questionInfo.qId + " - On days in incorrect format or not specified"
-            return this.returnFailure(errorMsg)
+            return ReturnMethods.returnFailure(errorMsg)
         }
         let rule = new scheduler.RecurrenceRule();
         rule.dayOfWeek = scheduleDayIndices;
@@ -265,7 +248,7 @@ class ScheduleHandler{
         rule.minute = scheduleMins;
         rule.tz = questionInfo.tz;
 
-        return this.returnSuccess(rule)
+        return ReturnMethods.returnSuccess(rule)
     }
     static async writeOperationInfoToDB(chatId, jobId, questionInfo){
         let jobInfo = {
@@ -283,11 +266,11 @@ class ScheduleHandler{
     }
     static async scheduleOneQuestion(bot, chatId, qHandler, questionInfo, isNew = true){
         if(!("qId" in questionInfo)){
-            return this.returnFailure("Scheduler: Question ID not specified")
+            return ReturnMethods.returnFailure("Scheduler: Question ID not specified")
         }
         let recurrenceRuleObj = this.buildRecurrenceRule(questionInfo);
-        if(recurrenceRuleObj.returnCode === -1) {
-            return this.returnFailure(recurrenceRuleObj.data)
+        if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
+            return ReturnMethods.returnFailure(recurrenceRuleObj.data)
         }
         let recRule = recurrenceRuleObj.data;
         let jobId = chatId + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
@@ -295,8 +278,8 @@ class ScheduleHandler{
         // Assuming error handling in API Controller
         let participant = await participants.get(chatId);
         let questionObj = qHandler.constructQuestionByID(questionInfo.qId, participant.parameters.language);
-        if(questionObj.returnCode === -1) {
-            return this.returnFailure(questionObj.data);
+        if(questionObj.returnCode === DevConfig.FAILURE_CODE) {
+            return ReturnMethods.returnFailure(questionObj.data);
         }
         let question = questionObj.data;
         let job;
@@ -308,9 +291,9 @@ class ScheduleHandler{
             if(isNew) await this.writeOperationInfoToDB(chatId, jobId, questionInfo);
         } catch(err){
             let errorMsg = "Scheduler: Unable to schedule with given params"
-            return this.returnFailure(errorMsg);
+            return ReturnMethods.returnFailure(errorMsg);
         }
-        return this.returnSuccess({
+        return ReturnMethods.returnSuccess({
             jobId: jobId,
             job: job
         });

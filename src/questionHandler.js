@@ -88,11 +88,23 @@ function QuestionHandler(config){
         } else {
             selectedQuestion = selectedQuestionObj.data;
         }
-
         let constructedQuestion = {
             "qId" : qId,
             "text" : selectedQuestion.text[language],
             "qType" : selectedQuestion.qType,
+        }
+
+        // If any of the questions have preset options (qType aliases)
+        if(DevConfig.qTypeAliases.includes(selectedQuestion.qType)){
+            switch(selectedQuestion.qType){
+                case "likert5":
+                    constructedQuestion["qType"] = "singleChoice";
+                    constructedQuestion["options"] = config.phrases.keyboards.likert5Options[language];
+                    break;
+                case "likert7":
+                    constructedQuestion["qType"] = "singleChoice";
+                    constructedQuestion["options"] = config.phrases.keyboards.likert7Options[language];
+            }
         }
 
         const languageDepOptionalParams = ["options", "replyMessages"];
@@ -106,6 +118,7 @@ function QuestionHandler(config){
             let field = otherOptionalParams[i];
             if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field];
         }
+
         return ReturnMethods.returnSuccess(constructedQuestion);
 
     }

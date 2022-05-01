@@ -113,6 +113,14 @@
       "finishedChoosingReply" : {
         "English" : "Choices registered",
         "Deutsch" : "Wahlen erfasst"
+      },
+      "likert5Options" : {
+        "English" : ["SD", "D", "N", "A", "SA"],
+        "Deutsch" : ["SD", "D", "N", "A", "SA"]
+      },
+      "likert7Options" : {
+        "English" : ["SD","D", "SomeD", "N","SomeA", "A", "SA"],
+        "Deutsch" : ["SD","D", "SomeD", "N","SomeA", "A", "SA"]
       }
     },
     "schedule" : {

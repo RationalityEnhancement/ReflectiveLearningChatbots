@@ -7,6 +7,46 @@
   "debug": false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
+  "phrases" : {
+    "answerValidation" : {
+      "option" : {
+        "English" : "Please pick <b>only from the given options</b>",
+        "Deutsch" : "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      }
+    },
+    "keyboards" : {
+      "singleChoice" : {
+        "English" : "Please pick one from the given options",
+        "Deutsch" : "Bitte wählen Sie eine aus den vorgebenen Optionen"
+      },
+      "multiChoice" : {
+        "English" : "Please choose as many options as you like. Click Done to finish choosing.",
+        "Deutsch" : "Bitte wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
+      },
+      "terminateMultipleChoice" : {
+        "English" : "Done",
+        "Deutsch" : "Fertig"
+      },
+      "finishedChoosingReply" : {
+        "English" : "Your choices have been registered",
+        "Deutsch" : "Ihre Wahlen sind erfasst worden"
+      },
+      "likert5Options" : {
+        "English" : ["Strongly Disagree", "Disagree", "Neither", "Agree", "Strongly Agree"],
+        "Deutsch" : ["Stimme vollständig nicht zu", "Stimme nicht zu", "Weder noch", "Stimme zu", "Stimme vollständig zu"]
+      },
+      "likert7Options" : {
+        "English" : ["Strongly Disagree","Disagree", "Somewhat Disagree", "Neither","Somewhat Agree", "Agree", "Strongly Agree"],
+        "Deutsch" : ["Stimme vollständig nicht zu", "Stimme nicht zu", "Stimme eher nicht zu", "Weder noch", "Stimme eher zu", "Stimme zu", "Stimme vollständig zu"]
+      }
+    },
+    "schedule" : {
+      "scheduleNotif" : {
+        "English" : "Question scheduled for the following time:",
+        "Deutsch" : "Frage geplant zur folgenden Zeit:"
+      }
+    }
+  },
   "languageSelectionQuestion" : "LanguageQuestion",
   "questionCategories" : {
     "chain1": [
@@ -49,6 +89,26 @@
             "DeutschO2"
           ]
         }
+      },
+      {
+        "qId": "likert1",
+        "text": {
+          "English": "LikertEN1",
+          "Deutsch": "LikertDE1"
+        },
+        "qType": "likert5",
+        "nextAction": {
+          "aType" : "sendQuestion",
+          "data" : "chain1.likert2"
+        }
+      },
+      {
+        "qId": "likert2",
+        "text": {
+          "English": "LikertEN2",
+          "Deutsch": "LikertDE2"
+        },
+        "qType": "likert7"
       }
     ],
     "chain2" : [

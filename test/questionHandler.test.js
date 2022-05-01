@@ -1,4 +1,4 @@
-const expect = require('chai').expect;
+const { expect, assert } = require('chai');
 const testConfig = require('../json/test/qHandlerTestConfig.json');
 const DevConfig = require('../json/devConfig.json');
 
@@ -61,6 +61,45 @@ describe('Constructing questions', () => {
         expect(result.data.nextAction.data).to.eql("chain1.q2");
     })
     it('language independent optional params - saveAnswerTo', () => {
+        const result = qHandler.constructQuestionByID("chain1.q1", "Deutsch");
+        expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(result.data.saveAnswerTo).to.eql("pid");
+    })
+    describe('Likert 5', () => {
+        const result = qHandler.constructQuestionByID("chain1.likert1", "English");
+        let question = result.data;
+        it('Should return success and have correct qId', () => {
+            expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(question.qId).to.equal('chain1.likert1');
+        })
+        it('Should have singleChoice as qType', () => {
+            expect(question.qType).to.equal('singleChoice');
+        })
+        it('Should have 5 options, of which one is Agree', () => {
+            expect(question.options.length).to.equal(5);
+            assert(question.options.includes("Agree"));
+        })
+        it('Should have optional param nextAction', () => {
+            assert("nextAction" in question);
+            expect(question.nextAction.data).to.equal("chain1.likert2");
+        })
+    })
+    describe('Likert 7', () => {
+        const result = qHandler.constructQuestionByID("chain1.likert2", "Deutsch");
+        let question = result.data;
+        it('Should return success and have correct qId', () => {
+            expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(question.qId).to.equal('chain1.likert2');
+        })
+        it('Should have singleChoice as qType', () => {
+            expect(question.qType).to.equal('singleChoice');
+        })
+        it('Should have 7 options, of which one is Weder noch', () => {
+            expect(question.options.length).to.equal(7);
+            assert(question.options.includes("Weder noch"));
+        })
+    })
+    it('Like', () => {
         const result = qHandler.constructQuestionByID("chain1.q1", "Deutsch");
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         expect(result.data.saveAnswerTo).to.eql("pid");

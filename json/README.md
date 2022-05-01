@@ -12,7 +12,7 @@ An experiment is completely defined by a JSON file. This will have to be named "
 
 The remainder of this description will show you the mandatory and optional features an experiment requires to run.
 
-Follow this documentation along with an [example experiment configuration](./exampleConfig.json) to see how the following example would translate into an actual document. 
+Follow this documentation along with an [example experiment configuration](json/others/exampleConfig.json) to see how the following example would translate into an actual document. 
 
 ```
 experimentName : "ExampleExperiment"                    // Mandatory: name of your experiment 

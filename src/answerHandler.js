@@ -1,6 +1,7 @@
 const participants = require("./apiControllers/participantApiController");
-const MessageSender = require("./messageSender");
 const config = require("../json/config.json");
+const DevConfig = require('../json/devConfig.json');
+const ReturnMethods = require('./returnMethods');
 
 /**
  * Answer handler class that takes in a config as a parameter
@@ -12,258 +13,145 @@ const config = require("../json/config.json");
  *              using 'require('...json')'
  */
 
-function AnswerHandler(config){
+class AnswerHandler{
 
-    let returnError = (data) => {
-        return {
-            "returnCode" : -1,
-            "data" : data
-        };
-    }
-    let returnSuccess = (data) => {
-        return {
-            "returnCode" : 1,
-            "data" : data
+    /**
+     *
+     * Wrapping up answering for any question type
+     *
+     * @param chatId chatId of the participant
+     * @param currentQuestion current question that has just been answered
+     * @param fullAnswer String if single answer, array of strings otherwise
+     * @returns {Promise<{returnCode: *, data: *}>}
+     *          if success, return instruction to calling function to move on from current question
+     *          if failure, return error message
+     */
+    static async finishAnswering(chatId, currentQuestion, fullAnswer){
+        try{
+            // Save answer to parameters if necessary
+            if(!!currentQuestion.saveAnswerTo){
+                await participants.updateParameter(chatId, currentQuestion.saveAnswerTo, fullAnswer);
+            }
+        } catch(e){
+            ReturnMethods.returnFailure("AHandler: unable to update parameter with answer")
         }
+
+        try{
+            // Add the answer to the list of answers in the database
+            // If the answer is a string, convert to array
+            let answerConv = (typeof fullAnswer === "string") ? [fullAnswer] : fullAnswer;
+            const answer = {
+                qId: currentQuestion.qId,
+                text: currentQuestion.text,
+                timeStamp: new Date(),
+                answer: answerConv
+            };
+            await participants.addAnswer(chatId, answer);
+        } catch(e){
+            ReturnMethods.returnFailure("AHandler: unable to add answer")
+        }
+
+        try{
+            // Update that answer is no longer being expected
+            await participants.updateField(chatId, "currentState", "answerReceived");
+        } catch(e){
+            ReturnMethods.returnFailure("AHandler: unable to save participant")
+        }
+        // Trigger the next action
+        return ReturnMethods.returnSuccess(DevConfig.NEXT_ACTION_STRING)
+
     }
 
-    let finishAnswer = (currentQuestion) => {
+    /**
+     *
+     * Process any incoming text based on the current state of the chatbot for participant
+     * and expected response for the current question
+     *
+     * @param participant participant database object, must contain fields chatId, currentQuestion and currentState
+     * @param answerText the text that is supposed to be processed
+     * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}|{returnCode: *, data: *}>}
+     */
+    static async processAnswer(participant, answerText){
 
-    }
-
-    let processAnswer = async (participant, currentQuestion, answerText) => {
+        // Error handling to ensure that the participant has the required fields
+        if(!participant){
+            return ReturnMethods.returnFailure("AHandler: Participant not available")
+        }
+        if(!("chatId" in participant)){
+            return ReturnMethods.returnFailure("AHandler: Chat ID not found")
+        }
+        if(!("currentQuestion" in participant)){
+            return ReturnMethods.returnFailure("AHandler: Current question not found")
+        }
+        if(!("currentState" in participant)){
+            return ReturnMethods.returnFailure("AHandler: Current state not found")
+        }
         // Process an answer only if an answer is expected
+        if(!["awaitingAnswer"].includes(participant.currentState)){
+            return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
+        }
+
+        let currentQuestion = participant.currentQuestion;
+
+        // If answer is expected
         if(participant.currentState === 'awaitingAnswer'){
 
-            // Validate answer if the question type is recognized
-            if(!("qType" in currentQuestion)){
-                console.log(currentQuestion);
-                console.error("ERROR: Question is missing question type");
-                return;
-            }
             switch(currentQuestion["qType"]){
                 // If the expected answer is one from a list of possible answers
                 case 'singleChoice':
                     // Process answer if it is one of the valid options
-                    if(currentQuestion.options.includes(answerText)){
-                        // Save the answer to participant parameters if that options is specified
-                        if(currentQuestion.saveAnswerTo){
-                            await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, answerText);
+
+                    try{
+                        if(currentQuestion.options.includes(answerText)){
+                            // Complete answering
+                            let finishObj = await this.finishAnswering(participant.chatId, currentQuestion, answerText);
+                            // Return failure or trigger the next action
+                            return finishObj;
+                        } else {
+                            return ReturnMethods.returnPartialFailure(config.phrases.answerValidation.option[participant.parameters.language], DevConfig.REPEAT_QUESTION_STRING)
                         }
-                        // TODO: Remove keyboard if answer is acceptable, in case they typed in a correct answer
-                        // Add the answer to the list of answers in the database
-                        const answer = {
-                            qId: currentQuestion.id,
-                            text: currentQuestion.text,
-                            timeStamp: new Date(),
-                            answer: [answerText]
-                        };
-                        await participants.addAnswer(ctx.from.id, answer);
-                        await participants.updateField(ctx.from.id, "currentState", "answerReceived");
-
-                        // Send replies to the answer, if any
-                        await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
-
-                        // Send the next question, if any
-                        await processNextAction(bot, ctx.from.id);
-                        return;
-
-                    } else {
-                        // TODO: change this to add validation prompts to the question?
-                        // If the answer is not valid, resend the question.
-                        await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.answerValidation.option[participant.parameters.language]);
-                        await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
+                    } catch(e){
+                        return ReturnMethods.returnFailure("AHandler: SC question options or response phrase not found");
                     }
-                    break;
+
 
                 // In case of multi-choice, let user pick as many as possible
                 case 'multiChoice' :
-                    if(currentQuestion.options.includes(answerText)){
-                        // Save the answer to participant's current answer
+                    // Check whether it is a valid option
+                    try{
+                        if(currentQuestion.options.includes(answerText)){
+                            // Save the answer to participant's current answer
+                            await participants.addToCurrentAnswer(participant.chatId, answerText);
+                            return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
 
-                        await participants.updateField(ctx.from.id,"currentState", "answering");
-                        await participants.addToCurrentAnswer(ctx.from.id, answerText);
+                        } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
+                            // If participant is finished answering
+                            let finishObj = await this.finishAnswering(participant.chatId, currentQuestion, participant.currentAnswer);
+                            // Return failure or trigger the next action
+                            return finishObj;
 
-                    } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
-                        const answer = {
-                            qId: currentQuestion.id,
-                            text: currentQuestion.text,
-                            timeStamp: new Date(),
-                            answer: [answerText]
-                        };
-                        // Save the answer to participant parameters if that options is specified
-                        if(currentQuestion.saveAnswerTo){
-                            await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, [answerText]);
+                        } else {
+                            // Repeat the question
+                            return ReturnMethods.returnPartialFailure(config.phrases.answerValidation.option[participant.parameters.language], DevConfig.REPEAT_QUESTION_STRING)
                         }
-                        await participants.addAnswer(ctx.from.id, answer);
-                        await participants.updateField(ctx.from.id, "currentState", "answerReceived");
-
-                        // Send replies to the answer, if any
-                        await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
-
-                        // Send the next question, if any
-                        await processNextAction(bot, ctx.from.id);
-                        return;
-                    } else {
-                        // TODO: change this to add validation prompts to the question?
-                        // If the answer is not valid, resend the question.
-                        await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.answerValidation.option[participant.parameters.language]);
-                        await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
+                    } catch(e){
+                        return ReturnMethods.returnFailure("AHandler: MC question options or response phrase not found");
                     }
-                    break;
+
 
                 // Question with free text input
                 case 'freeform':
-
-                    if(currentQuestion.saveAnswerTo){
-                        await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, answerText);
-                    }
-                    const answer = {
-                        qId: currentQuestion.id,
-                        text: currentQuestion.text,
-                        timeStamp: new Date(),
-                        answer: [answerText]
-                    };
-                    await participants.addAnswer(ctx.from.id, answer);
-                    await participants.updateField(ctx.from.id, "currentState", "answerReceived");
-                    await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
-                    await processNextAction(bot, ctx.from.id);
-                    return;
+                    // Complete answering
+                    let finishObj = await this.finishAnswering(participant.chatId, currentQuestion, answerText);
+                    // Return failure or trigger the next action
+                    return finishObj;
 
                 default:
-                    throw "ERROR: Question type not recognized"
-            }
-        } else if (participant.currentState === "answering"){
-            if(currentQuestion.options.includes(answerText)){
-                // Save the answer to participant's current answer
-                await participants.addToCurrentAnswer(ctx.from.id, answerText);
-
-            } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
-                const answer = {
-                    qId: currentQuestion.id,
-                    text: currentQuestion.text,
-                    timeStamp: new Date(),
-                    answer: participant.currentAnswer
-                };
-                await participants.addAnswer(ctx.from.id, answer);
-                await participants.updateField(ctx.from.id, "currentState", "answerReceived");
-                // Save the answer to participant parameters if that options is specified
-                if(currentQuestion.saveAnswerTo){
-                    await participants.updateParameter(ctx.from.id, currentQuestion.saveAnswerTo, participant.currentAnswer);
-                }
-
-                await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
-                // Send replies to the answer, if any
-                await MessageSender.sendReplies(bot, ctx.from.id, currentQuestion);
-
-                // Send the next question, if any
-                await processNextAction(bot, ctx.from.id);
-
-            } else {
-                // TODO: Don't restart if wrong option entered?
-                // If the answer is not valid, resend the question.
-                await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.answerValidation.option[participant.parameters.language]);
-                await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
+                    return ReturnMethods.returnFailure("AHandler: Question is missing valid question type: " + currentQuestion.qId);
             }
         }
-
     }
 
-    /**
-     * Constructing a question from the config file by the given question ID
-     * and user preferences
-     *
-     * constructedQuestion = {
-     *     qId: "<questionCategoryName>.<questionID>,
-     *     qType: "<questionType>",
-     *     text: "<questionTextInPreferredLanguage>",
-     *     <otherOptionalParameters> : [see variables languageDepOptionalParams
-     *                                     and otherOptionalParams]
-     * }
-     *
-     * @param qId Question ID of the form <questionCategory>.<questionID>
-     * @param language Selected language of the user
-     * @returns {returnCode, data}
-     *          if success, returnCode is 1, data  contains constructedQuestion
-     *          if failure, returnCode is -1 data contains errorMsg
-     */
-
-    this.constructQuestionByID = (qId, language) => {
-
-        if(!config.languages.includes(language)) language = config.defaultLanguage;
-
-        let selectedQuestion;
-
-        let selectedQuestionObj = getQuestionById(qId);
-
-        if(selectedQuestionObj.returnCode == -1) {
-            return returnError(selectedQuestionObj.data);
-        } else {
-            selectedQuestion = selectedQuestionObj.data;
-        }
-
-        let constructedQuestion = {
-            "qId" : qId,
-            "text" : selectedQuestion.text[language],
-            "qType" : selectedQuestion.qType,
-        }
-
-
-        const languageDepOptionalParams = ["options", "replyMessages"];
-        const otherOptionalParams = ["saveAnswerTo", "nextAction"];
-
-        for(let i = 0; i < languageDepOptionalParams.length; i++){
-            field = languageDepOptionalParams[i];
-            if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field][language];
-        }
-        for(let i = 0; i < otherOptionalParams.length; i++){
-            field = otherOptionalParams[i];
-            if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field];
-        }
-        return returnSuccess(constructedQuestion);
-
-    }
-
-    /**
-     * Returns starting question of the question category as defined in the config file
-     * It is the question that contains the "start" field set to the value "true"
-     *
-     * @param categoryName the question category from which first question is to be found
-     * @param language language in which the question should be presented
-     * @returns {{returnCode: number, data}}
-     *          if success, returnCode is 1, data  contains constructedQuestion
-     *          if failure, returnCode is -1 data contains errorMsg
-     */
-    this.getFirstQuestionInCategory = (categoryName, language) => {
-        if(!(categoryName in config.questionCategories)){
-            return returnError("QHandler: Question category " + categoryName + " doesn't exist");
-        }
-        const category = config.questionCategories[categoryName];
-        let selectedQuestion;
-
-        for(let i = 0; i < category.length; i++){
-            let currentQuestion = category[i];
-            if(currentQuestion.start){
-                selectedQuestion = currentQuestion;
-                break;
-            }
-        }
-        if(!selectedQuestion){
-            return returnError("QHandler: Starting question doesn't exist in category " + categoryName)
-        }
-        let fullId = categoryName + "." + selectedQuestion.qId;
-        return this.constructQuestionByID(fullId, language);
-    }
-
-    this.getScheduledQuestions = () => {
-        if(!("scheduledQuestions" in config)){
-            return returnError("QHandler: Scheduled questions not found");
-        }
-        let schQList = config["scheduledQuestions"];
-
-
-
-    }
 }
 
 module.exports = AnswerHandler;

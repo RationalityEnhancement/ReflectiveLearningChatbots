@@ -12,7 +12,6 @@ const DevConfig = require('../json/devConfig.json')
 
 function QuestionHandler(config){
 
-
     /**
      * Validates the question ID and fetches the question from the config
      * file based on the question ID
@@ -55,7 +54,6 @@ function QuestionHandler(config){
             return ReturnMethods.returnFailure("QHandler: Question with qId " + id_ + " doesn't exist in category " + categoryName)
         }
         return ReturnMethods.returnSuccess(selectedQuestion);
-
     }
 
     /**
@@ -101,11 +99,11 @@ function QuestionHandler(config){
         const otherOptionalParams = ["saveAnswerTo", "nextAction"];
 
         for(let i = 0; i < languageDepOptionalParams.length; i++){
-            field = languageDepOptionalParams[i];
+            let field = languageDepOptionalParams[i];
             if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field][language];
         }
         for(let i = 0; i < otherOptionalParams.length; i++){
-            field = otherOptionalParams[i];
+            let field = otherOptionalParams[i];
             if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field];
         }
         return ReturnMethods.returnSuccess(constructedQuestion);

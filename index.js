@@ -2,12 +2,14 @@ require('dotenv').config();
 const mongo = require('mongoose');
 const { Telegraf } = require('telegraf');
 const config = require('./json/config.json');
+const DevConfig = require('./json/devConfig.json');
 const participants = require('./src/apiControllers/participantApiController');
 const experiments = require('./src/apiControllers/experimentApiController');
 const { checkConfig } = require('./src/configChecker');
 const { PIDtoConditionMap } = require('./json/PIDCondMap')
 const MessageSender = require('./src/messageSender')
 const QuestionHandler = require('./src/questionHandler');
+const AnswerHandler = require('./src/answerHandler');
 const ScheduleHandler = require('./src/scheduleHandler');
 const BOT_TOKEN =  process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
@@ -27,6 +29,7 @@ const local = process.argv[2];
 // checkConfig();
 
 const qHandler = new QuestionHandler(config);
+const aHandler = new AnswerHandler(config);
 const bot = new Telegraf(BOT_TOKEN);
 
 
@@ -75,7 +78,7 @@ let sendNextQuestion = async (bot, chatId, nextQuestionId, language) => {
   // Get the updated participant
 
   let nextQObj = qHandler.constructQuestionByID(nextQuestionId, language);
-  if(nextQObj.returnCode === -1){
+  if(nextQObj.returnCode === DevConfig.FAILURE_CODE){
     throw "ERROR: " + nextQObj.data;
   } else {
     let nextQ = nextQObj.data;
@@ -100,7 +103,10 @@ let processNextAction = async (bot, chatId) => {
         let debug = !!config.debug;
         if(debug){
           let nowDateObj = experimentUtils.getNowDateObject(participant.parameters.timezone);
-          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, nowDateObj, 1);
+          if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
+            console.error(nowDateObj.data);
+          }
+          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, nowDateObj.data, 1);
         }
         await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
         break;

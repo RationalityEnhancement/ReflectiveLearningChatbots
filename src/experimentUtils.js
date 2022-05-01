@@ -1,5 +1,37 @@
 const moment = require('moment-timezone')
+const ReturnMethods = require('./returnMethods')
+const DevConfig = require('../json/devConfig.json');
 
+/**
+ * Selects the appropriate condition assignment depending on whether the
+ * conditions of variables are met for that condition assignment
+ *
+ * @param participantId the Id of the participant
+ * @param pidMap mapping between Ids and condition indices
+ * @param assignmentScheme the assignment scheme specified in the config file ("pid", "balanced", "random")
+ * @param currentAssignments list of number of participant currently assigned to each condition
+ */
+let resolveAssignmentScheme = (participantId, pidMap, assignmentScheme, currentAssignments) => {
+  let newAssScheme = assignmentScheme;
+  // Assigning by PID map
+  if(newAssScheme === "pid"){
+    // If the PID map doesn't exist, assign balanced
+    //  or if the mapping for that participant ID does not exist in PID map
+    if(!pidMap){
+      newAssScheme = "balanced";
+    } else if(!(participantId in pidMap)) {
+      newAssScheme = "balanced";
+    }
+  }
+  // If no participants are assigned currently for balancing, assign at random
+  if(newAssScheme === "balanced"){
+    if(!currentAssignments.some(val => val > 0)){
+      newAssScheme = "random";
+    }
+  }
+  return newAssScheme;
+}
+module.exports.resolveAssignmentScheme = resolveAssignmentScheme;
 /**
   Assigns to an experiment condition based on input parameters. If there exists
   a pre-existing mapping between PID and condition number, return that. Otherwise
@@ -21,26 +53,38 @@ const moment = require('moment-timezone')
 
 */
 module.exports.assignToCondition = (participantId, pidMap, conditionAssignments, currentAssignments, assignmentScheme) => {
-  if(assignmentScheme === "pid" && participantId in pidMap){
-    return pidMap[participantId];
-  } else {
-    assignmentScheme = "balanced";
+  // Error handling
+  if(!DevConfig.validAssignmentSchemes.includes(assignmentScheme)){
+    return ReturnMethods.returnFailure("ExpUtils: assignmentScheme invalid for condition assignment")
   }
-  if(assignmentScheme === "balanced" && currentAssignments.some(val => val > 0)){
-    totalParts = currentAssignments.reduce((a, b) => a + b, 0);
-    relCurAssignments = currentAssignments.map(n => parseFloat(n / totalParts));
-    
-    relParts = conditionAssignments.reduce((a, b) => a + b, 0);
-    relReqAssignments = conditionAssignments.map(n => parseFloat(n / relParts));
+  if(!conditionAssignments || conditionAssignments.length === 0 || !conditionAssignments.some(val => val > 0)){
+    return ReturnMethods.returnFailure("ExpUtils: condition ratios invalid for condition assignment")
+  }
+  if(!currentAssignments || currentAssignments.length === 0){
+    return ReturnMethods.returnFailure("ExpUtils: current assignments invalid for condition assignment")
+  }
+  if(conditionAssignments.length !== currentAssignments.length){
+    return ReturnMethods.returnFailure("ExpUtils: condition ratios and current assignment do not match length")
+  }
 
-    relDiffs = [];
+
+  let assScheme = resolveAssignmentScheme(participantId, pidMap,assignmentScheme, currentAssignments);
+  if(assScheme === "pid"){
+    return ReturnMethods.returnSuccess(pidMap[participantId]);
+  } else if(assScheme === "balanced"){
+    let totalParts = currentAssignments.reduce((a, b) => a + b, 0);
+    let relCurAssignments = currentAssignments.map(n => parseFloat(n / totalParts));
+    
+    let relParts = conditionAssignments.reduce((a, b) => a + b, 0);
+    let relReqAssignments = conditionAssignments.map(n => parseFloat(n / relParts));
+
+    let relDiffs = [];
     for(let i=0; i < relCurAssignments.length; i++){
       relDiffs.push(relReqAssignments[i] - relCurAssignments[i]);
     }
-    return relDiffs.indexOf(Math.max(...relDiffs));
-
+    return ReturnMethods.returnSuccess(relDiffs.indexOf(Math.max(...relDiffs)));
   } else {
-    return Math.floor(Math.random() * conditionAssignments.length);
+    return ReturnMethods.returnSuccess(Math.floor(Math.random() * conditionAssignments.length));
   }
 }
 
@@ -54,22 +98,36 @@ module.exports.assignToCondition = (participantId, pidMap, conditionAssignments,
  */
 
 let parseMomentDateString = (dateString) => {
-  let dateObj = {};
-  let dateTimeSplit = dateString.split(/[T]/)
-  let date = dateTimeSplit[0];
-  let time = dateTimeSplit[1];
+  let dateObj = {},date,time;
+  try{
+    let dateTimeSplit = dateString.split(/[T]/)
+    date = dateTimeSplit[0];
+    time = dateTimeSplit[1];
+  } catch(e){
+    let errorMsg = "ExpUtils: moment string cannot be split"
+    ReturnMethods.returnFailure(errorMsg);
+  }
+  try{
+    let dateSplit = date.split('-');
+    dateObj.years = parseInt(dateSplit[0]);
+    dateObj.months = parseInt(dateSplit[1]);
+    dateObj.days = parseInt(dateSplit[2]);
+  } catch(e){
+    let errorMsg = "ExpUtils: date cannot be split properly"
+    ReturnMethods.returnFailure(errorMsg);
+  }
 
-  let dateSplit = date.split('-');
-  dateObj.years = parseInt(dateSplit[0]);
-  dateObj.months = parseInt(dateSplit[1]);
-  dateObj.days = parseInt(dateSplit[2]);
+  try{
+    let timeSplit = time.split(/[-\+:]/);
+    dateObj.hours = parseInt(timeSplit[0]);
+    dateObj.minutes = parseInt(timeSplit[1]);
+    dateObj.seconds = parseInt(timeSplit[2]);
+  } catch(e){
+    let errorMsg = "ExpUtils: time cannot be split appropriately"
+    ReturnMethods.returnFailure(errorMsg);
+  }
 
-  let timeSplit = time.split(/[-\+:]/);
-  dateObj.hours = parseInt(timeSplit[0]);
-  dateObj.minutes = parseInt(timeSplit[1]);
-  dateObj.seconds = parseInt(timeSplit[2]);
-
-  return dateObj;
+  return ReturnMethods.returnSuccess(dateObj);
 }
 
 module.exports.parseMomentDateString = parseMomentDateString;

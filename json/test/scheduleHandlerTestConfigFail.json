@@ -37,6 +37,14 @@
       "finishedChoosingReply" : {
         "English" : "Your choices have been registered",
         "Deutsch" : "Ihre Wahlen sind erfasst worden"
+      },
+      "likert5Options" : {
+        "English" : ["Strongly Disagree", "Disagree", "Neither", "Agree", "Strongly Agree"],
+        "Deutsch" : ["Stimme vollständig nicht zu", "Stimme nicht zu", "Weder noch", "Stimme zu", "Stimme vollständig zu"]
+      },
+      "likert7Options" : {
+        "English" : ["Strongly Disagree","Disagree", "Somewhat Disagree", "Neither","Somewhat Agree", "Agree", "Strongly Agree"],
+        "Deutsch" : ["Stimme vollständig nicht zu", "Stimme nicht zu", "Stimme eher nicht zu", "Weder noch", "Stimme eher zu", "Stimme zu", "Stimme vollständig zu"]
       }
     },
     "schedule" : {

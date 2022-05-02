@@ -12,6 +12,7 @@ let schemaObject = {
   experimentId: String,
   chatId: Number,
   conditionIdx: Number,
+  conditionName: String,
   parameters: {},
   debug: Boolean,
   currentAnswer: [String],

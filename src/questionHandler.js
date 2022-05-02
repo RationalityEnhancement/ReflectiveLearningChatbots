@@ -108,7 +108,7 @@ function QuestionHandler(config){
         }
 
         const languageDepOptionalParams = ["options", "replyMessages"];
-        const otherOptionalParams = ["saveAnswerTo", "nextAction"];
+        const otherOptionalParams = ["saveAnswerTo", "nextQuestion", "nextActions"];
 
         for(let i = 0; i < languageDepOptionalParams.length; i++){
             let field = languageDepOptionalParams[i];

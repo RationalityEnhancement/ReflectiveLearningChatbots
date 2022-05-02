@@ -68,10 +68,7 @@
           "Deutsch" : ["English", "Deutsch"]
         },
         "saveAnswerTo" : "language",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "setupQuestions.pIdQuestion"
-        },
+        "nextQuestion" : "setupQuestions.pIdQuestion",
         "start" : true
       },
       {
@@ -90,10 +87,8 @@
             "Danke, Teilnehmer-ID ist erfasst worden"
           ]
         },
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "setupQuestions.timezoneQuestion"
-        }
+        "nextQuestion": "setupQuestions.timezoneQuestion"
+
       },
       {
         "qId": "timezoneQuestion",
@@ -126,11 +121,7 @@
             "Danke, Zeitzone ist erfasst worden"
           ]
         },
-        "nextAction" : {
-          "aType" : "scheduleQuestions",
-          "data" : ""
-        },
-
+        "nextActions" : ["scheduleQuestions", "assignToCondition"],
         "saveAnswerTo": "timezone"
       }
     ],
@@ -142,10 +133,8 @@
           "Deutsch" : "Was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
         },
         "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "morningQuestions.addGoal"
-        }
+        "nextQuestion" :"morningQuestions.addGoal"
+
       },
       {
         "qId" : "addGoal",
@@ -168,10 +157,7 @@
           "Deutsch" : "Wie viele Ziele haben Sie sich heute gesetzt?"
         },
         "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.focus"
-        },
+        "nextQuestion" : "eveningQuestions.focus",
         "start" : true
       },
       {
@@ -181,10 +167,7 @@
           "Deutsch" : "Wie haben Sie entschieden, worauf Sie sich heute fokussieren wollten?"
         },
         "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.relevance"
-        }
+        "nextQuestion" : "eveningQuestions.relevance"
       },
       {
         "qId" : "relevance",
@@ -197,10 +180,7 @@
           "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
           "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
         },
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.emotions"
-        }
+        "nextQuestion" : "eveningQuestions.emotions"
       },
       {
         "qId" : "emotions",
@@ -213,10 +193,7 @@
           "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
           "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
         },
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.emotionsReflection"
-        }
+        "nextQuestion" : "eveningQuestions.emotionsReflection"
       },
       {
         "qId" : "emotionsReflection",
@@ -225,10 +202,7 @@
           "Deutsch" : "Warum haben Sie sich so gefühlt?"
         },
         "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.advice"
-        }
+        "nextQuestion" : "eveningQuestions.advice"
       },
       {
         "qId" : "advice",
@@ -237,10 +211,7 @@
           "Deutsch" : "Basierend auf Ihrer neuen Erfahrung mit Zielsetzung, welchen Ratschlag würden Sie einem neuen Kollegen geben, der neulich in einer ähnlichen Rolle anfängt?"
         },
         "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.planWhat"
-        }
+        "nextQuestion" : "eveningQuestions.planWhat"
       },
       {
         "qId" : "planWhat",
@@ -249,10 +220,7 @@
           "Deutsch" : "Was konkretes werden Sie morgen anders tun?"
         },
         "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.planWhen"
-        }
+        "nextQuestion" : "eveningQuestions.planWhen"
       },
       {
         "qId" : "planWhen",
@@ -261,10 +229,7 @@
           "Deutsch" : "Wann werden Sie es tun?"
         },
         "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.planRemember"
-        }
+        "nextQuestion" : "eveningQuestions.planRemember"
       },
       {
         "qId" : "planRemember",
@@ -273,10 +238,7 @@
           "Deutsch" : "Wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
         },
         "qType" : "freeform",
-        "nextAction" : {
-          "aType" : "sendQuestion",
-          "data" : "eveningQuestions.evaluateReflection"
-        }
+        "nextQuestion" : "eveningQuestions.evaluateReflection"
       },
       {
         "qId" : "evaluateReflection",

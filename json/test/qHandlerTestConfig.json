@@ -67,10 +67,7 @@
             "DeutschReply1"
           ]
         },
-        "nextAction": {
-          "aType" : "sendQuestion",
-          "data" : "chain1.q2"
-        }
+        "nextQuestion": "chain1.q2"
       },
       {
         "qId": "q2",
@@ -97,10 +94,7 @@
           "Deutsch": "LikertDE1"
         },
         "qType": "likert5",
-        "nextAction": {
-          "aType" : "sendQuestion",
-          "data" : "chain1.likert2"
-        }
+        "nextQuestion": "chain1.likert2"
       },
       {
         "qId": "likert2",

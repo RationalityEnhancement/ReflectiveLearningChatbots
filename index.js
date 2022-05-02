@@ -86,32 +86,40 @@ let sendNextQuestion = async (bot, chatId, nextQuestionId, language) => {
 
 }
 
-// Process what happens next based on the nextAction of the question
-let processNextAction = async (bot, chatId) => {
+// Process what happens next based on the next actions,
+//  reply messages, or next questions
+let processNextSteps = async (bot, chatId) => {
   let participant = await getParticipant(chatId)
   let currentQuestion = participant.currentQuestion;
-
-  if(!!currentQuestion.nextAction.aType){
-    let action = currentQuestion.nextAction;
-    switch(action["aType"]){
-      case "sendQuestion":
-        await sendNextQuestion(bot, chatId, action.data, participant.parameters.language);
-        break;
-      case "scheduleQuestions":
-        // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
-        let debug = !!config.debug;
-        if(debug){
-          let nowDateObj = experimentUtils.getNowDateObject(participant.parameters.timezone);
-          if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
-            console.error(nowDateObj.data);
+  // Process all next actions
+  if(!!currentQuestion.nextActions && currentQuestion.nextActions.length > 0){
+    console.log("Found actions: " + currentQuestion.nextActions.join(', '));
+    for(let i = 0; i < currentQuestion.nextActions.length; i++){
+      let aType = currentQuestion.nextActions[i];
+      switch(aType){
+        case "scheduleQuestions":
+          // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
+          let debug = !!config.debug;
+          if(debug){
+            let nowDateObj = experimentUtils.getNowDateObject(participant.parameters.timezone);
+            if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
+              console.error(nowDateObj.data);
+            }
+            ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, nowDateObj.data, 1);
           }
-          ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, nowDateObj.data, 1);
-        }
-        await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
-        break;
-      default:
-        console.log("action type not recognized");
+          await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
+          break;
+        default:
+          throw "ERROR: aType not recognized"
+      }
     }
+  }
+  // Send replies to the answer, if any
+  await MessageSender.sendReplies(bot, chatId, currentQuestion);
+
+  // Process all next questions
+  if(!!currentQuestion.nextQuestion){
+    await sendNextQuestion(bot, chatId, currentQuestion.nextQuestion, participant.parameters.language);
   }
 }
 
@@ -256,10 +264,8 @@ bot.on('text', async ctx => {
         if(participant.currentQuestion.qType === "multiChoice"){
           await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
         }
-        // Send replies to the answer, if any
-        await MessageSender.sendReplies(bot, ctx.from.id, participant.currentQuestion);
-        // Send the next question, if any
-        await processNextAction(bot, ctx.from.id);
+        // Process the next steps
+        await processNextSteps(bot, ctx.from.id);
       }
       break;
 

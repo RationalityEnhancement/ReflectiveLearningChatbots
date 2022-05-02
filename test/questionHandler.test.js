@@ -58,7 +58,7 @@ describe('Constructing questions', () => {
     it('language independent optional params - next question', () => {
         const result = qHandler.constructQuestionByID("chain1.q1", "Deutsch");
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        expect(result.data.nextAction.data).to.eql("chain1.q2");
+        expect(result.data.nextQuestion).to.eql("chain1.q2");
     })
     it('language independent optional params - saveAnswerTo', () => {
         const result = qHandler.constructQuestionByID("chain1.q1", "Deutsch");
@@ -79,9 +79,9 @@ describe('Constructing questions', () => {
             expect(question.options.length).to.equal(5);
             assert(question.options.includes("Agree"));
         })
-        it('Should have optional param nextAction', () => {
-            assert("nextAction" in question);
-            expect(question.nextAction.data).to.equal("chain1.likert2");
+        it('Should have optional param nextQuestion', () => {
+            assert("nextQuestion" in question);
+            expect(question.nextQuestion).to.equal("chain1.likert2");
         })
     })
     describe('Likert 7', () => {

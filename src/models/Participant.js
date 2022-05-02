@@ -22,10 +22,8 @@ let schemaObject = {
     options: [String],
     saveAnswerTo: String,
     replyMessages: [String],
-    nextAction: {
-      aType: String,
-      data: String
-    }
+    nextActions: [String],
+    nextQuestion: String
   },
   currentState: String,
   answers:

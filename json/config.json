@@ -135,7 +135,7 @@
           {
             "qId" : "mainGoal",
             "text" : {
-              "English" : "(Control) What is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "English" : "What is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
               "Deutsch" : "Was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
             },
             "qType" : "freeform",
@@ -222,7 +222,7 @@
           {
             "qId" : "planWhat",
             "text" : {
-              "English" : "What concretely will you do will you do differently tomorrow?",
+              "English" : "What concretely will you do differently tomorrow?",
               "Deutsch" : "Was konkretes werden Sie morgen anders tun?"
             },
             "qType" : "freeform",
@@ -366,7 +366,7 @@
           {
             "qId" : "planWhat",
             "text" : {
-              "English" : "what concretely will you do will you do differently tomorrow?",
+              "English" : "what concretely will you do differently tomorrow?",
               "Deutsch" : "was konkretes werden Sie morgen anders tun?"
             },
             "qType" : "freeform",

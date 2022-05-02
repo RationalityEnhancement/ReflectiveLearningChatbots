@@ -284,7 +284,8 @@ class ScheduleHandler{
         // Assuming error handling in API Controller
         let participant = await participants.get(chatId);
         let partLang = participant.parameters.language;
-        let partCond = participant.parameters.conditionIdx;
+        let partCond = participant["conditionName"];
+
         let questionObj = qHandler.constructQuestionByID(partCond, questionInfo.qId, partLang);
         if(questionObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(questionObj.data);

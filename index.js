@@ -70,10 +70,9 @@ let getExperiment = async (experimentId) => {
 }
 
 // Send the next question
-let sendNextQuestion = async (bot, chatId, nextQuestionId, language) => {
+let sendNextQuestion = async (bot, chatId, nextQuestionId, conditionName, language) => {
   // Get the updated participant
-
-  let nextQObj = qHandler.constructQuestionByID(nextQuestionId, language);
+  let nextQObj = qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
   if(nextQObj.returnCode === DevConfig.FAILURE_CODE){
     throw "ERROR: " + nextQObj.data;
   } else {
@@ -87,6 +86,8 @@ let sendNextQuestion = async (bot, chatId, nextQuestionId, language) => {
 //  reply messages, or next questions
 let processNextSteps = async (bot, chatId) => {
   let participant = await getParticipant(chatId)
+  let partLang = participant.parameters.language;
+  let partCond = participant.conditionName;
   let currentQuestion = participant.currentQuestion;
   let debug = !!config.debug;
 
@@ -106,9 +107,20 @@ let processNextSteps = async (bot, chatId) => {
             if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
               console.error(nowDateObj.data);
             }
-            ScheduleHandler.overrideScheduleForIntervals(config.scheduledQuestions, nowDateObj.data, 1);
+            let qHandler = new QuestionHandler(config);
+            let schQObj = qHandler.getScheduledQuestions(partCond);
+            if(schQObj.returnCode === DevConfig.FAILURE_CODE){
+              throw "ERROR: " + schQObj.data;
+            }
+
+            ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
           }
-          await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
+          let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
+          if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            throw "ERROR: " + returnObj.data;
+          } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
+            throw "PARTIAL ERROR: " + returnObj.data;
+          }
           break;
         case "assignToCondition":
           let experiment = await experiments.get(config.experimentId);
@@ -124,10 +136,12 @@ let processNextSteps = async (bot, chatId) => {
             break;
           }
           let assignedConditionIdx = conditionObj.data;
+          let conditionName = conditionNames[assignedConditionIdx];
           if(debug){
-            await MessageSender.sendMessage(bot, chatId, "You have been assigned to condition: " + conditionNames[assignedConditionIdx]);
+            await MessageSender.sendMessage(bot, chatId, "You have been assigned to condition: " + conditionName);
           }
           await participants.updateField(chatId, "conditionIdx", assignedConditionIdx);
+          await participants.updateField(chatId, "conditionName", conditionName);
           await experiments.updateConditionAssignees(config.experimentId, assignedConditionIdx, 1);
           break;
         default:
@@ -138,7 +152,7 @@ let processNextSteps = async (bot, chatId) => {
 
   // Process all next questions
   if(!!currentQuestion.nextQuestion){
-    await sendNextQuestion(bot, chatId, currentQuestion.nextQuestion, participant.parameters.language);
+    await sendNextQuestion(bot, chatId, currentQuestion.nextQuestion, partCond, partLang);
   }
 }
 
@@ -199,6 +213,7 @@ bot.command('delete_me', async ctx => {
 bot.command('delete_exp', async ctx => {
   // TODO: Delete all participants when experiment is deleted?
   // TODO: OR add up all participants when experiment is created again?
+  // TODO: OR perhaps recount each time the experiment starts up for a sanity check?
   try{
     let experiment = await experiments.get(config.experimentId);
     if(!experiment) {
@@ -264,7 +279,7 @@ bot.start(async ctx => {
   }
 
   // Start the setup question chain
-  let curQuestionObj = qHandler.getFirstQuestionInCategory("setupQuestions", config.defaultLanguage);
+  let curQuestionObj = qHandler.getFirstQuestionInCategory(undefined, "setupQuestions", config.defaultLanguage);
   if(curQuestionObj.returnCode === -1){
     throw "ERROR: " + curQuestionObj.data;
   } else {
@@ -328,22 +343,22 @@ bot.on('text', async ctx => {
 });
 
 // Reschedule all operations after server restart
-ScheduleHandler.rescheduleAllOperations(bot, config);
+ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
+  console.log('Listening to humans');
+  if(!!local && local === "-l"){
+    console.log('Local launch')
+    bot.launch();
+  } else {
+    console.log('Server launch');
+    bot.launch({
+      webhook: {
+        domain: URL,
+        port: PORT
+      }
+    });
+  }
+});
 
-console.log('Listening to humans');
-
-if(!!local && local === "-l"){
-  console.log('Local launch')
-  bot.launch();
-} else {
-  console.log('Server launch');
-  bot.launch({
-    webhook: {
-      domain: URL,
-      port: PORT
-    }
-  });
-}
 
 /**
 // handle /delete_me command

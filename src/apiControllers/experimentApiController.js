@@ -66,6 +66,7 @@ exports.initializeExperiment = async (experimentId, experimentName, experimentCo
     experiment["experimentConditions"] = experimentConditions;
     experiment["conditionAssignments"] = conditionAssignments;
     experiment["currentlyAssignedToCondition"] = new Array(experimentConditions.length).fill(0);
+    // experiment["currentlyAssignedToCondition"][0] = 1;
     let savedExp = await experiment.save();
     return savedExp;
   } catch (err) {

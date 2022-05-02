@@ -87,6 +87,7 @@
             "Danke, Teilnehmer-ID ist erfasst worden"
           ]
         },
+        "nextActions" : ["assignToCondition"],
         "nextQuestion": "setupQuestions.timezoneQuestion"
 
       },
@@ -121,7 +122,7 @@
             "Danke, Zeitzone ist erfasst worden"
           ]
         },
-        "nextActions" : ["scheduleQuestions", "assignToCondition"],
+        "nextActions" : ["scheduleQuestions"],
         "saveAnswerTo": "timezone"
       }
     ],

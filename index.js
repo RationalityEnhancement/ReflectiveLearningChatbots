@@ -6,7 +6,7 @@ const DevConfig = require('./json/devConfig.json');
 const participants = require('./src/apiControllers/participantApiController');
 const experiments = require('./src/apiControllers/experimentApiController');
 const { checkConfig } = require('./src/configChecker');
-const { PIDtoConditionMap } = require('./json/PIDCondMap')
+const PIDtoConditionMap = require('./json/PIDCondMap.json')
 const MessageSender = require('./src/messageSender')
 const QuestionHandler = require('./src/questionHandler');
 const AnswerHandler = require('./src/answerHandler');
@@ -16,10 +16,7 @@ const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
 const moment = require('moment-timezone')
 
-const {
-  assignToCondition
-} = require('./src/experimentUtils')
-const experimentUtils = require("./src/experimentUtils");
+const ExperimentUtils = require("./src/experimentUtils");
 
 const local = process.argv[2];
 
@@ -91,17 +88,21 @@ let sendNextQuestion = async (bot, chatId, nextQuestionId, language) => {
 let processNextSteps = async (bot, chatId) => {
   let participant = await getParticipant(chatId)
   let currentQuestion = participant.currentQuestion;
+  let debug = !!config.debug;
+
+  // Send replies to the answer, if any
+  await MessageSender.sendReplies(bot, chatId, currentQuestion);
+
   // Process all next actions
   if(!!currentQuestion.nextActions && currentQuestion.nextActions.length > 0){
-    console.log("Found actions: " + currentQuestion.nextActions.join(', '));
     for(let i = 0; i < currentQuestion.nextActions.length; i++){
       let aType = currentQuestion.nextActions[i];
       switch(aType){
         case "scheduleQuestions":
           // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
-          let debug = !!config.debug;
+
           if(debug){
-            let nowDateObj = experimentUtils.getNowDateObject(participant.parameters.timezone);
+            let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
             if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
               console.error(nowDateObj.data);
             }
@@ -109,13 +110,31 @@ let processNextSteps = async (bot, chatId) => {
           }
           await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
           break;
+        case "assignToCondition":
+          let experiment = await experiments.get(config.experimentId);
+          let ID = participant.parameters.pId;
+          if(!ID) ID = chatId;
+          let scheme = config.assignmentScheme;
+          let conditionRatios = experiment["conditionAssignments"];
+          let currentAssignments = experiment["currentlyAssignedToCondition"];
+          let conditionNames = experiment["experimentConditions"];
+          let conditionObj = ExperimentUtils.assignToCondition(ID, PIDtoConditionMap, conditionRatios, currentAssignments, scheme);
+          if(conditionObj.returnCode === DevConfig.FAILURE_CODE){
+            throw "ERROR: " + conditionObj.data;
+            break;
+          }
+          let assignedConditionIdx = conditionObj.data;
+          if(debug){
+            await MessageSender.sendMessage(bot, chatId, "You have been assigned to condition: " + conditionNames[assignedConditionIdx]);
+          }
+          await participants.updateField(chatId, "conditionIdx", assignedConditionIdx);
+          await experiments.updateConditionAssignees(config.experimentId, assignedConditionIdx, 1);
+          break;
         default:
           throw "ERROR: aType not recognized"
       }
     }
   }
-  // Send replies to the answer, if any
-  await MessageSender.sendReplies(bot, chatId, currentQuestion);
 
   // Process all next questions
   if(!!currentQuestion.nextQuestion){
@@ -170,6 +189,26 @@ bot.command('delete_me', async ctx => {
     await experiments.updateConditionAssignees(config.experimentId, conditionIdx, -1);
     ctx.reply('Successfully deleted all your data. To use the bot again, use /start.');
     console.log(`${ctx.from.id} removed`);
+
+  } catch(err){
+    console.log('Failed to delete participant');
+    console.error(err);
+  }
+});
+
+bot.command('delete_exp', async ctx => {
+  // TODO: Delete all participants when experiment is deleted?
+  // TODO: OR add up all participants when experiment is created again?
+  try{
+    let experiment = await experiments.get(config.experimentId);
+    if(!experiment) {
+      console.log('Experiment does not exist!')
+      return;
+    }
+
+    await experiments.remove(config.experimentId);
+    ctx.reply('Successfully deleted your experiment.');
+    console.log(`Experiment ${config.experimentId} removed`);
 
   } catch(err){
     console.log('Failed to delete participant');

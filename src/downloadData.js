@@ -48,6 +48,8 @@ const config = require('../json/config.json');
     } catch(error) {
         throw "ERROR: Unable to create experiment directory\n" + error;
     }
+
+    // Write to JSON
     let dataObj = {experiment: experiment, participants: pList};
     let jsonFilePath = path.join(experimentPath, 'data.json');
     try{
@@ -55,6 +57,53 @@ const config = require('../json/config.json');
         console.log("Written to JSON!")
     } catch(err) {
         throw "ERROR: Unable to write to JSON file\n" + error;
+    }
+
+    // Write to CSV
+    let experimentCSVPath = path.join(experimentPath, 'experiment_data.csv');
+    let participantCSVPath = path.join(experimentPath, 'participant_data.csv');
+    try{
+        let experimentHeaders = ["experimentId", "experimentName", "experimentConditions", "conditionRatios", "currentlyAssigned"];
+        let experimentList = [];
+        experimentList.push(experiment.experimentId);
+        experimentList.push(experiment.experimentName);
+        experimentList.push(experiment.experimentConditions.join('-'));
+        experimentList.push(experiment.conditionAssignments.join('-'));
+        experimentList.push(experiment.currentlyAssignedToCondition.join(''));
+        let CSVString = experimentHeaders.join(',') + '\n' + experimentList.join(',');
+        fs.writeFileSync(experimentCSVPath, CSVString);
+        console.log("Written experiment to CSV!")
+    } catch(err) {
+        throw "ERROR: Unable to write experiment to CSV file\n" + error;
+    }
+    try{
+        let participantHeaders = ["chatId", "experimentId", "conditionName"];
+        // for(const [key, value] of Object.entries(pList[0].parameters)){
+        //     participantHeaders.push("parameters/"+key);
+        // }
+        participantHeaders.push("parameters");
+        participantHeaders.push("scheduledQuestions");
+        participantHeaders.push("answers");
+        let CSVString = participantHeaders.join(',');
+        for(let i = 0; i < pList.length; i++){
+            let curPart = pList[i];
+            let participantValues = [curPart.chatId, curPart.experimentId, curPart.conditionName];
+            // for(const [key, value] of Object.entries(participant.parameters)){
+            //     if(Array.isArray(value)){
+            //         participantValues.push(value.join('|'))
+            //     } else {
+            //         participantValues.push(value);
+            //     }
+            // }
+            participantValues.push(JSON.stringify(curPart.parameters).replace(/,/g,"|"));
+            participantValues.push(JSON.stringify(curPart.scheduledOperations["questions"]).replace(/,/g,'|'))
+            participantValues.push(JSON.stringify(curPart.answers).replace(/,/g,'|'))
+            CSVString += '\n' + participantValues.join(',')
+            fs.writeFileSync(participantCSVPath, CSVString);
+            console.log("Written participants to CSV!")
+        }
+    } catch(error){
+        throw "ERROR: Unable to write participants to CSV file\n" + error;
     }
 
     await mongo.connection.close();

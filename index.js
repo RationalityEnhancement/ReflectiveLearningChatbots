@@ -123,7 +123,7 @@ let processNextSteps = async (bot, chatId) => {
           }
           break;
         case "assignToCondition":
-          let experiment = await experiments.get(config.experimentId);
+          let experiment = await getExperiment(config.experimentId);
           let ID = participant.parameters.pId;
           if(!ID) ID = chatId;
           let scheme = config.assignmentScheme;

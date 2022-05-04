@@ -29,6 +29,14 @@ exports.get = async (chatId) => {
   }
 }
 
+exports.getByExperimentId = async (experimentId) => {
+  try {
+    return Participant.find({ experimentId: experimentId });
+  } catch(err) {
+    console.error(err);
+  }
+}
+
 // Add a new document with a given chat ID
 exports.add = async (chatId) => {
   try {

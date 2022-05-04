@@ -8,6 +8,8 @@ const {assert, expect} = require('chai');
 
 
 const testId = 123;
+const testId2 = 321;
+const testExptId = '98867';
 describe('Participant Controller API: ', () =>{
 		
 
@@ -34,7 +36,6 @@ describe('Participant Controller API: ', () =>{
 		
 	});
 	it('Should initialize a participant', async() => {
-		const testExptId = '98867';
 		const testDefaultLang = 'Shona';
 		const expectedParams = {
 			"language": "Shona",
@@ -44,6 +45,33 @@ describe('Participant Controller API: ', () =>{
 		expect(newPart['experimentId']).to.equal(testExptId);
 		expect(newPart['parameters']['language']).to.eql("Shona");
 		expect(newPart['currentState']).to.equal("starting");
+	})
+	it('Should add and get participant - 2', async () => {
+
+		await participants.add(testId2);
+		var participant = await participants.get(testId2);
+		expect(participant).to.not.be.null;
+		expect(participant.chatId).to.equal(testId2);
+
+
+	});
+	it('Should initialize a participant - 2', async() => {
+
+		const testDefaultLang = 'Shona';
+		const expectedParams = {
+			"language": "Shona",
+		};
+		let savedPart = await participants.initializeParticipant(testId2, testExptId, testDefaultLang);
+		let newPart = await participants.get(testId2);
+		expect(newPart['experimentId']).to.equal(testExptId);
+		expect(newPart['parameters']['language']).to.eql("Shona");
+		expect(newPart['currentState']).to.equal("starting");
+	})
+	it('Should get all participants by experiment ID', async() => {
+		let pList = await participants.getByExperimentId(testExptId);
+		expect(pList.length).to.equal(2);
+		expect(pList[0].chatId).to.equal(testId);
+		expect(pList[1].chatId).to.equal(testId2);
 	})
 	it('Should update Number field', async () => {
 		

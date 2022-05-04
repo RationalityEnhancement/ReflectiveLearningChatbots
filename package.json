@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha --exit",
     "start": "node index.js",
-    "start-local": "node index.js -l"
+    "start-local": "node index.js -l",
+    "download-data" : "node src/downloadData.js"
   },
   "repository": {
     "type": "git",

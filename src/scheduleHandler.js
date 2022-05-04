@@ -5,7 +5,6 @@ const ReturnMethods = require('./returnMethods');
 const MessageSender = require('./messageSender')
 const assert = require('chai').assert
 const DevConfig = require('../json/devConfig.json');
-const moment = require('moment-timezone');
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -158,7 +157,14 @@ class ScheduleHandler{
     static async scheduleAllQuestions(bot, chatId, config, debug = false){
         const qHandler = new QuestionHandler(config);
         const participant = await participants.get(chatId);
-        let scheduledQuestionsList = config["scheduledQuestions"];
+
+        let partCond = participant["conditionName"];
+        let partLang = participant.parameters.language;
+        let schQObj = qHandler.getScheduledQuestions(partCond);
+        if(schQObj.returnCode === DevConfig.FAILURE_CODE){
+            return schQObj;
+        }
+        let scheduledQuestionsList = schQObj.data;
         let failedQuestions = [];
         let succeededQuestions = [];
         for(let i = 0; i < scheduledQuestionsList.length; i++){
@@ -171,7 +177,7 @@ class ScheduleHandler{
                 // TODO: send a message about the scheduled messages anyway, or only when debug mode?
                 if(debug || !debug) {
                     await MessageSender.sendMessage(bot, chatId,
-                        config.phrases.schedule.scheduleNotif[participant.parameters.language]
+                        config.phrases.schedule.scheduleNotif[partLang]
                         + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '));
                 }
                 succeededQuestions.push(scheduleObj.data)
@@ -277,7 +283,10 @@ class ScheduleHandler{
 
         // Assuming error handling in API Controller
         let participant = await participants.get(chatId);
-        let questionObj = qHandler.constructQuestionByID(questionInfo.qId, participant.parameters.language);
+        let partLang = participant.parameters.language;
+        let partCond = participant["conditionName"];
+
+        let questionObj = qHandler.constructQuestionByID(partCond, questionInfo.qId, partLang);
         if(questionObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(questionObj.data);
         }

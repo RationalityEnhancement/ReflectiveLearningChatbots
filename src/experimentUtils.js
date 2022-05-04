@@ -67,7 +67,6 @@ module.exports.assignToCondition = (participantId, pidMap, conditionAssignments,
     return ReturnMethods.returnFailure("ExpUtils: condition ratios and current assignment do not match length")
   }
 
-
   let assScheme = resolveAssignmentScheme(participantId, pidMap,assignmentScheme, currentAssignments);
   if(assScheme === "pid"){
     return ReturnMethods.returnSuccess(pidMap[participantId]);

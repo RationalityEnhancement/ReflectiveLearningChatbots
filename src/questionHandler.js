@@ -14,14 +14,19 @@ function QuestionHandler(config){
 
     /**
      * Validates the question ID and fetches the question from the config
-     * file based on the question ID
+     * file based on the condition and question ID
      *
+     * If conditionName is undefined, then search for questions in
+     * "questionCategories" of the main experiment portion in the JSON config
+     * file
+     *
+     * @param conditionName String containing the name of the condition
      * @param qId qId String of the form <questionCategory>.<questionId>
      * @returns {returnCode, data}
      *          if success, returnCode is 1, data  contains selectedQuestion
      *          if failure, returnCode is -1 data contains errorMsg
      */
-    let getQuestionById = (qId) => {
+    let getQuestionById = (conditionName, qId) => {
 
         let components;
         try{
@@ -33,14 +38,24 @@ function QuestionHandler(config){
             let errorMsg = "QHandler: Question ID is of incorrect form or does not exist";
             return ReturnMethods.returnFailure(errorMsg)
         }
+        let condition;
+        if(!conditionName){
+            condition = config;
+        } else {
+            if(!(conditionName in config["conditionQuestions"])){
+                let errorMsg = "QHandler: Condition " + conditionName + " does not exist in config file!";
+                return ReturnMethods.returnFailure(errorMsg)
+            }
+            condition = config["conditionQuestions"][conditionName];
+        }
         const categoryName = components[0];
         const id_ = components[1];
 
-        if(!(categoryName in config.questionCategories)){
+        if(!(categoryName in condition.questionCategories)){
             return ReturnMethods.returnFailure("QHandler: Question category " + categoryName + " doesn't exist");
         }
 
-        const category = config.questionCategories[categoryName];
+        const category = condition.questionCategories[categoryName];
         let selectedQuestion;
 
         for(let i = 0; i < category.length; i++){
@@ -60,6 +75,7 @@ function QuestionHandler(config){
      * Constructing a question from the config file by the given question ID
      * and user preferences
      *
+     *
      * constructedQuestion = {
      *     qId: "<questionCategoryName>.<questionID>,
      *     qType: "<questionType>",
@@ -68,6 +84,7 @@ function QuestionHandler(config){
      *                                     and otherOptionalParams]
      * }
      *
+     * @param conditionName condition from which question is to be selected
      * @param qId Question ID of the form <questionCategory>.<questionID>
      * @param language Selected language of the user
      * @returns {returnCode, data}
@@ -75,13 +92,13 @@ function QuestionHandler(config){
      *          if failure, returnCode is -1 data contains errorMsg
      */
 
-    this.constructQuestionByID = (qId, language) => {
+    this.constructQuestionByID = (conditionName, qId, language) => {
 
         if(!config.languages.includes(language)) language = config.defaultLanguage;
 
         let selectedQuestion;
 
-        let selectedQuestionObj = getQuestionById(qId);
+        let selectedQuestionObj = getQuestionById(conditionName, qId);
 
         if(selectedQuestionObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(selectedQuestionObj.data);
@@ -108,7 +125,7 @@ function QuestionHandler(config){
         }
 
         const languageDepOptionalParams = ["options", "replyMessages"];
-        const otherOptionalParams = ["saveAnswerTo", "nextAction"];
+        const otherOptionalParams = ["saveAnswerTo", "nextQuestion", "nextActions"];
 
         for(let i = 0; i < languageDepOptionalParams.length; i++){
             let field = languageDepOptionalParams[i];
@@ -127,17 +144,31 @@ function QuestionHandler(config){
      * Returns starting question of the question category as defined in the config file
      * It is the question that contains the "start" field set to the value "true"
      *
+     * If conditionName is undefined, then search for category in main config file area
+     *
+     * @param conditionName the condition
      * @param categoryName the question category from which first question is to be found
      * @param language language in which the question should be presented
      * @returns {{returnCode: number, data}}
      *          if success, returnCode is 1, data  contains constructedQuestion
      *          if failure, returnCode is -1 data contains errorMsg
      */
-    this.getFirstQuestionInCategory = (categoryName, language) => {
-        if(!(categoryName in config.questionCategories)){
-            return returnError("QHandler: Question category " + categoryName + " doesn't exist");
+    this.getFirstQuestionInCategory = (conditionName, categoryName, language) => {
+
+        let condition;
+        if(!conditionName){
+            condition = config;
+        } else {
+            if(!(conditionName in config["conditionQuestions"])){
+                let errorMsg = "QHandler: Condition " + conditionName + " does not exist in config file!";
+                return ReturnMethods.returnFailure(errorMsg)
+            }
+            condition = config["conditionQuestions"][conditionName];
         }
-        const category = config.questionCategories[categoryName];
+        if(!(categoryName in condition.questionCategories)){
+            return ReturnMethods.returnFailure("QHandler: Question category " + categoryName + " doesn't exist");
+        }
+        const category = condition.questionCategories[categoryName];
         let selectedQuestion;
 
         for(let i = 0; i < category.length; i++){
@@ -151,14 +182,24 @@ function QuestionHandler(config){
             return ReturnMethods.returnFailure("QHandler: Starting question doesn't exist in category " + categoryName)
         }
         let fullId = categoryName + "." + selectedQuestion.qId;
-        return this.constructQuestionByID(fullId, language);
+        return this.constructQuestionByID(conditionName, fullId, language);
     }
 
-    this.getScheduledQuestions = () => {
-        if(!("scheduledQuestions" in config)){
-            return ReturnMethods.returnFailure("QHandler: Scheduled questions not found");
+    this.getScheduledQuestions = (conditionName) => {
+        let condition;
+        if(!conditionName){
+            condition = config;
+        } else {
+            if(!(conditionName in config["conditionQuestions"])){
+                let errorMsg = "QHandler: Condition " + conditionName + " does not exist in config file!";
+                return ReturnMethods.returnFailure(errorMsg)
+            }
+            condition = config["conditionQuestions"][conditionName];
         }
-        let schQList = config["scheduledQuestions"];
+        if(!("scheduledQuestions" in condition)){
+            return ReturnMethods.returnSuccess([]);
+        }
+        let schQList = condition["scheduledQuestions"];
 
         return ReturnMethods.returnSuccess(schQList);
     }

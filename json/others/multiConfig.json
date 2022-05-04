@@ -74,10 +74,7 @@
           ]
         },
         "saveAnswerTo": "language",
-        "nextAction": {
-          "aType": "sendQuestion",
-          "data": "setupQuestions.groupsQuestion"
-        },
+        "nextQuestion": "setupQuestions.groupsQuestion",
         "start": true
       },
       {
@@ -102,10 +99,7 @@
             "Affen"
           ]
         },
-        "nextAction": {
-          "aType": "sendQuestion",
-          "data": "setupQuestions.timezoneQuestion"
-        }
+        "nextQuestion": "setupQuestions.timezoneQuestion"
       },
       {
         "qId": "timezoneQuestion",

@@ -15,10 +15,6 @@ const testMappings = [{
 {
 	chatId : "234",
 	uniqueId: "88486631"
-},
-{
-	chatId : "345",
-	uniqueId: "72737529"
 }];
 
 describe('ID Mappings API: ', () =>{

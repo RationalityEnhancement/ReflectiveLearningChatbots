@@ -63,7 +63,7 @@ describe('Scheduling one question', () =>{
             await participants.updateParameter(testId, "language","English")
             var participant = await participants.get(testId);
             expect(participant).to.not.be.null;
-            expect(participant.chatId).to.equal(testId);
+            expect(participant.uniqueId).to.equal(testId);
             expect(participant.parameters.language).to.equal("English");
 
         });
@@ -73,7 +73,7 @@ describe('Scheduling one question', () =>{
             await participants.updateParameter(testId2, "language","English")
             var participant = await participants.get(testId2);
             expect(participant).to.not.be.null;
-            expect(participant.chatId).to.equal(testId2);
+            expect(participant.uniqueId).to.equal(testId2);
             expect(participant.parameters.language).to.equal("English");
 
         });

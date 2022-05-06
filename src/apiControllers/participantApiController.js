@@ -21,9 +21,9 @@ exports.getAll = async () => {
 }
 
 // Get a single document by chatID
-exports.get = async (chatId) => {
+exports.get = async (uniqueId) => {
   try {
-    return Participant.findOne({ chatId });
+    return Participant.findOne({ uniqueId });
   } catch (err) {
     console.error(err);
   }
@@ -38,10 +38,10 @@ exports.getByExperimentId = async (experimentId) => {
 }
 
 // Add a new document with a given chat ID
-exports.add = async (chatId) => {
+exports.add = async (uniqueId) => {
   try {
     const participant = new Participant();
-    participant.chatId = chatId;
+    participant.uniqueId = uniqueId;
     return participant.save();
   } catch (err) {
     console.error(err);
@@ -50,9 +50,9 @@ exports.add = async (chatId) => {
 
 
 // Initialize the experiment document with some basic essential information
-exports.initializeParticipant = async (chatId, experimentId, defaultLanguage) => {
+exports.initializeParticipant = async (uniqueId, experimentId, defaultLanguage) => {
   try{
-    const participant = await Participant.findOne({ chatId });
+    const participant = await Participant.findOne({ uniqueId });
     participant['experimentId'] = experimentId;
     participant['parameters'] = {
       "language" : defaultLanguage
@@ -66,9 +66,9 @@ exports.initializeParticipant = async (chatId, experimentId, defaultLanguage) =>
 }
 
 // Update the field of a document with a new value
-exports.updateField = async (chatId, field, value) => {
+exports.updateField = async (uniqueId, field, value) => {
   try{
-    let participant = await Participant.findOne({ chatId });  
+    let participant = await Participant.findOne({ uniqueId });  
     participant[field] = value;
     return participant.save();
   } catch(err){
@@ -78,10 +78,10 @@ exports.updateField = async (chatId, field, value) => {
 }
 
 // Update the 'parameters' field of the participant with a new value
-exports.updateParameter = async (chatId, param, value) => {
+exports.updateParameter = async (uniqueId, param, value) => {
 
   try{
-    let participant = await Participant.findOne({ chatId });  
+    let participant = await Participant.findOne({ uniqueId });  
     let updatedParams = participant.parameters;
     updatedParams[param] = value;
     participant.parameters = updatedParams;
@@ -94,9 +94,9 @@ exports.updateParameter = async (chatId, param, value) => {
 
 // Add an answer to the end of a chronological list of answers
 // given by the participants in response to question prompts
-exports.addAnswer = async (chatId, answer) => {
+exports.addAnswer = async (uniqueId, answer) => {
   try{
-    let participant = await Participant.findOne({ chatId });  
+    let participant = await Participant.findOne({ uniqueId });  
     participant.answers.push(answer);
     
     return participant.save();
@@ -106,10 +106,10 @@ exports.addAnswer = async (chatId, answer) => {
   }
 }
 
-exports.hasScheduledQuestion = async (chatId, jobInfo) => {
+exports.hasScheduledQuestion = async (uniqueId, jobInfo) => {
   try{
     let exists = false;
-    let participant = await Participant.findOne({chatId});
+    let participant = await Participant.findOne({uniqueId});
     let scheduledQuestions = participant.scheduledOperations["questions"];
     for(let i = 0; i < scheduledQuestions.length; i++){
       let curQ = scheduledQuestions[i];
@@ -133,10 +133,10 @@ exports.hasScheduledQuestion = async (chatId, jobInfo) => {
   }
 }
 
-exports.addScheduledQuestion = async (chatId, jobInfo) => {
+exports.addScheduledQuestion = async (uniqueId, jobInfo) => {
   try{
-    let participant = await Participant.findOne({ chatId });
-    let hasQAlready = await exports.hasScheduledQuestion(chatId, jobInfo)
+    let participant = await Participant.findOne({ uniqueId });
+    let hasQAlready = await exports.hasScheduledQuestion(uniqueId, jobInfo)
     if(!hasQAlready){
       participant.scheduledOperations["questions"].push(jobInfo);
     }
@@ -147,9 +147,9 @@ exports.addScheduledQuestion = async (chatId, jobInfo) => {
     console.error(err);
   }
 }
-exports.removeScheduledQuestion = async (chatId, jobId) => {
+exports.removeScheduledQuestion = async (uniqueId, jobId) => {
   try{
-    let participant = await Participant.findOne({ chatId });
+    let participant = await Participant.findOne({ uniqueId });
     let scheduledQs = participant.scheduledOperations["questions"];
     let jobIdx = -1;
     for(let i = 0; i < scheduledQs.length; i++){
@@ -169,9 +169,9 @@ exports.removeScheduledQuestion = async (chatId, jobId) => {
   }
 }
 
-exports.addToCurrentAnswer = async (chatId, answerPart) => {
+exports.addToCurrentAnswer = async (uniqueId, answerPart) => {
   try{
-    let participant = await Participant.findOne({ chatId });
+    let participant = await Participant.findOne({ uniqueId });
     let ans = participant.currentAnswer;
     if(!ans.includes(answerPart)){
       participant.currentAnswer.push(answerPart);
@@ -184,9 +184,9 @@ exports.addToCurrentAnswer = async (chatId, answerPart) => {
   }
 }
 
-exports.eraseCurrentAnswer = async (chatId) => {
+exports.eraseCurrentAnswer = async (uniqueId) => {
   try{
-    let participant = await Participant.findOne({ chatId });
+    let participant = await Participant.findOne({ uniqueId });
     participant.currentAnswer = [];
     return participant.save();
   }
@@ -206,9 +206,9 @@ exports.removeAll = async () => {
 }
 
 // remove a single record by chat ID
-exports.remove = async chatId => {
+exports.remove = async uniqueId => {
   try {
-    return Participant.deleteOne({ chatId });
+    return Participant.deleteOne({ uniqueId });
   } catch (err) {
     console.error(err);
   }

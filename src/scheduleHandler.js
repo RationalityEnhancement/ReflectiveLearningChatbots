@@ -104,7 +104,7 @@ class ScheduleHandler{
         for(let i = 0; i < allParticipants.length; i++){
             let curPart = allParticipants[i];
             // TODO: change chatID to uniqueID
-            let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.chatId, config);
+            let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.uniqueId, config);
             if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
                 // Append returned jobs to array of succeeded jobs
                 succeededParticipants.push(...returnObj.data);

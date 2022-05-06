@@ -1,6 +1,7 @@
 const config = require('../json/config.json');
 const participants = require('./apiControllers/participantApiController');
 const InputOptions = require('./inputOptions');
+const AnswerHandler = require('./answerHandler');
 
 /**
  * Sends a question to the bot user based on the type of question
@@ -15,6 +16,10 @@ module.exports.sendQuestion = async (bot, chatId, question) => {
     let participant = await participants.get(chatId);
     let language = participant.parameters.language;
     let delayMs = 300;
+
+    // Handle any outstanding questions before sending next question.
+    await AnswerHandler.handleNoResponse(chatId);
+
     switch(question.qType){
         case 'singleChoice':
             await bot.telegram.sendMessage(chatId, question.text, {

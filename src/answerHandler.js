@@ -2,6 +2,7 @@ const participants = require("./apiControllers/participantApiController");
 const config = require("../json/config.json");
 const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
+const moment = require('moment-timezone');
 
 /**
  * Answer handler class that takes in a config as a parameter
@@ -15,6 +16,43 @@ const ReturnMethods = require('./returnMethods');
 
 class AnswerHandler{
 
+    /**
+     *
+     * If the current question has not been answered by the user in time, and
+     * a new question must be asked, this method is called to update
+     * the answer list to reflect that the user has not responded to a
+     * particular question
+     *
+     * @param chatId the chatId of the user
+     * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
+     *
+     */
+    static async handleNoResponse(chatId){
+        // TODO: error handling for getting participant
+        let participant = await participants.get(chatId);
+
+        // If answer is outstanding
+        if(participant.currentState === 'awaitingAnswer'){
+            let currentAnswer = participant.currentAnswer;
+
+            // Check if there is already some current answer that has not been saved
+            // E.g., in a multi-choice question where the user has not clicked "Done"
+            // If there's no current answer, save the answer as "No response"
+            let fullAnswer;
+            try{
+                fullAnswer = currentAnswer.length > 0 ? currentAnswer : [DevConfig.NO_RESPONSE_STRING];
+            } catch(error){
+                return ReturnMethods.returnFailure("AHandler: currentAnswer not present");
+            }
+
+            // Answer current outstanding question with no response answer
+            let returnObj = await this.finishAnswering(chatId, participant.currentQuestion, fullAnswer);
+            return returnObj;
+        } else {
+            return ReturnMethods.returnSuccess("");
+        }
+
+    }
     /**
      *
      * Wrapping up answering for any question type
@@ -37,13 +75,18 @@ class AnswerHandler{
         }
 
         try{
+            let participant = await participants.get(chatId);
+            let tz = participant.parameters.timezone;
             // Add the answer to the list of answers in the database
             // If the answer is a string, convert to array
             let answerConv = (typeof fullAnswer === "string") ? [fullAnswer] : fullAnswer;
+            let timeStamp = moment.tz(tz);
+
+            let timeString = timeStamp.format();
             const answer = {
                 qId: currentQuestion.qId,
                 text: currentQuestion.text,
-                timeStamp: new Date(),
+                timeStamp: timeString,
                 answer: answerConv
             };
             await participants.addAnswer(chatId, answer);

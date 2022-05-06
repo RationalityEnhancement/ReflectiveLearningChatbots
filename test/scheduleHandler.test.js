@@ -1,6 +1,7 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const participants = require('../src/apiControllers/participantApiController');
+const idMaps = require('../src/apiControllers/idMapApiController')
 
 const mongo = require('mongoose');
 
@@ -16,8 +17,8 @@ const qHandler = new QuestionHandler(testConfig);
 
 const ScheduleHandler = require('../src/scheduleHandler')
 
-const testId = 123;
-const testId2 = 321;
+const testId = "123";
+const testId2 = "321";
 const testBot = {
     telegram: {
         sendMessage: () => {
@@ -41,13 +42,28 @@ describe('Scheduling one question', () =>{
             const result = mongo.connection.readyState;
             expect(result).to.equal(1);
         });
+        it('Should add experiment ID mappings and add two subjects', async () => {
+            await idMaps.addExperiment(testConfig.experimentId);
+            await idMaps.addExperiment(failConfig.experimentId);
+
+            await idMaps.addIDMapping(testConfig.experimentId, "12455", testId)
+            await idMaps.addIDMapping(testConfig.experimentId, "12345", testId2)
+            await idMaps.addIDMapping(failConfig.experimentId, "12355", testId)
+            await idMaps.addIDMapping(failConfig.experimentId, "12345", testId2)
+
+            let exp1 = await idMaps.getExperiment(testConfig.experimentId)
+            let exp2 = await idMaps.getExperiment(failConfig.experimentId)
+
+            expect(exp1.IDMappings.length).to.equal(2)
+            expect(exp2.IDMappings.length).to.equal(2)
+        })
         it('Should add and update participant parameter', async () => {
 
             await participants.add(testId);
             await participants.updateParameter(testId, "language","English")
             var participant = await participants.get(testId);
             expect(participant).to.not.be.null;
-            expect(participant.chatId).to.equal(testId);
+            expect(participant.uniqueId).to.equal(testId);
             expect(participant.parameters.language).to.equal("English");
 
         });
@@ -57,7 +73,7 @@ describe('Scheduling one question', () =>{
             await participants.updateParameter(testId2, "language","English")
             var participant = await participants.get(testId2);
             expect(participant).to.not.be.null;
-            expect(participant.chatId).to.equal(testId2);
+            expect(participant.uniqueId).to.equal(testId2);
             expect(participant.parameters.language).to.equal("English");
 
         });
@@ -76,7 +92,7 @@ describe('Scheduling one question', () =>{
 
         let returnObj, returnJob;
         it('Should succeed',  async () => {
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, true)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, testConfig,true)
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return jobId and job',  () => {
@@ -118,7 +134,7 @@ describe('Scheduling one question', () =>{
 
         let returnObj, returnJob;
         it('Should succeed',  async () => {
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId2, qHandler, questionInfo, true)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId2, qHandler, questionInfo,testConfig, true)
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return jobId and job',  () => {
@@ -160,7 +176,7 @@ describe('Scheduling one question', () =>{
 
         let returnObj, returnJob;
         it('Should succeed',  async () => {
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo,testConfig, false)
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return jobId and job',  () => {
@@ -218,7 +234,7 @@ describe('Scheduling one question', () =>{
                 atTime: '10:00',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, failConfig,false)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
@@ -227,7 +243,7 @@ describe('Scheduling one question', () =>{
                 atTime: '10:00',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, failConfig,false)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
@@ -237,7 +253,7 @@ describe('Scheduling one question', () =>{
                 atTime: '1000',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, failConfig,false)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
@@ -247,7 +263,7 @@ describe('Scheduling one question', () =>{
                 atTime: 'beans',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, failConfig,false)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
@@ -256,7 +272,7 @@ describe('Scheduling one question', () =>{
                 qId: 'morningQuestions.mainGoal',
                 onDays: ["Mon", "Tue"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, failConfig,false)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
@@ -266,7 +282,7 @@ describe('Scheduling one question', () =>{
                 atTime: '10:00',
                 onDays: ["Mon", "Frog"]
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, failConfig,false)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });
@@ -275,7 +291,7 @@ describe('Scheduling one question', () =>{
                 qId: 'morningQuestions.mainGoal',
                 atTime: '10:00'
             };
-            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, false)
+            returnObj = await ScheduleHandler.scheduleOneQuestion(testBot, testId, qHandler, questionInfo, failConfig,false)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         });

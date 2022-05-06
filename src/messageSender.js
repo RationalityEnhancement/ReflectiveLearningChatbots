@@ -2,6 +2,7 @@ const config = require('../json/config.json');
 const participants = require('./apiControllers/participantApiController');
 const InputOptions = require('./inputOptions');
 const AnswerHandler = require('./answerHandler');
+const idMaps = require('./apiControllers/idMapApiController')
 
 /**
  * Sends a question to the bot user based on the type of question
@@ -13,12 +14,19 @@ const AnswerHandler = require('./answerHandler');
  * @returns {Promise<void>}
  */
 module.exports.sendQuestion = async (bot, chatId, question) => {
-    let participant = await participants.get(chatId);
+    let secretMap = await idMaps.getByChatId(config.experimentId, chatId);
+    if(!secretMap){
+        throw "Message Sender: Participant Unique ID not found"
+    }
+    let uniqueId = secretMap.uniqueId;
+
+    let participant = await participants.get(uniqueId);
     let language = participant.parameters.language;
     let delayMs = 300;
 
     // Handle any outstanding questions before sending next question.
-    await AnswerHandler.handleNoResponse(chatId);
+
+    await AnswerHandler.handleNoResponse(uniqueId);
 
     switch(question.qType){
         case 'singleChoice':
@@ -56,9 +64,9 @@ module.exports.sendQuestion = async (bot, chatId, question) => {
         default:
             throw "Message Sender: Question type not recognized"
     }
-    await participants.updateField(chatId, 'currentState', 'awaitingAnswer');
-    await participants.eraseCurrentAnswer(chatId)
-    await participants.updateField(chatId, 'currentQuestion', question);
+    await participants.updateField(uniqueId, 'currentState', 'awaitingAnswer');
+    await participants.eraseCurrentAnswer(uniqueId)
+    await participants.updateField(uniqueId, 'currentQuestion', question);
 }
 
 /**

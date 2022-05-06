@@ -9,8 +9,8 @@ const {assert, expect} = require('chai');
 const moment = require('moment-timezone');
 
 
-const testId = 123;
-const testId2 = 321;
+const testId = "123";
+const testId2 = "321";
 const testExptId = '98867';
 describe('Participant Controller API: ', () =>{
 		
@@ -33,7 +33,7 @@ describe('Participant Controller API: ', () =>{
 		await participants.add(testId);
 		var participant = await participants.get(testId);
 		expect(participant).to.not.be.null;
-		expect(participant.chatId).to.equal(testId);
+		expect(participant.uniqueId).to.equal(testId);
 		
 		
 	});
@@ -53,7 +53,7 @@ describe('Participant Controller API: ', () =>{
 		await participants.add(testId2);
 		var participant = await participants.get(testId2);
 		expect(participant).to.not.be.null;
-		expect(participant.chatId).to.equal(testId2);
+		expect(participant.uniqueId).to.equal(testId2);
 
 
 	});
@@ -72,8 +72,8 @@ describe('Participant Controller API: ', () =>{
 	it('Should get all participants by experiment ID', async() => {
 		let pList = await participants.getByExperimentId(testExptId);
 		expect(pList.length).to.equal(2);
-		expect(pList[0].chatId).to.equal(testId);
-		expect(pList[1].chatId).to.equal(testId2);
+		expect(pList[0].uniqueId).to.equal(testId);
+		expect(pList[1].uniqueId).to.equal(testId2);
 	})
 	it('Should update Number field', async () => {
 		

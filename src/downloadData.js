@@ -77,7 +77,7 @@ const config = require('../json/config.json');
         throw "ERROR: Unable to write experiment to CSV file\n" + error;
     }
     try{
-        let participantHeaders = ["chatId", "experimentId", "conditionName"];
+        let participantHeaders = ["uniqueId", "experimentId", "conditionName"];
         // for(const [key, value] of Object.entries(pList[0].parameters)){
         //     participantHeaders.push("parameters/"+key);
         // }
@@ -87,7 +87,7 @@ const config = require('../json/config.json');
         let CSVString = participantHeaders.join(',');
         for(let i = 0; i < pList.length; i++){
             let curPart = pList[i];
-            let participantValues = [curPart.chatId, curPart.experimentId, curPart.conditionName];
+            let participantValues = [curPart.uniqueId, curPart.experimentId, curPart.conditionName];
             // for(const [key, value] of Object.entries(participant.parameters)){
             //     if(Array.isArray(value)){
             //         participantValues.push(value.join('|'))

@@ -23,13 +23,13 @@ class AnswerHandler{
      * the answer list to reflect that the user has not responded to a
      * particular question
      *
-     * @param chatId the chatId of the user
+     * @param uniqueId the uniqueId of the user
      * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
      *
      */
-    static async handleNoResponse(chatId){
+    static async handleNoResponse(uniqueId){
         // TODO: error handling for getting participant
-        let participant = await participants.get(chatId);
+        let participant = await participants.get(uniqueId);
 
         // If answer is outstanding
         if(participant.currentState === 'awaitingAnswer'){
@@ -46,7 +46,7 @@ class AnswerHandler{
             }
 
             // Answer current outstanding question with no response answer
-            let returnObj = await this.finishAnswering(chatId, participant.currentQuestion, fullAnswer);
+            let returnObj = await this.finishAnswering(uniqueId, participant.currentQuestion, fullAnswer);
             return returnObj;
         } else {
             return ReturnMethods.returnSuccess("");
@@ -57,25 +57,25 @@ class AnswerHandler{
      *
      * Wrapping up answering for any question type
      *
-     * @param chatId chatId of the participant
+     * @param uniqueId uniqueId of the participant
      * @param currentQuestion current question that has just been answered
      * @param fullAnswer String if single answer, array of strings otherwise
      * @returns {Promise<{returnCode: *, data: *}>}
      *          if success, return instruction to calling function to move on from current question
      *          if failure, return error message
      */
-    static async finishAnswering(chatId, currentQuestion, fullAnswer){
+    static async finishAnswering(uniqueId, currentQuestion, fullAnswer){
         try{
             // Save answer to parameters if necessary
             if(!!currentQuestion.saveAnswerTo){
-                await participants.updateParameter(chatId, currentQuestion.saveAnswerTo, fullAnswer);
+                await participants.updateParameter(uniqueId, currentQuestion.saveAnswerTo, fullAnswer);
             }
         } catch(e){
             ReturnMethods.returnFailure("AHandler: unable to update parameter with answer")
         }
 
         try{
-            let participant = await participants.get(chatId);
+            let participant = await participants.get(uniqueId);
             let tz = participant.parameters.timezone;
             // Add the answer to the list of answers in the database
             // If the answer is a string, convert to array
@@ -89,14 +89,14 @@ class AnswerHandler{
                 timeStamp: timeString,
                 answer: answerConv
             };
-            await participants.addAnswer(chatId, answer);
+            await participants.addAnswer(uniqueId, answer);
         } catch(e){
             ReturnMethods.returnFailure("AHandler: unable to add answer")
         }
 
         try{
             // Update that answer is no longer being expected
-            await participants.updateField(chatId, "currentState", "answerReceived");
+            await participants.updateField(uniqueId, "currentState", "answerReceived");
         } catch(e){
             ReturnMethods.returnFailure("AHandler: unable to save participant")
         }
@@ -110,7 +110,7 @@ class AnswerHandler{
      * Process any incoming text based on the current state of the chatbot for participant
      * and expected response for the current question
      *
-     * @param participant participant database object, must contain fields chatId, currentQuestion and currentState
+     * @param participant participant database object, must contain fields uniqueId, currentQuestion and currentState
      * @param answerText the text that is supposed to be processed
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}|{returnCode: *, data: *}>}
      */
@@ -120,7 +120,7 @@ class AnswerHandler{
         if(!participant){
             return ReturnMethods.returnFailure("AHandler: Participant not available")
         }
-        if(!("chatId" in participant)){
+        if(!("uniqueId" in participant)){
             return ReturnMethods.returnFailure("AHandler: Chat ID not found")
         }
         if(!("currentQuestion" in participant)){
@@ -147,7 +147,7 @@ class AnswerHandler{
                     try{
                         if(currentQuestion.options.includes(answerText)){
                             // Complete answering
-                            let finishObj = await this.finishAnswering(participant.chatId, currentQuestion, answerText);
+                            let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
                             // Return failure or trigger the next action
                             return finishObj;
                         } else {
@@ -164,12 +164,12 @@ class AnswerHandler{
                     try{
                         if(currentQuestion.options.includes(answerText)){
                             // Save the answer to participant's current answer
-                            await participants.addToCurrentAnswer(participant.chatId, answerText);
+                            await participants.addToCurrentAnswer(participant.uniqueId, answerText);
                             return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
 
                         } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
                             // If participant is finished answering
-                            let finishObj = await this.finishAnswering(participant.chatId, currentQuestion, participant.currentAnswer);
+                            let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
                             // Return failure or trigger the next action
                             return finishObj;
 
@@ -185,7 +185,7 @@ class AnswerHandler{
                 // Question with free text input
                 case 'freeform':
                     // Complete answering
-                    let finishObj = await this.finishAnswering(participant.chatId, currentQuestion, answerText);
+                    let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
                     // Return failure or trigger the next action
                     return finishObj;
 

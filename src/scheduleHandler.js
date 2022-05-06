@@ -1,4 +1,5 @@
 const participants = require('./apiControllers/participantApiController');
+const idMaps = require('./apiControllers/idMapApiController');
 const scheduler = require('node-schedule');
 const QuestionHandler = require('./questionHandler')
 const ReturnMethods = require('./returnMethods');
@@ -14,11 +15,11 @@ class ScheduleHandler{
         "schedules" : {}
     };
 
-    static async removeAllJobsForParticipant(chatId){
+    static async removeAllJobsForParticipant(uniqueId){
         let scheduledQs = this.scheduledOperations["questions"];
         let partJobIDList = [];
         for(const [jobId, job] of Object.entries(scheduledQs)){
-            if(jobId.startsWith(''+chatId)){
+            if(jobId.startsWith(''+uniqueId)){
                 partJobIDList.push(jobId);
             }
         }
@@ -44,11 +45,11 @@ class ScheduleHandler{
 
     }
 
-    static async cancelAllJobsForParticipant(chatId){
+    static async cancelAllJobsForParticipant(uniqueId){
         let scheduledQs = this.scheduledOperations["questions"];
         let partJobIDList = [];
         for(const [jobId, job] of Object.entries(scheduledQs)){
-            if(jobId.startsWith(''+chatId)){
+            if(jobId.startsWith(''+uniqueId)){
                 partJobIDList.push(jobId);
             }
         }
@@ -74,11 +75,11 @@ class ScheduleHandler{
     }
 
     static async removeJobByID(jobId){
-        let chatId;
+        let uniqueId;
         try{
-            chatId = jobId.split('_')[0];
-            assert(!isNaN(parseInt(chatId)));
-            await participants.removeScheduledQuestion(chatId, jobId);
+            uniqueId = jobId.split('_')[0];
+            assert(!isNaN(parseInt(uniqueId)));
+            await participants.removeScheduledQuestion(uniqueId, jobId);
 
         } catch(err) {
             return ReturnMethods.returnFailure("Scheduler: Cannot remove job " + jobId);
@@ -102,12 +103,13 @@ class ScheduleHandler{
         let succeededParticipants = [];
         for(let i = 0; i < allParticipants.length; i++){
             let curPart = allParticipants[i];
-            let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.chatId, config);
+            // TODO: change chatID to uniqueID
+            let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.uniqueId, config);
             if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
                 // Append returned jobs to array of succeeded jobs
                 succeededParticipants.push(...returnObj.data);
             } else {
-                failedParticipants.push(curPart.chatId);
+                failedParticipants.push(curPart.uniqueId);
             }
         }
 
@@ -121,8 +123,8 @@ class ScheduleHandler{
         }
         return ReturnMethods.returnSuccess(succeededParticipants)
     }
-    static async rescheduleAllOperationsForID(bot, chatId, config){
-        let participant = await participants.get(chatId);
+    static async rescheduleAllOperationsForID(bot, uniqueId, config){
+        let participant = await participants.get(uniqueId);
         let scheduledOperations = participant.scheduledOperations;
         let scheduledQuestions = scheduledOperations["questions"];
         const qHandler = new QuestionHandler(config);
@@ -136,7 +138,7 @@ class ScheduleHandler{
                 onDays : jobInfo.onDays,
                 tz: participant.parameters.timezone
             }
-            let returnObj = await this.scheduleOneQuestion(bot, chatId, qHandler, questionInfo, false);
+            let returnObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, questionInfo, config,false);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedQuestions.push(returnObj.data);
             } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
@@ -154,9 +156,9 @@ class ScheduleHandler{
         }
         return ReturnMethods.returnSuccess(succeededQuestions)
     }
-    static async scheduleAllQuestions(bot, chatId, config, debug = false){
+    static async scheduleAllQuestions(bot, uniqueId, config, debug = false){
         const qHandler = new QuestionHandler(config);
-        const participant = await participants.get(chatId);
+        const participant = await participants.get(uniqueId);
 
         let partCond = participant["conditionName"];
         let partLang = participant.parameters.language;
@@ -170,10 +172,15 @@ class ScheduleHandler{
         for(let i = 0; i < scheduledQuestionsList.length; i++){
             let scheduledQuestionInfo = scheduledQuestionsList[i];
             scheduledQuestionInfo["tz"] = participant.parameters.timezone;
-            let scheduleObj = await this.scheduleOneQuestion(bot, chatId, qHandler, scheduledQuestionInfo,true);
+            let scheduleObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, scheduledQuestionInfo, config,true);
             if(scheduleObj.returnCode === DevConfig.FAILURE_CODE){
                 failedQuestions.push(scheduleObj.data)
             } else if(scheduleObj.returnCode === DevConfig.SUCCESS_CODE){
+                let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
+                if(!secretMap){
+                    return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+                }
+                let chatId = secretMap.chatId;
                 // TODO: send a message about the scheduled messages anyway, or only when debug mode?
                 if(debug || !debug) {
                     await MessageSender.sendMessage(bot, chatId,
@@ -256,7 +263,7 @@ class ScheduleHandler{
 
         return ReturnMethods.returnSuccess(rule)
     }
-    static async writeOperationInfoToDB(chatId, jobId, questionInfo){
+    static async writeOperationInfoToDB(uniqueId, jobId, questionInfo){
         let jobInfo = {
             jobId: jobId,
             qId: questionInfo.qId,
@@ -265,12 +272,12 @@ class ScheduleHandler{
             tz: questionInfo.tz
         }
         // Check if already not in scheduledQuestions
-        let alreadyInDB = await participants.hasScheduledQuestion(chatId, jobInfo);
+        let alreadyInDB = await participants.hasScheduledQuestion(uniqueId, jobInfo);
         if(!alreadyInDB){
-            await participants.addScheduledQuestion(chatId, jobInfo);
+            await participants.addScheduledQuestion(uniqueId, jobInfo);
         }
     }
-    static async scheduleOneQuestion(bot, chatId, qHandler, questionInfo, isNew = true){
+    static async scheduleOneQuestion(bot, uniqueId, qHandler, questionInfo, config, isNew = true){
         if(!("qId" in questionInfo)){
             return ReturnMethods.returnFailure("Scheduler: Question ID not specified")
         }
@@ -279,10 +286,10 @@ class ScheduleHandler{
             return ReturnMethods.returnFailure(recurrenceRuleObj.data)
         }
         let recRule = recurrenceRuleObj.data;
-        let jobId = chatId + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
+        let jobId = uniqueId + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
 
         // Assuming error handling in API Controller
-        let participant = await participants.get(chatId);
+        let participant = await participants.get(uniqueId);
         let partLang = participant.parameters.language;
         let partCond = participant["conditionName"];
 
@@ -293,11 +300,21 @@ class ScheduleHandler{
         let question = questionObj.data;
         let job;
         try{
+            // console.log(config.experimentId)
+            // console.log(uniqueId);
+            let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
+            let test = await idMaps.getExperiment(config.experimentId);
+            // console.log(test);
+            // console.log(secretMap);
+            if(!secretMap){
+                return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+            }
+            let chatId = secretMap.chatId;
             job = scheduler.scheduleJob(recRule, async function(){
                 await MessageSender.sendQuestion(bot, chatId, question);
             })
             this.scheduledOperations["questions"][jobId] = job;
-            if(isNew) await this.writeOperationInfoToDB(chatId, jobId, questionInfo);
+            if(isNew) await this.writeOperationInfoToDB(uniqueId, jobId, questionInfo);
         } catch(err){
             let errorMsg = "Scheduler: Unable to schedule with given params"
             return ReturnMethods.returnFailure(errorMsg);

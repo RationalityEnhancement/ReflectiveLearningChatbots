@@ -11,7 +11,7 @@ const config = require('../json/config.json');
 
 const AnswerHandler = require('../src/answerHandler');
 
-const testId = 123;
+const testId = "123";
 
 describe('DB Connection', () => {
 
@@ -34,7 +34,7 @@ describe('DB Connection', () => {
             await participants.updateParameter(testId, "language", "English")
             let participant = await participants.get(testId);
             expect(participant).to.not.be.null;
-            expect(participant.chatId).to.equal(testId);
+            expect(participant.uniqueId).to.equal(testId);
             expect(participant.parameters.language).to.equal("English");
 
         });
@@ -47,7 +47,7 @@ let testQuestion = {
     text: "Test text"
 };
 const testPart = {
-    chatId: testId,
+    uniqueId: testId,
     currentState: "awaitingAnswer",
     currentQuestion: testQuestion
 }
@@ -57,17 +57,17 @@ describe('Finish answer', () => {
         let returnObj, participant;
         it('Should return success with next action string', async () => {
             testQuestion["saveAnswerTo"] = "timezone";
-            returnObj = await AnswerHandler.finishAnswering(testPart.chatId, testQuestion, addedAnswer);
+            returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             delete testQuestion["saveAnswerTo"];
         });
         it('Should save string answer to parameter', async () => {
-            participant = await participants.get(testPart.chatId);
+            participant = await participants.get(testPart.uniqueId);
             expect(participant.parameters.timezone).to.equal(addedAnswer);
         });
         it('Should have added answer to participant answer list',  async () => {
-            participant = await participants.get(testPart.chatId);
+            participant = await participants.get(testPart.uniqueId);
             let latestAns = participant.answers[participant.answers.length-1];
             expect(latestAns.qId).to.equal(testQuestion.qId);
             expect(latestAns.text).to.equal(testQuestion.text);
@@ -82,19 +82,19 @@ describe('Finish answer', () => {
         const addedAnswer = ["answer1", "answer2"];
         let returnObj, participant;
         it('Should return success with next action string', async () => {
-            returnObj = await AnswerHandler.finishAnswering(testPart.chatId, testQuestion, addedAnswer);
+            returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
         });
         it('Should have added answer to participant answer list',  async () => {
-            participant = await participants.get(testPart.chatId);
+            participant = await participants.get(testPart.uniqueId);
             let latestAns = participant.answers[participant.answers.length-1];
             expect(latestAns.qId).to.equal(testQuestion.qId);
             expect(latestAns.text).to.equal(testQuestion.text);
             expect(latestAns.answer).to.eql(addedAnswer);
         });
         it('Should update current state to answerReceived',  async () => {
-            participant = await participants.get(testPart.chatId);
+            participant = await participants.get(testPart.uniqueId);
             expect(participant.currentState).to.equal("answerReceived");
         });
     })
@@ -116,18 +116,18 @@ describe('Process answer', () =>{
             let returnObj = await AnswerHandler.processAnswer(undefined, "hello");
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
-        it('Should fail when participant doesnt have chatId', async () => {
-            delete testPart["chatId"];
+        it('Should fail when participant doesnt have uniqueId', async () => {
+            delete testPart["uniqueId"];
             let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
             assert("currentState" in testPart);
             assert("currentQuestion" in testPart);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            testPart["chatId"] = testId;
+            testPart["uniqueId"] = testId;
         })
         it('Should fail when participant doesnt have currentState', async () => {
             delete testPart["currentState"];
             let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
-            assert("chatId" in testPart);
+            assert("uniqueId" in testPart);
             assert("currentQuestion" in testPart);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             testPart["currentState"] = "awaitingAnswer";
@@ -135,7 +135,7 @@ describe('Process answer', () =>{
         it('Should fail when participant doesnt have currentQuestion', async () => {
             delete testPart["currentQuestion"];
             let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
-            assert("chatId" in testPart);
+            assert("uniqueId" in testPart);
             assert("currentState" in testPart);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             testPart["currentQuestion"] = testQuestion;
@@ -143,7 +143,7 @@ describe('Process answer', () =>{
         it('Should fail when currentQuestion doesnt have qtype', async () => {
             delete testPart[testQuestion["qType"]];
             let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
-            assert("chatId" in testPart);
+            assert("uniqueId" in testPart);
             assert("currentState" in testPart);
             assert("currentQuestion" in testPart);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
@@ -162,7 +162,7 @@ describe('Process answer', () =>{
             };
             const part = {
                 parameters: {language: "English"},
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }
@@ -182,7 +182,7 @@ describe('Process answer', () =>{
             };
             const part = {
                 parameters: {language: "English"},
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }
@@ -201,7 +201,7 @@ describe('Process answer', () =>{
             };
             const part = {
                 parameters: {language: "English"},
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }
@@ -218,7 +218,7 @@ describe('Process answer', () =>{
                 qType: "singleChoice"
             };
             const part = {
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }
@@ -242,7 +242,7 @@ describe('Process answer', () =>{
             };
             const part = {
                 parameters: {language: "English"},
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }
@@ -252,7 +252,7 @@ describe('Process answer', () =>{
                 expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
             });
             it('Should have added answer to current answer', async () => {
-                let participant = await participants.get(part.chatId);
+                let participant = await participants.get(part.uniqueId);
                 assert(participant.currentAnswer.includes("hello"));;
             });
         });
@@ -266,7 +266,7 @@ describe('Process answer', () =>{
             };
             const part = {
                 parameters: {language: "English"},
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }
@@ -286,7 +286,7 @@ describe('Process answer', () =>{
             };
             const part = {
                 parameters: {language: "English"},
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }
@@ -305,7 +305,7 @@ describe('Process answer', () =>{
             };
             const part = {
                 parameters: {language: "English"},
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }
@@ -322,7 +322,7 @@ describe('Process answer', () =>{
                 qType: "multiChoice"
             };
             const part = {
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }
@@ -344,7 +344,7 @@ describe('Process answer', () =>{
             };
             const part = {
                 parameters: {language: "English"},
-                chatId: testId,
+                uniqueId: testId,
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
             }

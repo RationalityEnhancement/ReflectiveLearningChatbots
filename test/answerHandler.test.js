@@ -11,7 +11,7 @@ const config = require('../json/config.json');
 
 const AnswerHandler = require('../src/answerHandler');
 
-const testId = 123;
+const testId = "123";
 
 describe('DB Connection', () => {
 

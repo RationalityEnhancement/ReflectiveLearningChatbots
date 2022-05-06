@@ -9,11 +9,11 @@ const { expect, assert } = require('chai');
 
 const testExperimentId = '12345';
 const testMappings = [{
-	chatId : "123",
+	chatId : 123,
 	uniqueId: "66465367"
 },
 {
-	chatId : "234",
+	chatId : 234,
 	uniqueId: "88486631"
 }];
 
@@ -47,11 +47,11 @@ describe('ID Mappings API: ', () =>{
 	describe('Check if list of mappings has IDs', () => {
 
 		it('Should return true when chat ID present', () => {
-			assert(idMaps.hasChatId(testMappings, "123"))
-			assert(idMaps.hasChatId(testMappings, "234"))
+			assert(idMaps.hasChatId(testMappings, 123))
+			assert(idMaps.hasChatId(testMappings, 234))
 		})
 		it('Should return false when chat ID not present', () => {
-			assert(!idMaps.hasChatId(testMappings, "2134"))
+			assert(!idMaps.hasChatId(testMappings, 2134))
 		})
 		it('Should return true when unique ID present', () => {
 			assert(idMaps.hasUniqueId(testMappings, "66465367"))
@@ -144,7 +144,7 @@ describe('ID Mappings API: ', () =>{
 			expect(!idMaps.hasChatId(experiment.IDMappings), testMappings[0].chatId);
 		})
 		it('Should do nothing when chatId not present', async() => {
-			await idMaps.deleteByChatId(testExperimentId, "775");
+			await idMaps.deleteByChatId(testExperimentId, 775);
 
 			let experiment = await idMaps.getExperiment(testExperimentId);
 

@@ -4,7 +4,7 @@ exports.IDMapSchema = new Schema({
   experimentName: String,
   experimentId: String,
   IDMappings: [{
-    chatId: String,
+    chatId: Number,
     uniqueId: String
   }]
 });

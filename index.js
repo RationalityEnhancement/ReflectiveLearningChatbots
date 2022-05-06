@@ -5,6 +5,7 @@ const config = require('./json/config.json');
 const DevConfig = require('./json/devConfig.json');
 const participants = require('./src/apiControllers/participantApiController');
 const experiments = require('./src/apiControllers/experimentApiController');
+const idMaps = require('./src/apiControllers/idMapApiController');
 const { checkConfig } = require('./src/configChecker');
 const PIDtoConditionMap = require('./json/PIDCondMap.json')
 const MessageSender = require('./src/messageSender')
@@ -17,6 +18,7 @@ const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
 const moment = require('moment-timezone')
 
 const ExperimentUtils = require("./src/experimentUtils");
+const {getByUniqueId} = require("./src/apiControllers/idMapApiController");
 
 const local = process.argv[2];
 
@@ -46,10 +48,10 @@ mongo.connect(process.env.DB_CONNECTION_STRING, { useNewUrlParser: true, useUnif
 //----------------------
 
 // Fetch the participant with error handling
-let getParticipant = async (chatId) => {
+let getParticipant = async (uniqueId) => {
   let participant;
   try{
-    participant = await participants.get(chatId);
+    participant = await participants.get(uniqueId);
     return participant;
   } catch(err){
     console.log('Failed to get participant info from DB');
@@ -69,8 +71,21 @@ let getExperiment = async (experimentId) => {
   }
 }
 
+let getByChatId = async (experimentId, chatId) => {
+    try{
+        let foundMap = await idMaps.getByChatId(experimentId, chatId);
+        return foundMap;
+    } catch(err){
+        console.log("Failed to get secret mapping")
+        console.error(err);
+    }
+
+}
+
 // Send the next question
 let sendNextQuestion = async (bot, chatId, nextQuestionId, conditionName, language) => {
+
+
   // Get the updated participant
   let nextQObj = qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
   if(nextQObj.returnCode === DevConfig.FAILURE_CODE){
@@ -84,15 +99,20 @@ let sendNextQuestion = async (bot, chatId, nextQuestionId, conditionName, langua
 
 // Process what happens next based on the next actions,
 //  reply messages, or next questions
-let processNextSteps = async (bot, chatId) => {
-  let participant = await getParticipant(chatId)
+let processNextSteps = async (bot, uniqueId) => {
+  let participant = await getParticipant(uniqueId)
   let partLang = participant.parameters.language;
   let partCond = participant.conditionName;
   let currentQuestion = participant.currentQuestion;
   let debug = !!config.debug;
 
+  let secretMap = await getByUniqueId(config.experimentId, uniqueId);
+  if(!secretMap){
+      throw "ERROR: PNS: Unable to find participant chat ID";
+  }
+
   // Send replies to the answer, if any
-  await MessageSender.sendReplies(bot, chatId, currentQuestion);
+  await MessageSender.sendReplies(bot, secretMap.chatId, currentQuestion);
 
   // Process all next actions
   if(!!currentQuestion.nextActions && currentQuestion.nextActions.length > 0){
@@ -115,7 +135,7 @@ let processNextSteps = async (bot, chatId) => {
 
             ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
           }
-          let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, chatId, config, debug);
+          let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, uniqueId, config, debug);
           if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             throw "ERROR: " + returnObj.data;
           } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
@@ -125,7 +145,7 @@ let processNextSteps = async (bot, chatId) => {
         case "assignToCondition":
           let experiment = await getExperiment(config.experimentId);
           let ID = participant.parameters.pId;
-          if(!ID) ID = chatId;
+          if(!ID) ID = uniqueId;
           let scheme = config.assignmentScheme;
           let conditionRatios = experiment["conditionAssignments"];
           let currentAssignments = experiment["currentlyAssignedToCondition"];
@@ -133,15 +153,14 @@ let processNextSteps = async (bot, chatId) => {
           let conditionObj = ExperimentUtils.assignToCondition(ID, PIDtoConditionMap, conditionRatios, currentAssignments, scheme);
           if(conditionObj.returnCode === DevConfig.FAILURE_CODE){
             throw "ERROR: " + conditionObj.data;
-            break;
           }
           let assignedConditionIdx = conditionObj.data;
           let conditionName = conditionNames[assignedConditionIdx];
           if(debug){
-            await MessageSender.sendMessage(bot, chatId, "You have been assigned to condition: " + conditionName);
+            await MessageSender.sendMessage(bot, secretMap.chatId, "You have been assigned to condition: " + conditionName);
           }
-          await participants.updateField(chatId, "conditionIdx", assignedConditionIdx);
-          await participants.updateField(chatId, "conditionName", conditionName);
+          await participants.updateField(uniqueId, "conditionIdx", assignedConditionIdx);
+          await participants.updateField(uniqueId, "conditionName", conditionName);
           await experiments.updateConditionAssignees(config.experimentId, assignedConditionIdx, 1);
           break;
         default:
@@ -152,7 +171,7 @@ let processNextSteps = async (bot, chatId) => {
 
   // Process all next questions
   if(!!currentQuestion.nextQuestion){
-    await sendNextQuestion(bot, chatId, currentQuestion.nextQuestion, partCond, partLang);
+    await sendNextQuestion(bot, secretMap.chatId, currentQuestion.nextQuestion, partCond, partLang);
   }
 }
 
@@ -167,8 +186,14 @@ bot.catch((err, ctx) => {
 
 bot.command('log_part', async ctx => {
   try{
+      let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+      if(!secretMap){
+          console.log("Unable to get participant unique id");
+          return;
+      }
+
     console.log('Logging participant.');
-    let participant = await participants.get(ctx.from.id);
+    let participant = await participants.get(secretMap.uniqueId);
     console.log(participant);  
   } catch (err){
     console.log('Failed to log participant');
@@ -183,6 +208,8 @@ bot.command('log_exp', async ctx => {
     console.log('Logging experiment.');
     let experiment = await experiments.get(config.experimentId);
     console.log(experiment);
+    let experimentIds = await idMaps.getExperiment(config.experimentId);
+    console.log(experimentIds);
   } catch(err){
     console.log('Failed to log experiment');
     console.error(err);
@@ -192,17 +219,24 @@ bot.command('log_exp', async ctx => {
 bot.command('delete_me', async ctx => {
   
   try{
-    let participant = await participants.get(ctx.from.id);
+      let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+      if(!secretMap){
+          console.log('Participant does not exist!')
+          return
+      }
+      let uniqueId = secretMap.uniqueId;
+    let participant = await participants.get(uniqueId);
     if(!participant) {
       console.log('Participant does not exist!')
       return;
     }
     let conditionIdx = participant["conditionIdx"];
-    await ScheduleHandler.removeAllJobsForParticipant(ctx.from.id);
-    await participants.remove(ctx.from.id);
+    await ScheduleHandler.removeAllJobsForParticipant(uniqueId);
+    await participants.remove(uniqueId);
+    await idMaps.deleteByChatId(config.experimentId, ctx.from.id);
     await experiments.updateConditionAssignees(config.experimentId, conditionIdx, -1);
     ctx.reply('Successfully deleted all your data. To use the bot again, use /start.');
-    console.log(`${ctx.from.id} removed`);
+    console.log(`${uniqueId} removed`);
 
   } catch(err){
     console.log('Failed to delete participant');
@@ -222,21 +256,36 @@ bot.command('delete_exp', async ctx => {
     }
 
     await experiments.remove(config.experimentId);
+
+      let experimentIds = await idMaps.getExperiment(config.experimentId);
+      if(!experimentIds) {
+          console.log('Experiment ID Mapping does not exist!')
+          return;
+      }
+
+      await idMaps.remove(config.experimentId);
+
     ctx.reply('Successfully deleted your experiment.');
     console.log(`Experiment ${config.experimentId} removed`);
 
   } catch(err){
-    console.log('Failed to delete participant');
+    console.log('Failed to delete experiment');
     console.error(err);
   }
 });
 
 // Repeat a question that has an outstanding answer
 bot.command('repeat', async ctx => {
-  let participant = await getParticipant(ctx.from.id);
+    let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+    if(!secretMap){
+        console.log("Participant unique ID not found!");
+        return;
+    }
+    let uniqueId = secretMap.uniqueId;
+  let participant = await getParticipant(uniqueId);
   if(participant.currentState === "answering"){
-    await participants.eraseCurrentAnswer(ctx.from.id);
-    await participants.updateField(ctx.from.id, "currentState", "awaitingAnswer");
+    await participants.eraseCurrentAnswer(uniqueId);
+    await participants.updateField(uniqueId, "currentState", "awaitingAnswer");
     participant.currentState = "awaitingAnswer";
   }
   if(participant.currentState === "awaitingAnswer"){
@@ -262,16 +311,44 @@ bot.start(async ctx => {
     } 
   }
 
+  //Check if ID Mapping exists for experiment already
+    let experimentIds = await idMaps.getExperiment(config.experimentId);
+  // If not, add it
+    if(!experimentIds){
+        try{
+            await idMaps.addExperiment(config.experimentId);
+        }catch(err){
+            console.log('Failed to create new experiment for mapping');
+            console.error(err);
+        }
+    }
+
+    // Check if participant is already present in the ID Mapping system
+    let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+    let uniqueId;
+    // if not, generate a new ID for the participant and add it
+    if(!secretMap){
+        try{
+            uniqueId = await idMaps.generateUniqueId(config.experimentId);
+            await idMaps.addIDMapping(config.experimentId, ctx.from.id, uniqueId);
+        } catch(err){
+            console.log('Unable to generate a new ID for participant!');
+            console.error(err);
+        }
+    } else {
+        uniqueId = secretMap.uniqueId;
+    }
+
   // Check if the participant has already been added
-  let participant = await getParticipant(ctx.from.id);
+  let participant = await getParticipant(uniqueId);
 
   // If not, add and initialize the participant with basic information
   if(!participant){
     try{
-      await participants.add(ctx.from.id);
-      await participants.updateField(ctx.from.id, 'experimentId', config.experimentId);
-      await participants.updateField(ctx.from.id, 'parameters', { "language" : config.defaultLanguage });
-      await participants.updateField(ctx.from.id, 'currentState', 'starting');
+      await participants.add(uniqueId);
+      await participants.updateField(uniqueId, 'experimentId', config.experimentId);
+      await participants.updateField(uniqueId, 'parameters', { "language" : config.defaultLanguage });
+      await participants.updateField(uniqueId, 'currentState', 'starting');
     } catch(err){
       console.log('Failed to initialize new participant');
       console.error(err);
@@ -299,8 +376,15 @@ bot.on('text', async ctx => {
   // Ignore commands
   if(messageText.charAt[0] === '/') return;
 
+  // Get the participants unique ID
+    let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+    if(!secretMap){
+        console.log("Unable to find participant unique ID!");
+        return;
+    }
+    let uniqueId = secretMap.uniqueId;
   // Get the participant
-  let participant = await getParticipant(ctx.from.id);
+  let participant = await getParticipant(uniqueId);
 
   // Participant has not started yet
   if(!participant) return;
@@ -319,7 +403,7 @@ bot.on('text', async ctx => {
           await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
         }
         // Process the next steps
-        await processNextSteps(bot, ctx.from.id);
+        await processNextSteps(bot, uniqueId);
       }
       break;
 
@@ -335,7 +419,7 @@ bot.on('text', async ctx => {
     // Failure occurred
     case DevConfig.FAILURE_CODE:
       throw "ERROR: " + answerHandlerObj.data;
-      break;
+
     default:
       throw "ERROR: Answer Handler did not respond appropriately"
   }
@@ -385,7 +469,7 @@ bot.command('delete_me', ctx => {
 // handle /debug command
 bot.command('debug', ctx => {
   participants.get(ctx.from.id).then(participant => {
-    participants.updateField(participant.chatId, 'debug', !participant.debug);
+    participants.updateField(participant.uniqueId, 'debug', !participant.debug);
     ctx.reply(`debug set to ${!participant.debug}`, removeMenu);
   });
 });
@@ -393,37 +477,37 @@ bot.command('debug', ctx => {
 // reschedule old tasks after server restart
 participants.getAll().then(allParticipants => {
   for (const participant of allParticipants.filter(p => !!p.dailyScheduleExpression)) {
-    scheduledJobs[`stillAskReset_${participant.chatId}`] = schedule.scheduleJob(
+    scheduledJobs[`stillAskReset_${participant.uniqueId}`] = schedule.scheduleJob(
       { rule: '45 23 * * *', tz: participant.timezone || defaultTimezone }, 
       () => {
-        participants.updateField(participant.chatId, 'stillAsk', true);
+        participants.updateField(participant.uniqueId, 'stillAsk', true);
       }
     );
-    console.log(`${participant.chatId} ${moment().tz(participant.timezone || defaultTimezone).format()}`);
-    scheduledJobs[`d_${participant.chatId}`] = schedule.scheduleJob(
+    console.log(`${participant.uniqueId} ${moment().tz(participant.timezone || defaultTimezone).format()}`);
+    scheduledJobs[`d_${participant.uniqueId}`] = schedule.scheduleJob(
       { rule: participant.dailyScheduleExpression, tz: participant.timezone || defaultTimezone },
       () => {
-        participants.get(participant.chatId).then(realTimeParticipant => {
+        participants.get(participant.uniqueId).then(realTimeParticipant => {
           let timeStamp = realTimeParticipant.debug ? ` [server time: ${moment().format('DD.MM. HH:mm')}] (restart)` : '';
           if (realTimeParticipant.stillAsk) {
             bot.telegram.sendMessage(
-              realTimeParticipant.chatId,
+              realTimeParticipant.uniqueId,
               config.questions[0].text + timeStamp,
               Telegraf.Extra.markup(m => m.keyboard(config.questions[0].options.map(option =>
                 m.callbackButton(option)
               )))
             );
-            participants.updateField(realTimeParticipant.chatId, 'nextCategory', config.questions[0].category);
-            participants.updateField(realTimeParticipant.chatId, 'stillAsk', false);
+            participants.updateField(realTimeParticipant.uniqueId, 'nextCategory', config.questions[0].category);
+            participants.updateField(realTimeParticipant.uniqueId, 'stillAsk', false);
           }
         });
       }
     );
     if (config.customFrequency) {
-      scheduledJobs[`w_${participant.chatId}`] = schedule.scheduleJob(
+      scheduledJobs[`w_${participant.uniqueId}`] = schedule.scheduleJob(
         { rule: participant.weeklyScheduleExpression, tz: participant.timezone || defaultTimezone }, 
         () => {
-          bot.telegram.sendMessage(participant.chatId, config.frequencyQuestion, frequencyMenu);
+          bot.telegram.sendMessage(participant.uniqueId, config.frequencyQuestion, frequencyMenu);
         }
       );
     }

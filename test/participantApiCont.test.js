@@ -9,8 +9,8 @@ const {assert, expect} = require('chai');
 const moment = require('moment-timezone');
 
 
-const testId = 123;
-const testId2 = 321;
+const testId = "123";
+const testId2 = "321";
 const testExptId = '98867';
 describe('Participant Controller API: ', () =>{
 		

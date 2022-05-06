@@ -10,7 +10,7 @@ const dataTypeMap = {
 
 let schemaObject = {
   experimentId: String,
-  chatId: Number,
+  chatId: String,
   conditionIdx: Number,
   conditionName: String,
   parameters: {},

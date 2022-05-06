@@ -31,8 +31,12 @@ exports.getExperiment = async(experimentId) => {
 // Get a single user's mapping by telegram chatId
 let getByChatId = async (experimentId, chatId) => {
   try {
+    experimentId = ""+experimentId;
     let experiment = await IDMap.findOne({ experimentId: experimentId });
+
     let foundMap;
+    if(!experiment) return foundMap;
+
     for(let i = 0; i < experiment.IDMappings.length; i++){
       if(experiment.IDMappings[i].chatId === chatId){
         foundMap = experiment.IDMappings[i];
@@ -49,8 +53,11 @@ exports.getByChatId = getByChatId;
 // Get a single user's mapping by bot-generated ID
 let getByUniqueId = async (experimentId, uniqueId) => {
   try {
+    experimentId = ""+experimentId;
+    uniqueId = ""+uniqueId;
     let experiment = await IDMap.findOne({ experimentId: experimentId });
     let foundMap;
+    if(!experiment) return foundMap;
     for(let i = 0; i < experiment.IDMappings.length; i++){
       if(experiment.IDMappings[i].uniqueId === uniqueId){
         foundMap = experiment.IDMappings[i];
@@ -68,6 +75,8 @@ exports.getByUniqueId = getByUniqueId;
 // Add a new experiment for mappings
 exports.addExperiment = async (experimentId) => {
   try {
+    experimentId = ""+experimentId;
+
     const idMapping = new IDMap();
     idMapping.experimentId = experimentId;
     return idMapping.save();
@@ -106,9 +115,11 @@ exports.hasUniqueId = hasUniqueId;
 
 // Generate a unique Id that doesn't exist already
 let generateUniqueId = async (experimentId) => {
+  experimentId = ""+experimentId;
   let experiment = await IDMap.findOne({ experimentId : experimentId });
   let createdNewId = false;
   let newId;
+  if(!experiment) return "";
   while(!createdNewId){
     // generate a random number 8 digit number in string form
     newId = "" + Math.floor(Math.random() * (99999999 - 10000000) + 10000000);
@@ -122,7 +133,10 @@ exports.generateUniqueId = generateUniqueId;
 // If it already exists, update
 let addIDMapping = async (experimentId, chatId, uniqueId) => {
   try {
+    experimentId = ""+experimentId;
+    uniqueId = ""+uniqueId;
     let experiment = await IDMap.findOne({ experimentId: experimentId});
+    if(!experiment) return;
     let presentMap = hasChatId(experiment.IDMappings);
     if(presentMap){
       return updateUniqueId(experimentId, chatId, uniqueId);
@@ -145,7 +159,10 @@ exports.addIDMapping = addIDMapping;
 let updateUniqueId = async (experimentId, chatId, uniqueId) => {
   
   try{
+    experimentId = ""+experimentId;
+    uniqueId = ""+uniqueId;
     let experiment = await IDMap.findOne({ experimentId: experimentId });
+    if(!experiment) return;
     let presentMap = hasChatId(experiment.IDMappings, chatId);
     if(!presentMap){
       return addIDMapping(experimentId, chatId, uniqueId);
@@ -168,7 +185,9 @@ exports.updateUniqueId = updateUniqueId;
 // If it doesn't exist, do nothing
 let deleteByChatId = async(experimentId, chatId) => {
   try{
+    experimentId = ""+experimentId;
     let experiment = await IDMap.findOne({ experimentId: experimentId });
+    if(!experiment) return;
     let delIdx = -1;
     for(let i = 0; i < experiment.IDMappings.length; i++){
       let curMap = experiment.IDMappings[i];
@@ -191,7 +210,10 @@ exports.deleteByChatId = deleteByChatId;
 // If it doesn't exist, do nothing.
 let deleteByUniqueId = async(experimentId, uniqueId) => {
   try{
+    experimentId = ""+experimentId;
+    uniqueId = ""+uniqueId;
     let experiment = await IDMap.findOne({ experimentId: experimentId });
+    if(!experiment) return;
     let delIdx = -1;
     for(let i = 0; i < experiment.IDMappings.length; i++){
       let curMap = experiment.IDMappings[i];
@@ -222,6 +244,7 @@ exports.removeAll = async () => {
 // Remove a single document by ID
 exports.remove = async experimentId => {
   try {
+    experimentId = ""+experimentId;
     return IDMap.deleteOne({ experimentId: experimentId });
   } catch (err) {
     console.error(err);

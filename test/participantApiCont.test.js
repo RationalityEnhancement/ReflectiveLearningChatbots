@@ -6,6 +6,8 @@ const mongo = require('mongoose');
 
 const {assert, expect} = require('chai');
 
+const moment = require('moment-timezone');
+
 
 const testId = 123;
 const testId2 = 321;
@@ -110,7 +112,7 @@ describe('Participant Controller API: ', () =>{
 		const testAnswer = {
 			qId : "Zombotron",
 			text: "Are you a zombie please?",
-			timeStamp: new Date(),
+			timeStamp: moment.tz().format(),
 			answer: ["yes","no","maybe so"]
 		}
 		await participants.addAnswer(testId, testAnswer);

@@ -31,7 +31,7 @@ let schemaObject = {
     [{
       qId: String,
       text: String,
-      timeStamp: Date,
+      timeStamp: String,
       answer: [String]
     }],
   scheduledOperations : {

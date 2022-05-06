@@ -244,7 +244,10 @@
               "Deutsch" : "Wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
             },
             "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.evaluateReflection"
+            "replyMessages" : {
+              "English" : ["Well reflected! See you tomorrow."],
+              "Deutsch" : ["Gut reflektiert! Bis morgen."]
+            }
           },
           {
             "qId" : "evaluateReflection",
@@ -254,8 +257,8 @@
             },
             "qType" : "likert7",
             "replyMessages" : {
-              "English" : ["Well reflected! See you tomorrow."],
-              "Deutsch" : ["Gut reflektiert! Bis morgen."]
+              "English" : ["Great!"],
+              "Deutsch" : ["Super!"]
             }
           }
         ]
@@ -269,6 +272,11 @@
         {
           "qId" : "eveningQuestions.numGoals",
           "atTime" : "18:00",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        },
+        {
+          "qId" : "eveningQuestions.evaluateReflection",
+          "atTime" : "18:05",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         }
       ]

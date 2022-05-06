@@ -53,7 +53,7 @@ const testPart = {
 }
 describe('Finish answer', () => {
     describe('Finish string answer with saving', ()=> {
-        const addedAnswer = "answer"
+        const addedAnswer = "Europe/Berlin"
         let returnObj, participant;
         it('Should return success with next action string', async () => {
             testQuestion["saveAnswerTo"] = "timezone";
@@ -356,6 +356,50 @@ describe('Process answer', () =>{
         });
     })
 });
+describe('Handling no answer', () => {
+    const testQuestion = {
+        qId: "test",
+        text: "testQuestion"
+    }
+    it('Should update answer with no response', async () => {
+        await participants.updateField(testId, "currentState", "awaitingAnswer");
+        await participants.eraseCurrentAnswer(testId);
+        await participants.updateField(testId, "currentQuestion", testQuestion);
+        let returnObj = await AnswerHandler.handleNoResponse(testId);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+
+        let participant = await participants.get(testId);
+        let lastAnswer = participant.answers[participant.answers.length-1];
+        expect(lastAnswer.answer).to.eql([DevConfig.NO_RESPONSE_STRING]);
+        expect(lastAnswer.qId).to.equal(testQuestion.qId);
+        expect(lastAnswer.text).to.equal(testQuestion.text);
+        expect(participant.currentState).to.equal("answerReceived");
+    });
+    it('Should update answer with current Answer', async () => {
+        const currentAnswer = ["a","b","c"];
+        await participants.updateField(testId, "currentState", "awaitingAnswer");
+        await participants.updateField(testId,"currentAnswer", currentAnswer);
+        await participants.updateField(testId, "currentQuestion", testQuestion);
+        let returnObj = await AnswerHandler.handleNoResponse(testId);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+
+        let participant = await participants.get(testId);
+        let lastAnswer = participant.answers[participant.answers.length-1];
+        expect(lastAnswer.answer).to.eql(currentAnswer);
+        expect(lastAnswer.qId).to.equal(testQuestion.qId);
+        expect(lastAnswer.text).to.equal(testQuestion.text);
+        expect(participant.currentState).to.equal("answerReceived");
+
+    });
+    it('Should not do anything when not awaiting answer', async () => {
+        await participants.updateField(testId, "currentState", "answerReceived");
+        let returnObj = await AnswerHandler.handleNoResponse(testId);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.equal("");
+    });
+})
 describe('Severing DB connection', () => {
     it('Should remove participant', async () => {
         await participants.remove(testId);

@@ -14,7 +14,7 @@ class ScheduleHandler{
         "cancels" : {},
         "schedules" : {}
     };
-
+    static debugQueue = {};
     /**
      *
      * Delete all jobs for a given participant from the local scheduling queue
@@ -59,6 +59,7 @@ class ScheduleHandler{
             return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
                 failedRemovals.join('\n'), succeededRemovals);
         }
+        if(uniqueId in this.debugQueue) delete this.debugQueue[uniqueId];
         return ReturnMethods.returnSuccess(succeededRemovals)
 
     }
@@ -237,6 +238,9 @@ class ScheduleHandler{
             return ReturnMethods.returnPartialFailure("Scheduler: failed to reschedule the following questions:\n"+
                 failedQuestions.join('\n'), succeededQuestions);
         }
+        // Add temporally ordered scheduled questions to participant's debug queue:
+        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestions);
+
         return ReturnMethods.returnSuccess(succeededQuestions)
     }
 
@@ -305,6 +309,8 @@ class ScheduleHandler{
             return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
                 failedQuestions.join('\n'), succeededQuestions);
         }
+        // Add temporally ordered scheduled questions to participant's debug queue:
+        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestionsList);
         return ReturnMethods.returnSuccess(succeededQuestions)
     }
 
@@ -510,6 +516,56 @@ class ScheduleHandler{
             jobId: jobId,
             job: job
         });
+    }
+
+    static sortQInfoByTime(qInfoArray){
+        if(!Array.isArray(qInfoArray)) return [];
+        if(qInfoArray.length === 0) return qInfoArray;
+        let arrayCopy = qInfoArray.slice();
+        let sortedArray = []
+        while(arrayCopy.length > 0){
+            let earliestTime = 2400;
+            let earliestTimeIdx = 0;
+            // Get the question that is at the earliest time
+            for(let i = 0; i < arrayCopy.length; i++){
+                let timeInt = parseInt(arrayCopy[i].atTime.replace(/:/g, ""));
+                if(timeInt < earliestTime){
+                    earliestTimeIdx = i;
+                    earliestTime = timeInt;
+                }
+            }
+            sortedArray.push(arrayCopy[earliestTimeIdx]);
+            arrayCopy.splice(earliestTimeIdx, 1);
+        }
+        return sortedArray;
+    }
+
+    static getTemporalOrderArray(qInfoArray){
+        if(!Array.isArray(qInfoArray)) return [];
+        if(qInfoArray.length === 0) return qInfoArray;
+        // Loop through all days, starting from Sunday
+        let tempOrderArr = []
+        for(let dayIdx = 0;dayIdx < this.dayIndexOrdering.length; dayIdx++){
+            let curDay = this.dayIndexOrdering[dayIdx];
+            let dayQuestions = []
+            // Get all questions that are to be asked on this day
+            for(let i = 0; i < qInfoArray.length; i++){
+                let curQuestion = qInfoArray[i];
+                if(curQuestion.onDays.includes(curDay)){
+                    dayQuestions.push(curQuestion);
+                }
+            }
+            // Sort the questions of the day by time and add them to the temporal order array
+            let sortedDayQs = this.sortQInfoByTime(dayQuestions);
+            for(let i = 0; i < sortedDayQs.length; i++){
+                tempOrderArr.push({
+                    qId: sortedDayQs[i].qId,
+                    atTime: sortedDayQs[i].atTime,
+                    onDays: [curDay]
+                })
+            }
+        }
+        return tempOrderArr;
     }
 }
 

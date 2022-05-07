@@ -28,7 +28,100 @@ const testBot = {
 };
 
 describe('Scheduling one question', () =>{
+    describe('Sorting time correctly', ()=>{
+        const testSchQs = [{
+            qId: "test1",
+            atTime: "13:00",
+            onDays: ["Sun", "Tue", "Thu"]
+        },{
+            qId: "test2",
+            atTime: "11:14",
+            onDays: ["Mon", "Wed", "Thu"]
+        },{
+            qId: "test3",
+            atTime: "08:59",
+            onDays: ["Tue", "Wed", "Sat"]
+        },{
+            qId: "test4",
+            atTime: "23:44",
+            onDays: ["Fri", "Sat", "Sun"]
+        }]
+        describe('Time sorting', () => {
+            it('Should sort by time', () => {
+                let sortedQs = ScheduleHandler.sortQInfoByTime(testSchQs);
+                expect(sortedQs[0].qId).to.equal("test3")
+                expect(sortedQs[1].qId).to.equal("test2")
+                expect(sortedQs[2].qId).to.equal("test1")
+                expect(sortedQs[3].qId).to.equal("test4")
+            })
+            it('Should return empty when not array', () => {
+                let sortedQs = ScheduleHandler.sortQInfoByTime("lol");
+                assert(Array.isArray(sortedQs));
+                expect(sortedQs.length).to.equal(0)
+            })
+            it('Should return empty when array empty', () => {
+                let sortedQs = ScheduleHandler.sortQInfoByTime([]);
+                assert(Array.isArray(sortedQs));
+                expect(sortedQs.length).to.equal(0)
+            })
+        })
+        describe('Building array by temporal order', ()=>{
+            it('Should build list in temporal order', () => {
+                let tempOrd = ScheduleHandler.getTemporalOrderArray(testSchQs);
+                expect(tempOrd.length).to.equal(12);
+                assert(tempOrd.every(qInfo => qInfo.onDays.length === 1));
+                let idx = 0;
+                expect(tempOrd[idx].qId).to.equal('test1')
+                expect(tempOrd[idx].onDays).to.eql(["Sun"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test4')
+                expect(tempOrd[idx].onDays).to.eql(["Sun"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test2')
+                expect(tempOrd[idx].onDays).to.eql(["Mon"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test3')
+                expect(tempOrd[idx].onDays).to.eql(["Tue"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test1')
+                expect(tempOrd[idx].onDays).to.eql(["Tue"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test3')
+                expect(tempOrd[idx].onDays).to.eql(["Wed"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test2')
+                expect(tempOrd[idx].onDays).to.eql(["Wed"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test2')
+                expect(tempOrd[idx].onDays).to.eql(["Thu"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test1')
+                expect(tempOrd[idx].onDays).to.eql(["Thu"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test4')
+                expect(tempOrd[idx].onDays).to.eql(["Fri"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test3')
+                expect(tempOrd[idx].onDays).to.eql(["Sat"])
+                idx++;
+                expect(tempOrd[idx].qId).to.equal('test4')
+                expect(tempOrd[idx].onDays).to.eql(["Sat"])
+                idx++;
 
+            })
+            it('Should return empty when not array', () => {
+                let sortedQs = ScheduleHandler.getTemporalOrderArray("lol");
+                assert(Array.isArray(sortedQs));
+                expect(sortedQs.length).to.equal(0)
+            })
+            it('Should return empty when array empty', () => {
+                let sortedQs = ScheduleHandler.getTemporalOrderArray([]);
+                assert(Array.isArray(sortedQs));
+                expect(sortedQs.length).to.equal(0)
+            })
+        })
+
+    });
     describe('Connecting to DB',  () => {
         it('Should connect to memory server', async () => {
             let mongoServer = await MongoMemoryServer.create()
@@ -355,6 +448,11 @@ describe('Scheduling one question', () =>{
             }
 
         });
+        it('Should have added jobs to debug list', async () => {
+            assert(testId in ScheduleHandler.debugQueue);
+            assert(Array.isArray(ScheduleHandler.debugQueue[testId]));
+
+        });
     })
 
     /**
@@ -501,6 +599,10 @@ describe('Scheduling one question', () =>{
                 assert(DBHasJob(scheduledQs,jobId));
             }
 
+        });
+        it('Should have added jobs to debug list', async () => {
+            assert(testId in ScheduleHandler.debugQueue);
+            assert(Array.isArray(ScheduleHandler.debugQueue[testId]));
         });
 
     })
@@ -685,6 +787,9 @@ describe('Scheduling one question', () =>{
             }
             assert(!foundChatId);
         });
+        it('Should remove participant from debug queue', async () => {
+            assert(!(testId in ScheduleHandler.debugQueue));
+        })
     })
 
     // TODO: Test failure/partial failure of removing all

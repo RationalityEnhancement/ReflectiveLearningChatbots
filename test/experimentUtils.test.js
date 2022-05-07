@@ -179,3 +179,14 @@ describe('Date functions', () => {
 
 
 })
+
+describe('Rotate left by one', () => {
+	it('Should rotate left normally', () => {
+		let arr = [1,2,3,4,5];
+		let newArr = experimentUtils.rotateLeftByOne(arr);
+		expect(newArr).to.eql(arr);
+		expect(arr.length).to.equal(5);
+		expect(arr[0]).to.equal(2)
+		expect(arr[4]).to.equal(1);
+	})
+})

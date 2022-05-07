@@ -119,10 +119,11 @@ let processNextSteps = async (bot, uniqueId) => {
     for(let i = 0; i < currentQuestion.nextActions.length; i++){
       let aType = currentQuestion.nextActions[i];
       switch(aType){
-        case "scheduleQuestions":
+          case "scheduleQuestions":
           // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
 
-          if(debug){
+            // TODO: have disabled overwriting for now, after implementation of /next
+          if(debug & !debug){
             let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
             if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
               console.error(nowDateObj.data);
@@ -185,7 +186,8 @@ bot.catch((err, ctx) => {
 });
 
 bot.command('log_part', async ctx => {
-  try{
+    if(!config.debug) return;
+    try{
       let secretMap = await getByChatId(config.experimentId, ctx.from.id);
       if(!secretMap){
           console.log("Unable to get participant unique id");
@@ -204,7 +206,8 @@ bot.command('log_part', async ctx => {
 
 
 bot.command('log_exp', async ctx => {
-  try{
+    if(!config.debug) return;
+    try{
     console.log('Logging experiment.');
     let experiment = await experiments.get(config.experimentId);
     console.log(experiment);
@@ -217,8 +220,9 @@ bot.command('log_exp', async ctx => {
 });
 
 bot.command('delete_me', async ctx => {
-  
-  try{
+    if(!config.debug) return;
+
+    try{
       let secretMap = await getByChatId(config.experimentId, ctx.from.id);
       if(!secretMap){
           console.log('Participant does not exist!')
@@ -248,6 +252,7 @@ bot.command('delete_exp', async ctx => {
   // TODO: Delete all participants when experiment is deleted?
   // TODO: OR add up all participants when experiment is created again?
   // TODO: OR perhaps recount each time the experiment starts up for a sanity check?
+    if(!config.debug) return;
   try{
     let experiment = await experiments.get(config.experimentId);
     if(!experiment) {
@@ -273,6 +278,33 @@ bot.command('delete_exp', async ctx => {
     console.error(err);
   }
 });
+
+bot.command('next', async ctx => {
+    if(!config.debug) return;
+    try{
+        let secretMap = await idMaps.getByChatId(config.experimentId, ctx.from.id);
+        let uniqueId = secretMap.uniqueId;
+        let nextQObj = ScheduleHandler.debugQueue[uniqueId][0];
+
+        let participant = await getParticipant(uniqueId);
+        let partCond = participant.conditionName;
+        let partLang = participant.parameters.language;
+
+        let qHandler = new QuestionHandler(config);
+        let nextQReturnObj = qHandler.constructQuestionByID(partCond, nextQObj.qId, partLang);
+        if(nextQReturnObj.returnCode === DevConfig.FAILURE_CODE){
+            throw "ERROR: " + nextQReturnObj.data;
+        }
+        let nextQuestion = nextQReturnObj.data;
+        let nextQMsg = `This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
+        ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
+        await MessageSender.sendMessage(bot, ctx.from.id, nextQMsg);
+        await MessageSender.sendQuestion(bot, ctx.from.id, nextQuestion)
+    } catch(err){
+        console.log("Failed to serve next scheduled question");
+        console.error(err);
+    }
+})
 
 // Repeat a question that has an outstanding answer
 bot.command('repeat', async ctx => {

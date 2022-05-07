@@ -15,9 +15,22 @@ class ScheduleHandler{
         "schedules" : {}
     };
 
+    /**
+     *
+     * Delete all jobs for a given participant from the local scheduling queue
+     * as well as from the database
+     *
+     * @param uniqueId unique ID of the participant
+     * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
+     */
     static async removeAllJobsForParticipant(uniqueId){
+
+        // Get all the scheduled operations from the local store
         let scheduledQs = this.scheduledOperations["questions"];
         let partJobIDList = [];
+
+        // Find those operations which belong to the current participant
+        // based on the job ID (starts with participant ID)
         for(const [jobId, job] of Object.entries(scheduledQs)){
             if(jobId.startsWith(''+uniqueId)){
                 partJobIDList.push(jobId);
@@ -25,6 +38,9 @@ class ScheduleHandler{
         }
         let failedRemovals = [];
         let succeededRemovals = [];
+
+        // Call the function to remove each selected job by jobID
+        // register which were successes and which were failures
         for(let i = 0; i < partJobIDList.length; i++){
             let returnObj = await this.removeJobByID(partJobIDList[i]);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
@@ -33,6 +49,8 @@ class ScheduleHandler{
                 succeededRemovals.push(returnObj.data)
             }
         }
+
+        // Return the appropriate outcome (failure, partial failure, success)
         if(failedRemovals.length > 0) {
             if(succeededRemovals.length === 0){
                 return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
@@ -45,9 +63,21 @@ class ScheduleHandler{
 
     }
 
+    /**
+     *
+     * Cancel all the jobs for a given participant from local store
+     * but don't remove from database
+     *
+     * @param uniqueId uniqueID of the participant
+     * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
+     */
     static async cancelAllJobsForParticipant(uniqueId){
+        // Get all the scheduled operations from the local store
         let scheduledQs = this.scheduledOperations["questions"];
         let partJobIDList = [];
+
+        // Find those operations which belong to the current participant
+        // based on the job ID (starts with participant ID)
         for(const [jobId, job] of Object.entries(scheduledQs)){
             if(jobId.startsWith(''+uniqueId)){
                 partJobIDList.push(jobId);
@@ -55,6 +85,9 @@ class ScheduleHandler{
         }
         let failedRemovals = [];
         let succeededRemovals = [];
+
+        // Call the function to cancel each selected job by jobID
+        // register which were successes and which were failure
         for(let i = 0; i < partJobIDList.length; i++){
             let returnObj = await this.cancelQuestionByJobID(partJobIDList[i]);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
@@ -63,6 +96,8 @@ class ScheduleHandler{
                 succeededRemovals.push(returnObj.data)
             }
         }
+
+        // Return the appropriate outcome (failure, partial failure, success)
         if(failedRemovals.length > 0) {
             if(succeededRemovals.length === 0){
                 return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
@@ -74,8 +109,18 @@ class ScheduleHandler{
         return ReturnMethods.returnSuccess(succeededRemovals)
     }
 
+    /**
+     *
+     * Cancel a single job from the local store as well as remove it
+     * from the database based on the jobId
+     *
+     * @param jobId ID of the job to be cancelled
+     * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
+     */
     static async removeJobByID(jobId){
         let uniqueId;
+        // Attempt to get the participant ID from the jobID
+        // And then call the DB Api controller to remove that jobID from DB
         try{
             uniqueId = jobId.split('_')[0];
             assert(!isNaN(parseInt(uniqueId)));
@@ -84,11 +129,22 @@ class ScheduleHandler{
         } catch(err) {
             return ReturnMethods.returnFailure("Scheduler: Cannot remove job " + jobId);
         }
+        // Cancel the job
         return this.cancelQuestionByJobID(jobId);
 
     }
+
+    /**
+     *
+     * Cancel a single job by job ID but do not remove from DB.
+     *  Cancelling means that the operation will no longer be scheduled
+     *
+     * @param jobId ID of the job to be cancelled
+     * @returns {{returnCode: *, data: *}}
+     */
     static cancelQuestionByJobID(jobId){
         try{
+            // Get the job and cancel it, and then remove it from the local store entirely
             this.scheduledOperations["questions"][jobId].cancel();
             delete this.scheduledOperations["questions"][jobId];
         } catch(err){
@@ -97,13 +153,24 @@ class ScheduleHandler{
         return ReturnMethods.returnSuccess(jobId)
     }
 
+    /**
+     *
+     * Reschedule all operations by fetching all scheduled operations
+     * from DB for each participant
+     *
+     * @param bot Telegram bot instance
+     * @param config loaded configuration file of experiment
+     * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
+     */
     static async rescheduleAllOperations(bot, config){
         let allParticipants = await participants.getAll();
         let failedParticipants = [];
         let succeededParticipants = [];
+        // Loop through all participants
         for(let i = 0; i < allParticipants.length; i++){
             let curPart = allParticipants[i];
-            // TODO: change chatID to uniqueID
+
+            // Call the function to reschedule all operations for a given participant
             let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.uniqueId, config);
             if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
                 // Append returned jobs to array of succeeded jobs
@@ -123,15 +190,31 @@ class ScheduleHandler{
         }
         return ReturnMethods.returnSuccess(succeededParticipants)
     }
+
+    /**
+     *
+     * Reschedule all the operations for a single participant by fetching
+     * their scheduled jobs from the DB
+     *
+     * @param bot Telegram bot instance
+     * @param uniqueId uniqueID of the participant whose jobs are to be rescheduled
+     * @param config loaded config file of experiment
+     * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
+     */
     static async rescheduleAllOperationsForID(bot, uniqueId, config){
+
+        // Get the participant from DB and read all scheduled operations
         let participant = await participants.get(uniqueId);
         let scheduledOperations = participant.scheduledOperations;
         let scheduledQuestions = scheduledOperations["questions"];
         const qHandler = new QuestionHandler(config);
         let failedQuestions = [];
         let succeededQuestions = [];
+
+        // Go through each scheduled Question for participant
         for(let i = 0; i < scheduledQuestions.length; i++){
             let jobInfo = scheduledQuestions[i];
+            // Construct the proper object and call the function to schedule
             let questionInfo = {
                 qId : jobInfo.qId,
                 atTime : jobInfo.atTime,
@@ -156,12 +239,28 @@ class ScheduleHandler{
         }
         return ReturnMethods.returnSuccess(succeededQuestions)
     }
+
+    /**
+     *
+     * Schedule all the questions for a given participant, as specified in the
+     * config file, based on the condition participant is assigned to
+     *
+     * @param bot Telegram bot instance
+     * @param uniqueId uniqueId of the participant for whom questions are to be scheduled
+     * @param config loaded config file of experiment
+     * @param debug flag whether in debug mode or not
+     * @returns {Promise<{returnCode: number, data}|{returnCode: *, data: *}|{returnCode: *, successData: *, failData: *}>}
+     */
+
     static async scheduleAllQuestions(bot, uniqueId, config, debug = false){
         const qHandler = new QuestionHandler(config);
         const participant = await participants.get(uniqueId);
 
+        // Get the assigned condition and preferred language of the participant
         let partCond = participant["conditionName"];
         let partLang = participant.parameters.language;
+
+        // Fetch all the scheduled questions for the particular condition
         let schQObj = qHandler.getScheduledQuestions(partCond);
         if(schQObj.returnCode === DevConfig.FAILURE_CODE){
             return schQObj;
@@ -169,13 +268,20 @@ class ScheduleHandler{
         let scheduledQuestionsList = schQObj.data;
         let failedQuestions = [];
         let succeededQuestions = [];
+
+        // loop through all fetched questions that are to be scheduled
         for(let i = 0; i < scheduledQuestionsList.length; i++){
+            // Append participant timezone to scheduled question
             let scheduledQuestionInfo = scheduledQuestionsList[i];
             scheduledQuestionInfo["tz"] = participant.parameters.timezone;
+
+            // Call the function to schedule a single operation
             let scheduleObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, scheduledQuestionInfo, config,true);
             if(scheduleObj.returnCode === DevConfig.FAILURE_CODE){
                 failedQuestions.push(scheduleObj.data)
             } else if(scheduleObj.returnCode === DevConfig.SUCCESS_CODE){
+                // If successful, send a message to the participant that a particular question
+                // has been scheduled
                 let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
                 if(!secretMap){
                     return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
@@ -201,13 +307,30 @@ class ScheduleHandler{
         }
         return ReturnMethods.returnSuccess(succeededQuestions)
     }
-   
-    // Schedule questions at regular intervals from current time
-    // Ignores original scheduled questions for debugging purposes
+
+    /**
+     *
+     * For debug purposes: overrides the scheduled timing in a given
+     * array (of the format that scheduledQuestions takes in the config file)
+     * and replaces them with times that represent successive questions at
+     * regular intervals from a given start time,
+     *
+     *
+     * @param scheduledQuestions the array in which the times are to be replaced
+     *                      must be a reference to the "scheduledQuestions" array in
+     *                      the loaded config file, so that the original timings can
+     *                      be overwritten
+     * @param startTime the time from which the new timings of questions should start
+     * @param interval the interval between each successive question
+     */
+
     static overrideScheduleForIntervals(scheduledQuestions, startTime, interval){
         let now = startTime;
         let minutes = now.minutes;
         let hours = now.hours;
+
+        // Loop through all questions and replace timing in the original array
+        // with new computed times and schedule to occur on all days
         for(let i = 0; i < scheduledQuestions.length; i++) {
             let qHours = hours;
             let qMins = minutes + ((i + 1) * interval);
@@ -225,8 +348,25 @@ class ScheduleHandler{
             scheduledQuestions[i] = newSchedObj;
         }
     }
+
+    /**
+     *
+     * Build the node-schedule recurrence rule based on the
+     * information provided
+     *
+     * @param questionInfo information about the question to be scheduled
+     *                      {
+     *                          qId: question ID of question,
+     *                          atTime: "HH:MM" time to be scheduled,
+     *                          onDays: ["Mon", "Tue", ... etc.] days on which to schedule
+     *                          tz: tz-database format timezone string (e.g., "Europe/Berlin")
+     *                      }
+     * @returns {{returnCode: *, data: *}}
+     */
     static buildRecurrenceRule(questionInfo){
         let scheduleHours, scheduleMins;
+
+        // Parse the time string into hours and minutes
         try{
             let scheduleTime = questionInfo.atTime;
             let scheduleTimeSplit = scheduleTime.split(":");
@@ -240,6 +380,8 @@ class ScheduleHandler{
         }
         let scheduleDayIndices = [];
 
+        // Convert the given days in array onDays into indices for the recurrence rule
+        // Cron type scheduling uses 0 as Sunday and 6 as Saturday
         try{
             let scheduleDays = questionInfo.onDays;
             for(let i = 0; i < scheduleDays.length; i++){
@@ -255,6 +397,8 @@ class ScheduleHandler{
             let errorMsg = "Scheduler: " + questionInfo.qId + " - On days in incorrect format or not specified"
             return ReturnMethods.returnFailure(errorMsg)
         }
+
+        // Build recurrence rule and return
         let rule = new scheduler.RecurrenceRule();
         rule.dayOfWeek = scheduleDayIndices;
         rule.hour = scheduleHours;
@@ -263,6 +407,16 @@ class ScheduleHandler{
 
         return ReturnMethods.returnSuccess(rule)
     }
+
+    /**
+     *
+     * Write operation info to database, if not already present in database
+     *
+     * @param uniqueId uniqueId of the participant for whom job is being scheduled
+     * @param jobId ID of the job being scheduled
+     * @param questionInfo Info about the question that is being scheduled
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
     static async writeOperationInfoToDB(uniqueId, jobId, questionInfo){
         let jobInfo = {
             jobId: jobId,
@@ -272,27 +426,56 @@ class ScheduleHandler{
             tz: questionInfo.tz
         }
         // Check if already not in scheduledQuestions
-        let alreadyInDB = await participants.hasScheduledQuestion(uniqueId, jobInfo);
-        if(!alreadyInDB){
-            await participants.addScheduledQuestion(uniqueId, jobInfo);
+        try{
+            let alreadyInDB = await participants.hasScheduledQuestion(uniqueId, jobInfo);
+            if(!alreadyInDB){
+                await participants.addScheduledQuestion(uniqueId, jobInfo);
+            }
+            return ReturnMethods.returnSuccess(jobInfo);
+        } catch(err){
+            return ReturnMethods.returnFailure("Scheduler: Unable to write job to DB\n" + err)
         }
+
     }
+
+    /**
+     *
+     * Schedule a single question for a participant
+     *
+     * @param bot Telegram bot instance
+     * @param uniqueId uniqueID of participant for whom q is to be scheduled
+     * @param qHandler QuestionHandler instance with loaded expt config file
+     * @param questionInfo info of question to be scheduled
+     * @param config loaded expt config file
+     * @param isNew flag whether question is new or not (i.e., already present in DB or not)
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
     static async scheduleOneQuestion(bot, uniqueId, qHandler, questionInfo, config, isNew = true){
         if(!("qId" in questionInfo)){
             return ReturnMethods.returnFailure("Scheduler: Question ID not specified")
         }
+
+        // Build the recurrence rule
         let recurrenceRuleObj = this.buildRecurrenceRule(questionInfo);
         if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(recurrenceRuleObj.data)
         }
         let recRule = recurrenceRuleObj.data;
-        let jobId = uniqueId + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
 
-        // Assuming error handling in API Controller
-        let participant = await participants.get(uniqueId);
+        // Construct the jobID for the job
+        let jobId = uniqueId + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
+        let participant;
+        try{
+            participant = await participants.get(uniqueId);
+        } catch(err){
+            return ReturnMethods.returnFailure("Scheduler: Unable to fetch participant " + uniqueId + "\n"+err)
+        }
+
+        // Get the assigned condition and preferred language of the participant
         let partLang = participant.parameters.language;
         let partCond = participant["conditionName"];
 
+        // Construct the question based on the assigned condition and preferred language
         let questionObj = qHandler.constructQuestionByID(partCond, questionInfo.qId, partLang);
         if(questionObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(questionObj.data);
@@ -300,21 +483,25 @@ class ScheduleHandler{
         let question = questionObj.data;
         let job;
         try{
-            // console.log(config.experimentId)
-            // console.log(uniqueId);
+            // Get the telegram chatID of the participant
             let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
-            let test = await idMaps.getExperiment(config.experimentId);
-            // console.log(test);
-            // console.log(secretMap);
             if(!secretMap){
                 return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
             }
             let chatId = secretMap.chatId;
+
+            // Schedule the question to be sent
             job = scheduler.scheduleJob(recRule, async function(){
                 await MessageSender.sendQuestion(bot, chatId, question);
             })
+            // Add to local store and if necessary, to DB
             this.scheduledOperations["questions"][jobId] = job;
-            if(isNew) await this.writeOperationInfoToDB(uniqueId, jobId, questionInfo);
+            if(isNew) {
+                let writeReturn = await this.writeOperationInfoToDB(uniqueId, jobId, questionInfo);
+                if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
+                    return writeReturn;
+                }
+            }
         } catch(err){
             let errorMsg = "Scheduler: Unable to schedule with given params"
             return ReturnMethods.returnFailure(errorMsg);

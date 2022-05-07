@@ -143,3 +143,15 @@ module.exports.getNowDateObject = (timezone) => {
 
   return dateObj;
 }
+/**
+ * Takes an array and rotates in place to the left by one
+ * Takes the first item and appends it to the end while preserving the length
+ *
+ * @param array array to be rotated
+ */
+module.exports.rotateLeftByOne = (array) => {
+  if(!Array.isArray(array)) return [];
+  let el = array.shift();
+  array.push(el);
+  return array;
+}

@@ -83,8 +83,10 @@ let getByChatId = async (experimentId, chatId) => {
 }
 
 // Send the next question
-let sendNextQuestion = async (bot, chatId, nextQuestionId, conditionName, language) => {
+let sendNextQuestion = async (bot, participant, chatId, nextQuestionId) => {
 
+    let conditionName = participant["conditionName"];
+    let language = participant.parameters["language"];
 
   // Get the updated participant
   let nextQObj = qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
@@ -92,7 +94,7 @@ let sendNextQuestion = async (bot, chatId, nextQuestionId, conditionName, langua
     throw "ERROR: " + nextQObj.data;
   } else {
     let nextQ = nextQObj.data;
-    await MessageSender.sendQuestion(bot, chatId, nextQ);
+    await MessageSender.sendQuestion(bot, participant, chatId, nextQ);
   }
 
 }
@@ -112,7 +114,7 @@ let processNextSteps = async (bot, uniqueId) => {
   }
 
   // Send replies to the answer, if any
-  await MessageSender.sendReplies(bot, secretMap.chatId, currentQuestion);
+  await MessageSender.sendReplies(bot, participant, secretMap.chatId, currentQuestion);
 
   // Process all next actions
   if(!!currentQuestion.nextActions && currentQuestion.nextActions.length > 0){
@@ -123,7 +125,7 @@ let processNextSteps = async (bot, uniqueId) => {
           // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
 
             // TODO: have disabled overwriting for now, after implementation of /next
-          if(debug & !debug){
+          if(debug && !debug){
             let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
             if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
               console.error(nowDateObj.data);
@@ -158,7 +160,7 @@ let processNextSteps = async (bot, uniqueId) => {
           let assignedConditionIdx = conditionObj.data;
           let conditionName = conditionNames[assignedConditionIdx];
           if(debug){
-            await MessageSender.sendMessage(bot, secretMap.chatId, "You have been assigned to condition: " + conditionName);
+            await MessageSender.sendMessage(bot, participant, secretMap.chatId, "You have been assigned to condition: " + conditionName);
           }
           await participants.updateField(uniqueId, "conditionIdx", assignedConditionIdx);
           await participants.updateField(uniqueId, "conditionName", conditionName);
@@ -172,7 +174,7 @@ let processNextSteps = async (bot, uniqueId) => {
 
   // Process all next questions
   if(!!currentQuestion.nextQuestion){
-    await sendNextQuestion(bot, secretMap.chatId, currentQuestion.nextQuestion, partCond, partLang);
+    await sendNextQuestion(bot, participant, secretMap.chatId, currentQuestion.nextQuestion);
   }
 }
 
@@ -196,7 +198,9 @@ bot.command('log_part', async ctx => {
 
     console.log('Logging participant.');
     let participant = await participants.get(secretMap.uniqueId);
-    console.log(participant);  
+    console.log(participant);
+    // console.log(await bot.telegram.getChat(ctx.from.id));
+
   } catch (err){
     console.log('Failed to log participant');
     console.error(err);
@@ -298,8 +302,8 @@ bot.command('next', async ctx => {
         let nextQuestion = nextQReturnObj.data;
         let nextQMsg = `This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
         ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
-        await MessageSender.sendMessage(bot, ctx.from.id, nextQMsg);
-        await MessageSender.sendQuestion(bot, ctx.from.id, nextQuestion)
+        await MessageSender.sendMessage(bot, participant, ctx.from.id, nextQMsg);
+        await MessageSender.sendQuestion(bot, participant, ctx.from.id, nextQuestion)
     } catch(err){
         console.log("Failed to serve next scheduled question");
         console.error(err);
@@ -322,7 +326,7 @@ bot.command('repeat', async ctx => {
   }
   if(participant.currentState === "awaitingAnswer"){
     let currentQuestion = participant.currentQuestion;
-    await MessageSender.sendQuestion(bot, ctx.from.id, currentQuestion)
+    await MessageSender.sendQuestion(bot, participant, ctx.from.id, currentQuestion)
   }
 
 })
@@ -337,6 +341,9 @@ bot.start(async ctx => {
     try{
       await experiments.add(config.experimentId);
       await experiments.initializeExperiment(config.experimentId, config.experimentName, config.experimentConditions, config.conditionAssignments);
+
+      // Use the new experiment henceforth
+      experiment = await experiments.get(config.experimentId);
     } catch(err){
       console.log('Failed to initialize new experiment');
       console.error(err);
@@ -381,6 +388,9 @@ bot.start(async ctx => {
       await participants.updateField(uniqueId, 'experimentId', config.experimentId);
       await participants.updateField(uniqueId, 'parameters', { "language" : config.defaultLanguage });
       await participants.updateField(uniqueId, 'currentState', 'starting');
+
+      // Use the new participant henceforth
+      participant = await participants.get(uniqueId);
     } catch(err){
       console.log('Failed to initialize new participant');
       console.error(err);
@@ -394,7 +404,7 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      await MessageSender.sendQuestion(bot, ctx.from.id, curQuestion);
+      await MessageSender.sendQuestion(bot, participant, ctx.from.id, curQuestion);
     } catch(err){
       console.log('Failed to send language question');
       console.error(err);
@@ -432,7 +442,7 @@ bot.on('text', async ctx => {
         // Move on to the next actions
         // Send this message only if participant has finished choosing from multi-choice
         if(participant.currentQuestion.qType === "multiChoice"){
-          await MessageSender.sendMessage(bot, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
+          await MessageSender.sendMessage(bot, participant, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
         }
         // Process the next steps
         await processNextSteps(bot, uniqueId);
@@ -443,8 +453,8 @@ bot.on('text', async ctx => {
     case DevConfig.PARTIAL_FAILURE_CODE:
       // Repeat the question
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
-        await MessageSender.sendMessage(bot, ctx.from.id, answerHandlerObj.failData);
-        await MessageSender.sendQuestion(bot, ctx.from.id, participant.currentQuestion)
+        await MessageSender.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData);
+        await MessageSender.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion)
       }
       break;
 

@@ -90,6 +90,7 @@ class ConfigParser{
      * @param participant participant object data. Must contain the following fields:
      *                      currentAnswer
      *                      firstName
+     *                      uniqueId
      * @param targetString
      * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
      *
@@ -101,12 +102,14 @@ class ConfigParser{
         if(!participant || typeof participant !== 'object') {
             return ReturnMethods.returnFailure("CParser: Participant object required to replace variables")
         }
-        if(!("firstName" in participant)){
-            return ReturnMethods.returnFailure("CParser: Participant object requires first name field")
+        let requiredParams = ["firstName", "currentAnswer", "uniqueId"];
+        for(let i = 0; i < requiredParams.length; i++){
+            let param = requiredParams[i];
+            if(!(param in participant)){
+                return ReturnMethods.returnFailure("CParser: Participant object requires field " + param);
+            }
         }
-        if(!("currentAnswer" in participant)){
-            return ReturnMethods.returnFailure("CParser: Participant object requires currentAnswer field")
-        }
+
         let varVal = "";
         switch(varName){
             case DevConfig.VAR_STRINGS.FIRST_NAME :
@@ -115,7 +118,8 @@ class ConfigParser{
             case DevConfig.VAR_STRINGS.CURRENT_ANSWER :
                 varVal = participant["currentAnswer"];
                 break;
-
+            case DevConfig.VAR_STRINGS.UNIQUE_ID:
+                varVal = participant["uniqueId"];
             default:
                 return ReturnMethods.returnFailure("CParser: Variable name not recognized");
         }

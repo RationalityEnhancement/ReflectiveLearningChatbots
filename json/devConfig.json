@@ -9,6 +9,7 @@
   "validAssignmentSchemes" : ["pid", "balanced", "random"],
   "VAR_STRINGS" : {
     "FIRST_NAME" : "FirstName",
-    "CURRENT_ANSWER" : "CurrentAnswer"
+    "CURRENT_ANSWER" : "CurrentAnswer",
+    "UNIQUE_ID" : "UniqueID"
   }
 }

@@ -60,8 +60,8 @@
       {
         "qId" : "langQuestion",
         "text" : {
-          "English" : "Hello, I am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
-          "Deutsch" : "Hello, I am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
+          "English" : "Hello ${FirstName}, I am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo ${FirstName}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
+          "Deutsch" : "Hello ${FirstName}, I am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo ${FirstName}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
         },
         "qType" : "singleChoice",
         "options" : {
@@ -287,8 +287,8 @@
           {
             "qId" : "mainGoal",
             "text" : {
-              "English" : "what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
-              "Deutsch" : "was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
+              "English" : "${FirstName}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "Deutsch" : "${FirstName}, was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
             },
             "qType" : "freeform",
             "nextQuestion" :"morningQuestions.addGoal"
@@ -297,13 +297,13 @@
           {
             "qId" : "addGoal",
             "text" : {
-              "English" : "what else would you like to accomplish today?",
-              "Deutsch" : "was sonst möchten Sie heute erledigen?"
+              "English" : "What else would you like to accomplish today?",
+              "Deutsch" : "$Was sonst möchten Sie heute erledigen?"
             },
             "qType" : "freeform",
             "replyMessages" : {
-              "English" : ["Got it! Good luck completing your goals today!"],
-              "Deutsch" : ["Alles klar! Viel Erfolg bei Ihren Zielen heute."]
+              "English" : ["Got it, ${FirstName}! Good luck completing your goals today!"],
+              "Deutsch" : ["Alles klar, ${FirstName}! Viel Erfolg bei Ihren Zielen heute."]
             }
           }
         ],
@@ -311,8 +311,8 @@
           {
             "qId" : "numGoals",
             "text" : {
-              "English" : "how many goals did you set today?",
-              "Deutsch" : "wie viele Ziele haben Sie sich heute gesetzt?"
+              "English" : "${FirstName}, how many goals did you set today?",
+              "Deutsch" : "${FirstName}, wie viele Ziele haben Sie sich heute gesetzt?"
             },
             "qType" : "freeform",
             "nextQuestion" : "eveningQuestions.focus",
@@ -321,8 +321,8 @@
           {
             "qId" : "focus",
             "text" : {
-              "English" : "how did you decide which things to focus on today?",
-              "Deutsch" : "wie haben Sie entschieden, worauf Sie sich heute fokussieren wollten?"
+              "English" : "How did you decide which things to focus on today?",
+              "Deutsch" : "Wie haben Sie entschieden, worauf Sie sich heute fokussieren wollten?"
             },
             "qType" : "freeform",
             "nextQuestion" : "eveningQuestions.relevance"
@@ -330,8 +330,8 @@
           {
             "qId" : "relevance",
             "text" : {
-              "English" : "how relevant were the goals you pursued today to the long-term goals of your project(s), your team, and your organization?",
-              "Deutsch" : "wie relevant waren Ihre heutigen Ziele für die Langzeitziel von Ihrem Projekt, Team, und Ihrer Organisation?"
+              "English" : "How relevant were the goals you pursued today to the long-term goals of your project(s), your team, and your organization?",
+              "Deutsch" : "Wie relevant waren Ihre heutigen Ziele für die Langzeitziel von Ihrem Projekt, Team, und Ihrer Organisation?"
             },
             "qType" : "singleChoice",
             "options" : {
@@ -343,8 +343,8 @@
           {
             "qId" : "emotions",
             "text" : {
-              "English" : "how do you feel about that? Please select any or all of the emotions you are experiencing at least a little bit.",
-              "Deutsch" : "wie fühlen Sie sich darüber? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
+              "English" : "How do you feel about that? Please select any or all of the emotions you are experiencing at least a little bit.",
+              "Deutsch" : "Wie fühlen Sie sich darüber? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
             },
             "qType" : "multiChoice",
             "options" : {
@@ -356,8 +356,8 @@
           {
             "qId" : "emotionsReflection",
             "text" : {
-              "English" : "why did you feel that way?",
-              "Deutsch" : "warum haben Sie sich so gefühlt?"
+              "English" : "Why did you feel that way?",
+              "Deutsch" : "Warum haben Sie sich so gefühlt?"
             },
             "qType" : "freeform",
             "nextQuestion" : "eveningQuestions.advice"
@@ -365,8 +365,8 @@
           {
             "qId" : "advice",
             "text" : {
-              "English" : "based on your recent experience with goal setting, which advice would you give to a new colleague who is just starting to work in a similar role?",
-              "Deutsch" : "basierend auf Ihrer neuen Erfahrung mit Zielsetzung, welchen Ratschlag würden Sie einem neuen Kollegen geben, der neulich in einer ähnlichen Rolle anfängt?"
+              "English" : "Based on your recent experience with goal setting, which advice would you give to a new colleague who is just starting to work in a similar role?",
+              "Deutsch" : "Basierend auf Ihrer neuen Erfahrung mit Zielsetzung, welchen Ratschlag würden Sie einem neuen Kollegen geben, der neulich in einer ähnlichen Rolle anfängt?"
             },
             "qType" : "freeform",
             "nextQuestion" : "eveningQuestions.planWhat"
@@ -374,8 +374,8 @@
           {
             "qId" : "planWhat",
             "text" : {
-              "English" : "what concretely will you do differently tomorrow?",
-              "Deutsch" : "was konkretes werden Sie morgen anders tun?"
+              "English" : "What concretely will you do differently tomorrow?",
+              "Deutsch" : "Was konkretes werden Sie morgen anders tun?"
             },
             "qType" : "freeform",
             "nextQuestion" : "eveningQuestions.planWhen"
@@ -383,8 +383,8 @@
           {
             "qId" : "planWhen",
             "text" : {
-              "English" : "when will you do it?",
-              "Deutsch" : "wann werden Sie es tun?"
+              "English" : "When will you do it?",
+              "Deutsch" : "Wann werden Sie es tun?"
             },
             "qType" : "freeform",
             "nextQuestion" : "eveningQuestions.planRemember"
@@ -392,8 +392,8 @@
           {
             "qId" : "planRemember",
             "text" : {
-              "English" : "how will you remember this plan when the time comes to execute it?",
-              "Deutsch" : "wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
+              "English" : "How will you remember this plan when the time comes to execute it?",
+              "Deutsch" : "Wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
             },
             "qType" : "freeform",
             "nextQuestion" : "eveningQuestions.evaluateReflection"
@@ -401,13 +401,13 @@
           {
             "qId" : "evaluateReflection",
             "text" : {
-              "English" : "how much do you agree with this statement? <i>The chatbot helped me be more reflective today</i>",
-              "Deutsch" : "wie weit stimmen Sie dieser Aussage zu? <i>Der Chatbot hat mir heute beim Nachdenken geholfen</i>"
+              "English" : "How much do you agree with this statement? <i>The chatbot helped me be more reflective today</i>",
+              "Deutsch" : "Wie weit stimmen Sie dieser Aussage zu? <i>Der Chatbot hat mir heute beim Nachdenken geholfen</i>"
             },
             "qType" : "likert7",
             "replyMessages" : {
-              "English" : ["Well reflected! See you tomorrow."],
-              "Deutsch" : ["Gut reflektiert! Bis morgen."]
+              "English" : ["Well reflected, ${FirstName}! See you tomorrow."],
+              "Deutsch" : ["Gut reflektiert, ${FirstName}! Bis morgen."]
             }
           }
         ]

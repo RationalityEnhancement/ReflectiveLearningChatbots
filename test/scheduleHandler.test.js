@@ -23,6 +23,11 @@ const testBot = {
     telegram: {
         sendMessage: () => {
             return;
+        },
+        getChat: (chatId) => {
+            return {
+                first_name: "John"
+            }
         }
     }
 };

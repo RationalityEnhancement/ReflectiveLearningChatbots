@@ -1,5 +1,5 @@
 const ReturnMethods = require('./returnMethods');
-const DevConfig = require('../json/devConfig.json')
+const DevConfig = require('../json/devConfig.json');
 
 /**
  * Question handler class that takes in a config as a parameter

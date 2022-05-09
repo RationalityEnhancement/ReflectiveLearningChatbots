@@ -9,7 +9,7 @@ describe('Replacing variables', () => {
     describe('Isolate Variables', () => {
         it('Should isolate variable at beginning', () => {
             let testString = "${Name} am I";
-            let expectedSplit = ["{Name}", " am I"];
+            let expectedSplit = ["${Name}", " am I"];
             let expectedIsVarArr = [true, false];
             let returnObj = ConfigParser.isolateVariables(testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -18,7 +18,7 @@ describe('Replacing variables', () => {
         })
         it('Should isolate variable at end', () => {
             let testString = "I am ${Name}";
-            let expectedSplit = ["I am ", "{Name}"];
+            let expectedSplit = ["I am ", "${Name}"];
             let expectedIsVarArr = [false, true];
 
             let returnObj = ConfigParser.isolateVariables(testString);
@@ -28,7 +28,7 @@ describe('Replacing variables', () => {
         })
         it('Should isolate multiple variables', () => {
             let testString = "${MyName} is ${Name}, I promise";
-            let expectedSplit = ["{MyName}", " is ", "{Name}", ", I promise"];
+            let expectedSplit = ["${MyName}", " is ", "${Name}", ", I promise"];
             let expectedIsVarArr = [true, false, true, false];
 
             let returnObj = ConfigParser.isolateVariables(testString);
@@ -36,9 +36,18 @@ describe('Replacing variables', () => {
             expect(returnObj.data.splitArr).to.eql(expectedSplit);
             expect(returnObj.data.isVarArr).to.eql(expectedIsVarArr);
         })
+        it('Should handle one variable right after another', () => {
+            let testString = "The product costs $${dollarAmt}${dollarSymbol}";
+            let expectedSplit = ["The product costs $", "${dollarAmt}", "${dollarSymbol}"];
+            let expectedIsVarArr = [false, true, true];
+            let returnObj = ConfigParser.isolateVariables(testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.splitArr).to.eql(expectedSplit);
+            expect(returnObj.data.isVarArr).to.eql(expectedIsVarArr);
+        })
         it('Should consider normal $ as text', () => {
             let testString = "I owe ${name} $100 dollars";
-            let expectedSplit = ["I owe ", "{name}", " $100 dollars"];
+            let expectedSplit = ["I owe ", "${name}", " $100 dollars"];
             let expectedIsVarArr = [false, true, false];
             let returnObj = ConfigParser.isolateVariables(testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -47,7 +56,7 @@ describe('Replacing variables', () => {
         })
         it('Should handle one $ as text before variable', () => {
             let testString = "The product costs $${dollarAmt}";
-            let expectedSplit = ["The product costs $", "{dollarAmt}"];
+            let expectedSplit = ["The product costs $", "${dollarAmt}"];
             let expectedIsVarArr = [false, true];
             let returnObj = ConfigParser.isolateVariables(testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -56,7 +65,7 @@ describe('Replacing variables', () => {
         })
         it('Should handle arbitrary number of $ as text before variable', () => {
             let testString = "The product costs $$$${dollarAmt}";
-            let expectedSplit = ["The product costs $$$", "{dollarAmt}"];
+            let expectedSplit = ["The product costs $$$", "${dollarAmt}"];
             let expectedIsVarArr = [false, true];
             let returnObj = ConfigParser.isolateVariables(testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -65,7 +74,7 @@ describe('Replacing variables', () => {
         })
         it('Should consider normal {} as text', () => {
             let testString = "The {product} costs $${dollarAmt}";
-            let expectedSplit = ["The {product} costs $", "{dollarAmt}"];
+            let expectedSplit = ["The {product} costs $", "${dollarAmt}"];
             let expectedIsVarArr = [false, true];
             let returnObj = ConfigParser.isolateVariables(testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);

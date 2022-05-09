@@ -7,9 +7,9 @@ const idMaps = require('./apiControllers/idMapApiController')
 const ConfigParser = require('./configParser');
 
 
-let substituteVariables = (participant, text) => {
+let substituteVariables = (participant, text, sensitiveDataAlso) => {
     let newText = text;
-    let varReplaceObj = ConfigParser.replaceVariablesInString(participant, text);
+    let varReplaceObj = ConfigParser.replaceVariablesInString(participant, text, sensitiveDataAlso);
     if(varReplaceObj.returnCode === DevConfig.SUCCESS_CODE) newText = varReplaceObj.data;
     return newText;
 }
@@ -31,14 +31,14 @@ module.exports.sendQuestion = async (bot, participant, chatId, question) => {
     let userInfo = await bot.telegram.getChat(chatId);
     participant["firstName"] = userInfo.first_name;
 
-    question.text = substituteVariables(participant, question.text);
+    question.text = substituteVariables(participant, question.text, false);
 
     // Handle any outstanding questions before sending next question.
     await AnswerHandler.handleNoResponse(participant.uniqueId);
 
     switch(question.qType){
         case 'singleChoice':
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text), {
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
@@ -46,7 +46,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question) => {
                 setTimeout(res, delayMs)
             });
 
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.singleChoice[language]), {
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.singleChoice[language], true), {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.singleChoice(question.options).reply_markup
             });
@@ -54,20 +54,20 @@ module.exports.sendQuestion = async (bot, participant, chatId, question) => {
 
         case 'multiChoice':
 
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text), {
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
             await new Promise(res => {
                 setTimeout(res, delayMs)
             });
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.multiChoice[language]), {
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.multiChoice[language], true), {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.multiChoice(question.options, language).reply_markup
             });
             break;
         case 'freeform':
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text), {
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
@@ -104,7 +104,7 @@ module.exports.sendReplies = async (bot, participant, chatId, question) => {
         await new Promise(res => {
             setTimeout(res, delayMs)
         });
-		await bot.telegram.sendMessage(chatId, substituteVariables(participant, reply), {
+		await bot.telegram.sendMessage(chatId, substituteVariables(participant, reply, true), {
             parse_mode: "HTML",
             reply_markup: InputOptions.removeKeyboard().reply_markup
         });
@@ -127,7 +127,7 @@ module.exports.sendMessage = async (bot, participant, chatId, message) => {
     let userInfo = await bot.telegram.getChat(chatId);
     participant["firstName"] = userInfo.first_name;
 
-    await bot.telegram.sendMessage(chatId, substituteVariables(participant, message), {
+    await bot.telegram.sendMessage(chatId, substituteVariables(participant, message, true), {
         parse_mode: "HTML",
         reply_markup: InputOptions.removeKeyboard().reply_markup
     });

@@ -287,7 +287,15 @@ bot.command('next', async ctx => {
     if(!config.debug) return;
     try{
         let secretMap = await idMaps.getByChatId(config.experimentId, ctx.from.id);
+        if(!secretMap){
+            console.log("Participant not initialized yet!");
+            return;
+        }
         let uniqueId = secretMap.uniqueId;
+        if(!ScheduleHandler.debugQueue[uniqueId]) {
+            console.log("No scheduled questions (yet)!");
+            return;
+        }
         let nextQObj = ScheduleHandler.debugQueue[uniqueId][0];
 
         let participant = await getParticipant(uniqueId);

@@ -11,5 +11,6 @@
     "FIRST_NAME" : "FirstName",
     "CURRENT_ANSWER" : "CurrentAnswer",
     "UNIQUE_ID" : "UniqueID"
-  }
+  },
+  "SENSITIVE_DATA_VARS" : ["FirstName"]
 }

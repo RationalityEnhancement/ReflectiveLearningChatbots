@@ -158,7 +158,7 @@ describe('Replacing variables', () => {
         it('Should replace variable at beginning of string', () => {
             let testString = "${" + DevConfig.VAR_STRINGS.FIRST_NAME + "} is going to school";
             let expectedString = "John is going to school"
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             console.log(returnObj.data);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(expectedString)
@@ -166,7 +166,7 @@ describe('Replacing variables', () => {
         it('Should replace variable at end of string', () => {
             let testString = "My name is ${" + DevConfig.VAR_STRINGS.FIRST_NAME + "}";
             let expectedString = "My name is " + participant.firstName;
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(expectedString)
         })
@@ -175,14 +175,23 @@ describe('Replacing variables', () => {
             let testString = "${" + DevConfig.VAR_STRINGS.FIRST_NAME + "} is ${" + DevConfig.VAR_STRINGS.FIRST_NAME + "}";
             let expectedString = participant.firstName + " is " + participant.firstName;
 
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(expectedString)
+        })
+        it('Should not replace sensitive data variables if filtered out', () => {
+            let testString = "${" + DevConfig.VAR_STRINGS.FIRST_NAME + "} goes to school on" +
+                " ${" + DevConfig.VAR_STRINGS.CURRENT_ANSWER + "}";
+            let expectedString = "${" + DevConfig.VAR_STRINGS.FIRST_NAME + "} goes to school on " + participant.currentAnswer.join(', ');
+
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, false);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(expectedString)
         })
         it('Should replace array variables', () => {
             let testString = "I go to school on ${" + DevConfig.VAR_STRINGS.CURRENT_ANSWER + "}";
             let expectedString = "I go to school on " + participant.currentAnswer.join(', ');
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(expectedString)
         })
@@ -190,27 +199,27 @@ describe('Replacing variables', () => {
             let testString = "My birthday is on ${" + DevConfig.VAR_STRINGS.CURRENT_ANSWER + "}";
             participant["currentAnswer"] = ["23rd March"];
             let expectedString = "My birthday is on 23rd March"
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             participant["currentAnswer"] = ["Mon", "Tue", "Wed"];
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(expectedString)
         })
         it('Should fail if participant not object', () => {
             let testString = "My birthday is on ${" + DevConfig.VAR_STRINGS.CURRENT_ANSWER + "}";
-            let returnObj = ConfigParser.replaceVariablesInString("crack", testString);
+            let returnObj = ConfigParser.replaceVariablesInString("crack", testString, true);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail if participant doesnt have firstName', () => {
             let testString = "\"I go to school on ${\" + DevConfig.VAR_STRINGS.CURRENT_ANSWER + \"}\"";
             delete participant["firstName"];
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             participant["firstName"] = "John"
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail if participant dont have currentAnswer', () => {
             let testString = "I go to school on ${" + DevConfig.VAR_STRINGS.CURRENT_ANSWER + "}";
             delete participant["currentAnswer"];
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             participant["currentAnswer"] = ["Mon","Tue","Wed"];
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
 
@@ -218,7 +227,7 @@ describe('Replacing variables', () => {
         it('Should fail if participant dont have uniqueId', () => {
             let testString = "I go to school on ${" + DevConfig.VAR_STRINGS.CURRENT_ANSWER + "}";
             delete participant["uniqueId"];
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             participant["uniqueId"] = "12345";
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
 
@@ -226,23 +235,23 @@ describe('Replacing variables', () => {
         it('Should fail if not string', () => {
             let testString = 1234;
 
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail if variable name dont exist', () => {
             let testString = "My birthday is on ${birthday}";
 
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail when variable bracket } not closed in middle', () => {
             let testString = "${Name is my name";
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail when variable bracket } not closed at end', () => {
             let testString = "The product costs ${dollarAmt";
-            let returnObj = ConfigParser.replaceVariablesInString(participant, testString);
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
     })

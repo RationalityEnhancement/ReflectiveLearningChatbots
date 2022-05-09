@@ -133,7 +133,7 @@ class ConfigParser{
      * @param targetString
      * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
      */
-    static replaceVariablesInString(participant, targetString){
+    static replaceVariablesInString(participant, targetString, sensitiveDataAlso = false){
         let isolatedObj = this.isolateVariables(targetString);
         if(isolatedObj.returnCode === DevConfig.FAILURE_CODE) return isolatedObj;
         let varSplit = isolatedObj.data.splitArr;
@@ -148,6 +148,11 @@ class ConfigParser{
                 if(varVal.returnCode === DevConfig.FAILURE_CODE) return varVal;
                 if(Array.isArray(varVal.data)) addString = varVal.data.join(', ');
                 else addString = varVal.data;
+                if(!sensitiveDataAlso){
+                    if(DevConfig.SENSITIVE_DATA_VARS.includes(varName)){
+                        addString = "$"+currentString;
+                    }
+                }
             } else {
                 addString = currentString;
             }

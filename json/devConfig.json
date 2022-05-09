@@ -6,5 +6,9 @@
   "NEXT_ACTION_STRING" : "Next Action",
   "REPEAT_QUESTION_STRING" : "Repeat Question",
   "qTypeAliases" : ["likert5", "likert7"],
-  "validAssignmentSchemes" : ["pid", "balanced", "random"]
+  "validAssignmentSchemes" : ["pid", "balanced", "random"],
+  "VAR_STRINGS" : {
+    "FIRST_NAME" : "FirstName",
+    "CURRENT_ANSWER" : "CurrentAnswer"
+  }
 }

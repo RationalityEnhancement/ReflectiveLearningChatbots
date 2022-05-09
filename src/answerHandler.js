@@ -10,8 +10,6 @@ const moment = require('moment-timezone');
  * from the user
  *
  *
- * @param config variable containing a valid config json file loaded
- *              using 'require('...json')'
  */
 
 class AnswerHandler{
@@ -29,7 +27,12 @@ class AnswerHandler{
      */
     static async handleNoResponse(uniqueId){
         // TODO: error handling for getting participant
-        let participant = await participants.get(uniqueId);
+        let participant;
+        try{
+            participant = await participants.get(uniqueId);
+        } catch(error){
+            return ReturnMethods.returnFailure("AHandler: could not get participant");
+        }
 
         // If answer is outstanding
         if(participant.currentState === 'awaitingAnswer'){

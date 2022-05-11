@@ -25,19 +25,19 @@ let schemaObject = {
     replyMessages: [String],
     nextActions: [String],
     nextQuestion: String,
-    conditionalReplyMessages: [
+    cReplyMessages: [
       {
         optionIndices : [Number],
         data: [String]
       }
     ],
-    conditionalNextQuestions: [
+    cNextQuestions: [
       {
         optionIndices : [Number],
         data: String
       }
     ],
-    conditionalNextActions: [
+    cNextActions: [
       {
         optionIndices : [Number],
         data: [String]

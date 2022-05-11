@@ -16,6 +16,7 @@ const BOT_TOKEN =  process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
 const moment = require('moment-timezone')
+const ConfigParser = require('./src/configParser')
 
 const ExperimentUtils = require("./src/experimentUtils");
 const {getByUniqueId} = require("./src/apiControllers/idMapApiController");
@@ -113,13 +114,36 @@ let processNextSteps = async (bot, uniqueId) => {
       throw "ERROR: PNS: Unable to find participant chat ID";
   }
 
-  // Send replies to the answer, if any
-  await MessageSender.sendReplies(bot, participant, secretMap.chatId, currentQuestion);
+    // Send replies to the answer, if any
+    if(!!currentQuestion.replyMessages && currentQuestion.replyMessages.length > 0){
+        await MessageSender.sendReplies(bot, participant, secretMap.chatId, currentQuestion.replyMessages);
+    } else if(!!currentQuestion.cReplyMessages && currentQuestion.cReplyMessages.length > 0){
+        let rules = currentQuestion.cReplyMessages;
+        let options = currentQuestion.options;
+        let lastAnswer = participant.currentAnswer;
+        let replyMessagesObj = ConfigParser.evaluateAnswerConditions(rules, options, lastAnswer);
+        if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
+            throw "ERROR: Could not process conditional replies" + replyMessagesObj.data;
+        } else if(replyMessagesObj.returnCode === DevConfig.SUCCESS_CODE){
+            await MessageSender.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data);
+        }
+    }
 
-  // Process all next actions
-  if(!!currentQuestion.nextActions && currentQuestion.nextActions.length > 0){
-    for(let i = 0; i < currentQuestion.nextActions.length; i++){
-      let aType = currentQuestion.nextActions[i];
+  // get all next actions
+    let nextActions = [];
+    if(!!currentQuestion.nextActions && currentQuestion.nextActions.length > 0){
+        nextActions = currentQuestion.nextActions;
+    } else if(!!currentQuestion.cNextActions && currentQuestion.cNextActions.length > 0){
+        let nextActionsObj = ConfigParser.evaluateAnswerConditions(currentQuestion.cNextActions, currentQuestion.options, participant.currentAnswer)
+        if(nextActionsObj.returnCode === DevConfig.FAILURE_CODE){
+            throw "ERROR: Could not process cond next actions: " + nextActionsObj.data;
+        } else if (nextActionsObj.returnCode === DevConfig.SUCCESS_CODE) {
+            nextActions = nextActionsObj.data;
+        }
+    }
+    // Process all next actions, if any
+    for(let i = 0; i < nextActions.length; i++){
+      let aType = nextActions[i];
       switch(aType){
           case "scheduleQuestions":
           // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
@@ -170,11 +194,24 @@ let processNextSteps = async (bot, uniqueId) => {
           throw "ERROR: aType not recognized"
       }
     }
-  }
 
-  // Process all next questions
-  if(!!currentQuestion.nextQuestion){
-    await sendNextQuestion(bot, participant, secretMap.chatId, currentQuestion.nextQuestion);
+
+  // get next question:
+    let nextQuestion;
+    if(!!currentQuestion.nextQuestion){
+        nextQuestion = currentQuestion.nextQuestion;
+    } else if(!!currentQuestion.cNextQuestions && currentQuestion.cNextQuestions.length > 0){
+        let nextQuestionsObj = ConfigParser.evaluateAnswerConditions(currentQuestion.cNextQuestions,
+            currentQuestion.options, participant.currentAnswer);
+        if(nextQuestionsObj.returnCode === DevConfig.FAILURE_CODE){
+            throw "ERROR: Unable to process cond next question: " + nextQuestionsObj.data;
+        } else if(nextQuestionsObj.returnCode === DevConfig.SUCCESS_CODE){
+            nextQuestion = nextQuestionsObj.data;
+        }
+    }
+  // Process next question
+  if(!!nextQuestion){
+    await sendNextQuestion(bot, participant, secretMap.chatId, nextQuestion);
   }
 }
 
@@ -326,13 +363,11 @@ bot.command('repeat', async ctx => {
         return;
     }
     let uniqueId = secretMap.uniqueId;
+
   let participant = await getParticipant(uniqueId);
-  if(participant.currentState === "answering"){
-    await participants.eraseCurrentAnswer(uniqueId);
-    await participants.updateField(uniqueId, "currentState", "awaitingAnswer");
-    participant.currentState = "awaitingAnswer";
-  }
+
   if(participant.currentState === "awaitingAnswer"){
+      await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;
     await MessageSender.sendQuestion(bot, participant, ctx.from.id, currentQuestion)
   }

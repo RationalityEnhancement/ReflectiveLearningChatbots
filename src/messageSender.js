@@ -86,12 +86,10 @@ module.exports.sendQuestion = async (bot, participant, chatId, question) => {
  *
  * @param bot current telegram bot instance
  * @param chatId chatId of user to send message to
- * @param question question object
+ * @param replyMessages array of reply messages
  * @returns {Promise<*>}
  */
-module.exports.sendReplies = async (bot, participant, chatId, question) => {
-
-	if(!question.replyMessages) return question;
+module.exports.sendReplies = async (bot, participant, chatId, replyMessages) => {
 
     let userInfo = await bot.telegram.getChat(chatId);
     participant["firstName"] = userInfo.first_name;
@@ -99,8 +97,8 @@ module.exports.sendReplies = async (bot, participant, chatId, question) => {
     // TODO: Set reply delay based on length of message?
     // TODO: Send typing notification while typing out message?
 	const delayMs = 500;
-	for(let i = 0; i < question.replyMessages.length; i++){
-		const reply = question.replyMessages[i];
+	for(let i = 0; i < replyMessages.length; i++){
+		const reply = replyMessages[i];
         await new Promise(res => {
             setTimeout(res, delayMs)
         });

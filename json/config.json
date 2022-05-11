@@ -105,25 +105,49 @@
             "US/Pacific",
             "US/Mountain",
             "US/Central",
-            "US/Eastern"
+            "US/Eastern",
+            "Not on Earth"
           ],
           "Deutsch": [
             "Europe/Berlin",
             "US/Pacific",
             "US/Mountain",
             "US/Central",
-            "US/Eastern"
+            "US/Eastern",
+            "Nicht auf Erden"
           ]
         },
-        "replyMessages": {
-          "English": [
-            "Thank you, time zone has been registered."
-          ],
-          "Deutsch": [
-            "Danke, Zeitzone ist erfasst worden"
-          ]
-        },
-        "nextActions" : ["scheduleQuestions"],
+        "cReplyMessages": [
+          {
+            "optionIndices": [0,1,2,3,4],
+            "data": {
+              "English": [
+                "Thank you, time zone has been registered."
+              ],
+              "Deutsch": [
+                "Danke, Zeitzone ist erfasst worden"
+              ]
+            }
+          },
+          {
+            "optionIndices": [5],
+            "data": {
+              "English": [
+                "Lucky you! No questions will be scheduled."
+              ],
+              "Deutsch": [
+                "Glück gehabt! Keine Fragen werden geplant."
+              ]
+            }
+          }
+        ],
+        "cNextActions" :
+        [
+          {
+            "optionIndices": [0,1,2,3,4],
+            "data": ["scheduleQuestions"]
+          }
+        ],
         "saveAnswerTo": "timezone"
       }
     ]
@@ -244,10 +268,38 @@
               "Deutsch" : "Wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
             },
             "qType" : "freeform",
+            "nextQuestion" : "eveningQuestions.surveyAsk",
             "replyMessages" : {
-              "English" : ["Well reflected! See you tomorrow."],
-              "Deutsch" : ["Gut reflektiert! Bis morgen."]
+              "English": ["Well reflected!"],
+              "Deutsch" : ["Gut reflektiert!"]
             }
+          },
+          {
+            "qId" : "surveyAsk",
+            "text" : {
+              "English" : "Would you complete a short survey?",
+              "Deutsch" : "Würden Sie eine kurze Umfrage beantworten?"
+            },
+            "qType": "singleChoice",
+            "options": {
+              "English" : ["Yes", "No"],
+              "Deutsch" : ["Ja", "Nein"]
+            },
+            "cReplyMessages" : [
+              {
+                "optionIndices": [1],
+                "data": {
+                  "English" : ["Very well. See you tomorrow!"],
+                  "Deutsch" : ["Alles klar. Bis morgen!"]
+                }
+              }
+            ],
+            "cNextQuestions" : [
+              {
+                "optionIndices" : [0],
+                "data" : "eveningQuestions.evaluateReflection"
+              }
+            ]
           },
           {
             "qId" : "evaluateReflection",
@@ -256,10 +308,29 @@
               "Deutsch" : "Wie weit stimmen Sie dieser Aussage zu? <i>Der Chatbot hat mir heute beim Nachdenken geholfen</i>"
             },
             "qType" : "likert7",
-            "replyMessages" : {
-              "English" : ["Great!"],
-              "Deutsch" : ["Super!"]
-            }
+            "cReplyMessages" : [
+              {
+                "optionIndices" : [0,1,2],
+                "data" : {
+                  "English" : ["Sorry to hear, I'll try to do better next time.", "See you tomorrow!"],
+                  "Deutsch" : ["Tut mir leid, ich versuche das nächste Mal, Ihnen besser zu helfen.", "Bis morgen!"]
+                }
+              },
+              {
+                "optionIndices" : [3],
+                "data" : {
+                  "English" : ["Thanks for your feedback.", "See you tomorrow!"],
+                  "Deutsch" : ["Danke fürs Feedback.", "Bis morgen!"]
+                }
+              },
+              {
+                "optionIndices" : [4,5,6],
+                "data" : {
+                  "English" : ["Glad I could help!", "See you tomorrow!"],
+                  "Deutsch" : ["Es freut mich, dass ich aushelfen könnte!", "Bis morgen!"]
+                }
+              }
+            ]
           }
         ]
       },
@@ -272,11 +343,6 @@
         {
           "qId" : "eveningQuestions.numGoals",
           "atTime" : "18:00",
-          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        },
-        {
-          "qId" : "eveningQuestions.evaluateReflection",
-          "atTime" : "18:05",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         }
       ]

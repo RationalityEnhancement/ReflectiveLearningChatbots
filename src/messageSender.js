@@ -24,7 +24,7 @@ let substituteVariables = (participant, text, sensitiveDataAlso) => {
  * @param question question object
  * @returns {Promise<void>}
  */
-module.exports.sendQuestion = async (bot, participant, chatId, question) => {
+module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay = false) => {
 
     let language = participant.parameters.language;
     let delayMs = 500;
@@ -39,10 +39,12 @@ module.exports.sendQuestion = async (bot, participant, chatId, question) => {
 
     let qLength = question.text.length;
     let qDelayMs = qLength * msPerCharacter;
-    bot.telegram.sendChatAction(chatId, "typing");
-    await new Promise(res => {
-        setTimeout(res, qDelayMs)
-    });
+    if(!noDelay){
+        bot.telegram.sendChatAction(chatId, "typing");
+        await new Promise(res => {
+            setTimeout(res, qDelayMs)
+        });
+    }
     switch(question.qType){
         case 'singleChoice':
 

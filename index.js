@@ -369,7 +369,7 @@ bot.command('repeat', async ctx => {
   if(participant.currentState === "awaitingAnswer"){
       await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;
-    await MessageSender.sendQuestion(bot, participant, ctx.from.id, currentQuestion)
+    await MessageSender.sendQuestion(bot, participant, ctx.from.id, currentQuestion, true)
   }
 
 })
@@ -497,7 +497,7 @@ bot.on('text', async ctx => {
       // Repeat the question
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
         await MessageSender.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData);
-        await MessageSender.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion)
+        await MessageSender.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, true)
       }
       break;
 

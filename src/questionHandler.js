@@ -1,5 +1,6 @@
 const ReturnMethods = require('./returnMethods');
-const DevConfig = require('../json/devConfig.json')
+const DevConfig = require('../json/devConfig.json');
+const lodash = require('lodash');
 
 /**
  * Question handler class that takes in a config as a parameter
@@ -124,20 +125,38 @@ function QuestionHandler(config){
             }
         }
 
-        const languageDepOptionalParams = ["options", "replyMessages"];
-        const otherOptionalParams = ["saveAnswerTo", "nextQuestion", "nextActions"];
+        const optionalParams = ["options", "replyMessages", "saveAnswerTo", "nextQuestion", "nextActions",
+        "cReplyMessages", "cNextActions","cNextQuestions"]
+        for(let i = 0; i < optionalParams.length; i++){
+            let field = optionalParams[i];
+            let languageReplacedValue = this.replaceLanguageDeeply(selectedQuestion[field], config.languages, language)
+            if(field in selectedQuestion) constructedQuestion[field] = languageReplacedValue;
+        }
 
-        for(let i = 0; i < languageDepOptionalParams.length; i++){
-            let field = languageDepOptionalParams[i];
-            if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field][language];
-        }
-        for(let i = 0; i < otherOptionalParams.length; i++){
-            let field = otherOptionalParams[i];
-            if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field];
-        }
 
         return ReturnMethods.returnSuccess(constructedQuestion);
 
+    }
+
+    this.replaceLanguageDeeply = (targetObj, languages, partLang) => {
+        if(typeof targetObj !== 'object') return targetObj;
+        if(!Array.isArray(languages)) return targetObj;
+        if(typeof partLang !== 'string') return targetObj;
+        if(Array.isArray(targetObj)){
+            let newArray = [];
+            for(let i = 0; i < targetObj.length; i++){
+                newArray.push(this.replaceLanguageDeeply(targetObj[i], languages, partLang))
+            }
+            return newArray;
+        }
+        if(languages.length === lodash.intersection(Object.keys(targetObj),config.languages).length){
+            return targetObj[partLang];
+        }
+        let newObj = {};
+        for(const [key, value] of Object.entries(targetObj)){
+            newObj[key] = this.replaceLanguageDeeply(value, languages, partLang);
+        }
+        return newObj;
     }
 
     /**

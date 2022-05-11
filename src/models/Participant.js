@@ -24,7 +24,25 @@ let schemaObject = {
     saveAnswerTo: String,
     replyMessages: [String],
     nextActions: [String],
-    nextQuestion: String
+    nextQuestion: String,
+    cReplyMessages: [
+      {
+        optionIndices : [Number],
+        data: [String]
+      }
+    ],
+    cNextQuestions: [
+      {
+        optionIndices : [Number],
+        data: String
+      }
+    ],
+    cNextActions: [
+      {
+        optionIndices : [Number],
+        data: [String]
+      }
+    ]
   },
   currentState: String,
   answers:

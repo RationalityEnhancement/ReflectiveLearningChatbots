@@ -10,8 +10,6 @@ const moment = require('moment-timezone');
  * from the user
  *
  *
- * @param config variable containing a valid config json file loaded
- *              using 'require('...json')'
  */
 
 class AnswerHandler{
@@ -29,20 +27,39 @@ class AnswerHandler{
      */
     static async handleNoResponse(uniqueId){
         // TODO: error handling for getting participant
-        let participant = await participants.get(uniqueId);
+        let participant;
+        try{
+            participant = await participants.get(uniqueId);
+        } catch(error){
+            return ReturnMethods.returnFailure("AHandler: could not get participant");
+        }
 
         // If answer is outstanding
-        if(participant.currentState === 'awaitingAnswer'){
+        if(!["answerReceived", "starting"].includes(participant.currentState)){
             let currentAnswer = participant.currentAnswer;
 
+            let saveString = DevConfig.NO_RESPONSE_STRING;
+            switch(participant.currentState){
+                case "awaitingAnswer" :
+                    saveString = DevConfig.NO_RESPONSE_STRING;
+                    break;
+                case "repeatQuestion" :
+                    saveString = DevConfig.REPEAT_QUESTION_STRING;
+                    break;
+                case "invalidAnswer" :
+                    saveString = DevConfig.INVALID_ANSWER_STRING;
+                    break;
+            }
             // Check if there is already some current answer that has not been saved
             // E.g., in a multi-choice question where the user has not clicked "Done"
-            // If there's no current answer, save the answer as "No response"
-            let fullAnswer;
-            try{
-                fullAnswer = currentAnswer.length > 0 ? currentAnswer : [DevConfig.NO_RESPONSE_STRING];
-            } catch(error){
-                return ReturnMethods.returnFailure("AHandler: currentAnswer not present");
+            // If there's no current answer, save the answer as "No response" if
+            let fullAnswer = [saveString];
+            if(participant.currentState === 'awaitingAnswer'){
+                try{
+                    fullAnswer = currentAnswer.length > 0 ? currentAnswer : fullAnswer;
+                } catch(error){
+                    return ReturnMethods.returnFailure("AHandler: currentAnswer not present");
+                }
             }
 
             // Answer current outstanding question with no response answer
@@ -90,6 +107,7 @@ class AnswerHandler{
                 answer: answerConv
             };
             await participants.addAnswer(uniqueId, answer);
+            await participants.updateField(uniqueId, "currentAnswer", answerConv);
         } catch(e){
             ReturnMethods.returnFailure("AHandler: unable to add answer")
         }
@@ -151,6 +169,9 @@ class AnswerHandler{
                             // Return failure or trigger the next action
                             return finishObj;
                         } else {
+                            await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
+                            let newPart = await participants.get(participant.uniqueId);
+
                             return ReturnMethods.returnPartialFailure(config.phrases.answerValidation.option[participant.parameters.language], DevConfig.REPEAT_QUESTION_STRING)
                         }
                     } catch(e){
@@ -175,6 +196,7 @@ class AnswerHandler{
 
                         } else {
                             // Repeat the question
+                            await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                             return ReturnMethods.returnPartialFailure(config.phrases.answerValidation.option[participant.parameters.language], DevConfig.REPEAT_QUESTION_STRING)
                         }
                     } catch(e){

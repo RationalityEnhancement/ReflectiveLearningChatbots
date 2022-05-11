@@ -244,3 +244,154 @@ describe('Getting scheduled questions, yes condition', () => {
     })
 
 })
+
+describe('Replacing language deeply', () => {
+    const languages = ["English", "Deutsch"];
+    const desiredLang = "English";
+    let languageObj = {
+        "English" : "Hello",
+        "Deutsch" : "Hallo"
+    }
+    it('Should replace languages on the zeroth level', () => {
+        let testObj = JSON.parse(JSON.stringify(languageObj));
+        let testObjCopy = JSON.parse(JSON.stringify(testObj));
+        let expectedResult = languageObj[desiredLang];
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("string");
+        expect(result).to.equal(expectedResult);
+        expect(testObj).to.eql(testObjCopy);
+    })
+    it('Should replace languages even when object has more languages', () => {
+        let testObj = JSON.parse(JSON.stringify(languageObj));
+        testObj["Kannada"] = "Namaskara"
+        let testObjCopy = JSON.parse(JSON.stringify(testObj));
+        let expectedResult = languageObj[desiredLang];
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("string");
+        expect(result).to.equal(expectedResult);
+        expect(testObj).to.eql(testObjCopy);
+
+    })
+    it('Should not replace languages even when object doesnt have all available languages', () => {
+        let testObj = JSON.parse(JSON.stringify(languageObj));
+        testObj["Kannada"] = "Namaskara"
+        delete testObj["Deutsch"];
+        let testObjCopy = JSON.parse(JSON.stringify(testObj));
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("object");
+        expect(result).to.eql(testObj);
+        expect(testObj).to.eql(testObjCopy);
+
+    })
+    it('Should return normally when not object', () => {
+        let testObj = "Hello";
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("string");
+        expect(result).to.eql(testObj);
+    })
+    it('Should return normally when languages not valid array', () => {
+        let testObj = "Hello";
+        let result = qHandler.replaceLanguageDeeply(testObj, "languages", desiredLang);
+        expect(typeof result).to.equal("string");
+        expect(result).to.eql(testObj);
+    })
+    it('Should return normally when desiredLang not valid string', () => {
+        let testObj = "Hello";
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, [desiredLang]);
+        expect(typeof result).to.equal("string");
+        expect(result).to.eql(testObj);
+    })
+    it('Should replace languages on the first level', () => {
+        let testObj = {
+            name: "Johnski",
+            greeting: JSON.parse(JSON.stringify(languageObj))
+        };
+        let testObjCopy = JSON.parse(JSON.stringify(testObj));
+
+        let expectedResult = JSON.parse(JSON.stringify(testObj));
+        expectedResult["greeting"] = testObj["greeting"][desiredLang];
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("object");
+        expect(result).to.eql(expectedResult);
+        expect(testObj).to.eql(testObjCopy);
+
+
+    })
+    it('Should replace two language objs on the first level', () => {
+        let testObj = {
+            name: "Johnski",
+            greeting1 : JSON.parse(JSON.stringify(languageObj)),
+            greeting2: JSON.parse(JSON.stringify(languageObj))
+        };
+        let testObjCopy = JSON.parse(JSON.stringify(testObj));
+        let expectedResult = JSON.parse(JSON.stringify(testObj));
+        expectedResult["greeting1"] = testObj["greeting1"][desiredLang];
+        expectedResult["greeting2"] = testObj["greeting2"][desiredLang];
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("object");
+        expect(result).to.eql(expectedResult);
+        expect(testObj).to.eql(testObjCopy);
+
+
+    })
+    it('Should not replace any other objects', () => {
+        let testObj = {
+            name: "Johnski",
+            greeting : JSON.parse(JSON.stringify(languageObj)),
+            bones: {
+                "fibia" : true,
+                "femur" : false
+            }
+        };
+        let testObjCopy = JSON.parse(JSON.stringify(testObj));
+        let expectedResult = JSON.parse(JSON.stringify(testObj));
+        expectedResult["greeting"] = testObj["greeting"][desiredLang];
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("object");
+        expect(result).to.eql(expectedResult);
+        expect(testObj).to.eql(testObjCopy);
+
+    })
+    it('Should replace array of other objects at zeroth level', () => {
+        let testObj = [
+            languageObj, languageObj
+        ];
+        let testObjCopy = JSON.parse(JSON.stringify(testObj));
+        let expectedResult = [languageObj[desiredLang], languageObj[desiredLang]];
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("object");
+        assert(Array.isArray(result));
+        expect(result).to.eql(expectedResult);
+        expect(testObj).to.eql(testObjCopy);
+    })
+    it('Should replace array of other objects at multiple levels', () => {
+        let testObj = [
+            {
+                condition: true,
+                nextQuestion : "peen",
+                replyMessages : languageObj
+            },
+            {
+                condition: false,
+                me : "am cool",
+                yes :{
+                    test: ["ok", "long", "array"],
+                    messages: languageObj
+                }
+            }
+
+        ];
+        let testObjCopy = JSON.parse(JSON.stringify(testObj));
+        let expectedResult = JSON.parse(JSON.stringify(testObj));
+        expectedResult[0]["replyMessages"] = languageObj[desiredLang];
+        expectedResult[1]["yes"]["messages"] = languageObj[desiredLang];
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("object");
+        assert(Array.isArray(result));
+        expect(result).to.eql(expectedResult);
+        expect(testObj).to.eql(testObjCopy);
+        console.log(result)
+    })
+
+
+})

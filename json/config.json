@@ -19,6 +19,18 @@
       "option" : {
         "English" : "Please pick <b>only from the given options</b>",
         "Deutsch" : "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      },
+      "notANumber" : {
+        "English": "Please enter a number",
+        "Deutsch" : "Geben Sie eine Zahl ein"
+      },
+      "numberTooHigh" : {
+        "English" : "Please enter a number below ${UpperBound}",
+        "Deutsch" : "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
+      },
+      "numberTooLow" : {
+        "English" : "Please enter a number above ${LowerBound}",
+        "Deutsch" : "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
       }
     },
     "keyboards" : {
@@ -186,7 +198,10 @@
               "English" : "How many goals did you set today?",
               "Deutsch" : "Wie viele Ziele haben Sie sich heute gesetzt?"
             },
-            "qType" : "freeform",
+            "qType" : "number",
+            "range" : {
+              "lower" : 0
+            },
             "nextQuestion" : "eveningQuestions.focus",
             "start" : true
           },
@@ -380,7 +395,10 @@
               "English" : "${FirstName}, how many goals did you set today?",
               "Deutsch" : "${FirstName}, wie viele Ziele haben Sie sich heute gesetzt?"
             },
-            "qType" : "freeform",
+            "qType" : "number",
+            "range" : {
+              "lower" : 0
+            },
             "nextQuestion" : "eveningQuestions.focus",
             "start" : true
           },

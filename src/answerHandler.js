@@ -229,8 +229,9 @@ class AnswerHandler{
 
                     // Check if it is within the range
                     if(!!currentQuestion.range){
-                        if(!!currentQuestion.range.lower){
+                        if("lower" in currentQuestion.range){
                             if(numberForm < currentQuestion.range.lower){
+                                await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                                 let errorString = config.phrases.answerValidation.numberTooLow[participant.parameters.language]
                                 let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
                                     {"LowerBound" : currentQuestion.range.lower})
@@ -238,8 +239,9 @@ class AnswerHandler{
                                 return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING);
                             }
                         }
-                        if(!!currentQuestion.range.upper){
+                        if("upper" in currentQuestion.range){
                             if(numberForm > currentQuestion.range.upper){
+                                await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                                 let errorString = config.phrases.answerValidation.numberTooHigh[participant.parameters.language]
                                 let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
                                     {"UpperBound" : currentQuestion.range.upper})

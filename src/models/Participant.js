@@ -42,7 +42,11 @@ let schemaObject = {
         optionIndices : [Number],
         data: [String]
       }
-    ]
+    ],
+    range : {
+      lower: Number,
+      upper: Number
+    }
   },
   currentState: String,
   answers:

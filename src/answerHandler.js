@@ -3,6 +3,7 @@ const config = require("../json/config.json");
 const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
 const moment = require('moment-timezone');
+const ConfigParser = require('./configParser')
 
 /**
  * Answer handler class that takes in a config as a parameter
@@ -211,6 +212,47 @@ class AnswerHandler{
                     // Return failure or trigger the next action
                     return finishObj;
 
+                // Question which requires number input
+                case 'number' :
+                    // Check if it can be parsed as a number
+                    if(isNaN(answerText) || answerText.length === 0) {
+                        let errorString = config.phrases.answerValidation.notANumber[participant.parameters.language]
+                        return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING);
+                    }
+
+                    let numberForm;
+                    if(answerText.indexOf('.') !== -1) {
+                        numberForm = parseFloat(answerText);
+                    } else {
+                        numberForm = parseInt(answerText);
+                    }
+
+                    // Check if it is within the range
+                    if(!!currentQuestion.range){
+                        if("lower" in currentQuestion.range){
+                            if(numberForm < currentQuestion.range.lower){
+                                await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
+                                let errorString = config.phrases.answerValidation.numberTooLow[participant.parameters.language]
+                                let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
+                                    {"LowerBound" : currentQuestion.range.lower})
+                                if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
+                                return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING);
+                            }
+                        }
+                        if("upper" in currentQuestion.range){
+                            if(numberForm > currentQuestion.range.upper){
+                                await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
+                                let errorString = config.phrases.answerValidation.numberTooHigh[participant.parameters.language]
+                                let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
+                                    {"UpperBound" : currentQuestion.range.upper})
+                                if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
+                                return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING);
+                            }
+                        }
+                    }
+
+                    return this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
+                    break;
                 default:
                     return ReturnMethods.returnFailure("AHandler: Question is missing valid question type: " + currentQuestion.qId);
             }

@@ -355,6 +355,109 @@ describe('Process answer', () =>{
             });
         });
     })
+
+    describe('Number', () => {
+
+        let returnObj;
+        describe('No range', () => {
+            const question = {
+                qId : "test",
+                qType : "number"
+            }
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+            }
+            it('Should return success on integer number', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "234")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+            })
+            it('Should return success on float number', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "234.44")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+            })
+            it('Should return partial failure and repeat question on not number', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "help")
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+            })
+            it('Should return partial failure and repeat question on empty string', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "")
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+            })
+        })
+        describe('With bounds', () => {
+            describe('only lower bound', () =>{
+                const question = {
+                    qId : "test",
+                    qType : "number",
+                    range : {
+                        lower: -10
+                    }
+                }
+                const part = {
+                    parameters: {language: "English"},
+                    uniqueId: testId,
+                    currentState: "awaitingAnswer",
+                    currentQuestion: question,
+                }
+                it('Should return success on integer number above lb', async () => {
+                    returnObj = await AnswerHandler.processAnswer(part, "-5")
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+                })
+                it('Should return success on float number above lb', async () => {
+                    returnObj = await AnswerHandler.processAnswer(part, "11.4")
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+                })
+                it('Should return partial failure and repeat question on int lower than lb', async () => {
+                    returnObj = await AnswerHandler.processAnswer(part, "-12")
+                    expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                    expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+                    // console.log(returnObj.failData);
+                })
+            })
+
+            describe('only upper bound (float)', () =>{
+                const question = {
+                    qId : "test",
+                    qType : "number",
+                    range : {
+                        upper: 10.434
+                    }
+                }
+                const part = {
+                    parameters: {language: "English"},
+                    uniqueId: testId,
+                    currentState: "awaitingAnswer",
+                    currentQuestion: question,
+                }
+                it('Should return success on integer number below ub', async () => {
+                    returnObj = await AnswerHandler.processAnswer(part, "10")
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+                })
+                it('Should return success on float number below ub', async () => {
+                    returnObj = await AnswerHandler.processAnswer(part, "10.433")
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+                })
+                it('Should return partial failure and repeat question on float number below ub', async () => {
+                    returnObj = await AnswerHandler.processAnswer(part, "10.435")
+                    expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                    expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+                    // console.log(returnObj.failData);
+                })
+            })
+
+        })
+    })
 });
 describe('Handling no answer', () => {
     const testQuestion = {

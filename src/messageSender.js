@@ -66,12 +66,15 @@ module.exports.sendQuestion = async (bot, participant, chatId, question) => {
                 reply_markup: InputOptions.multiChoice(question.options, language).reply_markup
             });
             break;
+        case 'number':
         case 'freeform':
             await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
             break;
+
+
         default:
             throw "Message Sender: Question type not recognized"
     }

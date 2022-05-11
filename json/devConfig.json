@@ -13,5 +13,6 @@
     "CURRENT_ANSWER" : "CurrentAnswer",
     "UNIQUE_ID" : "UniqueID"
   },
-  "SENSITIVE_DATA_VARS" : ["FirstName"]
+  "SENSITIVE_DATA_VARS" : ["FirstName"],
+  "MS_PER_CHARACTER_DELAY" : 25
 }

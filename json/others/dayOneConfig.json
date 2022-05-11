@@ -15,36 +15,76 @@
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {
-    "answerValidation" : {
-      "option" : {
-        "English" : "Please pick <b>only from the given options</b>",
-        "Deutsch" : "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+    "answerValidation": {
+      "option": {
+        "English": "Please pick <b>only from the given options</b>",
+        "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      },
+      "notANumber": {
+        "English": "Please enter a number",
+        "Deutsch": "Geben Sie eine Zahl ein"
+      },
+      "numberTooHigh": {
+        "English": "Please enter a number below ${UpperBound}",
+        "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
+      },
+      "numberTooLow": {
+        "English": "Please enter a number above ${LowerBound}",
+        "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
       }
     },
-    "keyboards" : {
-      "singleChoice" : {
-        "English" : "Please pick one from the given options",
-        "Deutsch" : "Bitte wählen Sie eine aus den vorgebenen Optionen"
+    "keyboards": {
+      "singleChoice": {
+        "English": "Please pick one from the given options",
+        "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen"
       },
-      "multiChoice" : {
-        "English" : "Please choose as many options as you like. Click Done to finish choosing.",
-        "Deutsch" : "Bitte wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
+      "multiChoice": {
+        "English": "Choose as many options as you like. Click Done to finish choosing.",
+        "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
       },
-      "terminateMultipleChoice" : {
-        "English" : "Done",
-        "Deutsch" : "Fertig"
+      "terminateMultipleChoice": {
+        "English": "Done",
+        "Deutsch": "Fertig"
       },
-      "finishedChoosingReply" : {
-        "English" : "Your choices have been registered",
-        "Deutsch" : "Ihre Wahlen sind erfasst worden"
+      "finishedChoosingReply": {
+        "English": "I have noted down your choices",
+        "Deutsch": "Ich habe Ihre Wahlen notiert"
       },
-      "likert5Options" : {
-        "English" : ["Strongly Disagree", "Disagree", "Neither", "Agree", "Strongly Agree"],
-        "Deutsch" : ["Stimme vollständig nicht zu", "Stimme nicht zu", "Weder noch", "Stimme zu", "Stimme vollständig zu"]
+      "likert5Options": {
+        "English": [
+          "Strongly Disagree",
+          "Disagree",
+          "Neither",
+          "Agree",
+          "Strongly Agree"
+        ],
+        "Deutsch": [
+          "Stimme vollständig nicht zu",
+          "Stimme nicht zu",
+          "Weder noch",
+          "Stimme zu",
+          "Stimme vollständig zu"
+        ]
       },
-      "likert7Options" : {
-        "English" : ["Strongly Disagree","Disagree", "Somewhat Disagree", "Neither","Somewhat Agree", "Agree", "Strongly Agree"],
-        "Deutsch" : ["Stimme vollständig nicht zu", "Stimme nicht zu", "Stimme eher nicht zu", "Weder noch", "Stimme eher zu", "Stimme zu", "Stimme vollständig zu"]
+      "likert7Options": {
+        "English": [
+          "Strongly Disagree",
+          "Disagree",
+          "Somewhat Disagree",
+          "Neither",
+          "Somewhat Agree",
+          "Agree",
+          "Strongly Agree"
+        ],
+        "Deutsch": [
+          "Stimme vollständig nicht zu",
+          "Stimme nicht zu",
+          "Stimme eher nicht zu",
+          "Weder noch",
+          "Stimme eher zu",
+          "Stimme zu",
+          "Stimme vollständig zu"
+        ]
       }
     },
     "schedule" : {
@@ -54,7 +94,6 @@
       }
     }
   },
-
   "questionCategories": {
     "setupQuestions": [
       {
@@ -162,7 +201,10 @@
               "English" : "How many goals did you set today?",
               "Deutsch" : "Wie viele Ziele haben Sie sich heute gesetzt?"
             },
-            "qType" : "freeform",
+            "qType" : "number",
+            "range" : {
+              "lower" : 0
+            },
             "nextQuestion" : "eveningQuestions.focus",
             "start" : true
           },
@@ -199,7 +241,23 @@
               "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
               "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
             },
-            "nextQuestion" : "eveningQuestions.emotionsReflection"
+            "nextQuestion" : "eveningQuestions.emotionsReflection",
+            "cReplyMessages" : [
+              {
+                "optionIndices" : [0,1,2,3],
+                "data" : {
+                  "English" : ["Sorry to hear."],
+                  "Deutsch" : ["Das tut mir leid."]
+                }
+              },
+              {
+                "optionIndices" : [4,5,6,7],
+                "data" : {
+                  "English" : ["That's great to hear!"],
+                  "Deutsch" : ["Das ist gut zu hören!"]
+                }
+              }
+            ]
           },
           {
             "qId" : "emotionsReflection",
@@ -244,7 +302,38 @@
               "Deutsch" : "Wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
             },
             "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.evaluateReflection"
+            "nextQuestion" : "eveningQuestions.surveyAsk",
+            "replyMessages" : {
+              "English": ["Well reflected!"],
+              "Deutsch" : ["Gut reflektiert!"]
+            }
+          },
+          {
+            "qId" : "surveyAsk",
+            "text" : {
+              "English" : "Would you complete a short survey?",
+              "Deutsch" : "Würden Sie eine kurze Umfrage beantworten?"
+            },
+            "qType": "singleChoice",
+            "options": {
+              "English" : ["Yes", "No"],
+              "Deutsch" : ["Ja", "Nein"]
+            },
+            "cReplyMessages" : [
+              {
+                "optionIndices": [1],
+                "data": {
+                  "English" : ["Very well. See you tomorrow!"],
+                  "Deutsch" : ["Alles klar. Bis morgen!"]
+                }
+              }
+            ],
+            "cNextQuestions" : [
+              {
+                "optionIndices" : [0],
+                "data" : "eveningQuestions.evaluateReflection"
+              }
+            ]
           },
           {
             "qId" : "evaluateReflection",
@@ -253,10 +342,29 @@
               "Deutsch" : "Wie weit stimmen Sie dieser Aussage zu? <i>Der Chatbot hat mir heute beim Nachdenken geholfen</i>"
             },
             "qType" : "likert7",
-            "replyMessages" : {
-              "English" : ["Well reflected! See you tomorrow."],
-              "Deutsch" : ["Gut reflektiert! Bis morgen."]
-            }
+            "cReplyMessages" : [
+              {
+                "optionIndices" : [0,1,2],
+                "data" : {
+                  "English" : ["Sorry to hear, I'll try to do better next time.", "See you tomorrow!"],
+                  "Deutsch" : ["Tut mir leid, ich versuche das nächste Mal, Ihnen besser zu helfen.", "Bis morgen!"]
+                }
+              },
+              {
+                "optionIndices" : [3],
+                "data" : {
+                  "English" : ["Thanks for your feedback.", "See you tomorrow!"],
+                  "Deutsch" : ["Danke fürs Feedback.", "Bis morgen!"]
+                }
+              },
+              {
+                "optionIndices" : [4,5,6],
+                "data" : {
+                  "English" : ["Glad I could help!", "See you tomorrow!"],
+                  "Deutsch" : ["Es freut mich, dass ich aushelfen könnte!", "Bis morgen!"]
+                }
+              }
+            ]
           }
         ]
       },
@@ -279,104 +387,282 @@
           {
             "qId" : "mainGoal",
             "text" : {
-              "English" : "what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
-              "Deutsch" : "was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
+              "English" : "${FirstName}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "Deutsch" : "${FirstName} was ist die Hauptsache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen?"
             },
             "qType" : "freeform",
-            "nextQuestion" :"morningQuestions.addGoal"
+            "nextQuestion" :"morningQuestions.askAddGoal"
 
           },
           {
-            "qId" : "addGoal",
+            "qId" : "askAddGoal",
+            "qType" : "singleChoice",
             "text" : {
-              "English" : "what else would you like to accomplish today?",
-              "Deutsch" : "was sonst möchten Sie heute erledigen?"
+              "English" : "Would you like to set additional goals for today?",
+              "Deutsch" : "Möchten Sie sich heute noch zusätzliche Ziele setzen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "optionIndices" : [0],
+                "data" : "morningQuestions.addOneGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "optionIndices" : [1],
+                "data" : {
+                  "English" : ["Got it. Good luck on your goals today, ${FirstName}!"],
+                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute, ${FirstName}!"]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addOneGoal",
+            "text" : {
+              "English" : "What else would you like to accomplish today?",
+              "Deutsch" : "Was sonst möchten Sie heute erledigen?"
             },
             "qType" : "freeform",
-            "replyMessages" : {
-              "English" : ["Got it! Good luck completing your goals today!"],
-              "Deutsch" : ["Alles klar! Viel Erfolg bei Ihren Zielen heute."]
-            }
+            "nextQuestion" : "morningQuestions.askAddGoal"
           }
         ],
         "eveningQuestions" : [
           {
             "qId" : "numGoals",
             "text" : {
-              "English" : "how many goals did you set today?",
-              "Deutsch" : "wie viele Ziele haben Sie sich heute gesetzt?"
+              "English" : "Good evening, ${FirstName}!\n\nHow much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
+              "Deutsch" : "Guten Abend, ${FirstName}!\n\nWie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
             },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.focus",
+            "qType" : "number",
+            "range" : {
+              "lower" : 0
+            },
+            "nextQuestion" : "eveningQuestions.anythingElse",
             "start" : true
           },
           {
-            "qId" : "focus",
+            "qId" : "anythingElse",
+            "qType" : "singleChoice",
             "text" : {
-              "English" : "how did you decide which things to focus on today?",
-              "Deutsch" : "wie haben Sie entschieden, worauf Sie sich heute fokussieren wollten?"
+              "English" : "Were there any other major things you worked on today that you would like to tell me about?",
+              "Deutsch": "Haben Sie heute an sonst etwas Wichtigem gearbeitet, die Sie mir berichten wollen?"
             },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.relevance"
+            "options" : {
+              "English" : ["Yes", "Not really."],
+              "Deutsch" : ["Ja", "Nicht wirklich."]
+            },
+            "cNextQuestions" : [
+              {
+                "optionIndices" : [0],
+                "data" : "eveningQuestions.moreWork"
+              },
+              {
+                "optionIndices" : [1],
+                "data" : "eveningQuestions.satisfaction"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "optionIndices" : [1],
+                "data" : {
+                  "English" : ["Very well, let's move on."],
+                  "Deutsch" : ["Alles klar, machen wir weiter."]
+                }
+              }
+            ]
           },
           {
-            "qId" : "relevance",
+            "qId" : "moreWork",
             "text" : {
-              "English" : "how relevant were the goals you pursued today to the long-term goals of your project(s), your team, and your organization?",
-              "Deutsch" : "wie relevant waren Ihre heutigen Ziele für die Langzeitziel von Ihrem Projekt, Team, und Ihrer Organisation?"
+              "English" : "Interesting, please tell me more about what you have been up to today.",
+              "Deutsch" : "Interessant, sagen Sie mir was Sie heute gemacht haben."
+            },
+            "replyMessages" : {
+              "English" : ["Good to know!"],
+              "Deutsch" : ["Gut zu wissen!"]
+            },
+            "qType" : "freeform",
+            "nextQuestion" : "eveningQuestions.satisfaction"
+          },
+          {
+            "qId" : "satisfaction",
+            "text" : {
+              "English" : "All in all, how satisfied are you with what you have accomplished today?",
+              "Deutsch" : "Alles in allem, wie zufrieden sind Sie damit, was Sie heute erzielt haben?"
             },
             "qType" : "singleChoice",
             "options" : {
-              "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
-              "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
+              "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
+              "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
             },
+            "cReplyMessages":  [
+              {
+                "optionIndices" : [0,1],
+                "data" : {
+                  "English" : ["Sorry to hear."],
+                  "Deutsch" : ["Das tut mir leid."]
+                }
+              },
+              {
+                "optionIndices" : [3,4],
+                "data" : {
+                  "English" : ["Good to hear!"],
+                  "Deutsch" : ["Gut zu hören!"]
+                }
+              },
+              {
+                "optionIndices" : [2],
+                "data" : {
+                  "English" : ["I see."],
+                  "Deutsch" : ["Ich verstehe."]
+                }
+              }
+            ],
             "nextQuestion" : "eveningQuestions.emotions"
           },
           {
             "qId" : "emotions",
             "text" : {
-              "English" : "how do you feel about that? Please select any or all of the emotions you are experiencing at least a little bit.",
-              "Deutsch" : "wie fühlen Sie sich darüber? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
+              "English" : "How do you feel about that, ${FirstName}? Please select any or all of the emotions you are experiencing at least a little bit.",
+              "Deutsch" : "Wie fühlen Sie sich darüber, ${FirstName}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
             },
             "qType" : "multiChoice",
             "options" : {
               "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
               "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
             },
-            "nextQuestion" : "eveningQuestions.emotionsReflection"
+            "cReplyMessages" : [
+              {
+                "optionIndices" : [0,1,2,3],
+                "data" : {
+                  "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
+                  "Deutsch" : ["Das tut mir leid.", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
+                }
+              },
+              {
+                "optionIndices" : [4,5,6,7],
+                "data" : {
+                  "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
+                  "Deutsch" : ["Das ist gut zu hören!", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
+                }
+              }
+            ],
+            "nextQuestion" : "eveningQuestions.pursuitSatisfaction"
           },
           {
-            "qId" : "emotionsReflection",
+            "qId" : "pursuitSatisfaction",
             "text" : {
-              "English" : "why did you feel that way?",
-              "Deutsch" : "warum haben Sie sich so gefühlt?"
+              "English" : "Setting aside the outcomes and the content of your goals for a moment, how satisfied are you with the way in which you pursued the goals you worked towards today?",
+              "Deutsch" : "Abgesehen von den Ergebnissen und dem Inhalt Ihrer Ziele, wie zufrieden sind Sie mit der Arbeitsweise, mit der Sie heute auf Ihre Ziele hingearbeitet haben?"
+            },
+            "qType" : "singleChoice",
+            "options" : {
+              "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
+              "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+            },
+            "nextQuestion" : "eveningQuestions.decisionSatisfaction"
+          },
+          {
+            "qId" : "decisionSatisfaction",
+            "text" : {
+              "English" : "Now, setting aside how you pursued your goals and what the outcomes were, how satisfied are you with your decision about which goals to work on today?",
+              "Deutsch" : "Also, abgesehen davon, wie Sie Ihren Zielen nachgegangen sind, wie zufrieden sind Sie mit der Entscheidung dazu, an welchen Zielen Sie heute arbeiten?"
+            },
+            "qType" : "singleChoice",
+            "options" : {
+              "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
+              "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+            },
+            "nextQuestion" : "eveningQuestions.goalsImportance"
+          },
+          {
+            "qId" : "goalsImportance",
+            "text" : {
+              "English" : "How important were the goals you pursued today to the long-term goals of your project(s), your team, and your organization?",
+              "Deutsch" : "Wie wichtig waren Ihre heutigen Ziele für die Langzeitziel von Ihrem Projekt, Team, und Ihrer Organisation?"
+            },
+            "qType" : "singleChoice",
+            "options" : {
+              "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
+              "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
+            },
+            "nextQuestion" : "eveningQuestions.metaDescription",
+            "replyMessages" : {
+              "English" : ["Good job so far!","Let's now take a step back and think about where those goals came from. "],
+              "Deutsch" : ["Bisher gut gemacht!","Lass uns jetzt einen Schritt zurücknehmen und darüber nachdenken, woher diese Ziele hergekommen sind."]
+            }
+          },
+          {
+            "qId" : "metaDescription",
+            "text" : {
+              "English" : "Please describe the thought process that led you to select the goals that you set for today.",
+              "Deutsch" : "Beschreiben Sie die Denkweise, die Sie dazu geführt haben, sich die Ziele zu setzen, die Sie heute gewählt haben."
             },
             "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.advice"
+            "replyMessages" : {
+              "English" : ["Thanks for sharing."],
+              "Deutsch" : ["Danke, dass Sie das mit mir mitteilen."]
+            },
+            "nextQuestion" : "eveningQuestions.metaJudgement"
           },
           {
-            "qId" : "advice",
+            "qId" : "metaJudgement",
             "text" : {
-              "English" : "based on your recent experience with goal setting, which advice would you give to a new colleague who is just starting to work in a similar role?",
-              "Deutsch" : "basierend auf Ihrer neuen Erfahrung mit Zielsetzung, welchen Ratschlag würden Sie einem neuen Kollegen geben, der neulich in einer ähnlichen Rolle anfängt?"
+              "English" : "How effective do you think this process is at generating excellent daily goals that are well-aligned with the larger goals of your project(s), your team, and your organization?",
+              "Deutsch" : "Wie effektiv finden Sie diesen Prozess, um gute Tagesziele zu erreichen, die den größeren Zielen Ihrer Projekte, Ihres Teams, und Ihrer Organisation entsprechen?"
+            },
+            "qType" : "singleChoice",
+            "options" : {
+              "English" : ["Rather ineffective", "Mediocre", "Somewhat effective", "Effective", "Very effective", "Perfect"],
+              "Deutsch" : ["Eher ineffektiv", "Mittelmäßig", "Etwas effektiv", "Effektiv", "Sehr effektiv", "Perfekt"]
+            },
+            "nextQuestion" : "eveningQuestions.improveGoalSetting"
+          },
+          {
+            "qId" : "improveGoalSetting",
+            "text" : {
+              "English" : "Based on that, do you think your goal-setting process could be improved?",
+              "Deutsch" : "Basierend darauf glauben Sie, dass Ihre Zielsetzungsprozedur noch zu verbessern ist?"
+            },
+            "qType" : "singleChoice",
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch" : ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "optionIndices" : [0],
+                "data" : "eveningQuestions.howImprove"
+              },
+              {
+                "optionIndices" : [1],
+                "data" : "eveningQuestions.plan"
+              }
+            ]
+          },
+          {
+            "qId" : "howImprove",
+            "text" : {
+              "English" : "Congratulations on choosing to learn and improve! What would you like to improve about your goal-setting process?",
+              "Deutsch" : "Gratulation, dass Sie Lernen und Verbesserung gewählt haben. Was möchten Sie an Ihrer Zielsetzungsprozedur verbessern?"
             },
             "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.planWhat"
-          },
-          {
-            "qId" : "planWhat",
-            "text" : {
-              "English" : "what concretely will you do differently tomorrow?",
-              "Deutsch" : "was konkretes werden Sie morgen anders tun?"
+            "replyMessages" : {
+              "English" : ["Good thinking!"],
+              "Deutsch" : ["Gut mitgedacht!"]
             },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.planWhen"
+            "nextQuestion" : "eveningQuestions.plan"
           },
           {
-            "qId" : "planWhen",
+            "qId" : "plan",
             "text" : {
-              "English" : "when will you do it?",
-              "Deutsch" : "wann werden Sie es tun?"
+              "English" : "What is one small, concrete change that you could make tomorrow to improve on your goal-setting?",
+              "Deutsch" : "Nennen Sie eine konkrete Änderung, die Ihre Zielsetzung morgen verbessern könnte."
             },
             "qType" : "freeform",
             "nextQuestion" : "eveningQuestions.planRemember"
@@ -384,22 +670,17 @@
           {
             "qId" : "planRemember",
             "text" : {
-              "English" : "how will you remember this plan when the time comes to execute it?",
-              "Deutsch" : "wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
+              "English" : "Would you like me to remind you of this plan tomorrow morning?",
+              "Deutsch" : "Möchten Sie, dass ich Sie morgen früh an diesen Plan erinnere?"
             },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.evaluateReflection"
-          },
-          {
-            "qId" : "evaluateReflection",
-            "text" : {
-              "English" : "how much do you agree with this statement? <i>The chatbot helped me be more reflective today</i>",
-              "Deutsch" : "wie weit stimmen Sie dieser Aussage zu? <i>Der Chatbot hat mir heute beim Nachdenken geholfen</i>"
+            "qType" : "singleChoice",
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch" : ["Ja", "Nein"]
             },
-            "qType" : "likert7",
             "replyMessages" : {
-              "English" : ["Well reflected! See you tomorrow."],
-              "Deutsch" : ["Gut reflektiert! Bis morgen."]
+              "English" : ["Very well. Good job reflecting today. See you tomorrow!"],
+              "Deutsch" : ["Alles klar. Sie haben heute gut reflektiert. Bis morgen!"]
             }
           }
         ]

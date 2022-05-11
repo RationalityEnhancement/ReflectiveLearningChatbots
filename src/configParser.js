@@ -235,6 +235,48 @@ class ConfigParser{
         return ReturnMethods.returnSuccess(newString);
     }
 
+    static replaceSpecificVariablesInString(targetString, varVals){
+        if(typeof varVals !== 'object' || Array.isArray(varVals)){
+            return ReturnMethods.returnFailure("CParser: varVals must be object")
+        }
+        // Split the string up to isolate the variables
+        let isolatedObj = this.isolateVariables(targetString);
+        if(isolatedObj.returnCode === DevConfig.FAILURE_CODE) return isolatedObj;
+        let varSplit = isolatedObj.data.splitArr;
+        let isVar = isolatedObj.data.isVarArr;
+
+        let newString = "";
+
+        for(let i = 0; i < varSplit.length; i++){
+            let currentString = varSplit[i];
+            let addString = "";
+
+            if(isVar[i]){
+                // If the current string part is a variable
+                // Remove $ and {
+                let varName = currentString.replace(/[{}$]/g, "");
+
+                // Get the value of the variable
+                let varVal;
+                if(varName in varVals) {
+                    varVal = varVals[varName];
+                } else {
+                    varVal = currentString;
+                }
+
+                // If it is an array, join it with commas
+                if(Array.isArray(varVal)) addString = varVal.join(', ');
+                else addString = varVal;
+
+            } else {
+                addString = currentString;
+            }
+            // Build the string piece by piece
+            newString += addString;
+        }
+        return ReturnMethods.returnSuccess(newString);
+    }
+
     static evaluateAnswerConditions(ruleList, options, lastAnswer){
         if(!Array.isArray(ruleList)) return ReturnMethods.returnFailure("CParser: Rule List must be list");
         if(!Array.isArray(options)) return ReturnMethods.returnFailure("CParser: Options must be list");

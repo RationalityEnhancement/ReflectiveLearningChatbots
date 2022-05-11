@@ -390,7 +390,6 @@ describe('Replacing language deeply', () => {
         assert(Array.isArray(result));
         expect(result).to.eql(expectedResult);
         expect(testObj).to.eql(testObjCopy);
-        console.log(result)
     })
 
 

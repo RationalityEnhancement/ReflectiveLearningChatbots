@@ -125,17 +125,13 @@ function QuestionHandler(config){
             }
         }
 
-        const languageDepOptionalParams = ["options", "replyMessages"];
-        const otherOptionalParams = ["saveAnswerTo", "nextQuestion", "nextActions"];
+        const optionalParams = ["options", "replyMessages", "saveAnswerTo", "nextQuestion", "nextActions"]
+        for(let i = 0; i < optionalParams.length; i++){
+            let field = optionalParams[i];
+            let languageReplacedValue = this.replaceLanguageDeeply(selectedQuestion[field], config.languages, language)
+            if(field in selectedQuestion) constructedQuestion[field] = languageReplacedValue;
+        }
 
-        for(let i = 0; i < languageDepOptionalParams.length; i++){
-            let field = languageDepOptionalParams[i];
-            if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field][language];
-        }
-        for(let i = 0; i < otherOptionalParams.length; i++){
-            let field = otherOptionalParams[i];
-            if(field in selectedQuestion) constructedQuestion[field] = selectedQuestion[field];
-        }
 
         return ReturnMethods.returnSuccess(constructedQuestion);
 

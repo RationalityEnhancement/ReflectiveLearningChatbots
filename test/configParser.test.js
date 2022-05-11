@@ -265,3 +265,119 @@ describe('Replacing variables', () => {
         })
     })
 })
+
+describe('Evaluating conditions ', () => {
+    const options = ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited", "Secret"];
+    const replyRules = [
+        {
+            optionIndices: [0,1,2,3],
+            data: ["Sorry to hear! :("]
+        },
+        {
+            optionIndices: [4,5,6,7],
+            data: ["Good news! :)"]
+        },
+        {
+            optionIndices: [0,2],
+            data: ["Third option! :("]
+        }
+
+    ]
+    describe('Single choice', () => {
+
+        it('Should return success when match', () =>{
+            let answer = ["Frustrated"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].data);
+        })
+        it('Should return narrower match when multiple match', () =>{
+            let answer = ["Sad"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[2].data);
+        })
+        it('Should return success when match - 2', () =>{
+            let answer = ["Content"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[1].data);
+        })
+        it('Should return partial failure when no match', () =>{
+            let answer = ["Secret"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+            expect(returnObj.successData).to.equal(DevConfig.NO_RESPONSE_STRING);
+        })
+        it('Should return partial failure when answer doesnt exist', () =>{
+            let answer = ["Peepee"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+            expect(returnObj.successData).to.equal(DevConfig.NO_RESPONSE_STRING);
+        })
+    })
+    describe('Multiple choice ', function () {
+        it('Should return correct option when whole match', () =>{
+            let answer = ["Frustrated", "Sad"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].data);
+        })
+        it('Should return outweighing match when multiple rules match ', () =>{
+            let answer = ["Frustrated", "Sad", "Happy"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].data);
+        })
+        it('Should return first success when even match of even resolution', () =>{
+            let answer = ["Frustrated", "Happy"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].data);
+        })
+        it('Should return correct option when whole match - 2', () =>{
+            let answer = ["Content", "Excited"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[1].data);
+        })
+        it('Should return outweighing match when multiple rules match - 2', () =>{
+            let answer = ["Content", "Excited", "Stressed"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[1].data);
+        })
+        it('Should return narrower match when two rules overlap', () =>{
+            let answer = ["Sad", "Discontent"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[2].data);
+        })
+    });
+    describe('Failures', () => {
+        it('Should fail when rule list not list', () => {
+            let returnObj = ConfigParser.evaluateAnswerConditions("test", options, ["Sad"]);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail when options not list', () => {
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules, "options", ["Sad"]);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail when answer not list', () => {
+            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules, options, "Sad");
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail when reply rules missing option indices', () => {
+            let newRules = JSON.parse(JSON.stringify(replyRules));
+            delete newRules[0]['optionIndices'];
+            let returnObj = ConfigParser.evaluateAnswerConditions(newRules, options, ["Sad"]);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail when reply rules option indices not array', () => {
+            let newRules = JSON.parse(JSON.stringify(replyRules));
+            newRules[0]['optionIndices'] = "string";
+            let returnObj = ConfigParser.evaluateAnswerConditions(newRules, options, ["Sad"]);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+    })
+})

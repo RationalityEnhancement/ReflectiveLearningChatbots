@@ -27,20 +27,20 @@ let schemaObject = {
     nextQuestion: String,
     conditionalReplyMessages: [
       {
-        answerIs : [Number],
-        replyMessages: [String]
+        optionIndices : [Number],
+        data: [String]
       }
     ],
     conditionalNextQuestions: [
       {
-        answerIs : [Number],
-        nextQuestion: String
+        optionIndices : [Number],
+        data: String
       }
     ],
     conditionalNextActions: [
       {
-        answerIs : [Number],
-        nextActions: [String]
+        optionIndices : [Number],
+        data: [String]
       }
     ]
   },

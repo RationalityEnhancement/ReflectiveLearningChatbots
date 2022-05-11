@@ -2,6 +2,7 @@ const participants = require("./apiControllers/participantApiController");
 const config = require("../json/config.json");
 const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
+const lodash = require('lodash');
 
 /**
  *
@@ -232,6 +233,42 @@ class ConfigParser{
             newString += addString;
         }
         return ReturnMethods.returnSuccess(newString);
+    }
+
+    static evaluateAnswerConditions(ruleList, options, lastAnswer){
+        if(!Array.isArray(ruleList)) return ReturnMethods.returnFailure("CParser: Rule List must be list");
+        if(!Array.isArray(options)) return ReturnMethods.returnFailure("CParser: Options must be list");
+        if(!Array.isArray(lastAnswer)) return ReturnMethods.returnFailure("CParser: Last answer must be list");
+        if(!ruleList.every(el => ("optionIndices" in el) && Array.isArray(el.optionIndices))){
+            return ReturnMethods.returnFailure("CParser: Option indices required for condition evaluation")
+        }
+        let maxIntersection = 0;
+        let maxIntersectionIdx = 0;
+        let maxIntersectionRatio = 0;
+        let answerIndices = lastAnswer.map(el => options.indexOf(el));
+        for(let i = 0; i < ruleList.length; i++){
+            let curOpt = ruleList[i]
+            let intersection = lodash.intersection(curOpt.optionIndices, answerIndices);
+            let intersectionRatio = intersection.length / curOpt.optionIndices.length;
+
+            if(intersection.length > maxIntersection){
+                maxIntersection = intersection.length;
+                maxIntersectionRatio = intersectionRatio;
+                maxIntersectionIdx = i;
+            } else if(intersection.length === maxIntersection && maxIntersection > 0){
+                if(intersectionRatio > maxIntersectionRatio){
+                    maxIntersection = intersection.length;
+                    maxIntersectionRatio = intersectionRatio;
+                    maxIntersectionIdx = i;
+                }
+            }
+        }
+
+        if(maxIntersectionRatio === 0){
+            return ReturnMethods.returnPartialFailure("", DevConfig.NO_RESPONSE_STRING);
+        } else {
+            return ReturnMethods.returnSuccess(ruleList[maxIntersectionIdx].data);
+        }
     }
 
 }

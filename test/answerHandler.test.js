@@ -291,7 +291,7 @@ describe('Process answer', () =>{
                 currentQuestion: question,
             }
             it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, config.phrases.keyboards.terminateMultipleChoice[part.parameters.language])
+                returnObj = await AnswerHandler.processAnswer(part, config.phrases.keyboards.terminateAnswer[part.parameters.language])
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             });

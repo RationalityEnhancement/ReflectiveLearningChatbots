@@ -189,7 +189,7 @@ class AnswerHandler{
                             await participants.addToCurrentAnswer(participant.uniqueId, answerText);
                             return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
 
-                        } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
+                        } else if(answerText === config.phrases.keyboards.terminateAnswer[participant.parameters.language]) {
                             // If participant is finished answering
                             let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
                             // Return failure or trigger the next action

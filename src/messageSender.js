@@ -83,7 +83,8 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
             break;
-
+        case 'qualtrics' :
+            let link = question.qualtricsLink
 
         default:
             throw "Message Sender: Question type not recognized"

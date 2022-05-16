@@ -43,13 +43,21 @@
         "English": "Choose as many options as you like. Click Done to finish choosing.",
         "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
       },
-      "terminateMultipleChoice": {
+      "terminateAnswer": {
         "English": "Done",
         "Deutsch": "Fertig"
       },
       "finishedChoosingReply": {
         "English": "I have noted down your choices",
         "Deutsch": "Ich habe Ihre Wahlen notiert"
+      },
+      "qualtricsFillPrompt" : {
+        "English" : "Please fill out the following survey",
+        "Deutsch" : "Füllen Sie die folgende Umfrage aus"
+      },
+      "qualtricsDonePrompt" : {
+        "English" : "Send <i>Done</i> when you are finished with the survey.",
+        "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
       },
       "likert5Options": {
         "English": [

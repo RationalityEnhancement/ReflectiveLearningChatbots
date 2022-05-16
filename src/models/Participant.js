@@ -24,6 +24,7 @@ let schemaObject = {
     replyMessages: [String],
     nextActions: [String],
     nextQuestion: String,
+    qualtricsLink : String,
     cReplyMessages: [
       {
         optionIndices : [Number],

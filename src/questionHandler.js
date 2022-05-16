@@ -112,6 +112,31 @@ function QuestionHandler(config){
             "qType" : selectedQuestion.qType,
         }
 
+        // Process qualtrics question, add the link with query strings to question object
+        if(selectedQuestion.qType === "qualtrics"){
+            if(!("qualtricsLink" in selectedQuestion)){
+                return ReturnMethods.returnFailure("QHandler: Qualtrics question requires link");
+            }
+            let fields = selectedQuestion.qualtricsFields;
+            if(!fields) fields = [];
+            let link = selectedQuestion.qualtricsLink;
+            let addedFields = 0;
+            for(let i = 0; i < fields.length; i++){
+                let fieldName = fields[i]["field"];
+                let fieldValue = fields[i]["value"];
+                if(!fieldName) continue;
+                if(typeof fieldValue === "undefined"){
+                    return ReturnMethods.returnFailure("QHandler: Qualtrics field " + fieldName + " missing  value");
+                }
+                let sepChar = (addedFields === 0) ? "?" : "&";
+
+                // Add query string to end of link
+                link += sepChar + fieldName + "=" + fieldValue;
+                addedFields++;
+            }
+            constructedQuestion["qualtricsLink"] = link;
+        }
+
         // If any of the questions have preset options (qType aliases)
         if(DevConfig.qTypeAliases.includes(selectedQuestion.qType)){
             switch(selectedQuestion.qType){

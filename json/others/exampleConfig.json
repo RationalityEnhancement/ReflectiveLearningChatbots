@@ -100,7 +100,7 @@
         "English" : "Choose many options",
         "Deutsch" : "Mehrere Optionen wählen"
       },
-      "terminateMultipleChoice" : {
+      "terminateAnswer" : {
         "English" : "Done",
         "Deutsch" : "Fertig"
       },

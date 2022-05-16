@@ -11,7 +11,8 @@
   "customParameters" : {
     "pId" : "string"
   },
-  "debug": true,
+  "debugDev" : true,
+  "debugExp" : true,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {
@@ -42,7 +43,7 @@
         "English" : "Please choose as many options as you like. Click Done to finish choosing.",
         "Deutsch" : "Bitte wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
       },
-      "terminateMultipleChoice" : {
+      "terminateAnswer" : {
         "English" : "Done",
         "Deutsch" : "Fertig"
       },
@@ -72,8 +73,8 @@
       {
         "qId" : "langQuestion",
         "text" : {
-          "English" : "Hello ${FirstName}, I am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo ${FirstName}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
-          "Deutsch" : "Hello ${FirstName}, I am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo ${FirstName}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
+          "English" : "Hello ${FIRST_NAME}, I am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo ${FIRST_NAME}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
+          "Deutsch" : "Hello ${FIRST_NAME}, I am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo ${FIRST_NAME}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
         },
         "qType" : "singleChoice",
         "options" : {
@@ -368,8 +369,8 @@
           {
             "qId" : "mainGoal",
             "text" : {
-              "English" : "${FirstName}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
-              "Deutsch" : "${FirstName}, was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
+              "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "Deutsch" : "${FIRST_NAME}, was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
             },
             "qType" : "freeform",
             "nextQuestion" :"morningQuestions.addGoal"
@@ -383,8 +384,8 @@
             },
             "qType" : "freeform",
             "replyMessages" : {
-              "English" : ["Got it, ${FirstName}! Good luck completing your goals today!"],
-              "Deutsch" : ["Alles klar, ${FirstName}! Viel Erfolg bei Ihren Zielen heute."]
+              "English" : ["Got it, ${FIRST_NAME}! Good luck completing your goals today!"],
+              "Deutsch" : ["Alles klar, ${FIRST_NAME}! Viel Erfolg bei Ihren Zielen heute."]
             }
           }
         ],
@@ -392,8 +393,8 @@
           {
             "qId" : "numGoals",
             "text" : {
-              "English" : "${FirstName}, how many goals did you set today?",
-              "Deutsch" : "${FirstName}, wie viele Ziele haben Sie sich heute gesetzt?"
+              "English" : "${FIRST_NAME}, how many goals did you set today?",
+              "Deutsch" : "${FIRST_NAME}, wie viele Ziele haben Sie sich heute gesetzt?"
             },
             "qType" : "number",
             "range" : {
@@ -490,8 +491,8 @@
             },
             "qType" : "likert7",
             "replyMessages" : {
-              "English" : ["Well reflected, ${FirstName}! See you tomorrow."],
-              "Deutsch" : ["Gut reflektiert, ${FirstName}! Bis morgen."]
+              "English" : ["Well reflected, ${FIRST_NAME}! See you tomorrow."],
+              "Deutsch" : ["Gut reflektiert, ${FIRST_NAME}! Bis morgen."]
             }
           }
         ]

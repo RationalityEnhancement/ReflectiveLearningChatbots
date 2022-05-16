@@ -77,13 +77,62 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             });
             break;
         case 'number':
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+            await new Promise(res => {
+                setTimeout(res, delayMs)
+            });
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.multiChoice[language], true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.multiChoice(question.options, language).reply_markup
+            });
+            break;
         case 'freeform':
             await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
             break;
+        case 'qualtrics' :
+            let link = question.qualtricsLink;
 
+            // Send the question text
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+
+            // Send the prompt to fill the link
+            await new Promise(res => {
+                setTimeout(res, delayMs * 2)
+            });
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.qualtricsFillPrompt[language], true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+
+            // Send the link
+            let linkRef = "\<a href='" + substituteVariables(participant, link, true) + "'\> " +
+                config.phrases.keyboards.linkToSurvey[language] + " </a>";
+            await new Promise(res => {
+                setTimeout(res, delayMs * 2)
+            });
+            await bot.telegram.sendMessage(chatId, linkRef, {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+
+            // Send the instruction on how to continue
+            await new Promise(res => {
+                setTimeout(res, delayMs * 2)
+            });
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.qualtricsDonePrompt[language], true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+            break;
 
         default:
             throw "Message Sender: Question type not recognized"
@@ -102,7 +151,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
  * @param replyMessages array of reply messages
  * @returns {Promise<*>}
  */
-module.exports.sendReplies = async (bot, participant, chatId, replyMessages) => {
+module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noDelay = false) => {
 
     let userInfo = await bot.telegram.getChat(chatId);
     participant["firstName"] = userInfo.first_name;
@@ -111,11 +160,14 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages) => 
     // TODO: Send typing notification while typing out message?
 	for(let i = 0; i < replyMessages.length; i++){
 		const reply = replyMessages[i];
-        bot.telegram.sendChatAction(chatId, "typing");
-        let delayMs = reply.length * msPerCharacter;
-        await new Promise(res => {
-            setTimeout(res, delayMs)
-        });
+        if(!noDelay){
+            bot.telegram.sendChatAction(chatId, "typing");
+            let delayMs = reply.length * msPerCharacter;
+            await new Promise(res => {
+                setTimeout(res, delayMs)
+            });
+        }
+
 		await bot.telegram.sendMessage(chatId, substituteVariables(participant, reply, true), {
             parse_mode: "HTML",
             reply_markup: InputOptions.removeKeyboard().reply_markup
@@ -135,16 +187,18 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages) => 
  * @param message message to be sent
  * @returns {Promise<*>}
  */
-module.exports.sendMessage = async (bot, participant, chatId, message) => {
+module.exports.sendMessage = async (bot, participant, chatId, message, noDelay = false) => {
 
     let userInfo = await bot.telegram.getChat(chatId);
     participant["firstName"] = userInfo.first_name;
 
     let delayMs = message.length * msPerCharacter;
-    bot.telegram.sendChatAction(chatId, "typing");
-    await new Promise(res => {
-        setTimeout(res, delayMs)
-    });
+    if(!noDelay){
+        bot.telegram.sendChatAction(chatId, "typing");
+        await new Promise(res => {
+            setTimeout(res, delayMs)
+        });
+    }
     await bot.telegram.sendMessage(chatId, substituteVariables(participant, message, true), {
         parse_mode: "HTML",
         reply_markup: InputOptions.removeKeyboard().reply_markup

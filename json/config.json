@@ -11,7 +11,8 @@
   "customParameters" : {
     "pId" : "string"
   },
-  "debug": true,
+  "debugExp": true,
+  "debugDev" : true,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {
@@ -31,6 +32,10 @@
       "numberTooLow": {
         "English": "Please enter a number above ${LowerBound}",
         "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+      },
+      "terminateAnswerProperly" : {
+        "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
+        "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
       }
     },
     "keyboards": {
@@ -42,13 +47,25 @@
         "English": "Choose as many options as you like. Click Done to finish choosing.",
         "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
       },
-      "terminateMultipleChoice": {
+      "terminateAnswer": {
         "English": "Done",
         "Deutsch": "Fertig"
       },
       "finishedChoosingReply": {
         "English": "I have noted down your choices",
         "Deutsch": "Ich habe Ihre Wahlen notiert"
+      },
+      "qualtricsFillPrompt" : {
+        "English" : "Please fill out the following survey",
+        "Deutsch" : "Füllen Sie die folgende Umfrage aus"
+      },
+      "qualtricsDonePrompt" : {
+        "English" : "Send <i>Done</i> when you are finished with the survey.",
+        "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
+      },
+      "linkToSurvey" : {
+        "English" : "Link to Survey (opens in browser)",
+        "Deutsch" : "Link zur Umfrage (wird im Browser geöffnet)"
       },
       "likert5Options": {
         "English": [
@@ -99,8 +116,8 @@
       {
         "qId" : "langQuestion",
         "text" : {
-          "English" : "Hello, I am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
-          "Deutsch" : "Hello, I am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
+          "English" : "Hello ${FIRST_NAME}, I am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo ${FIRST_NAME}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
+          "Deutsch" : "Hello ${FIRST_NAME}, I am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo ${FIRST_NAME}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
         },
         "qType" : "singleChoice",
         "options" : {
@@ -191,6 +208,30 @@
             "replyMessages" : {
               "English" : ["Got it! Good luck completing your goals today!"],
               "Deutsch" : ["Alles klar! Viel Erfolg bei Ihren Zielen heute."]
+            },
+            "nextQuestion" : "morningQuestions.satisfactionSurvey"
+          },
+          {
+            "qId" : "satisfactionSurvey",
+            "qType" : "qualtrics",
+            "qualtricsLink" : "www.google.com/12345",
+            "qualtricsFields" : [
+              {
+                "field" : "uniqueId",
+                "value" : "${UNIQUE_ID}"
+              },
+              {
+                "field" : "condition",
+                "value" : "Control"
+              }
+            ],
+            "text" : {
+              "English" : "We have a few questions about how you are feeling this morning",
+              "Deutsch" : "Wir haben ein Paar Fragen dazu, wie Sie sich heute fühlen"
+            },
+            "replyMessages" : {
+              "English" : ["Thanks for doing that!"],
+              "Deutsch" : ["Danke dafür!"]
             }
           }
         ],
@@ -387,8 +428,8 @@
           {
             "qId" : "mainGoal",
             "text" : {
-              "English" : "${FirstName}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
-              "Deutsch" : "${FirstName} was ist die Hauptsache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen?"
+              "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "Deutsch" : "${FIRST_NAME} was ist die Hauptsache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen?"
             },
             "qType" : "freeform",
             "nextQuestion" :"morningQuestions.askAddGoal"
@@ -415,8 +456,8 @@
               {
                 "optionIndices" : [1],
                 "data" : {
-                  "English" : ["Got it. Good luck on your goals today, ${FirstName}!"],
-                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute, ${FirstName}!"]
+                  "English" : ["Got it. Good luck on your goals today, ${FIRST_NAME}!"],
+                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute, ${FIRST_NAME}!"]
                 }
               }
             ]
@@ -435,8 +476,8 @@
           {
             "qId" : "numGoals",
             "text" : {
-              "English" : "Good evening, ${FirstName}!\n\nHow much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
-              "Deutsch" : "Guten Abend, ${FirstName}!\n\nWie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
+              "English" : "Good evening, ${FIRST_NAME}!\n\nHow much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
+              "Deutsch" : "Guten Abend, ${FIRST_NAME}!\n\nWie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
             },
             "qType" : "number",
             "range" : {
@@ -528,8 +569,8 @@
           {
             "qId" : "emotions",
             "text" : {
-              "English" : "How do you feel about that, ${FirstName}? Please select any or all of the emotions you are experiencing at least a little bit.",
-              "Deutsch" : "Wie fühlen Sie sich darüber, ${FirstName}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
+              "English" : "How do you feel about that, ${FIRST_NAME}? Please select any or all of the emotions you are experiencing at least a little bit.",
+              "Deutsch" : "Wie fühlen Sie sich darüber, ${FIRST_NAME}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
             },
             "qType" : "multiChoice",
             "options" : {

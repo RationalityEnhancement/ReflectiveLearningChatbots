@@ -4,49 +4,10 @@
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
-  "debug": false,
+  "debugDev" : false,
+  "debugExp" : false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
-  "phrases" : {
-    "answerValidation" : {
-      "option" : {
-        "English" : "Please pick <b>only from the given options</b>",
-        "Deutsch" : "Bitte wählen Sie <b>nur aus den vorgegebenen Optionen</b>"
-      }
-    },
-    "keyboards" : {
-      "singleChoice" : {
-        "English" : "Please pick one from the given options",
-        "Deutsch" : "Bitte wählen Sie eine aus den vorgebenen Optionen"
-      },
-      "multiChoice" : {
-        "English" : "Please choose as many options as you like. Click Done to finish choosing.",
-        "Deutsch" : "Bitte wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
-      },
-      "terminateMultipleChoice" : {
-        "English" : "Done",
-        "Deutsch" : "Fertig"
-      },
-      "finishedChoosingReply" : {
-        "English" : "Your choices have been registered",
-        "Deutsch" : "Ihre Wahlen sind erfasst worden"
-      },
-      "likert5Options" : {
-        "English" : ["Strongly Disagree", "Disagree", "Neither", "Agree", "Strongly Agree"],
-        "Deutsch" : ["Stimme vollständig nicht zu", "Stimme nicht zu", "Weder noch", "Stimme zu", "Stimme vollständig zu"]
-      },
-      "likert7Options" : {
-        "English" : ["Strongly Disagree","Disagree", "Somewhat Disagree", "Neither","Somewhat Agree", "Agree", "Strongly Agree"],
-        "Deutsch" : ["Stimme vollständig nicht zu", "Stimme nicht zu", "Stimme eher nicht zu", "Weder noch", "Stimme eher zu", "Stimme zu", "Stimme vollständig zu"]
-      }
-    },
-    "schedule" : {
-      "scheduleNotif" : {
-        "English" : "Question scheduled for the following time:",
-        "Deutsch" : "Frage geplant zur folgenden Zeit:"
-      }
-    }
-  },
   "languageSelectionQuestion" : "LanguageQuestion",
   "questionCategories" : {
     "chain1": [
@@ -122,6 +83,63 @@
             "DeutschReply3"
           ]
         }
+      },
+      {
+        "qId": "qual1",
+        "text": {
+          "English": "EnglishQ4",
+          "Deutsch": "DeutschQ4"
+        },
+        "qType": "qualtrics",
+        "qualtricsLink": "www.google.com/12345",
+        "qualtricsFields" : [
+          {
+            "value" : "Spork"
+          },
+          {
+            "field": "UniqueId",
+            "value" : "${UNIQUE_ID}"
+          },
+          {
+            "field" : "Condition",
+            "value" : "Experimental"
+          }
+        ]
+      },
+      {
+        "qId": "qual2",
+        "text": {
+          "English": "EnglishQ5",
+          "Deutsch": "DeutschQ5"
+        },
+        "qType": "qualtrics",
+        "qualtricsLink": "www.google.com/12345"
+      },
+      {
+        "qId": "qual3",
+        "text": {
+          "English": "EnglishQ6",
+          "Deutsch": "DeutschQ6"
+        },
+        "qType": "qualtrics",
+        "qualtricsLink": "www.google.com/12345",
+        "qualtricsFields" : [
+          {
+            "field": "Condition",
+            "value" : "Experimental"
+          },
+          {
+            "field" : "UniqueId"
+          }
+        ]
+      },
+      {
+        "qId": "qual4",
+        "text": {
+          "English": "EnglishQ7",
+          "Deutsch": "DeutschQ7"
+        },
+        "qType": "qualtrics"
       }
     ]
   },
@@ -129,5 +147,93 @@
     "qId": "chain1.q1",
     "atTime" : "13:00",
     "onDays" : ["Mon"]
-  }]
+  }],
+  "phrases" : {
+    "answerValidation": {
+      "option": {
+        "English": "Please pick <b>only from the given options</b>",
+        "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      },
+      "notANumber": {
+        "English": "Please enter a number",
+        "Deutsch": "Geben Sie eine Zahl ein"
+      },
+      "numberTooHigh": {
+        "English": "Please enter a number below ${UpperBound}",
+        "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
+      },
+      "numberTooLow": {
+        "English": "Please enter a number above ${LowerBound}",
+        "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+      }
+    },
+    "keyboards": {
+      "singleChoice": {
+        "English": "Please pick one from the given options",
+        "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen"
+      },
+      "multiChoice": {
+        "English": "Choose as many options as you like. Click Done to finish choosing.",
+        "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
+      },
+      "terminateAnswer": {
+        "English": "Done",
+        "Deutsch": "Fertig"
+      },
+      "finishedChoosingReply": {
+        "English": "I have noted down your choices",
+        "Deutsch": "Ich habe Ihre Wahlen notiert"
+      },
+      "qualtricsFillPrompt" : {
+        "English" : "Please fill out the following survey",
+        "Deutsch" : "Füllen Sie die folgende Umfrage aus"
+      },
+      "qualtricsDonePrompt" : {
+        "English" : "Send <i>Done</i> when you are finished with the survey.",
+        "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
+      },
+      "likert5Options": {
+        "English": [
+          "Strongly Disagree",
+          "Disagree",
+          "Neither",
+          "Agree",
+          "Strongly Agree"
+        ],
+        "Deutsch": [
+          "Stimme vollständig nicht zu",
+          "Stimme nicht zu",
+          "Weder noch",
+          "Stimme zu",
+          "Stimme vollständig zu"
+        ]
+      },
+      "likert7Options": {
+        "English": [
+          "Strongly Disagree",
+          "Disagree",
+          "Somewhat Disagree",
+          "Neither",
+          "Somewhat Agree",
+          "Agree",
+          "Strongly Agree"
+        ],
+        "Deutsch": [
+          "Stimme vollständig nicht zu",
+          "Stimme nicht zu",
+          "Stimme eher nicht zu",
+          "Weder noch",
+          "Stimme eher zu",
+          "Stimme zu",
+          "Stimme vollständig zu"
+        ]
+      }
+    },
+    "schedule" : {
+      "scheduleNotif" : {
+        "English" : "Question scheduled for the following time:",
+        "Deutsch" : "Frage geplant zur folgenden Zeit:"
+      }
+    }
+  }
 }

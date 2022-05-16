@@ -14,7 +14,6 @@ let schemaObject = {
   conditionIdx: Number,
   conditionName: String,
   parameters: {},
-  debug: Boolean,
   currentAnswer: [String],
   currentQuestion: {
     qId: String,
@@ -25,6 +24,7 @@ let schemaObject = {
     replyMessages: [String],
     nextActions: [String],
     nextQuestion: String,
+    qualtricsLink : String,
     cReplyMessages: [
       {
         optionIndices : [Number],

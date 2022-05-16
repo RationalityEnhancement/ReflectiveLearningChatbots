@@ -100,7 +100,11 @@ describe('Replacing variables', () => {
     const participant = {
         firstName: "John",
         currentAnswer: ["Mon", "Tue", "Wed"],
-        uniqueId: "12345"
+        uniqueId: "12345",
+        parameters : {
+            "pId" : "80085",
+            "pLength" : undefined
+        }
     }
 
     describe('Get Variables', () => {
@@ -117,7 +121,12 @@ describe('Replacing variables', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(participant.currentAnswer);
         })
-
+        it('Should fetch if variable name is param', () => {
+            let testString = "pId";
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(participant.parameters.pId);
+        })
         it('Should fail if participant undefined', () => {
             let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
             let returnObj = ConfigParser.getVariable(undefined, testString);
@@ -157,8 +166,13 @@ describe('Replacing variables', () => {
             let returnObj = ConfigParser.getVariable(participant, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
-        it('Should fail if variable name dont exist', () => {
+        it('Should fail if variable name dont exist and not in param', () => {
             let testString = "scoop";
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if variable name in parameter but not defined', () => {
+            let testString = "pLength";
             let returnObj = ConfigParser.getVariable(participant, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })

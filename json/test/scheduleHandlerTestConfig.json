@@ -11,7 +11,8 @@
   "customParameters" : {
     "pId" : "string"
   },
-  "debug": false,
+  "debugDev" : false,
+  "debugExp" : false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {
@@ -30,7 +31,7 @@
         "English" : "Please choose as many options as you like. Click Done to finish choosing.",
         "Deutsch" : "Bitte wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
       },
-      "terminateMultipleChoice" : {
+      "terminateAnswer" : {
         "English" : "Done",
         "Deutsch" : "Fertig"
       },

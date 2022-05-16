@@ -189,7 +189,7 @@ class AnswerHandler{
                             await participants.addToCurrentAnswer(participant.uniqueId, answerText);
                             return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
 
-                        } else if(answerText === config.phrases.keyboards.terminateMultipleChoice[participant.parameters.language]) {
+                        } else if(answerText === config.phrases.keyboards.terminateAnswer[participant.parameters.language]) {
                             // If participant is finished answering
                             let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
                             // Return failure or trigger the next action
@@ -211,7 +211,23 @@ class AnswerHandler{
                     let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
                     // Return failure or trigger the next action
                     return finishObj;
-
+                case 'qualtrics':
+                    let expectedAnswer = config.phrases.keyboards.terminateAnswer[participant.parameters.language];
+                    let trimmedExpected;
+                    let trimmedAnswer;
+                    try{
+                        let regex = /[.()!?;:_ ,'-]/g;
+                        trimmedExpected = expectedAnswer.replace(regex, "").toLowerCase();
+                        trimmedAnswer = answerText.replace(regex, "").toLowerCase();
+                    } catch(err){
+                        return ReturnMethods.returnFailure("AHandler: Participant language or term answer phrase not found")
+                    }
+                    if(trimmedAnswer !== trimmedExpected){
+                        let errorString = config.phrases.answerValidation.terminateAnswerProperly[participant.parameters.language]
+                        return ReturnMethods.returnPartialFailure(errorString, DevConfig.NO_RESPONSE_STRING);
+                    } else {
+                        return this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
+                    }
                 // Question which requires number input
                 case 'number' :
                     // Check if it can be parsed as a number

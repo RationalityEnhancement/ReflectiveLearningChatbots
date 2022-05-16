@@ -9,10 +9,10 @@
   "qTypeAliases" : ["likert5", "likert7"],
   "validAssignmentSchemes" : ["pid", "balanced", "random"],
   "VAR_STRINGS" : {
-    "FIRST_NAME" : "FirstName",
-    "CURRENT_ANSWER" : "CurrentAnswer",
-    "UNIQUE_ID" : "UniqueID"
+    "FIRST_NAME" : "FIRST_NAME",
+    "CURRENT_ANSWER" : "CURRENT_ANSWER",
+    "UNIQUE_ID" : "UNIQUE_ID"
   },
-  "SENSITIVE_DATA_VARS" : ["FirstName"],
+  "SENSITIVE_DATA_VARS" : ["FIRST_NAME"],
   "MS_PER_CHARACTER_DELAY" : 25
 }

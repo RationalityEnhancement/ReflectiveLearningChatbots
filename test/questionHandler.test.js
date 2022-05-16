@@ -66,6 +66,34 @@ describe('Constructing questions, no conditions', () => {
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         expect(result.data.saveAnswerTo).to.eql("pid");
     })
+    describe('Qualtrics surveys', () => {
+        it('Should return expected link with query strings, while skipping over empty fields', () => {
+            let expectedResult = "www.google.com/12345?UniqueId=${UNIQUE_ID}&Condition=Experimental"
+            const result = qHandler.constructQuestionByID(undefined, "chain2.qual1", "English");
+            expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(result.data.qId).to.equal('chain2.qual1');
+            expect(result.data.qType).to.equal('qualtrics');
+            expect(result.data.qualtricsLink).to.equal(expectedResult);
+        });
+        it('Should return expected link without any query strings', () => {
+            let expectedResult = "www.google.com/12345"
+            const result = qHandler.constructQuestionByID(undefined, "chain2.qual2", "English");
+            expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(result.data.qId).to.equal('chain2.qual2');
+            expect(result.data.qType).to.equal('qualtrics');
+            expect(result.data.qualtricsLink).to.equal(expectedResult);
+        });
+        it('Should return fail when field is missing value', () => {
+            const result = qHandler.constructQuestionByID(undefined, "chain2.qual3", "English");
+            expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(result.data);
+        });
+        it('Should return fail when link is missing', () => {
+            const result = qHandler.constructQuestionByID(undefined, "chain2.qual4", "English");
+            expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(result.data);
+        });
+    })
     describe('Likert 5', () => {
         const result = qHandler.constructQuestionByID(undefined, "chain1.likert1", "English");
         let question = result.data;

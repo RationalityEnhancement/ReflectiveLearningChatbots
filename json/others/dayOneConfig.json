@@ -387,8 +387,8 @@
           {
             "qId" : "mainGoal",
             "text" : {
-              "English" : "${FirstName}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
-              "Deutsch" : "${FirstName} was ist die Hauptsache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen?"
+              "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "Deutsch" : "${FIRST_NAME} was ist die Hauptsache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen?"
             },
             "qType" : "freeform",
             "nextQuestion" :"morningQuestions.askAddGoal"
@@ -415,8 +415,8 @@
               {
                 "optionIndices" : [1],
                 "data" : {
-                  "English" : ["Got it. Good luck on your goals today, ${FirstName}!"],
-                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute, ${FirstName}!"]
+                  "English" : ["Got it. Good luck on your goals today, ${FIRST_NAME}!"],
+                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute, ${FIRST_NAME}!"]
                 }
               }
             ]
@@ -435,8 +435,8 @@
           {
             "qId" : "numGoals",
             "text" : {
-              "English" : "Good evening, ${FirstName}!\n\nHow much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
-              "Deutsch" : "Guten Abend, ${FirstName}!\n\nWie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
+              "English" : "Good evening, ${FIRST_NAME}!\n\nHow much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
+              "Deutsch" : "Guten Abend, ${FIRST_NAME}!\n\nWie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
             },
             "qType" : "number",
             "range" : {
@@ -528,8 +528,8 @@
           {
             "qId" : "emotions",
             "text" : {
-              "English" : "How do you feel about that, ${FirstName}? Please select any or all of the emotions you are experiencing at least a little bit.",
-              "Deutsch" : "Wie fühlen Sie sich darüber, ${FirstName}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
+              "English" : "How do you feel about that, ${FIRST_NAME}? Please select any or all of the emotions you are experiencing at least a little bit.",
+              "Deutsch" : "Wie fühlen Sie sich darüber, ${FIRST_NAME}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
             },
             "qType" : "multiChoice",
             "options" : {

@@ -77,6 +77,18 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             });
             break;
         case 'number':
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+            await new Promise(res => {
+                setTimeout(res, delayMs)
+            });
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.multiChoice[language], true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.multiChoice(question.options, language).reply_markup
+            });
+            break;
         case 'freeform':
             await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
                 parse_mode: "HTML",
@@ -84,7 +96,43 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             });
             break;
         case 'qualtrics' :
-            let link = question.qualtricsLink
+            let link = question.qualtricsLink;
+
+            // Send the question text
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+
+            // Send the prompt to fill the link
+            await new Promise(res => {
+                setTimeout(res, delayMs * 2)
+            });
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.qualtricsFillPrompt[language], true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+
+            // Send the link
+            let linkRef = "\<a href='" + substituteVariables(participant, link, true) + "'\> " +
+                config.phrases.keyboards.linkToSurvey[language] + " </a>";
+            await new Promise(res => {
+                setTimeout(res, delayMs * 2)
+            });
+            await bot.telegram.sendMessage(chatId, linkRef, {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+
+            // Send the instruction on how to continue
+            await new Promise(res => {
+                setTimeout(res, delayMs * 2)
+            });
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.qualtricsDonePrompt[language], true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+            break;
 
         default:
             throw "Message Sender: Question type not recognized"

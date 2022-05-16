@@ -501,9 +501,11 @@ bot.on('text', async ctx => {
 
     // Answer was invalid (not part of options, etc.)
     case DevConfig.PARTIAL_FAILURE_CODE:
-      // Repeat the question
-      if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
+        // Send the error message
         await MessageSender.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, config.debugExp);
+      // Repeat the question if needed
+      if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
+
         await MessageSender.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, true)
       }
       break;

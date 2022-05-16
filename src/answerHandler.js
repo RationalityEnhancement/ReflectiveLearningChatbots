@@ -216,7 +216,7 @@ class AnswerHandler{
                     let trimmedExpected;
                     let trimmedAnswer;
                     try{
-                        let regex = /[.!?;:_ ,'-]/g;
+                        let regex = /[.()!?;:_ ,'-]/g;
                         trimmedExpected = expectedAnswer.replace(regex, "").toLowerCase();
                         trimmedAnswer = answerText.replace(regex, "").toLowerCase();
                     } catch(err){
@@ -224,7 +224,7 @@ class AnswerHandler{
                     }
                     if(trimmedAnswer !== trimmedExpected){
                         let errorString = config.phrases.answerValidation.terminateAnswerProperly[participant.parameters.language]
-                        return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING);
+                        return ReturnMethods.returnPartialFailure(errorString, DevConfig.NO_RESPONSE_STRING);
                     } else {
                         return this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
                     }

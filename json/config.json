@@ -34,8 +34,8 @@
         "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
       },
       "terminateAnswerProperly" : {
-        "English" : "Please type <b> only </b> <i>Done</i> to continue",
-        "Deutsch" : "Bitte geben Sie <b> nur </b> <i>Fertig</i> ein, um fortzufahren"
+        "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
+        "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
       }
     },
     "keyboards": {
@@ -62,6 +62,10 @@
       "qualtricsDonePrompt" : {
         "English" : "Send <i>Done</i> when you are finished with the survey.",
         "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
+      },
+      "linkToSurvey" : {
+        "English" : "Link to Survey (opens in browser)",
+        "Deutsch" : "Link zur Umfrage (wird im Browser geöffnet)"
       },
       "likert5Options": {
         "English": [
@@ -204,6 +208,30 @@
             "replyMessages" : {
               "English" : ["Got it! Good luck completing your goals today!"],
               "Deutsch" : ["Alles klar! Viel Erfolg bei Ihren Zielen heute."]
+            },
+            "nextQuestion" : "morningQuestions.satisfactionSurvey"
+          },
+          {
+            "qId" : "satisfactionSurvey",
+            "qType" : "qualtrics",
+            "qualtricsLink" : "www.google.com/12345",
+            "qualtricsFields" : [
+              {
+                "field" : "uniqueId",
+                "value" : "${UNIQUE_ID}"
+              },
+              {
+                "field" : "condition",
+                "value" : "Control"
+              }
+            ],
+            "text" : {
+              "English" : "We have a few questions about how you are feeling this morning",
+              "Deutsch" : "Wir haben ein Paar Fragen dazu, wie Sie sich heute fühlen"
+            },
+            "replyMessages" : {
+              "English" : ["Thanks for doing that!"],
+              "Deutsch" : ["Danke dafür!"]
             }
           }
         ],

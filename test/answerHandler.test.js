@@ -289,7 +289,7 @@ describe('Process answer', () =>{
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, ansString)
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
-                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+                expect(returnObj.successData).to.equal(DevConfig.NO_RESPONSE_STRING);
             });
 
         });

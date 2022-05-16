@@ -32,6 +32,10 @@
       "numberTooLow": {
         "English": "Please enter a number above ${LowerBound}",
         "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+      },
+      "terminateAnswerProperly" : {
+        "English" : "Please type <b> only </b> <i>Done</i> to continue",
+        "Deutsch" : "Bitte geben Sie <b> nur </b> <i>Fertig</i> ein, um fortzufahren"
       }
     },
     "keyboards": {

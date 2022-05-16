@@ -160,17 +160,30 @@ class ConfigParser{
 
         // If the variable name is valid, then return a value, otherwise error
         let varVal = "";
+        let foundReserved = false;
         switch(varName){
             case DevConfig.VAR_STRINGS.FIRST_NAME :
                 varVal = participant["firstName"];
+                foundReserved = true;
                 break;
             case DevConfig.VAR_STRINGS.CURRENT_ANSWER :
                 varVal = participant["currentAnswer"];
+                foundReserved = true;
                 break;
             case DevConfig.VAR_STRINGS.UNIQUE_ID:
                 varVal = participant["uniqueId"];
+                foundReserved = true;
             default:
+        }
+        // Look in parameters
+        if(!foundReserved){
+            if(!(varName in participant.parameters)){
                 return ReturnMethods.returnFailure("CParser: Variable name not recognized");
+            }
+            if(typeof participant.parameters[varName] === "undefined"){
+                return ReturnMethods.returnFailure("CParser: Parameter " + varName +" value not set");
+            }
+            return ReturnMethods.returnSuccess(participant.parameters[varName]);
         }
         return ReturnMethods.returnSuccess(varVal);
     }

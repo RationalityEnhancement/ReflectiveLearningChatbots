@@ -89,13 +89,15 @@ let sendNextQuestion = async (bot, participant, chatId, nextQuestionId) => {
     let conditionName = participant["conditionName"];
     let language = participant.parameters["language"];
 
+    let debugDev = config.debugDev;
+    let debugExp = config.debugExp;
   // Get the updated participant
   let nextQObj = qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
   if(nextQObj.returnCode === DevConfig.FAILURE_CODE){
     throw "ERROR: " + nextQObj.data;
   } else {
     let nextQ = nextQObj.data;
-    await MessageSender.sendQuestion(bot, participant, chatId, nextQ);
+    await MessageSender.sendQuestion(bot, participant, chatId, nextQ, debugExp);
   }
 
 }
@@ -107,7 +109,8 @@ let processNextSteps = async (bot, uniqueId) => {
   let partLang = participant.parameters.language;
   let partCond = participant.conditionName;
   let currentQuestion = participant.currentQuestion;
-  let debug = !!config.debug;
+  let debugDev = !!config.debugDev;
+  let debugExp = !!config.debugExp;
 
   let secretMap = await getByUniqueId(config.experimentId, uniqueId);
   if(!secretMap){
@@ -116,7 +119,7 @@ let processNextSteps = async (bot, uniqueId) => {
 
     // Send replies to the answer, if any
     if(!!currentQuestion.replyMessages && currentQuestion.replyMessages.length > 0){
-        await MessageSender.sendReplies(bot, participant, secretMap.chatId, currentQuestion.replyMessages);
+        await MessageSender.sendReplies(bot, participant, secretMap.chatId, currentQuestion.replyMessages, config.debugExp);
     } else if(!!currentQuestion.cReplyMessages && currentQuestion.cReplyMessages.length > 0){
         let rules = currentQuestion.cReplyMessages;
         let options = currentQuestion.options;
@@ -125,7 +128,7 @@ let processNextSteps = async (bot, uniqueId) => {
         if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
             throw "ERROR: Could not process conditional replies" + replyMessagesObj.data;
         } else if(replyMessagesObj.returnCode === DevConfig.SUCCESS_CODE){
-            await MessageSender.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data);
+            await MessageSender.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
         }
     }
 
@@ -146,23 +149,25 @@ let processNextSteps = async (bot, uniqueId) => {
       let aType = nextActions[i];
       switch(aType){
           case "scheduleQuestions":
-          // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
+
 
             // TODO: have disabled overwriting for now, after implementation of /next
-          if(debug && !debug){
-            let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-            if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
-              console.error(nowDateObj.data);
-            }
-            let qHandler = new QuestionHandler(config);
-            let schQObj = qHandler.getScheduledQuestions(partCond);
-            if(schQObj.returnCode === DevConfig.FAILURE_CODE){
-              throw "ERROR: " + schQObj.data;
-            }
+          // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
+          // if(debugDev && !debugDev){
+          //   let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
+          //   if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
+          //     console.error(nowDateObj.data);
+          //   }
+          //   let qHandler = new QuestionHandler(config);
+          //   let schQObj = qHandler.getScheduledQuestions(partCond);
+          //   if(schQObj.returnCode === DevConfig.FAILURE_CODE){
+          //     throw "ERROR: " + schQObj.data;
+          //   }
+          //
+          //   ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
+          // }
 
-            ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
-          }
-          let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, uniqueId, config, debug);
+          let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, uniqueId, config, debugExp);
           if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             throw "ERROR: " + returnObj.data;
           } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
@@ -183,8 +188,8 @@ let processNextSteps = async (bot, uniqueId) => {
           }
           let assignedConditionIdx = conditionObj.data;
           let conditionName = conditionNames[assignedConditionIdx];
-          if(debug){
-            await MessageSender.sendMessage(bot, participant, secretMap.chatId, "You have been assigned to condition: " + conditionName);
+          if(debugExp){
+            await MessageSender.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, config.debugExp);
           }
           await participants.updateField(uniqueId, "conditionIdx", assignedConditionIdx);
           await participants.updateField(uniqueId, "conditionName", conditionName);
@@ -225,7 +230,7 @@ bot.catch((err, ctx) => {
 });
 
 bot.command('log_part', async ctx => {
-    if(!config.debug) return;
+    if(!config.debugExp) return;
     try{
       let secretMap = await getByChatId(config.experimentId, ctx.from.id);
       if(!secretMap){
@@ -247,7 +252,7 @@ bot.command('log_part', async ctx => {
 
 
 bot.command('log_exp', async ctx => {
-    if(!config.debug) return;
+    if(!config.debugExp) return;
     try{
     console.log('Logging experiment.');
     let experiment = await experiments.get(config.experimentId);
@@ -261,7 +266,7 @@ bot.command('log_exp', async ctx => {
 });
 
 bot.command('delete_me', async ctx => {
-    if(!config.debug) return;
+    if(!config.debugExp) return;
 
     try{
       let secretMap = await getByChatId(config.experimentId, ctx.from.id);
@@ -293,7 +298,7 @@ bot.command('delete_exp', async ctx => {
   // TODO: Delete all participants when experiment is deleted?
   // TODO: OR add up all participants when experiment is created again?
   // TODO: OR perhaps recount each time the experiment starts up for a sanity check?
-    if(!config.debug) return;
+    if(!config.debugExp) return;
   try{
     let experiment = await experiments.get(config.experimentId);
     if(!experiment) {
@@ -321,8 +326,10 @@ bot.command('delete_exp', async ctx => {
 });
 
 bot.command('next', async ctx => {
-    if(!config.debug) return;
+    if(!config.debugExp) return;
     try{
+        let debugExp = config.debugExp;
+        let debugDev = config.debugDev;
         let secretMap = await idMaps.getByChatId(config.experimentId, ctx.from.id);
         if(!secretMap){
             console.log("Participant not initialized yet!");
@@ -347,8 +354,8 @@ bot.command('next', async ctx => {
         let nextQuestion = nextQReturnObj.data;
         let nextQMsg = `This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
         ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
-        await MessageSender.sendMessage(bot, participant, ctx.from.id, nextQMsg);
-        await MessageSender.sendQuestion(bot, participant, ctx.from.id, nextQuestion)
+        await MessageSender.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
+        await MessageSender.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp)
     } catch(err){
         console.log("Failed to serve next scheduled question");
         console.error(err);
@@ -447,7 +454,7 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      await MessageSender.sendQuestion(bot, participant, ctx.from.id, curQuestion);
+      await MessageSender.sendQuestion(bot, participant, ctx.from.id, curQuestion, config.debugExp);
     } catch(err){
       console.log('Failed to send language question');
       console.error(err);
@@ -485,7 +492,7 @@ bot.on('text', async ctx => {
         // Move on to the next actions
         // Send this message only if participant has finished choosing from multi-choice
         if(participant.currentQuestion.qType === "multiChoice"){
-          await MessageSender.sendMessage(bot, participant, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language]);
+          await MessageSender.sendMessage(bot, participant, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], config.debugExp);
         }
         // Process the next steps
         await processNextSteps(bot, uniqueId);
@@ -496,7 +503,7 @@ bot.on('text', async ctx => {
     case DevConfig.PARTIAL_FAILURE_CODE:
       // Repeat the question
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
-        await MessageSender.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData);
+        await MessageSender.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, config.debugExp);
         await MessageSender.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, true)
       }
       break;
@@ -528,333 +535,3 @@ ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
   }
 });
 
-
-/**
-// handle /delete_me command
-bot.command('delete_me', ctx => {
-  participants.get(ctx.from.id).then(participant => {
-    let dId = `d_${ctx.from.id}`;
-    let wId = `w_${ctx.from.id}`;
-    console.log('Before delete');
-    console.log(scheduledJobs);
-    if (!!scheduledJobs[dId]) {
-      scheduledJobs[dId].cancel();
-    }
-    if (!!scheduledJobs[wId]) {
-      scheduledJobs[wId].cancel();
-    }
-    participants.remove(ctx.from.id).then(() => {
-      ctx.reply('Successfully deleted all your data. To use the bot again, use /start.', removeMenu);
-      console.log(`${ctx.from.id} removed`);
-      
-    });
-  });
-});
-
-// handle /debug command
-bot.command('debug', ctx => {
-  participants.get(ctx.from.id).then(participant => {
-    participants.updateField(participant.uniqueId, 'debug', !participant.debug);
-    ctx.reply(`debug set to ${!participant.debug}`, removeMenu);
-  });
-});
-
-// reschedule old tasks after server restart
-participants.getAll().then(allParticipants => {
-  for (const participant of allParticipants.filter(p => !!p.dailyScheduleExpression)) {
-    scheduledJobs[`stillAskReset_${participant.uniqueId}`] = schedule.scheduleJob(
-      { rule: '45 23 * * *', tz: participant.timezone || defaultTimezone }, 
-      () => {
-        participants.updateField(participant.uniqueId, 'stillAsk', true);
-      }
-    );
-    console.log(`${participant.uniqueId} ${moment().tz(participant.timezone || defaultTimezone).format()}`);
-    scheduledJobs[`d_${participant.uniqueId}`] = schedule.scheduleJob(
-      { rule: participant.dailyScheduleExpression, tz: participant.timezone || defaultTimezone },
-      () => {
-        participants.get(participant.uniqueId).then(realTimeParticipant => {
-          let timeStamp = realTimeParticipant.debug ? ` [server time: ${moment().format('DD.MM. HH:mm')}] (restart)` : '';
-          if (realTimeParticipant.stillAsk) {
-            bot.telegram.sendMessage(
-              realTimeParticipant.uniqueId,
-              config.questions[0].text + timeStamp,
-              Telegraf.Extra.markup(m => m.keyboard(config.questions[0].options.map(option =>
-                m.callbackButton(option)
-              )))
-            );
-            participants.updateField(realTimeParticipant.uniqueId, 'nextCategory', config.questions[0].category);
-            participants.updateField(realTimeParticipant.uniqueId, 'stillAsk', false);
-          }
-        });
-      }
-    );
-    if (config.customFrequency) {
-      scheduledJobs[`w_${participant.uniqueId}`] = schedule.scheduleJob(
-        { rule: participant.weeklyScheduleExpression, tz: participant.timezone || defaultTimezone }, 
-        () => {
-          bot.telegram.sendMessage(participant.uniqueId, config.frequencyQuestion, frequencyMenu);
-        }
-      );
-    }
-  }
-  console.log(scheduledJobs);
-});
-
-
-// handle /start command
-bot.start(ctx => {
-  experiments.get(config.experiment_name).then(experiment => {
-    if(!experiment){
-      experiments.add(config.experiment_name).then(() => {
-        experiment.updateField(config.experiment_name, 'conditions', config.experiment_conditions)
-      })
-    }
-  })
-  participants.get(ctx.from.id).then(participant => {
-    if (!participant) {
-      participants.add(ctx.from.id).then(() => {
-        participants.updateField(ctx.from.id, 'expt_name', config.experiment_name);
-        if (!config.customDayStartAndEnd) {
-          participants.updateField(ctx.from.id, 'dayStart', config.defaultDayStart);
-          participants.updateField(ctx.from.id, 'dayEnd', config.defaultDayEnd);
-        }
-        if (config.customFrequency) {
-          participants.updateField(ctx.from.id, 'frequency', config.defaultFrequency);
-        }
-      });
-    }
-  });
-
-  let delay = 1;
-  for (const [i, message] of config.startMessages.entries()) {
-    schedule.scheduleJob(moment().add(delay, 's').format('ss mm HH DD MM ?'), () => {
-      ctx.reply(message, i === config.startMessages.length - 1 ? shareDataMenu : removeMenu);
-      ctx.telegram.sendChatAction(ctx.from.id, 'typing');
-    });
-    delay += 0.5; //config.debug ? 0.5 : message.length / 27;
-  }
-});
-
-// handle answers to the question about sharing data preference
-bot.hears(config.shareDataOptions, ctx => {
-  participants.updateField(ctx.from.id, 'shareData', ctx.message.text);
-  ctx.reply(config.timezoneQuestion, frequentTimezonesMenu);
-});
-
-// handle answers to the question about the timezone
-bot.hears(config.frequentTimezones, ctx => {
-  if (ctx.message.text === 'other') {
-    ctx.reply(config.timezoneQuestion, allTimezonesMenu);
-  } else {
-    participants.updateField(ctx.from.id, 'timezone', ctx.message.text);
-    if (config.customDayStartAndEnd) {
-      ctx.reply(config.dayStartQuestion, dayStartMenu);
-    } else {
-      participants.updateField(ctx.from.id, 'dayStart', config.defaultDayStart);
-      participants.updateField(ctx.from.id, 'dayEnd', config.defaultDayEnd);
-      if (config.customFrequency) {
-        ctx.reply(config.frequencyQuestion, frequencyMenu);
-      } else {
-        participants.updateField(ctx.from.id, 'frequency', config.defaultFrequency);
-        scheduleNew(ctx, config.defaultFrequency);
-      }
-    }
-  }
-});
-
-// handle answers to the question about timezones after selecting "other"
-bot.hears(timezones, ctx => {
-  participants.updateField(ctx.from.id, 'timezone', ctx.message.id);
-  if (config.customDayStartAndEnd) {
-    ctx.reply(config.dayStartQuestion, dayStartMenu);
-  } else {
-    participants.updateField(ctx.from.id, 'dayStart', config.defaultDayStart);
-    participants.updateField(ctx.from.id, 'dayEnd', config.defaultDayEnd);
-    if (config.customFrequency) {
-      ctx.reply(config.frequencyQuestion, frequencyMenu);
-    } else {
-      participants.updateField(ctx.from.id, 'frequency', config.defaultFrequency);
-      scheduleNew(ctx, config.defaultFrequency);
-    }
-  }
-});
-
-// handle answers to the question about the start of the day
-bot.hears(config.dayStartOptions, ctx => {
-  participants.updateField(ctx.from.id, 'dayStart', ctx.message.text);
-  ctx.reply(config.dayEndQuestion, dayEndMenu);
-});
-
-// handle answers to the question about the end of the day
-bot.hears(config.dayEndOptions, ctx => {
-  participants.updateField(ctx.from.id, 'dayEnd', ctx.message.text);
-  if (config.customFrequency) {
-    ctx.reply(config.frequencyQuestion, frequencyMenu);
-  } else {
-    participants.updateField(ctx.from.id, 'frequency', config.defaultFrequency);
-  }
-});
-
-// handle answers to the question about frequency and schedule questions accordingly
-bot.hears(config.frequencyOptions, ctx => {
-  participants.updateField(ctx.from.id, 'frequency', ctx.message.text);
-  scheduleNew(ctx, ctx.message.text);
-});
-let scheduleNew = function(ctx, freq) {
-  console.log('scheduling');
-  const freqString = freq;
-  participants.get(ctx.from.id).then(participant => {
-    const weeklyExpression = moment().tz(participant.timezone || defaultTimezone)
-      .add(7, 'd').format('mm HH ? * dddd');
-    scheduledJobs[`w_${ctx.from.id}`] = schedule.scheduleJob(
-      { rule: weeklyExpression, tz: participant.timezone || defaultTimezone }, 
-      () => {
-        ctx.reply(config.frequencyQuestion, frequencyMenu);
-      }
-    );
-    participants.updateField(ctx.from.id, 'weeklyScheduleExpression', weeklyExpression);
-    console.log('w: ' + weeklyExpression);
-    
-
-    
-
-    let start = participant.dayStart, end = participant.dayEnd;
-    freq = freq.replace(/\D/g, '');
-    freq = freq.length === 0 ? '' : parseInt(freq);
-    mins = participant.debug ? '*' : '0';
-    
-    scheduledJobs[`d_${ctx.from.id}`] = schedule.scheduleJob(
-      { rule: expression, tz: participant.timezone || defaultTimezone },
-      () => {
-        participants.get(ctx.from.id).then(realTimeParticipant => {
-          let timeStamp = realTimeParticipant.debug ? ` [server time: ${moment().format('DD.MM. HH:mm')}]` : '';
-          if (realTimeParticipant.stillAsk) {
-            // ask the first question of the block
-            ctx.reply(
-              config.questions[0].text + timeStamp,
-              Telegraf.Extra.markup(m => m.keyboard(config.questions[0].options.map(option =>
-                m.callbackButton(option)
-              )))
-            );
-            participants.updateField(ctx.from.id, 'nextCategory', config.questions[0].category);
-            participants.updateField(ctx.from.id, 'stillAsk', false);
-          }
-        });
-      }
-    );
-    participants.updateField(ctx.from.id, 'dailyScheduleExpression', expression);
-    participants.updateField(ctx.from.id, 'stillAsk', true);
-
-    if (freq === '') {
-      ctx.reply(`Got it! You will be asked questions ${freqString} every day at ${start}`, removeMenu);
-    } else {
-      let now = moment().tz(participant.timezone || defaultTimezone);
-      let firstDay = now.hours() >= parseInt(end.substr(0, 2)) ? 'tomorrow' : 'today';
-      let first = start;
-      if (firstDay === 'today') {
-        for (let i = parseInt(start.substr(0,2)); i <= parseInt(end.substr(0,2)); i += freq === 30 ? 1 : freq) {
-          if (now.hours() < i) {
-            first = freq === 30 && now.minutes() < 30
-            ? moment().tz(participant.timezone || defaultTimezone).hours(i - 1).minutes(30).format('HH:mm')
-            : moment().tz(participant.timezone || defaultTimezone).hours(i).minutes(0).format('HH:mm');
-            break;
-          }
-        }
-      }
-      ctx.reply(
-        `Got it! You will be asked questions ${freqString} every day between ${start} and ${end} starting ${firstDay} at ${first}`,
-        removeMenu
-      );
-    }
-  });
-  console.log(scheduledJobs);
-}
-
-bot.hears([].concat.apply([], config.questions.map(q => q.options)), ctx => {
-  // finding the question to which the answer was given relies on purpose on the options here
-  // to minimise bugs caused by incorrectly updated set nextCategory
-  const question = config.questions.find(q => q.options.indexOf(ctx.message.text) > -1);
-  participants.updateField(ctx.from.id, 'stillAsk', true);
-  participants.updateLastAnswerField(ctx.from.id, 'category', question.category, true);
-  participants.updateLastAnswerField(ctx.from.id, 'question', question.text);
-  participants.updateLastAnswerField(ctx.from.id, 'text', ctx.message.text);
-  sendFeedback(ctx, question);
-  // an example of a custom question for a particular answer
-  if (question.options[optionId] === 'Please remind me what that means') {
-    ctx.reply(question.text, constructivenessMenu); // an example of a predefined menu (imported from menus.js)
-  } else if (false) {// add your own condition
-    // insert the custom question
-  } else {
-    const questionId = config.questions.indexOf(question);
-    if (config.questions.length > questionId + 1) {
-      const nextQuestion = config.questions[questionId + 1];
-      participants.updateField(ctx.from.id, 'nextCategory', nextQuestion.category);
-      ctx.reply(nextQuestion.text, Telegraf.Extra.markup(m => m.keyboard(nextQuestion.options.map(option =>
-        m.callbackButton(option)
-      ))));
-    } else {
-      participants.updateField(ctx.from.id, 'nextCategory', config.questions[0].category);
-    }
-  }
-});
-
-const sendFeedback = (ctx, question) => {
-  const optionId = question.options.indexOf(ctx.message.text);
-  if (question.feedback.length === 0) {
-    question.feedback.push('Got it.');
-  }
-  question.feedback[optionId].forEach(message => {
-    ctx.reply(message, removeMenu);
-  });
-}
-
-// handle answers to questions without any options specified
-bot.on('text', ctx => {
-  console.log('text_received')
-  console.log(ctx.from);
-  participants.updateField(ctx.from.id, 'stillAsk', true);
-  participants.get(ctx.from.id).then(participant => {
-    const question = config.questions.find(q => q.category === participant.nextCategory);
-    participants.updateLastAnswerField(ctx.from.id, 'category', question.category, true);
-    participants.updateLastAnswerField(ctx.from.id, 'question', question.text);
-    participants.updateLastAnswerField(ctx.from.id, 'text', ctx.message.text);
-    const questionId = config.questions.indexOf(question);
-    if (config.questions.length > questionId + 1) {
-      const nextQuestion = config.questions[questionId + 1];
-      participants.updateField(ctx.from.id, 'nextCategory', nextQuestion.category);
-      ctx.reply(nextQuestion.text, Telegraf.Extra.markup(m => m.keyboard(nextQuestion.options.map(option =>
-        m.callbackButton(option)
-      ))));
-    } else {
-      participants.updateField(ctx.from.id, 'nextCategory', config.questions[0].category);
-    }
-  });
-});
-
-bot.on('sticker', ctx => {
-  console.log('Sticker received');
-  console.log(ctx.message);
-  ctx.reply('this is \n  *bold*  and _italic_  bruhhh', ['pick one', 'two']);//, { parse_mode: 'MarkdownV2' });
-  // ctx.reply(':cry:');
-});
-
-
-bot.on('photo', ctx => {
-  console.log('photo received');
-  console.log(ctx.message);
-  for(const pho of ctx.message.photo){
-    ctx.telegram.getFileLink(pho.file_id).then(url => console.log(url));
-  }
-});
-bot.on('voice', ctx => {
-  console.log('voice received');
-  ctx.reply('\xF0\x9F\x98\x81');
-  ctx.reply('\U0001F525');
-  console.log(ctx.message);
-  ctx.telegram.getFileLink(ctx.message.voice.file_id).then(url => console.log(url));
-  
-});
-
-bot.launch();
-
-**/

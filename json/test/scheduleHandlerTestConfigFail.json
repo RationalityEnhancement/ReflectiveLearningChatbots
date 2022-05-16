@@ -11,7 +11,8 @@
   "customParameters" : {
     "pId" : "string"
   },
-  "debug": false,
+  "debugDev" : false,
+  "debugExp" : false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {

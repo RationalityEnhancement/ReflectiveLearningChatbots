@@ -4,7 +4,8 @@
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
-  "debug": false,
+  "debugDev" : false,
+  "debugExp" : false,
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {

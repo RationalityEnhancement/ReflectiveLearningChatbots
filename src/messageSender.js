@@ -102,7 +102,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
  * @param replyMessages array of reply messages
  * @returns {Promise<*>}
  */
-module.exports.sendReplies = async (bot, participant, chatId, replyMessages) => {
+module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noDelay = false) => {
 
     let userInfo = await bot.telegram.getChat(chatId);
     participant["firstName"] = userInfo.first_name;
@@ -111,11 +111,14 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages) => 
     // TODO: Send typing notification while typing out message?
 	for(let i = 0; i < replyMessages.length; i++){
 		const reply = replyMessages[i];
-        bot.telegram.sendChatAction(chatId, "typing");
-        let delayMs = reply.length * msPerCharacter;
-        await new Promise(res => {
-            setTimeout(res, delayMs)
-        });
+        if(!noDelay){
+            bot.telegram.sendChatAction(chatId, "typing");
+            let delayMs = reply.length * msPerCharacter;
+            await new Promise(res => {
+                setTimeout(res, delayMs)
+            });
+        }
+
 		await bot.telegram.sendMessage(chatId, substituteVariables(participant, reply, true), {
             parse_mode: "HTML",
             reply_markup: InputOptions.removeKeyboard().reply_markup
@@ -135,16 +138,18 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages) => 
  * @param message message to be sent
  * @returns {Promise<*>}
  */
-module.exports.sendMessage = async (bot, participant, chatId, message) => {
+module.exports.sendMessage = async (bot, participant, chatId, message, noDelay = false) => {
 
     let userInfo = await bot.telegram.getChat(chatId);
     participant["firstName"] = userInfo.first_name;
 
     let delayMs = message.length * msPerCharacter;
-    bot.telegram.sendChatAction(chatId, "typing");
-    await new Promise(res => {
-        setTimeout(res, delayMs)
-    });
+    if(!noDelay){
+        bot.telegram.sendChatAction(chatId, "typing");
+        await new Promise(res => {
+            setTimeout(res, delayMs)
+        });
+    }
     await bot.telegram.sendMessage(chatId, substituteVariables(participant, message, true), {
         parse_mode: "HTML",
         reply_markup: InputOptions.removeKeyboard().reply_markup

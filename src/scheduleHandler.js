@@ -295,7 +295,7 @@ class ScheduleHandler{
                 if(debug || !debug) {
                     await MessageSender.sendMessage(bot, participant, chatId,
                         config.phrases.schedule.scheduleNotif[partLang]
-                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '));
+                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '), debug);
                 }
                 succeededQuestions.push(scheduleObj.data)
             }

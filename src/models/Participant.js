@@ -14,7 +14,6 @@ let schemaObject = {
   conditionIdx: Number,
   conditionName: String,
   parameters: {},
-  debug: Boolean,
   currentAnswer: [String],
   currentQuestion: {
     qId: String,

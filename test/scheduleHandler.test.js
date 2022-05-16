@@ -28,6 +28,10 @@ const testBot = {
             return {
                 first_name: "John"
             }
+        },
+        sendChatAction : () =>{
+
+            return;
         }
     }
 };
@@ -427,7 +431,7 @@ describe('Scheduling one question', () =>{
     describe('Scheduling all questions normally', () => {
 
         it('Should return success', async () => {
-            scheduleAllReturnObj = await ScheduleHandler.scheduleAllQuestions(testBot, testId, testConfig);
+            scheduleAllReturnObj = await ScheduleHandler.scheduleAllQuestions(testBot, testId, testConfig, true);
             expect(scheduleAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of scheduled jobs', () => {

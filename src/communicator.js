@@ -7,7 +7,21 @@ const idMaps = require('./apiControllers/idMapApiController')
 const ConfigParser = require('./configParser');
 
 const msPerCharacter = DevConfig.MS_PER_CHARACTER_DELAY;
+/**
+ * This class deals with all of the direct communication with
+ * the user. Mainly sends questions and messages.
+ *
+ */
 
+/**
+ *  Substitute variables for a given string with error handling
+ *  if error occurs, return original string without replacing any variables
+ *
+ * @param participant
+ * @param text
+ * @param sensitiveDataAlso
+ * @returns {*}
+ */
 let substituteVariables = (participant, text, sensitiveDataAlso) => {
     let newText = text;
     let varReplaceObj = ConfigParser.replaceVariablesInString(participant, text, sensitiveDataAlso);

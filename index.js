@@ -8,7 +8,7 @@ const experiments = require('./src/apiControllers/experimentApiController');
 const idMaps = require('./src/apiControllers/idMapApiController');
 const { checkConfig } = require('./src/configChecker');
 const PIDtoConditionMap = require('./json/PIDCondMap.json')
-const MessageSender = require('./src/messageSender')
+const Communicator = require('./src/communicator')
 const QuestionHandler = require('./src/questionHandler');
 const AnswerHandler = require('./src/answerHandler');
 const ScheduleHandler = require('./src/scheduleHandler');
@@ -97,7 +97,7 @@ let sendNextQuestion = async (bot, participant, chatId, nextQuestionId) => {
     throw "ERROR: " + nextQObj.data;
   } else {
     let nextQ = nextQObj.data;
-    await MessageSender.sendQuestion(bot, participant, chatId, nextQ, debugExp);
+    await Communicator.sendQuestion(bot, participant, chatId, nextQ, debugExp);
   }
 
 }
@@ -119,7 +119,7 @@ let processNextSteps = async (bot, uniqueId) => {
 
     // Send replies to the answer, if any
     if(!!currentQuestion.replyMessages && currentQuestion.replyMessages.length > 0){
-        await MessageSender.sendReplies(bot, participant, secretMap.chatId, currentQuestion.replyMessages, config.debugExp);
+        await Communicator.sendReplies(bot, participant, secretMap.chatId, currentQuestion.replyMessages, config.debugExp);
     } else if(!!currentQuestion.cReplyMessages && currentQuestion.cReplyMessages.length > 0){
         let rules = currentQuestion.cReplyMessages;
         let options = currentQuestion.options;
@@ -128,7 +128,7 @@ let processNextSteps = async (bot, uniqueId) => {
         if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
             throw "ERROR: Could not process conditional replies" + replyMessagesObj.data;
         } else if(replyMessagesObj.returnCode === DevConfig.SUCCESS_CODE){
-            await MessageSender.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
+            await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
         }
     }
 
@@ -189,7 +189,7 @@ let processNextSteps = async (bot, uniqueId) => {
           let assignedConditionIdx = conditionObj.data;
           let conditionName = conditionNames[assignedConditionIdx];
           if(debugExp){
-            await MessageSender.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, config.debugExp);
+            await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, config.debugExp);
           }
           await participants.updateField(uniqueId, "conditionIdx", assignedConditionIdx);
           await participants.updateField(uniqueId, "conditionName", conditionName);
@@ -354,8 +354,8 @@ bot.command('next', async ctx => {
         let nextQuestion = nextQReturnObj.data;
         let nextQMsg = `This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
         ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
-        await MessageSender.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
-        await MessageSender.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp)
+        await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
+        await Communicator.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp)
     } catch(err){
         console.log("Failed to serve next scheduled question");
         console.error(err);
@@ -376,7 +376,7 @@ bot.command('repeat', async ctx => {
   if(participant.currentState === "awaitingAnswer"){
       await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;
-    await MessageSender.sendQuestion(bot, participant, ctx.from.id, currentQuestion, true)
+    await Communicator.sendQuestion(bot, participant, ctx.from.id, currentQuestion, true)
   }
 
 })
@@ -454,7 +454,7 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      await MessageSender.sendQuestion(bot, participant, ctx.from.id, curQuestion, config.debugExp);
+      await Communicator.sendQuestion(bot, participant, ctx.from.id, curQuestion, config.debugExp);
     } catch(err){
       console.log('Failed to send language question');
       console.error(err);
@@ -492,7 +492,7 @@ bot.on('text', async ctx => {
         // Move on to the next actions
         // Send this message only if participant has finished choosing from multi-choice
         if(participant.currentQuestion.qType === "multiChoice"){
-          await MessageSender.sendMessage(bot, participant, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], config.debugExp);
+          await Communicator.sendMessage(bot, participant, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], config.debugExp);
         }
         // Process the next steps
         await processNextSteps(bot, uniqueId);
@@ -502,11 +502,11 @@ bot.on('text', async ctx => {
     // Answer was invalid (not part of options, etc.)
     case DevConfig.PARTIAL_FAILURE_CODE:
         // Send the error message
-        await MessageSender.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, config.debugExp);
+        await Communicator.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, config.debugExp);
       // Repeat the question if needed
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
 
-        await MessageSender.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, true)
+        await Communicator.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, true)
       }
       break;
 

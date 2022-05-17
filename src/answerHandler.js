@@ -153,6 +153,10 @@ class AnswerHandler{
             return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
         }
 
+        // If answer is not string
+        if(typeof answerText !== "string"){
+            return ReturnMethods.returnFailure("AHandler: answer must be a string");
+        }
         let currentQuestion = participant.currentQuestion;
 
         // If answer is expected
@@ -211,6 +215,27 @@ class AnswerHandler{
                     let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
                     // Return failure or trigger the next action
                     return finishObj;
+                case 'freeformMulti':
+                    let termination = config.phrases.keyboards.terminateAnswer[participant.parameters.language];
+                    let trimmedTerm;
+                    let trimmedAns;
+                    try{
+                        let regex = /[.()!?;:_ ,'-]/g;
+                        trimmedTerm = termination.replace(regex, "").toLowerCase();
+                        trimmedAns = answerText.replace(regex, "").toLowerCase();
+                    } catch(err){
+                        return ReturnMethods.returnFailure("AHandler: Participant language or term answer phrase not found")
+                    }
+                    if(trimmedTerm === trimmedAns){
+                        // If participant is finished answering
+                        let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
+                        // Return failure or trigger the next action
+                        return finishObj;
+                    } else {
+                        // Save the answer to participant's current answer
+                        await participants.addToCurrentAnswer(participant.uniqueId, answerText);
+                        return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
+                    }
                 case 'qualtrics':
                     let expectedAnswer = config.phrases.keyboards.terminateAnswer[participant.parameters.language];
                     let trimmedExpected;
@@ -268,7 +293,7 @@ class AnswerHandler{
                     }
 
                     return this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
-                    break;
+
                 default:
                     return ReturnMethods.returnFailure("AHandler: Question is missing valid question type: " + currentQuestion.qId);
             }

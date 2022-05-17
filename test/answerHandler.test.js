@@ -157,7 +157,7 @@ describe('Process answer', () =>{
             const question = {
                 qId: "test2",
                 text: "questionText",
-                options: ["hello", "bye"],
+                options: ["SC", "bye"],
                 qType: "singleChoice"
             };
             const part = {
@@ -167,17 +167,26 @@ describe('Process answer', () =>{
                 currentQuestion: question,
             }
             it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "hello")
+                returnObj = await AnswerHandler.processAnswer(part, "SC")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             });
+            let participant;
+            it('Should have added to last anser', async () => {
+                participant = await participants.get(part.uniqueId);
+                let latestAns = participant.answers[participant.answers.length-1].answer;
+                expect(latestAns).to.eql(["SC"])
+            })
+            it('Should be in answerReceived state', async () => {
+                expect(participant.currentState).to.equal("answerReceived");
+            })
         })
         describe('Option invalid', () => {
             let returnObj;
             const question = {
                 qId: "test2",
                 text: "questionText",
-                options: ["hello", "bye"],
+                options: ["SC", "bye"],
                 qType: "singleChoice"
             };
             const part = {
@@ -191,6 +200,10 @@ describe('Process answer', () =>{
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
                 expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
             });
+            it('Should be in invalidAnswer state', async () => {
+                let participant = await participants.get(part.uniqueId);
+                expect(participant.currentState).to.eql("invalidAnswer");
+            })
         })
         describe('Options missing', () => {
             let returnObj;
@@ -249,11 +262,15 @@ describe('Process answer', () =>{
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             });
+            let participant;
             it('Should have added answer to part answers', async () => {
-                let participant = await participants.get(part.uniqueId);
+                participant = await participants.get(part.uniqueId);
                 let ans = participant.answers;
                 expect(ans[ans.length-1].answer[0]).to.equal(ansString)
             });
+            it('Should be in answerReceived state', async () => {
+                expect(participant.currentState).to.eql("answerReceived");
+            })
         });
         describe('String expected with some punctuation', () => {
             let returnObj;
@@ -263,11 +280,15 @@ describe('Process answer', () =>{
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             });
+            let participant;
             it('Should have added answer to part answers', async () => {
-                let participant = await participants.get(part.uniqueId);
+                participant = await participants.get(part.uniqueId);
                 let ans = participant.answers;
                 expect(ans[ans.length-1].answer[0]).to.equal(ansString)
             });
+            it('Should be in answerReceived state', async () => {
+                expect(participant.currentState).to.eql("answerReceived");
+            })
         });
         describe('String expected with wrong case', () => {
             let returnObj;
@@ -277,11 +298,15 @@ describe('Process answer', () =>{
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             });
+            let participant;
             it('Should have added answer to part answers', async () => {
-                let participant = await participants.get(part.uniqueId);
+                participant = await participants.get(part.uniqueId);
                 let ans = participant.answers;
                 expect(ans[ans.length-1].answer[0]).to.equal(ansString)
             });
+            it('Should be in answerReceived state', async () => {
+                expect(participant.currentState).to.eql("answerReceived");
+            })
         });
         describe('String doesnt match', () => {
             let returnObj;
@@ -312,9 +337,9 @@ describe('Process answer', () =>{
         describe('Option valid', () => {
             let returnObj;
             const question = {
-                qId: "test2",
+                qId: "testMC",
                 text: "questionText",
-                options: ["hello", "bye"],
+                options: ["MC1", "MC2"],
                 qType: "multiChoice"
             };
             const part = {
@@ -324,21 +349,21 @@ describe('Process answer', () =>{
                 currentQuestion: question,
             }
             it('Should return success and no response', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "hello")
+                returnObj = await AnswerHandler.processAnswer(part, "MC1")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
             });
             it('Should have added answer to current answer', async () => {
                 let participant = await participants.get(part.uniqueId);
-                assert(participant.currentAnswer.includes("hello"));;
+                assert(participant.currentAnswer.includes("MC1"));
             });
         });
         describe('Option invalid', () => {
             let returnObj;
             const question = {
-                qId: "test2",
+                qId: "testMC",
                 text: "questionText",
-                options: ["hello", "bye"],
+                options: ["MC1", "MC2"],
                 qType: "multiChoice"
             };
             const part = {
@@ -356,15 +381,16 @@ describe('Process answer', () =>{
         describe('Terminate choosing', () => {
             let returnObj;
             const question = {
-                qId: "test2",
+                qId: "testMC",
                 text: "questionText",
-                options: ["hello", "bye"],
+                options: ["MC1", "MC2"],
                 qType: "multiChoice"
             };
             const part = {
                 parameters: {language: "English"},
                 uniqueId: testId,
                 currentState: "awaitingAnswer",
+                currentAnswer : ["MC1"],
                 currentQuestion: question,
             }
             it('Should return success and next action', async () => {
@@ -372,11 +398,21 @@ describe('Process answer', () =>{
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             });
+            let participant;
+            it('Should have added answers to participant answer and current answer', async () => {
+                participant = await participants.get(part.uniqueId);
+                let latestAns = participant.answers[participant.answers.length-1].answer;
+                expect(latestAns).to.eql(["MC1"]);
+                expect(participant.currentAnswer).to.eql(latestAns);
+            })
+            it('Should be in answerReceived state', async () => {
+                expect(participant.currentState).to.eql("answerReceived");
+            })
         })
         describe('Options missing', () => {
             let returnObj;
             const question = {
-                qId: "test2",
+                qId: "testMC",
                 text: "questionText",
                 qType: "multiChoice"
             };
@@ -394,7 +430,7 @@ describe('Process answer', () =>{
         describe('Language missing', () => {
             let returnObj;
             const question = {
-                qId: "test2",
+                qId: "testMC",
                 text: "questionText",
                 qType: "multiChoice"
             };
@@ -410,12 +446,13 @@ describe('Process answer', () =>{
         })
 
     })
+
     describe('Freeform text', () => {
 
         describe('Answer is valid text', () => {
             let returnObj;
             const question = {
-                qId: "test2",
+                qId: "testF",
                 text: "questionText",
                 qType: "freeform"
             };
@@ -426,11 +463,93 @@ describe('Process answer', () =>{
                 currentQuestion: question,
             }
             it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "hello")
+                returnObj = await AnswerHandler.processAnswer(part, "Freeform test")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             });
+            let participant;
+            it('Should have updated current answer', async () => {
+                participant = await participants.get(part.uniqueId)
+                expect(participant.currentAnswer).to.eql(["Freeform test"]);
+            });
+            it('Should have added to latest answer', async () => {
+                let latestAns = participant.answers[participant.answers.length-1].answer;
+                expect(latestAns).to.eql(["Freeform test"]);
+                await participants.eraseCurrentAnswer(part.uniqueId);
+            });
+            it('Should be in answerReceived state', async () => {
+                expect(participant.currentState).to.eql("answerReceived");
+            })
         });
+    })
+    describe('Free-form multiline', () => {
+        let returnObj;
+        const question = {
+            qId: "testFM",
+            text: "questionText",
+            qType: "freeformMulti"
+        };
+        const part = {
+            parameters: {language: "English"},
+            uniqueId: testId,
+            currentState: "awaitingAnswer",
+            currentQuestion: question,
+            currentAnswer: []
+        }
+        describe('First message', () => {
+
+            it('Should return success and no response', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "First message")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
+            });
+            it('Should have added answer to current answer', async () => {
+                let participant = await participants.get(part.uniqueId);
+                expect(participant.currentAnswer[0]).to.equal("First message");
+                part.currentAnswer.push("First message");
+            });
+        });
+        describe('Second message', () => {
+
+            it('Should return success and no response', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "Second message")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
+            });
+            it('Should have added answer to current answer', async () => {
+                let participant = await participants.get(part.uniqueId);
+                assert(participant.currentAnswer.includes("First message"));
+                expect(participant.currentAnswer[1]).to.equal("Second message");
+                part.currentAnswer.push("Second message");
+            });
+        });
+        describe('Terminate message', () => {
+
+            it('Should return success and next action', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "done!")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+            });
+            let participant;
+            it('Should have added list of answers to participants latest answer', async () => {
+                participant = await participants.get(part.uniqueId);
+                let latestAns = participant.answers[participant.answers.length-1].answer;
+                expect(latestAns).to.eql(["First message", "Second message"]);
+            })
+            it('Should be in answerReceived state', async () => {
+                expect(participant.currentState).to.eql("answerReceived");
+            })
+        })
+        describe('Fail when participant language missing', () => {
+            let part2 = JSON.parse(JSON.stringify(part));
+            delete part2["parameters"]["language"];
+            it('Should return failure', async () => {
+                returnObj = await AnswerHandler.processAnswer(part2, "done!");
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            })
+        })
+
+
     })
 
     describe('Number', () => {

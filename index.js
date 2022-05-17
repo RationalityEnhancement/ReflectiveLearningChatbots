@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
 const moment = require('moment-timezone')
 const ConfigParser = require('./src/configParser')
+const LogicHandler = require('./src/logicHandler')
 
 const ExperimentUtils = require("./src/experimentUtils");
 const {getByUniqueId} = require("./src/apiControllers/idMapApiController");
@@ -355,7 +356,7 @@ bot.command('next', async ctx => {
         let nextQMsg = `This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
         ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
         await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
-        await Communicator.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp)
+        await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp)
     } catch(err){
         console.log("Failed to serve next scheduled question");
         console.error(err);
@@ -376,7 +377,7 @@ bot.command('repeat', async ctx => {
   if(participant.currentState === "awaitingAnswer"){
       await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;
-    await Communicator.sendQuestion(bot, participant, ctx.from.id, currentQuestion, true)
+    await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, true)
   }
 
 })
@@ -454,7 +455,7 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      await Communicator.sendQuestion(bot, participant, ctx.from.id, curQuestion, config.debugExp);
+      await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, config.debugExp);
     } catch(err){
       console.log('Failed to send language question');
       console.error(err);
@@ -506,7 +507,7 @@ bot.on('text', async ctx => {
       // Repeat the question if needed
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
 
-        await Communicator.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, true)
+        await LogicHandler.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, true)
       }
       break;
 

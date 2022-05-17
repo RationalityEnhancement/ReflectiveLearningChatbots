@@ -63,6 +63,14 @@
         "English" : "Send <i>Done</i> when you are finished with the survey.",
         "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
       },
+      "freeformSinglePrompt" : {
+        "English" : "Type in your answer in a <b>single</b> message and send.",
+        "Deutsch" : "Geben Sie Ihre Antwort in nur <b>einer</b> Nachricht ein."
+      },
+      "freeformMultiPrompt" : {
+        "English" : "Type in your answer over one or multiple messages. Send the message <i>Done</i> when complete.",
+        "Deutsch" : "Geben Sie Ihre Antwort über eine oder mehrere Nachrichten ein. Senden Sie <i>Fertig</i>, wenn fertig"
+      },
       "linkToSurvey" : {
         "English" : "Link to Survey (opens in browser)",
         "Deutsch" : "Link zur Umfrage (wird im Browser geöffnet)"
@@ -255,7 +263,7 @@
               "English" : "How did you decide which things to focus on today?",
               "Deutsch" : "Wie haben Sie entschieden, worauf Sie sich heute fokussieren wollten?"
             },
-            "qType" : "freeform",
+            "qType" : "freeformMulti",
             "nextQuestion" : "eveningQuestions.relevance"
           },
           {

@@ -7,7 +7,7 @@ module.exports.singleChoice = (options) => {
 };
 
 module.exports.multiChoice = (options, language) => {
-	const terminateKeyword = config.phrases.keyboards.terminateMultipleChoice[language];
+	const terminateKeyword = config.phrases.keyboards.terminateAnswer[language];
 	let optionsCopy = options.slice()
 	optionsCopy.push(terminateKeyword);
 	return Markup.keyboard(optionsCopy);

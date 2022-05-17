@@ -257,6 +257,7 @@ class AnswerHandler{
                 case 'number' :
                     // Check if it can be parsed as a number
                     if(isNaN(answerText) || answerText.length === 0) {
+                        await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                         let errorString = config.phrases.answerValidation.notANumber[participant.parameters.language]
                         return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING);
                     }

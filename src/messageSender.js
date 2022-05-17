@@ -81,16 +81,36 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
-            await new Promise(res => {
-                setTimeout(res, delayMs)
-            });
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.multiChoice[language], true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.multiChoice(question.options, language).reply_markup
-            });
+            // await new Promise(res => {
+            //     setTimeout(res, delayMs)
+            // });
+            // await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.multiChoice[language], true), {
+            //     parse_mode: "HTML",
+            //     reply_markup: InputOptions.multiChoice(question.options, language).reply_markup
+            // });
             break;
         case 'freeform':
             await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+            await new Promise(res => {
+                setTimeout(res, delayMs)
+            });
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.freeformSinglePrompt[language], true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+            break;
+        case 'freeformMulti':
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+            await new Promise(res => {
+                setTimeout(res, delayMs)
+            });
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.freeformMultiPrompt[language], true), {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });

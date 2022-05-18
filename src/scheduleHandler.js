@@ -6,7 +6,7 @@ const ReturnMethods = require('./returnMethods');
 const Communicator = require('./communicator')
 const assert = require('chai').assert
 const DevConfig = require('../json/devConfig.json');
-const LogicHandler = require('./logicHandler');
+const sendQuestion = require('./logicHandler').sendQuestion;
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -499,7 +499,7 @@ class ScheduleHandler{
 
             // Schedule the question to be sent
             job = scheduler.scheduleJob(recRule, async function(){
-                await LogicHandler.sendQuestion(bot, participant, chatId, question);
+                await sendQuestion(bot, participant, chatId, question);
             })
             // Add to local store and if necessary, to DB
             this.scheduledOperations["questions"][jobId] = job;

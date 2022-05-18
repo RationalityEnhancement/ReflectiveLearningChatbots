@@ -108,8 +108,12 @@ function QuestionHandler(config){
         }
         let constructedQuestion = {
             "qId" : qId,
-            "text" : selectedQuestion.text[language],
             "qType" : selectedQuestion.qType,
+        }
+        if(constructedQuestion.qType !== "dummy"){
+           constructedQuestion["text"] = selectedQuestion.text[language];
+        } else {
+            constructedQuestion["text"] = DevConfig.DUMMY_QUESTION_TEXT;
         }
 
         // Process qualtrics question, add the link with query strings to question object

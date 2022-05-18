@@ -21,7 +21,6 @@ const LogicHandler = require('./src/logicHandler')
 
 const ExperimentUtils = require("./src/experimentUtils");
 const {getByUniqueId} = require("./src/apiControllers/idMapApiController");
-const {next} = require("lodash/seq");
 
 const local = process.argv[2];
 
@@ -357,7 +356,10 @@ bot.command('next', async ctx => {
         let nextQMsg = `This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
         ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
         await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
-        await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp)
+        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp);
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            throw returnObj.data;
+        }
     } catch(err){
         console.log("Failed to serve next scheduled question");
         console.error(err);
@@ -378,7 +380,10 @@ bot.command('repeat', async ctx => {
   if(participant.currentState === "awaitingAnswer"){
       await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;
-    await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, true)
+    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, config.debugExp);
+      if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+          throw returnObj.data;
+      }
   }
 
 })
@@ -456,7 +461,10 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, config.debugExp);
+      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, config.debugExp);
+      if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+          throw returnObj.data;
+      }
     } catch(err){
       console.log('Failed to send language question');
       console.error(err);
@@ -511,7 +519,10 @@ bot.on('text', async ctx => {
         await Communicator.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, config.debugExp);
       // Repeat the question if needed
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
-        await LogicHandler.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, true)
+        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, config.debugExp)
+          if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+              throw returnObj.data;
+          }
       }
       break;
 

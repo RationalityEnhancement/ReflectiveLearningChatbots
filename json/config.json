@@ -197,6 +197,15 @@
       "questionCategories" : {
         "morningQuestions" : [
           {
+            "qId" : "testDummy",
+            "qType" : "dummy",
+            "nextQuestion" : "morningQuestions.mainGoal",
+            "replyMessages" : {
+              "English" : ["Dummy question processed"],
+              "Deutsch" : ["Platzhalter-Frage verarbeitet"]
+            }
+          },
+          {
             "qId" : "mainGoal",
             "text" : {
               "English" : "What is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
@@ -419,7 +428,7 @@
       },
       "scheduledQuestions" : [
         {
-          "qId" : "morningQuestions.mainGoal",
+          "qId" : "morningQuestions.testDummy",
           "atTime" : "09:00",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         },

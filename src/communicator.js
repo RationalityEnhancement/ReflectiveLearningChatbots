@@ -7,7 +7,21 @@ const idMaps = require('./apiControllers/idMapApiController')
 const ConfigParser = require('./configParser');
 
 const msPerCharacter = DevConfig.MS_PER_CHARACTER_DELAY;
+/**
+ * This class deals with all of the direct communication with
+ * the user. Mainly sends questions and messages.
+ *
+ */
 
+/**
+ *  Substitute variables for a given string with error handling
+ *  if error occurs, return original string without replacing any variables
+ *
+ * @param participant
+ * @param text
+ * @param sensitiveDataAlso
+ * @returns {*}
+ */
 let substituteVariables = (participant, text, sensitiveDataAlso) => {
     let newText = text;
     let varReplaceObj = ConfigParser.replaceVariablesInString(participant, text, sensitiveDataAlso);
@@ -18,6 +32,8 @@ let substituteVariables = (participant, text, sensitiveDataAlso) => {
 /**
  * Sends a question to the bot user based on the type of question
  * and the text as specified in the question object (see questionHandler.js)
+ *
+ * Also sends prompt messages as required for the question type, after a delay
  *
  * @param bot current telegram bot instance
  * @param chatId telegram chatId of user to send message to
@@ -81,13 +97,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
-            // await new Promise(res => {
-            //     setTimeout(res, delayMs)
-            // });
-            // await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.multiChoice[language], true), {
-            //     parse_mode: "HTML",
-            //     reply_markup: InputOptions.multiChoice(question.options, language).reply_markup
-            // });
+
             break;
         case 'freeform':
             await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {

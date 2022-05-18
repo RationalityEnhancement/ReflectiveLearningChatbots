@@ -3,9 +3,10 @@ const idMaps = require('./apiControllers/idMapApiController');
 const scheduler = require('node-schedule');
 const QuestionHandler = require('./questionHandler')
 const ReturnMethods = require('./returnMethods');
-const MessageSender = require('./messageSender')
+const Communicator = require('./communicator')
 const assert = require('chai').assert
 const DevConfig = require('../json/devConfig.json');
+const sendQuestion = require('./logicHandler').sendQuestion;
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -293,7 +294,7 @@ class ScheduleHandler{
                 let chatId = secretMap.chatId;
                 // TODO: send a message about the scheduled messages anyway, or only when debug mode?
                 if(debug || !debug) {
-                    await MessageSender.sendMessage(bot, participant, chatId,
+                    await Communicator.sendMessage(bot, participant, chatId,
                         config.phrases.schedule.scheduleNotif[partLang]
                         + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '), debug);
                 }
@@ -498,7 +499,7 @@ class ScheduleHandler{
 
             // Schedule the question to be sent
             job = scheduler.scheduleJob(recRule, async function(){
-                await MessageSender.sendQuestion(bot, participant, chatId, question);
+                await sendQuestion(bot, participant, chatId, question);
             })
             // Add to local store and if necessary, to DB
             this.scheduledOperations["questions"][jobId] = job;

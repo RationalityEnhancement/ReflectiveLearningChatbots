@@ -23,7 +23,7 @@ function QuestionHandler(config){
      *
      * @param conditionName String containing the name of the condition
      * @param qId qId String of the form <questionCategory>.<questionId>
-     * @returns {returnCode, data}
+     * @returns {{returnCode: number, data: string}}
      *          if success, returnCode is 1, data  contains selectedQuestion
      *          if failure, returnCode is -1 data contains errorMsg
      */
@@ -110,6 +110,7 @@ function QuestionHandler(config){
             "qId" : qId,
             "qType" : selectedQuestion.qType,
         }
+        // If it is a dummy question, use the default text
         if(constructedQuestion.qType !== "dummy"){
            constructedQuestion["text"] = selectedQuestion.text[language];
         } else {
@@ -167,10 +168,23 @@ function QuestionHandler(config){
 
     }
 
+    /**
+     *
+     * Function to go through an object and replace every language object
+     * (object which has config.languages as keys) with the corresponding value
+     * based on the participant preferred language
+     *
+     * @param targetObj target object to replace all language objects
+     * @param languages possible languages
+     * @param partLang participant preferred language
+     * @returns {{}|*[]|*}
+     */
     this.replaceLanguageDeeply = (targetObj, languages, partLang) => {
         if(typeof targetObj !== 'object') return targetObj;
         if(!Array.isArray(languages)) return targetObj;
         if(typeof partLang !== 'string') return targetObj;
+
+        // Deal with all elements of array
         if(Array.isArray(targetObj)){
             let newArray = [];
             for(let i = 0; i < targetObj.length; i++){
@@ -178,10 +192,15 @@ function QuestionHandler(config){
             }
             return newArray;
         }
+
+        // If object is a language object, return the value of the corresponding language
         if(languages.length === lodash.intersection(Object.keys(targetObj),config.languages).length){
-            return targetObj[partLang];
+            // Handle nested language objects
+            return this.replaceLanguageDeeply(targetObj[partLang], languages, partLang);
         }
         let newObj = {};
+
+        // Recursively deal with all properties of object
         for(const [key, value] of Object.entries(targetObj)){
             newObj[key] = this.replaceLanguageDeeply(value, languages, partLang);
         }
@@ -233,6 +252,14 @@ function QuestionHandler(config){
         return this.constructQuestionByID(conditionName, fullId, language);
     }
 
+    /**
+     *
+     * Return a list of the scheduled questions from the config file,
+     * for a given condition.
+     *
+     * @param conditionName name of the condition
+     * @returns {{returnCode: *, data: *}}
+     */
     this.getScheduledQuestions = (conditionName) => {
         let condition;
         if(!conditionName){

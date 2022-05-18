@@ -420,5 +420,32 @@ describe('Replacing language deeply', () => {
         expect(testObj).to.eql(testObjCopy);
     })
 
+    it('Should replace nested language object', () => {
+        let testObj = {
+            uniqueId : 'abc',
+            text : {
+                "English" : {
+                    "time" : {
+                        "English" : "Joggers",
+                        "Deutsch" : "Hose"
+                    },
+                },
+                "Deutsch" : {
+                    "zeit" : {
+                        "English" : "Joggers2",
+                        "Deutsch" : "Hose2"
+                    }
+                }
+            }
+        }
+        let testObjCopy = JSON.parse(JSON.stringify(testObj));
+        let expectedResult = JSON.parse(JSON.stringify(testObj));
+        expectedResult["text"] = { "time" : "Joggers"};
+        let result = qHandler.replaceLanguageDeeply(testObj, languages, desiredLang);
+        expect(typeof result).to.equal("object");
+        expect(result).to.eql(expectedResult);
+        expect(testObj).to.eql(testObjCopy);
+    })
+
 
 })

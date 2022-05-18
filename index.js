@@ -15,7 +15,6 @@ const ScheduleHandler = require('./src/scheduleHandler');
 const BOT_TOKEN =  process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
-const moment = require('moment-timezone')
 const ConfigParser = require('./src/configParser')
 const LogicHandler = require('./src/logicHandler')
 
@@ -84,143 +83,6 @@ let getByChatId = async (experimentId, chatId) => {
 
 }
 
-// Send the next question
-let sendNextQuestion = async (bot, participant, chatId, nextQuestionId) => {
-
-    let conditionName = participant["conditionName"];
-    let language = participant.parameters["language"];
-
-    let debugDev = config.debugDev;
-    let debugExp = config.debugExp;
-  // Get the updated participant
-  let nextQObj = qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
-  if(nextQObj.returnCode === DevConfig.FAILURE_CODE){
-    throw "ERROR: " + nextQObj.data;
-  } else {
-    let nextQ = nextQObj.data;
-    await Communicator.sendQuestion(bot, participant, chatId, nextQ, debugExp);
-  }
-
-}
-
-// Process what happens next based on the next actions,
-//  reply messages, or next questions
-let processNextSteps = async (bot, uniqueId) => {
-  let participant = await getParticipant(uniqueId)
-  let partLang = participant.parameters.language;
-  let partCond = participant.conditionName;
-  let currentQuestion = participant.currentQuestion;
-  let debugDev = !!config.debugDev;
-  let debugExp = !!config.debugExp;
-
-  let secretMap = await getByUniqueId(config.experimentId, uniqueId);
-  if(!secretMap){
-      throw "ERROR: PNS: Unable to find participant chat ID";
-  }
-
-    // Send replies to the answer, if any
-    if(!!currentQuestion.replyMessages && currentQuestion.replyMessages.length > 0){
-        await Communicator.sendReplies(bot, participant, secretMap.chatId, currentQuestion.replyMessages, config.debugExp);
-    } else if(!!currentQuestion.cReplyMessages && currentQuestion.cReplyMessages.length > 0){
-        let rules = currentQuestion.cReplyMessages;
-        let options = currentQuestion.options;
-        let lastAnswer = participant.currentAnswer;
-        let replyMessagesObj = ConfigParser.evaluateAnswerConditions(rules, options, lastAnswer);
-        if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
-            throw "ERROR: Could not process conditional replies" + replyMessagesObj.data;
-        } else if(replyMessagesObj.returnCode === DevConfig.SUCCESS_CODE){
-            await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
-        }
-    }
-
-  // get all next actions
-    let nextActions = [];
-    if(!!currentQuestion.nextActions && currentQuestion.nextActions.length > 0){
-        nextActions = currentQuestion.nextActions;
-    } else if(!!currentQuestion.cNextActions && currentQuestion.cNextActions.length > 0){
-        let nextActionsObj = ConfigParser.evaluateAnswerConditions(currentQuestion.cNextActions, currentQuestion.options, participant.currentAnswer)
-        if(nextActionsObj.returnCode === DevConfig.FAILURE_CODE){
-            throw "ERROR: Could not process cond next actions: " + nextActionsObj.data;
-        } else if (nextActionsObj.returnCode === DevConfig.SUCCESS_CODE) {
-            nextActions = nextActionsObj.data;
-        }
-    }
-    // Process all next actions, if any
-    for(let i = 0; i < nextActions.length; i++){
-      let aType = nextActions[i];
-      switch(aType){
-          case "scheduleQuestions":
-
-
-            // TODO: have disabled overwriting for now, after implementation of /next
-          // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
-          // if(debugDev && !debugDev){
-          //   let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-          //   if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
-          //     console.error(nowDateObj.data);
-          //   }
-          //   let qHandler = new QuestionHandler(config);
-          //   let schQObj = qHandler.getScheduledQuestions(partCond);
-          //   if(schQObj.returnCode === DevConfig.FAILURE_CODE){
-          //     throw "ERROR: " + schQObj.data;
-          //   }
-          //
-          //   ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
-          // }
-
-          let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, uniqueId, config, debugExp);
-          if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-            throw "ERROR: " + returnObj.data;
-          } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
-            throw "PARTIAL ERROR: " + returnObj.data;
-          }
-          break;
-        case "assignToCondition":
-          let experiment = await getExperiment(config.experimentId);
-          let ID = participant.parameters.pId;
-          if(!ID) ID = uniqueId;
-          let scheme = config.assignmentScheme;
-          let conditionRatios = experiment["conditionAssignments"];
-          let currentAssignments = experiment["currentlyAssignedToCondition"];
-          let conditionNames = experiment["experimentConditions"];
-          let conditionObj = ExperimentUtils.assignToCondition(ID, PIDtoConditionMap, conditionRatios, currentAssignments, scheme);
-          if(conditionObj.returnCode === DevConfig.FAILURE_CODE){
-            throw "ERROR: " + conditionObj.data;
-          }
-          let assignedConditionIdx = conditionObj.data;
-          let conditionName = conditionNames[assignedConditionIdx];
-          if(debugExp){
-            await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, config.debugExp);
-          }
-          await participants.updateField(uniqueId, "conditionIdx", assignedConditionIdx);
-          await participants.updateField(uniqueId, "conditionName", conditionName);
-          await experiments.updateConditionAssignees(config.experimentId, assignedConditionIdx, 1);
-          break;
-        default:
-          throw "ERROR: aType not recognized"
-      }
-    }
-
-
-  // get next question:
-    let nextQuestion;
-    if(!!currentQuestion.nextQuestion){
-        nextQuestion = currentQuestion.nextQuestion;
-    } else if(!!currentQuestion.cNextQuestions && currentQuestion.cNextQuestions.length > 0){
-        let nextQuestionsObj = ConfigParser.evaluateAnswerConditions(currentQuestion.cNextQuestions,
-            currentQuestion.options, participant.currentAnswer);
-        if(nextQuestionsObj.returnCode === DevConfig.FAILURE_CODE){
-            throw "ERROR: Unable to process cond next question: " + nextQuestionsObj.data;
-        } else if(nextQuestionsObj.returnCode === DevConfig.SUCCESS_CODE){
-            nextQuestion = nextQuestionsObj.data;
-        }
-    }
-  // Process next question
-  if(!!nextQuestion){
-    await sendNextQuestion(bot, participant, secretMap.chatId, nextQuestion);
-  }
-}
-
 //-----------------
 //--- bot setup ---
 //-----------------
@@ -230,6 +92,7 @@ bot.catch((err, ctx) => {
   console.error(`Encountered an error for ${ctx.updateType}.`, err);
 });
 
+// Log the current participant
 bot.command('log_part', async ctx => {
     if(!config.debugExp) return;
     try{
@@ -251,7 +114,7 @@ bot.command('log_part', async ctx => {
   
 });
 
-
+// Log the current experiment
 bot.command('log_exp', async ctx => {
     if(!config.debugExp) return;
     try{
@@ -266,9 +129,11 @@ bot.command('log_exp', async ctx => {
   }
 });
 
+// Delete the participant
 bot.command('delete_me', async ctx => {
     if(!config.debugExp) return;
 
+    // Check if participant exists
     try{
       let secretMap = await getByChatId(config.experimentId, ctx.from.id);
       if(!secretMap){
@@ -281,10 +146,18 @@ bot.command('delete_me', async ctx => {
       console.log('Participant does not exist!')
       return;
     }
+
+    // Remove all jobs for participant
     let conditionIdx = participant["conditionIdx"];
     await ScheduleHandler.removeAllJobsForParticipant(uniqueId);
+
+    // Remove participant from database
     await participants.remove(uniqueId);
+
+    // Delete chatID mapping
     await idMaps.deleteByChatId(config.experimentId, ctx.from.id);
+
+    // Update experiment to subtract participant from condition totals
     await experiments.updateConditionAssignees(config.experimentId, conditionIdx, -1);
     ctx.reply('Successfully deleted all your data. To use the bot again, use /start.');
     console.log(`${uniqueId} removed`);
@@ -295,20 +168,24 @@ bot.command('delete_me', async ctx => {
   }
 });
 
+// Delete the experiment
 bot.command('delete_exp', async ctx => {
   // TODO: Delete all participants when experiment is deleted?
   // TODO: OR add up all participants when experiment is created again?
   // TODO: OR perhaps recount each time the experiment starts up for a sanity check?
     if(!config.debugExp) return;
   try{
+      // Check if experiment exists
     let experiment = await experiments.get(config.experimentId);
     if(!experiment) {
       console.log('Experiment does not exist!')
       return;
     }
 
+    // Remove experiment from DB
     await experiments.remove(config.experimentId);
 
+    // Remove all chatID mappings for current experiment from DB
       let experimentIds = await idMaps.getExperiment(config.experimentId);
       if(!experimentIds) {
           console.log('Experiment ID Mapping does not exist!')
@@ -326,9 +203,11 @@ bot.command('delete_exp', async ctx => {
   }
 });
 
+// Next command to pre-empt next scheduled question
 bot.command('next', async ctx => {
     if(!config.debugExp) return;
     try{
+        // Get the participant's unique ID
         let debugExp = config.debugExp;
         let debugDev = config.debugDev;
         let secretMap = await idMaps.getByChatId(config.experimentId, ctx.from.id);
@@ -337,24 +216,36 @@ bot.command('next', async ctx => {
             return;
         }
         let uniqueId = secretMap.uniqueId;
+
+        // Check if there are any scheduled questions
         if(!ScheduleHandler.debugQueue[uniqueId]) {
             console.log("No scheduled questions (yet)!");
             return;
         }
+
+        // Get the next temporally ordered scheduled question
         let nextQObj = ScheduleHandler.debugQueue[uniqueId][0];
 
+        // Get the participant
         let participant = await getParticipant(uniqueId);
         let partCond = participant.conditionName;
         let partLang = participant.parameters.language;
 
+        // Construct the question based on the ID and participant condition
         let qHandler = new QuestionHandler(config);
         let nextQReturnObj = qHandler.constructQuestionByID(partCond, nextQObj.qId, partLang);
         if(nextQReturnObj.returnCode === DevConfig.FAILURE_CODE){
             throw "ERROR: " + nextQReturnObj.data;
         }
         let nextQuestion = nextQReturnObj.data;
-        let nextQMsg = `This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
+
+        // Send a message about when the question will appear
+        let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
+
+        // Send the current question to the end of the queue to make prepare for the next /next call
         ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
+
+        // Send the message and the question
         await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
         let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp);
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
@@ -377,6 +268,7 @@ bot.command('repeat', async ctx => {
 
   let participant = await getParticipant(uniqueId);
 
+  // Repeat question only if there is an outstanding question
   if(participant.currentState === "awaitingAnswer"){
       await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;

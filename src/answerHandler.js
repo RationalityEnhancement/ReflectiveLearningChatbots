@@ -215,10 +215,14 @@ class AnswerHandler{
                     let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
                     // Return failure or trigger the next action
                     return finishObj;
+
+                // Question with free text input but over multiple messages
                 case 'freeformMulti':
                     let termination = config.phrases.keyboards.terminateAnswer[participant.parameters.language];
                     let trimmedTerm;
                     let trimmedAns;
+
+                    // Trim the expected termination answer and the current answer for comparison
                     try{
                         let regex = /[.()!?;:_ ,'-]/g;
                         trimmedTerm = termination.replace(regex, "").toLowerCase();
@@ -226,6 +230,8 @@ class AnswerHandler{
                     } catch(err){
                         return ReturnMethods.returnFailure("AHandler: Participant language or term answer phrase not found")
                     }
+
+                    // Check if user has typed termination answer
                     if(trimmedTerm === trimmedAns){
                         // If participant is finished answering
                         let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
@@ -236,6 +242,8 @@ class AnswerHandler{
                         await participants.addToCurrentAnswer(participant.uniqueId, answerText);
                         return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
                     }
+
+                // Qualtrics survey question
                 case 'qualtrics':
                     let expectedAnswer = config.phrases.keyboards.terminateAnswer[participant.parameters.language];
                     let trimmedExpected;
@@ -247,6 +255,9 @@ class AnswerHandler{
                     } catch(err){
                         return ReturnMethods.returnFailure("AHandler: Participant language or term answer phrase not found")
                     }
+
+                    // Check if user has entered the termination answer
+                    // If not, then tell the user that the only way to continue is to send that phrase.
                     if(trimmedAnswer !== trimmedExpected){
                         let errorString = config.phrases.answerValidation.terminateAnswerProperly[participant.parameters.language]
                         return ReturnMethods.returnPartialFailure(errorString, DevConfig.NO_RESPONSE_STRING);
@@ -262,6 +273,7 @@ class AnswerHandler{
                         return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING);
                     }
 
+                    // Check if decimal or integer
                     let numberForm;
                     if(answerText.indexOf('.') !== -1) {
                         numberForm = parseFloat(answerText);
@@ -273,6 +285,7 @@ class AnswerHandler{
                     if(!!currentQuestion.range){
                         if("lower" in currentQuestion.range){
                             if(numberForm < currentQuestion.range.lower){
+                                // Answer is invalid. Send corresponding message, and ask to repeat question
                                 await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                                 let errorString = config.phrases.answerValidation.numberTooLow[participant.parameters.language]
                                 let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
@@ -293,6 +306,7 @@ class AnswerHandler{
                         }
                     }
 
+                    // All checks passed, answer is valid
                     return this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
 
                 default:

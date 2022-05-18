@@ -1,12 +1,10 @@
 const participants = require("./apiControllers/participantApiController");
 const experiments = require("./apiControllers/experimentApiController");
-const idMaps = require('./apiControllers/idMapApiController')
 const config = require("../json/config.json");
 const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
 const QuestionHandler = require('./questionHandler');
 const ConfigParser = require('./configParser')
-const AnswerHandler = require('./answerHandler')
 const Communicator = require('./communicator')
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ExperimentUtils = require("./experimentUtils");
@@ -47,16 +45,20 @@ let processNextSteps = async(bot, uniqueId) => {
     let debugDev = !!config.debugDev;
     let debugExp = !!config.debugExp;
 
+    // Get chat ID
     let secretMap = await getByUniqueId(config.experimentId, uniqueId);
     if(!secretMap){
         return ReturnMethods.returnFailure("LHandler: Unable to find participant chat ID while processing next");
     }
+
+    // Get all reply messages and send
     let replyMessagesObj = this.getNextReplies(participant, currentQuestion);
     if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
         return replyMessagesObj;
     }
     await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
 
+    // Get all next actions and execute
     let actionsObj = this.getNextActions(participant, currentQuestion);
     if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
         return actionsObj;
@@ -123,7 +125,7 @@ let processNextSteps = async(bot, uniqueId) => {
     }
 
 
-    // get next question and process
+    // Get next question and process
     let nextQuestionObj = this.getNextQuestion(participant, currentQuestion);
     if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
         return nextQuestionObj;
@@ -207,6 +209,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
      */
 let getNextActions = (participant, currentQuestion) => {
 
+    // Validating parameters
     let requiredPartFields = ["currentAnswer"];
     for(let i = 0; i < requiredPartFields.length; i++){
         if(!(requiredPartFields[i] in participant)){
@@ -216,17 +219,20 @@ let getNextActions = (participant, currentQuestion) => {
 
     let nextActions = [];
     if(!!currentQuestion.nextActions && currentQuestion.nextActions.length > 0){
-        // Unconditional next actions
+        // Unconditional next actions get precedence
         nextActions = currentQuestion.nextActions;
     } else if(!!currentQuestion.cNextActions && currentQuestion.cNextActions.length > 0){
         // Conditional next actions
+        // Evaluate the condition
         let nextActionsObj = ConfigParser.evaluateAnswerConditions(currentQuestion.cNextActions, currentQuestion.options, participant.currentAnswer)
         if(nextActionsObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure( "LHandler: Could not process cond next actions: " + nextActionsObj.data);
         } else if (nextActionsObj.returnCode === DevConfig.SUCCESS_CODE) {
+            // Found matching condition.
             nextActions = nextActionsObj.data;
         }
     }
+    // If nothing is found, return empty array
     return ReturnMethods.returnSuccess(nextActions);
 }
 module.exports.getNextActions = getNextActions;
@@ -247,18 +253,24 @@ let getNextQuestion = (participant, currentQuestion) => {
             return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
         }
     }
-    let nextQuestion
+    let nextQuestion;
     if(!!currentQuestion.nextQuestion){
+        // Unconditional next question get precedence
         nextQuestion = currentQuestion.nextQuestion;
     } else if(!!currentQuestion.cNextQuestions && currentQuestion.cNextQuestions.length > 0){
+        // Search for conditional next question
+        // Evaluate the condition specified
         let nextQuestionsObj = ConfigParser.evaluateAnswerConditions(currentQuestion.cNextQuestions,
             currentQuestion.options, participant.currentAnswer);
         if(nextQuestionsObj.returnCode === DevConfig.FAILURE_CODE){
+            // Error while processing
             return ReturnMethods.returnFailure("LHandler: Unable to process cond next question: " + nextQuestionsObj.data);
         } else if(nextQuestionsObj.returnCode === DevConfig.SUCCESS_CODE){
+            // Found a conditional next question
             nextQuestion = nextQuestionsObj.data;
         }
     }
+    // If nothing is found, return undefined, so no next question
     return ReturnMethods.returnSuccess(nextQuestion);
 }
 module.exports.getNextQuestion = getNextQuestion;
@@ -287,11 +299,13 @@ let getNextReplies = (participant, currentQuestion) => {
         let rules = currentQuestion.cReplyMessages;
         let options = currentQuestion.options;
         let lastAnswer = participant.currentAnswer;
+        // Evaluate the condition to get the appropriate result
         let replyMessagesObj = ConfigParser.evaluateAnswerConditions(rules, options, lastAnswer);
-        console.log(replyMessagesObj);
         if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
+            // Error while evaluating
             return ReturnMethods.returnFailure("LHandler: Could not process conditional replies" + replyMessagesObj.data);
         } else if(replyMessagesObj.returnCode === DevConfig.SUCCESS_CODE){
+            // Condition match found
             return ReturnMethods.returnSuccess(replyMessagesObj.data);
         } else {
             // No match

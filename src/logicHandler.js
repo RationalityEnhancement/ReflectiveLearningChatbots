@@ -12,7 +12,6 @@ const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ScheduleHandler = require("./scheduleHandler");
 const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = require("../json/PIDCondMap.json");
-const {relativeTimeRounding} = require("moment-timezone");
 
 /**
  * Logic handler deals with the logic of what is to occur at each step
@@ -54,13 +53,13 @@ class LogicHandler{
         if(!secretMap){
             return ReturnMethods.returnFailure("LHandler: Unable to find participant chat ID while processing next");
         }
-        let replyMessagesObj = await this.getNextReplies(participant, currentQuestion);
+        let replyMessagesObj = this.getNextReplies(participant, currentQuestion);
         if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
             return replyMessagesObj;
         }
         await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
 
-        let actionsObj = await this.getNextActions(participant, currentQuestion);
+        let actionsObj = this.getNextActions(participant, currentQuestion);
         if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
             return actionsObj;
         }
@@ -130,7 +129,7 @@ class LogicHandler{
 
 
         // get next question and process
-        let nextQuestionObj = await this.getNextQuestion(participant, currentQuestion);
+        let nextQuestionObj = this.getNextQuestion(participant, currentQuestion);
         if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
             return nextQuestionObj;
         }
@@ -167,7 +166,6 @@ class LogicHandler{
         let debugDev = config.debugDev;
         let debugExp = config.debugExp;
 
-        // Get the updated participant
         let nextQObj = qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
         if(nextQObj.returnCode === DevConfig.FAILURE_CODE){
             return nextQObj;
@@ -190,6 +188,9 @@ class LogicHandler{
      * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
      */
     static async sendQuestion(bot, participant, chatId, question, debugExp){
+        // Don't send the question if it is a dummy
+        // Dummies are used to either just send messages or to conditionally
+        //  select next questions/actions which are not preceded by another question already
         if(question.qType === "dummy"){
             await participants.updateField(participant.uniqueId, "currentQuestion", question);
             return this.processNextSteps(bot, participant);
@@ -204,11 +205,11 @@ class LogicHandler{
      *
      * @param participant participant object
      * @param currentQuestion object of the question that has just been answered
-     * @returns {Promise<{returnCode: *, data: *}>}
+     * @returns {{returnCode: *, data: *}}
      */
-    static async getNextActions(participant, currentQuestion){
+    static getNextActions(participant, currentQuestion){
 
-        let requiredPartFields = ["currentQuestion", "currentAnswer"];
+        let requiredPartFields = ["currentAnswer"];
         for(let i = 0; i < requiredPartFields.length; i++){
             if(!(requiredPartFields[i] in participant)){
                 return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
@@ -239,10 +240,10 @@ class LogicHandler{
      *
      * @param participant participant object
      * @param currentQuestion object of the question that has just been answered
-     * @returns {Promise<{returnCode: *, data: *}>}
+     * @returns {{returnCode: *, data: *}}
      */
-    static async getNextQuestion(participant, currentQuestion){
-        let requiredPartFields = ["currentQuestion", "currentAnswer"];
+    static getNextQuestion(participant, currentQuestion){
+        let requiredPartFields = ["currentAnswer"];
         for(let i = 0; i < requiredPartFields.length; i++){
             if(!(requiredPartFields[i] in participant)){
                 return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
@@ -272,8 +273,8 @@ class LogicHandler{
      * @param currentQuestion object of the question that has just been answered
      * @returns {Promise<{returnCode: *, data: *}>}
      */
-    static async getNextReplies(participant, currentQuestion){
-        let requiredPartFields = ["currentQuestion", "currentAnswer"];
+    static getNextReplies(participant, currentQuestion){
+        let requiredPartFields = ["currentAnswer"];
         for(let i = 0; i < requiredPartFields.length; i++){
             if(!(requiredPartFields[i] in participant)){
                 return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);

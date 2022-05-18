@@ -21,6 +21,7 @@ const LogicHandler = require('./src/logicHandler')
 
 const ExperimentUtils = require("./src/experimentUtils");
 const {getByUniqueId} = require("./src/apiControllers/idMapApiController");
+const {next} = require("lodash/seq");
 
 const local = process.argv[2];
 
@@ -496,7 +497,11 @@ bot.on('text', async ctx => {
           await Communicator.sendMessage(bot, participant, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], config.debugExp);
         }
         // Process the next steps
-        await processNextSteps(bot, uniqueId);
+        let nextStepsObj = await LogicHandler.processNextSteps(bot, uniqueId);
+        if(nextStepsObj.returnCode === DevConfig.FAILURE_CODE){
+            return nextStepsObj;
+        }
+
       }
       break;
 
@@ -506,7 +511,6 @@ bot.on('text', async ctx => {
         await Communicator.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, config.debugExp);
       // Repeat the question if needed
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
-
         await LogicHandler.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, true)
       }
       break;

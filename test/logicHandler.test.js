@@ -84,6 +84,24 @@ describe('Get Next Action', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(question.cNextActions[0].data);
         })
+        it('Should get empty array when no condition met', () => {
+            let copyQuestion = JSON.parse(JSON.stringify(question));
+            delete copyQuestion['nextActions'];
+            let copyPart = JSON.parse(JSON.stringify(part))
+            copyPart["currentAnswer"] = ["toast"];
+            let returnObj = LogicHandler.getNextActions(copyPart, copyQuestion);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql([]);
+        })
+        it('Should get empty array when no actions present', () => {
+            let copyQuestion = JSON.parse(JSON.stringify(question));
+            delete copyQuestion['nextActions'];
+            delete copyQuestion['cNextActions'];
+            let copyPart = JSON.parse(JSON.stringify(part))
+            let returnObj = LogicHandler.getNextActions(copyPart, copyQuestion);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql([]);
+        })
     })
 })
 
@@ -165,6 +183,24 @@ describe('Get Next Replies', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(question.cReplyMessages[0].data);
         })
+        it('Should get empty array when no condition met', () => {
+            let copyQuestion = JSON.parse(JSON.stringify(question));
+            delete copyQuestion['replyMessages'];
+            let copyPart = JSON.parse(JSON.stringify(part))
+            copyPart["currentAnswer"] = ["toast"];
+            let returnObj = LogicHandler.getNextReplies(copyPart, copyQuestion);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql([]);
+        })
+        it('Should get empty array when no replies present', () => {
+            let copyQuestion = JSON.parse(JSON.stringify(question));
+            delete copyQuestion['replyMessages'];
+            delete copyQuestion['cReplyMessages'];
+            let copyPart = JSON.parse(JSON.stringify(part))
+            let returnObj = LogicHandler.getNextReplies(copyPart, copyQuestion);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql([]);
+        })
     })
 })
 
@@ -245,6 +281,24 @@ describe('Get Next Question', () => {
             let returnObj = LogicHandler.getNextQuestion(part, copyQuestion);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(question.cNextQuestions[0].data);
+        })
+        it('Should get undefined when no condition met', () => {
+            let copyQuestion = JSON.parse(JSON.stringify(question));
+            delete copyQuestion['nextQuestion'];
+            let copyPart = JSON.parse(JSON.stringify(part))
+            copyPart["currentAnswer"] = ["toast"];
+            let returnObj = LogicHandler.getNextQuestion(copyPart, copyQuestion);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.be.undefined;
+        })
+        it('Should get undefined when no next question present', () => {
+            let copyQuestion = JSON.parse(JSON.stringify(question));
+            delete copyQuestion['nextQuestion'];
+            delete copyQuestion['cNextQuestions'];
+            let copyPart = JSON.parse(JSON.stringify(part))
+            let returnObj = LogicHandler.getNextQuestion(copyPart, copyQuestion);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.be.undefined;
         })
     })
 })

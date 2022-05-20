@@ -754,6 +754,42 @@ describe('Getting values from strings', () => {
 
         })
     })
+    describe('Boolean', () => {
+        it('Should return true (case insensitive)', () => {
+            let testStr = "tRuE";
+            let expectedVal = true;
+            let returnObj = ConfigParser.getBooleanFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return false (case insensitive)', () => {
+            let testStr = "FalSe";
+            let expectedVal = false;
+            let returnObj = ConfigParser.getBooleanFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail when not either true or false', () => {
+            let testStr = "afd";
+            let returnObj = ConfigParser.getNumberFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.getNumberFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when empty string', () => {
+            let testStr = "  ";
+            let returnObj = ConfigParser.getNumberFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
     describe('Number array', () => {
         it('Should return integer array', () => {
             let testStr = "123, 456, 789";
@@ -804,4 +840,283 @@ describe('Getting values from strings', () => {
 
         })
     })
+})
+describe('Construct expression object', () => {
+    const part = {
+        uniqueId : "12345",
+        firstName : "John",
+        currentAnswer : ["answer", "answer2"],
+        parameters : {
+            language : "English",
+            isSmoker : true
+        }
+    }
+    it('Should parse parameter and number operands normally', () => {
+        let expression = "${UNIQUE_ID} >= $N{34565}"
+        let expectedObj = {
+            operand1: {
+                value : "12345",
+                type : DevConfig.OPERAND_TYPES.STRING
+            },
+            operator : ">=",
+            operand2 : {
+                value : 34565,
+                type : DevConfig.OPERAND_TYPES.NUMBER
+            }
+        }
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should fail if variable doesnt exist', () => {
+        let expression = "${Parameter} >= $N{10}"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if number is not a number', () => {
+        let expression = "${UNIQUE_ID} >= $N{test}"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if expression not valid', () => {
+        let expression = "${UNIQUE_ID} $N{10}"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if operator not valid', () => {
+        let expression = "${UNIQUE_ID} GREATER_THAN $N{10}"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+
+    it('Should parse string and number array operands normally', () => {
+        let expression = "$S{John} IS_CHOICE $N*{1,3,4}"
+        let expectedObj = {
+            operand1: {
+                value : "John",
+                type : DevConfig.OPERAND_TYPES.STRING
+            },
+            operator : "IS_CHOICE",
+            operand2 : {
+                value : [1,3,4],
+                type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+            }
+        }
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should parse string and float array operands normally', () => {
+        let expression = "$S{John} IS_CHOICE $N*{1.3,3.2,4}"
+        let expectedObj = {
+            operand1: {
+                value : "John",
+                type : DevConfig.OPERAND_TYPES.STRING
+            },
+            operator : "IS_CHOICE",
+            operand2 : {
+                value : [1.3,3.2,4],
+                type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+            }
+        }
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should fail if string token braces not opened', () => {
+        let expression = "$Shelp} AND $N{10}"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if number array not valid', () => {
+        let expression = "$S{help} AND $N*{10,not}"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+
+    it('Should parse boolean and string array operands normally', () => {
+        let expression = "$B{TRUE} IN_ARRAY $S*{fee,fi,fo,fum}"
+        let expectedObj = {
+            operand1: {
+                value : true,
+                type : DevConfig.OPERAND_TYPES.BOOLEAN
+            },
+            operator : "IN_ARRAY",
+            operand2 : {
+                value : ["fee","fi","fo","fum"],
+                type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+            }
+        }
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should parse boolean and string array operands normally - empty string', () => {
+        let expression = "$B{FALSE} IN_ARRAY $S*{fee,,,}"
+        let expectedObj = {
+            operand1: {
+                value : false,
+                type : DevConfig.OPERAND_TYPES.BOOLEAN
+            },
+            operator : "IN_ARRAY",
+            operand2 : {
+                value : ["fee","","",""],
+                type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+            }
+        }
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should fail if boolean token braces not opened', () => {
+        let expression = "$BTRUE} AND $S*{fee,fi,fo,fum}"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if boolean token not true or false', () => {
+        let expression = "$B{beans} AND $S*{fee,fi,fo,fum}"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+
+    it('Should parse expression operands normally', () => {
+        let expression = "(${UNIQUE_ID} == $B{TRUE}) AND (${language} == $S{English})"
+        let expectedObj = {
+            operand1: {
+                value : {
+                    operand1 : {
+                        value : part.uniqueId,
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    },
+                    operator: "==",
+                    operand2 : {
+                        value : true,
+                        type : DevConfig.OPERAND_TYPES.BOOLEAN
+                    }
+                },
+                type : DevConfig.OPERAND_TYPES.EXPRESSION
+            },
+            operator : "AND",
+            operand2 : {
+                value : {
+                    operand1 : {
+                        value : part.parameters.language,
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    },
+                    operator: "==",
+                    operand2 : {
+                        value : "English",
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    }
+                },
+                type : DevConfig.OPERAND_TYPES.EXPRESSION
+            }
+        }
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should multiple nested expressions operands normally with enclosing brackets', () => {
+        let expression = "(((${UNIQUE_ID} == $B{TRUE}) AND (${language} == $S{English})) OR ${isSmoker})"
+        let expectedObj = {
+            operand1: {
+                value : {
+                    operand1 : {
+                        value : {
+                            operand1 : {
+                                value : part.uniqueId,
+                                type : DevConfig.OPERAND_TYPES.STRING
+                            },
+                            operator: "==",
+                            operand2 : {
+                                value : true,
+                                type : DevConfig.OPERAND_TYPES.BOOLEAN
+                            }
+                        },
+                        type : DevConfig.OPERAND_TYPES.EXPRESSION
+                    },
+                    operator: "AND",
+                    operand2 : {
+                        value : {
+                            operand1 : {
+                                value : part.parameters.language,
+                                type : DevConfig.OPERAND_TYPES.STRING
+                            },
+                            operator: "==",
+                            operand2 : {
+                                value : "English",
+                                type : DevConfig.OPERAND_TYPES.STRING
+                            }
+                        },
+                        type : DevConfig.OPERAND_TYPES.EXPRESSION
+                    }
+                },
+                type : DevConfig.OPERAND_TYPES.EXPRESSION
+            },
+            operator : "OR",
+            operand2 : {
+                value : true,
+                type : DevConfig.OPERAND_TYPES.BOOLEAN
+            }
+        }
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+
+    it('Should fail if expression braces not balanced - extra close', () => {
+        let expression = "(${isSmoker} == $B{TRUE})) AND (${language} == $S{English})"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if expression braces not balanced - extra open', () => {
+        let expression = "((${isSmoker} == $B{TRUE}) AND (${language} == $S{English})"
+        let returnObj = ConfigParser.constructExpressionObject(part, expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+})
+describe('Get operand type', () => {
+    it('Should return number array', () => {
+        let testVal = [1,23];
+        let expected = DevConfig.OPERAND_TYPES.NUMBER_ARRAY;
+        let retVal = ConfigParser.getOperandType(testVal);
+        expect(retVal).to.equal(expected);
+    })
+    it('Should return number', () => {
+        let testVal = 1;
+        let expected = DevConfig.OPERAND_TYPES.NUMBER;
+        let retVal = ConfigParser.getOperandType(testVal);
+        expect(retVal).to.equal(expected);
+    })
+    it('Should return string array', () => {
+        let testVal = ["1","23"];
+        let expected = DevConfig.OPERAND_TYPES.STRING_ARRAY;
+        let retVal = ConfigParser.getOperandType(testVal);
+        expect(retVal).to.equal(expected);
+    })
+    it('Should return string array when empty array', () => {
+        let testVal = [];
+        let expected = DevConfig.OPERAND_TYPES.STRING_ARRAY;
+        let retVal = ConfigParser.getOperandType(testVal);
+        expect(retVal).to.equal(expected);
+    })
+    it('Should return boolean', () => {
+        let testVal = false;
+        let expected = DevConfig.OPERAND_TYPES.BOOLEAN;
+        let retVal = ConfigParser.getOperandType(testVal);
+        expect(retVal).to.equal(expected);
+    })
+    it('Should return undefined for undefined', () => {
+        let testVal = undefined;
+        let expected = DevConfig.OPERAND_TYPES.UNDEFINED;
+        let retVal = ConfigParser.getOperandType(testVal);
+        expect(retVal).to.equal(expected);
+    })
+    it('Should return undefined for object', () => {
+        let testVal = { test: "hello" };
+        let expected = DevConfig.OPERAND_TYPES.UNDEFINED;
+        let retVal = ConfigParser.getOperandType(testVal);
+        expect(retVal).to.equal(expected);
+    })
+
 })

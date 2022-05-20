@@ -303,7 +303,7 @@ class ConfigParser{
         }
         return ReturnMethods.returnSuccess(newString);
     }
-
+    
     static evaluateAnswerConditions(ruleList, options, lastAnswer){
         if(!Array.isArray(ruleList)) return ReturnMethods.returnFailure("CParser: Rule List must be list");
         if(!Array.isArray(options)) return ReturnMethods.returnFailure("CParser: Options must be list");
@@ -616,6 +616,22 @@ class ConfigParser{
         return ReturnMethods.returnSuccess(returnObj);
 
     }
+    static getBooleanFromString(expression){
+        if(typeof expression !== "string"){
+            return ReturnMethods.returnFailure("CParser: Must be a string to get boolean ")
+        }
+        if(expression.trim().length === 0) {
+            return ReturnMethods.returnFailure("CParser: Cannot get boolean from empty string");
+        }
+
+        let modExp = expression.trim().toLowerCase();
+        if(!["true", "false"].includes(modExp)){
+            return ReturnMethods.returnFailure("CParser: Boolean string must be either 'true' or 'false'");
+        }
+        let retVal = modExp === "true" ? true : false;
+
+        return ReturnMethods.returnSuccess(retVal);
+    }
     static getNumberFromString(expression){
         if(typeof expression !== "string"){
             return ReturnMethods.returnFailure("CParser: Must be a string to get number ")
@@ -633,6 +649,17 @@ class ConfigParser{
             numberForm = parseInt(expression);
         }
         return ReturnMethods.returnSuccess(numberForm)
+    }
+    static getOperandType(constant){
+        if(Array.isArray(constant)){
+            if(constant.length === 0) return DevConfig.OPERAND_TYPES.STRING_ARRAY;
+            if(typeof constant[0] === "number") return DevConfig.OPERAND_TYPES.NUMBER_ARRAY;
+            else return DevConfig.OPERAND_TYPES.STRING_ARRAY;
+        }
+        if(typeof constant === "boolean") return DevConfig.OPERAND_TYPES.BOOLEAN;
+        if(typeof constant === "string") return DevConfig.OPERAND_TYPES.STRING;
+        if(typeof constant === "number") return DevConfig.OPERAND_TYPES.NUMBER;
+        return DevConfig.OPERAND_TYPES.UNDEFINED;
     }
     static getNumberArrayFromString(expression){
         if(typeof expression !== "string"){
@@ -665,28 +692,66 @@ class ConfigParser{
         if(parsedExpObj.returnCode === DevConfig.FAILURE_CODE){
             return parsedExpObj;
         }
-
         let parsedExp = parsedExpObj.data;
-
         let operator = parsedExp.operator;
         if(!DevConfig.VALID_CONDITIONAL_OPERATORS.includes(operator)){
             return ReturnMethods.returnFailure("CParser: Operator not recognized")
         }
+        let expReturnObj;
+        let operandList = [parsedExp.operand1, parsedExp.operand2];
+        for(let i = 0; i < operandList.length; i++){
+            let operand = operandList[i];
+            switch(operand.type){
+                case DevConfig.OPERAND_TYPES.EXPRESSION:
+                    expReturnObj = this.constructExpressionObject(participant, operand.value);
+                    if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                        return expReturnObj;
+                    }
+                    operand.value = expReturnObj.data;
+                    break;
+                case DevConfig.OPERAND_TYPES.NUMBER:
+                    expReturnObj = this.getNumberFromString(operand.value);
+                    if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                        return expReturnObj;
+                    }
+                    operand.value = expReturnObj.data;
+                    break;
+                case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
+                    expReturnObj = this.getNumberArrayFromString(operand.value);
+                    if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                        return expReturnObj;
+                    }
+                    operand.value = expReturnObj.data;
+                    break;
+                case DevConfig.OPERAND_TYPES.STRING:
+                    break;
+                case DevConfig.OPERAND_TYPES.STRING_ARRAY:
+                    try{
+                        operand.value = operand.value.split(",").map(e => e.trim());
+                    } catch(err){
+                        return ReturnMethods.returnFailure("CParser: Could not convert " + operand + " to string arr");
+                    }
+                    break;
+                case DevConfig.OPERAND_TYPES.BOOLEAN:
+                    expReturnObj = this.getBooleanFromString(operand.value);
+                    if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                        return expReturnObj;
+                    }
+                    operand.value = expReturnObj.data;
+                    break;
+                case DevConfig.OPERAND_TYPES.VARIABLE:
+                    expReturnObj = this.getVariable(participant, operand.value);
+                    if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                        return expReturnObj;
+                    }
+                    operand.value = expReturnObj.data;
+                    operand.type = this.getOperandType(expReturnObj.data);
+                    break;
 
-        let operand1 = parsedExp.operand1;
-        switch(operand1.type){
-            case DevConfig.OPERAND_TYPES.EXPRESSION:
-                let expReturnObj = this.constructExpressionObject(participant, operand1.value);
-                if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
-                    return expReturnObj;
-                }
-                parsedExp[operand1].value = expReturnObj.data;
-                break;
-            case DevConfig.OPERAND_TYPES.NUMBER:
-
+            }
         }
-        let operand2 = parsedExp.operand2;
-        return expressionObj;
+
+        return ReturnMethods.returnSuccess(parsedExp);
     }
 }
 

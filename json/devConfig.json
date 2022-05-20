@@ -25,6 +25,7 @@
     "STRING" : "string",
     "STRING_ARRAY" : "strArr",
     "BOOLEAN" : "bool",
-    "VARIABLE" : "var"
+    "VARIABLE" : "var",
+    "UNDEFINED" : "undefined"
   }
 }

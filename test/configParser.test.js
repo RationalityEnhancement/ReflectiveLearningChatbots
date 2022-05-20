@@ -1016,7 +1016,7 @@ describe('Construct expression object', () => {
         expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         expect(returnObj.data).to.eql(expectedObj);
     })
-    it('Should multiple nested expressions operands normally with enclosing brackets', () => {
+    it('Should parse multiple nested expressions operands normally with enclosing brackets', () => {
         let expression = "(((${UNIQUE_ID} == $B{TRUE}) AND (${language} == $S{English})) OR ${isSmoker})"
         let expectedObj = {
             operand1: {
@@ -2250,6 +2250,196 @@ describe("Evaluate expression object", () => {
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         });
 
+    })
+    describe('Nested objects', () => {
+        it('Should evaluate nested object normally - true', () => {
+            let expressionObj = {
+                operand1: {
+                    value : {
+                        operand1 : {
+                            value : {
+                                operand1 : {
+                                    value : part.uniqueId,
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                },
+                                operator: "==",
+                                operand2 : {
+                                    value : part.uniqueId + "lol",
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                }
+                            },
+                            type : DevConfig.OPERAND_TYPES.EXPRESSION
+                        },
+                        operator: "OR",
+                        operand2 : {
+                            value : {
+                                operand1 : {
+                                    value : part.parameters.language,
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                },
+                                operator: "==",
+                                operand2 : {
+                                    value : "English",
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                }
+                            },
+                            type : DevConfig.OPERAND_TYPES.EXPRESSION
+                        }
+                    },
+                    type : DevConfig.OPERAND_TYPES.EXPRESSION
+                },
+                operator : "AND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            }
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        })
+        it('Should evaluate nested object normally - false', () => {
+            let expressionObj = {
+                operand1: {
+                    value : {
+                        operand1 : {
+                            value : {
+                                operand1 : {
+                                    value : part.uniqueId,
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                },
+                                operator: "==",
+                                operand2 : {
+                                    value : part.uniqueId + "lol",
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                }
+                            },
+                            type : DevConfig.OPERAND_TYPES.EXPRESSION
+                        },
+                        operator: "OR",
+                        operand2 : {
+                            value : {
+                                operand1 : {
+                                    value : part.parameters.language,
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                },
+                                operator: "!=",
+                                operand2 : {
+                                    value : "English",
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                }
+                            },
+                            type : DevConfig.OPERAND_TYPES.EXPRESSION
+                        }
+                    },
+                    type : DevConfig.OPERAND_TYPES.EXPRESSION
+                },
+                operator : "AND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            }
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        })
+        it('Should fail when wrong operator is used', () => {
+            let expressionObj = {
+                operand1: {
+                    value : {
+                        operand1 : {
+                            value : {
+                                operand1 : {
+                                    value : part.uniqueId,
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                },
+                                operator: "==",
+                                operand2 : {
+                                    value : part.uniqueId + "lol",
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                }
+                            },
+                            type : DevConfig.OPERAND_TYPES.EXPRESSION
+                        },
+                        operator: "OR",
+                        operand2 : {
+                            value : {
+                                operand1 : {
+                                    value : part.parameters.language,
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                },
+                                operator: "!=",
+                                operand2 : {
+                                    value : "English",
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                }
+                            },
+                            type : DevConfig.OPERAND_TYPES.EXPRESSION
+                        }
+                    },
+                    type : DevConfig.OPERAND_TYPES.EXPRESSION
+                },
+                operator : "CONTAINS_STRING",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            }
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail when there is failure in one of the nested expressions', () => {
+            let expressionObj = {
+                operand1: {
+                    value : {
+                        operand1 : {
+                            value : {
+                                operand1 : {
+                                    value : part.uniqueId,
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                },
+                                operator: "==",
+                                operand2 : {
+                                    value : [part.uniqueId + "lol"],
+                                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                                }
+                            },
+                            type : DevConfig.OPERAND_TYPES.EXPRESSION
+                        },
+                        operator: "OR",
+                        operand2 : {
+                            value : {
+                                operand1 : {
+                                    value : part.parameters.language,
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                },
+                                operator: "!=",
+                                operand2 : {
+                                    value : "English",
+                                    type : DevConfig.OPERAND_TYPES.STRING
+                                }
+                            },
+                            type : DevConfig.OPERAND_TYPES.EXPRESSION
+                        }
+                    },
+                    type : DevConfig.OPERAND_TYPES.EXPRESSION
+                },
+                operator : "AND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            }
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
     })
 
 

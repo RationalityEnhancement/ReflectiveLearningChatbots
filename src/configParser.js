@@ -340,7 +340,10 @@ class ConfigParser{
         }
     }
     static evaluateExpressionObject(participant, expressionObj){
+        // console.log(typeof expressionObj);
+        // console.log(expressionObj)
         if(typeof expressionObj !== "object"){
+
             return ReturnMethods.returnFailure("CParser: expression object must be object")
         }
         if(typeof expressionObj.operand1 === "undefined" || typeof expressionObj.operand2 === "undefined"){
@@ -366,9 +369,9 @@ class ConfigParser{
             expObjCopy.operand1 = evalObj.data;
         }
         if(expObjCopy.operand2.type === DevConfig.OPERAND_TYPES.EXPRESSION){
-            let evalObj = this.evaluateExpressionObject(participant, expObjCopy.operand1.value);
+            let evalObj = this.evaluateExpressionObject(participant, expObjCopy.operand2.value);
             if(evalObj.returnCode === DevConfig.FAILURE_CODE) return evalObj;
-            expObjCopy.operand1 = evalObj.data;
+            expObjCopy.operand2 = evalObj.data;
         }
         let evaluation = false;
         switch(expObjCopy.operator){

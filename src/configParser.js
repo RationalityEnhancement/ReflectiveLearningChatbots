@@ -339,11 +339,38 @@ class ConfigParser{
             return ReturnMethods.returnSuccess(ruleList[maxIntersectionIdx].data);
         }
     }
-    static evaluateExpressionObject(participant, expressionObj){
-        // console.log(typeof expressionObj);
-        // console.log(expressionObj)
-        if(typeof expressionObj !== "object"){
 
+    /**
+     *
+     * Recursively evaluates an expression object based on the operands and operators of the object
+     *
+     * An expression object is of the following form:
+     *
+     * {
+     *     operand1: {
+     *         value : Constant of primitive type or expression object
+     *         type : Primitive type or expression
+     *     }
+     *     operator : valid operator,
+     *     operand2 : {
+     *         value : Constant of primitive type or expression object
+     *         type : Primitive type or expression
+     *     }
+     * }
+     *
+     * @param participant participant object, must contain field "currentQuestion"
+     * @param expressionObj object to be evaluated
+     * @returns {{returnCode: *,  data: *}|*|{returnCode: *, data: *}}
+     *          if success, returns {
+     *              value : true/false (based on evaluation of expression),
+     *              type : boolean
+     *          }
+     *
+     */
+    static evaluateExpressionObject(participant, expressionObj){
+
+        // Error checking
+        if(typeof expressionObj !== "object"){
             return ReturnMethods.returnFailure("CParser: expression object must be object")
         }
         if(typeof expressionObj.operand1 === "undefined" || typeof expressionObj.operand2 === "undefined"){
@@ -362,7 +389,7 @@ class ConfigParser{
         }
         let expObjCopy = JSON.parse(JSON.stringify(expressionObj));
 
-        // Recursively evaluate expressions
+        // Recursively evaluate expressions if present in operands
         if(expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.EXPRESSION){
             let evalObj = this.evaluateExpressionObject(participant, expObjCopy.operand1.value);
             if(evalObj.returnCode === DevConfig.FAILURE_CODE) return evalObj;
@@ -374,13 +401,18 @@ class ConfigParser{
             expObjCopy.operand2 = evalObj.data;
         }
         let evaluation = false;
+
+        // Evaluate based on operator
         switch(expObjCopy.operator){
             case "==":
+                // Check if operand1 == operand2
+                // Data types must be of same type to compare equality
                 if(expObjCopy.operand1.type !== expObjCopy.operand2.type){
                     return ReturnMethods.returnFailure("CParser: Data types " + expObjCopy.operand1.type
                         + " and " + expObjCopy.operand2.type + " cannot be compared for equality")
                 }
                 try{
+                    // Sort arrays to compare for equality
                     if([DevConfig.OPERAND_TYPES.STRING_ARRAY, DevConfig.OPERAND_TYPES.NUMBER_ARRAY].includes(expObjCopy.operand1.type)){
                         expObjCopy.operand1.value.sort();
                         expObjCopy.operand2.value.sort();
@@ -392,6 +424,7 @@ class ConfigParser{
                 evaluation = lodash.isEqual(expObjCopy.operand1.value, expObjCopy.operand2.value);
                 break;
             case "!=":
+                // Check if operand1 != operand2
                 if(expObjCopy.operand1.type !== expObjCopy.operand2.type){
                     return ReturnMethods.returnFailure("CParser: Data types " + expObjCopy.operand1.type
                         + " and " + expObjCopy.operand2.type + " cannot be compared for equality")
@@ -407,6 +440,8 @@ class ConfigParser{
                 evaluation = !lodash.isEqual(expObjCopy.operand1.value, expObjCopy.operand2.value);
                 break;
             case ">=":
+                // Check if operand1 >= operand2
+                // Data types must be numbers to compare greater/less than
                 if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
                     || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
                     return ReturnMethods.returnFailure("CParser: Data types must be number to use comparison operators")
@@ -414,6 +449,7 @@ class ConfigParser{
                 evaluation = expObjCopy.operand1.value >= expObjCopy.operand2.value;
                 break;
             case ">":
+                // Check if operand1 > operand2
                 if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
                     || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
                     return ReturnMethods.returnFailure("CParser: Data types must be number to use comparison operators")
@@ -421,6 +457,7 @@ class ConfigParser{
                 evaluation = expObjCopy.operand1.value > expObjCopy.operand2.value;
                 break;
             case "<=":
+                // Check if operand1 <= operand2
                 if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
                     || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
                     return ReturnMethods.returnFailure("CParser: Data types must be number to use comparison operators")
@@ -428,6 +465,7 @@ class ConfigParser{
                 evaluation = expObjCopy.operand1.value <= expObjCopy.operand2.value;
                 break;
             case "<":
+                // Check if operand1 < operand2
                 if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
                     || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
                     return ReturnMethods.returnFailure("CParser: Data types must be number to use comparison operators")
@@ -435,6 +473,8 @@ class ConfigParser{
                 evaluation = expObjCopy.operand1.value < expObjCopy.operand2.value;
                 break;
             case "AND":
+                // Check if (operand1 AND operand2) is true
+                // Data types must be boolean to use AND/OR operator
                 if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.BOOLEAN
                     || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.BOOLEAN){
                     return ReturnMethods.returnFailure("CParser: Data types must be boolean to use connectors AND/OR")
@@ -442,6 +482,7 @@ class ConfigParser{
                 evaluation = expObjCopy.operand1.value && expObjCopy.operand2.value;
                 break;
             case "OR":
+                // Check if (operand1 OR operand2) is true
                 if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.BOOLEAN
                     || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.BOOLEAN){
                     return ReturnMethods.returnFailure("CParser: Data types must be boolean to use connectors AND/OR")
@@ -449,6 +490,8 @@ class ConfigParser{
                 evaluation = expObjCopy.operand1.value || expObjCopy.operand2.value;
                 break;
             case "MULTIPLE_OF":
+                // Check if operand1 is an integer multiple of operand2
+                // Data types must be numbers to check multiples of
                 if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
                     || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
                     return ReturnMethods.returnFailure("CParser: Data types must be number to use MULTIPLE_OF")
@@ -456,6 +499,8 @@ class ConfigParser{
                 evaluation = expObjCopy.operand1.value % expObjCopy.operand2.value === 0;
                 break;
             case "IN_ARRAY":
+                // Check if operand1 is contained in operand2 (array)
+                // Array (operand 2) must be of same primitive type as the first operand
                 if(!((expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.NUMBER
                     && expObjCopy.operand2.type === DevConfig.OPERAND_TYPES.NUMBER_ARRAY)
                     || (expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.STRING
@@ -466,6 +511,8 @@ class ConfigParser{
                 evaluation = expObjCopy.operand2.value.includes(expObjCopy.operand1.value);
                 break;
             case "CONTAINS_STRING":
+                // Check if operand1 contains operand 2 as substring
+                // Both must be string
                 if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.STRING
                     || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.STRING){
                     return ReturnMethods.returnFailure("CParser: Data types must be string to use CONTAINS_STRING")
@@ -473,12 +520,19 @@ class ConfigParser{
                 evaluation = expObjCopy.operand1.value.includes(expObjCopy.operand2.value);
                 break;
             case "HAS_CHOICE_IDX":
+                // Check if the current answer (stored in operand1) of a choice question corresponds to the
+                //  any of the answers (from currentQuestion.options) whose indices are provided in operand2
+                // E.g., options ["yes","no","maybe"] and CURRENT_ANSWER = ["yes"]
+                //          ${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,2} => true
+                //          ${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1} => false
+
                 if(!(expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.STRING_ARRAY
                     && expObjCopy.operand2.type === DevConfig.OPERAND_TYPES.NUMBER_ARRAY)){
                     return ReturnMethods.returnFailure("CParser: Operand 1 must be string array (last answer)," +
                         "operand 2 must be number array (option indices) to use HAS_CHOICE_IDX");
                 }
 
+                // Convert the participant answers into their respective indices as ordered in currentQuestion.options
                 let chosenOptionIdx;
                 try{
                     let options = participant.currentQuestion.options;
@@ -486,11 +540,12 @@ class ConfigParser{
                 } catch(err){
                     return ReturnMethods.returnFailure("CParser: Could not find options to compare HAS_CHOICE_IDX");
                 }
+
+                // Check if there is any intersection between chosen option indices and condition indices
                 evaluation = lodash.intersection(chosenOptionIdx, expObjCopy.operand2.value).length > 0;
                 break;
             default:
                 return ReturnMethods.returnFailure("CParser: operator " + expObjCopy.operator + " not recognized!");
-
 
         }
         return ReturnMethods.returnSuccess({
@@ -507,6 +562,10 @@ class ConfigParser{
      * the one at the beginning of the expression, then the entire expression
      * is enclosed in braces, and this is removed.
      *
+     * E.g., ((hello) AND (bye)) => (hello) AND (bye)
+     * E.g., (hello AND bye) AND (dog AND cat) => (hello AND bye) AND (dog AND cat)
+     *          [no enclosing bracket, no change]
+     *
      * @param expression (string) the expression whose enclosing braces are to be removed
      * @returns {string|*}
      */
@@ -521,12 +580,15 @@ class ConfigParser{
             if(expression[i] === "(") openBraces += 1;
             if(expression[i] === ")"){
                 openBraces -= 1;
+                // If all open braces are closed before the expression ends,
+                //  then the entire expression is not enclosed in a pair of brackets
                 if(openBraces === 0){
                     enclosed = false;
                     break;
                 }
             }
         }
+        // Remove the enclosing brackets if it is enclosed
         if(enclosed){
             return expression.substring(1, expression.length - 1);
         } else {
@@ -548,10 +610,17 @@ class ConfigParser{
      * $S*{String, Array} - Array of strings (e.g., = ["String", "Array"])
      * $N*{Number Array} - Array of numbers (e.g., $N*{3,4,5} = [3, 4, 5])
      *
-     * Operators are as defined in VALID_CONDITIONAL_OPERATORS in devConfig,
+     * Operators are as defined in VALID_CONDITIONAL_OPERATORS in devConfig
+     *
+     * No validation is done, only separation into different parts of expression along with
+     * denotation of the data type of the operands as defined by the declarations of the tokens
+     * in the expression
+     *
      *
      * @param expression
-     * @returns {
+     * @returns {{returnCode: *, data: *}}
+     *
+     *          data : {
      *              operand1 : { value, type }, - Extracted string within curly braces as well and the declared type
      *              operator : String,
      *              operand2 : { value, type }, - Extracted string within curly braces as well and the declared type
@@ -583,7 +652,24 @@ class ConfigParser{
 
         let currentText = "";
 
-        // Possible states the parser can be when dealing with a single character:
+        // Parser is a state machine which deals with the current character based on the state.
+        // States are:
+        //  - start : at the time of starting
+        //  - startToken : encountered $, begin processing token
+        //  - inVariable : current text is to be taken as part of a variable token
+        //  - inExpression : current text is to be taken as part of an expression within parentheses
+        //  - startNumber : check if number definition syntax is correct
+        //  - startNumberArray : check if number array definition syntax is correct
+        //  - inNumber : current text is to be taken as part of a number token
+        //  - inNumberArray : current text is to be taken as part of a number array token
+        //  - startString : check if string definition syntax is correct
+        //  - startStringArray : check if string array definition syntax is correct
+        //  - inString : current text is to be taken as part of a string token
+        //  - inStringArray : current text is to be taken as part of a string array token
+        //  - startBoolean : check if boolean definition syntax is correct
+        //  - inBoolean : current text is to be taken as part of a boolean token
+        //  - end: after second operand has been parsed
+
         let currentState = "start"
         let openBraces = 0;
 
@@ -601,6 +687,7 @@ class ConfigParser{
             }
         }
 
+        // Check each character of expression
         outer:
         for(let i = 0; i < expression.length; i++){
             let char = expression[i];
@@ -776,6 +863,16 @@ class ConfigParser{
         return ReturnMethods.returnSuccess(returnObj);
 
     }
+
+    /**
+     *
+     * Take a string value and get the corresponding boolean value
+     * "TRUE" (case insensitive) => true
+     * "FALSE" (case insensitive) => false
+     *
+     * @param expression
+     * @returns {{returnCode: *, data: *}}
+     */
     static getBooleanFromString(expression){
         if(typeof expression !== "string"){
             return ReturnMethods.returnFailure("CParser: Must be a string to get boolean ")
@@ -788,10 +885,18 @@ class ConfigParser{
         if(!["true", "false"].includes(modExp)){
             return ReturnMethods.returnFailure("CParser: Boolean string must be either 'true' or 'false'");
         }
-        let retVal = modExp === "true" ? true : false;
+        let retVal = modExp === "true";
 
         return ReturnMethods.returnSuccess(retVal);
     }
+
+    /**
+     *
+     * Take a string value and get the corresponding number value, if possible
+     *
+     * @param expression
+     * @returns {{returnCode: *, data: *}}
+     */
     static getNumberFromString(expression){
         if(typeof expression !== "string"){
             return ReturnMethods.returnFailure("CParser: Must be a string to get number ")
@@ -810,6 +915,17 @@ class ConfigParser{
         }
         return ReturnMethods.returnSuccess(numberForm)
     }
+
+    /**
+     *
+     * Get the operand type as defined in devConfig OPERAND_TYPES, based on the value
+     * stored in a particular variable
+     *
+     * e.g., [1,2,3] => devConfig.OPERAND_TYPES.NUMBER
+     *
+     * @param constant
+     * @returns {string}
+     */
     static getOperandType(constant){
         if(Array.isArray(constant)){
             if(constant.length === 0) return DevConfig.OPERAND_TYPES.STRING_ARRAY;
@@ -821,6 +937,14 @@ class ConfigParser{
         if(typeof constant === "number") return DevConfig.OPERAND_TYPES.NUMBER;
         return DevConfig.OPERAND_TYPES.UNDEFINED;
     }
+
+    /**
+     *
+     * Take a string with numbers separated by commas and return a number array
+     *
+     * @param expression
+     * @returns {{returnCode: *, data: *}}
+     */
     static getNumberArrayFromString(expression){
         if(typeof expression !== "string"){
             return ReturnMethods.returnFailure("CParser: Must be a string to get number ")
@@ -847,21 +971,40 @@ class ConfigParser{
         }
         return ReturnMethods.returnSuccess(newArray)
     }
+
+    /**
+     *
+     * Takes in a string containing a conditional expression and outputs an "expression object"
+     * that represents the expression in the string (provided it is correct syntactically)
+     *
+     * See docs for "evaluateExpressionObject" for details on what an expression object looks like
+     *
+     *
+     * @param participant
+     * @param expressionString
+     * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}|{returnCode: *, data: *}|{returnCode: *, data: *}|*|{returnCode: *, data: *}|{returnCode: *, data: *}|{returnCode: *, data: *}|{returnCode: *, data: *}}
+     */
     static constructExpressionObject(participant, expressionString){
+        // Parse into two operands and operator
         let parsedExpObj = this.parseSimpleExpression(expressionString);
         if(parsedExpObj.returnCode === DevConfig.FAILURE_CODE){
             return parsedExpObj;
         }
         let parsedExp = parsedExpObj.data;
         let operator = parsedExp.operator;
+
+        // Check if operator is valid
         if(!DevConfig.VALID_CONDITIONAL_OPERATORS.includes(operator)){
-            return ReturnMethods.returnFailure("CParser: Operator not recognized")
+            return ReturnMethods.returnFailure("CParser: Operator " + operator + " not recognized")
         }
         let expReturnObj;
+
+        // Process both operands
         let operandList = [parsedExp.operand1, parsedExp.operand2];
         for(let i = 0; i < operandList.length; i++){
             let operand = operandList[i];
             switch(operand.type){
+                // Recursively construct expression object if operand is itself expression
                 case DevConfig.OPERAND_TYPES.EXPRESSION:
                     expReturnObj = this.constructExpressionObject(participant, operand.value);
                     if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
@@ -869,6 +1012,7 @@ class ConfigParser{
                     }
                     operand.value = expReturnObj.data;
                     break;
+                // Convert string to number
                 case DevConfig.OPERAND_TYPES.NUMBER:
                     expReturnObj = this.getNumberFromString(operand.value);
                     if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
@@ -876,6 +1020,7 @@ class ConfigParser{
                     }
                     operand.value = expReturnObj.data;
                     break;
+                // Convert string to number array
                 case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
                     expReturnObj = this.getNumberArrayFromString(operand.value);
                     if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
@@ -883,8 +1028,10 @@ class ConfigParser{
                     }
                     operand.value = expReturnObj.data;
                     break;
+                // No conversion required for string
                 case DevConfig.OPERAND_TYPES.STRING:
                     break;
+                // Convert string to string array
                 case DevConfig.OPERAND_TYPES.STRING_ARRAY:
                     try{
                         operand.value = operand.value.split(",").map(e => e.trim());
@@ -892,6 +1039,7 @@ class ConfigParser{
                         return ReturnMethods.returnFailure("CParser: Could not convert " + operand + " to string arr");
                     }
                     break;
+                // Convert string to boolean
                 case DevConfig.OPERAND_TYPES.BOOLEAN:
                     expReturnObj = this.getBooleanFromString(operand.value);
                     if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
@@ -899,6 +1047,9 @@ class ConfigParser{
                     }
                     operand.value = expReturnObj.data;
                     break;
+                // Get the value of the variable with the given name,
+                //  and update the operand type depending on the value present in the
+                //  variable
                 case DevConfig.OPERAND_TYPES.VARIABLE:
                     expReturnObj = this.getVariable(participant, operand.value);
                     if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){

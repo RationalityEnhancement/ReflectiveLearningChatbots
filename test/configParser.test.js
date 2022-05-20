@@ -890,13 +890,13 @@ describe('Construct expression object', () => {
     })
 
     it('Should parse string and number array operands normally', () => {
-        let expression = "$S{John} IS_CHOICE $N*{1,3,4}"
+        let expression = "$S{John} HAS_CHOICE_IDX $N*{1,3,4}"
         let expectedObj = {
             operand1: {
                 value : "John",
                 type : DevConfig.OPERAND_TYPES.STRING
             },
-            operator : "IS_CHOICE",
+            operator : "HAS_CHOICE_IDX",
             operand2 : {
                 value : [1,3,4],
                 type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
@@ -907,13 +907,13 @@ describe('Construct expression object', () => {
         expect(returnObj.data).to.eql(expectedObj);
     })
     it('Should parse string and float array operands normally', () => {
-        let expression = "$S{John} IS_CHOICE $N*{1.3,3.2,4}"
+        let expression = "$S{John} HAS_CHOICE_IDX $N*{1.3,3.2,4}"
         let expectedObj = {
             operand1: {
                 value : "John",
                 type : DevConfig.OPERAND_TYPES.STRING
             },
-            operator : "IS_CHOICE",
+            operator : "HAS_CHOICE_IDX",
             operand2 : {
                 value : [1.3,3.2,4],
                 type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY

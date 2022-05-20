@@ -303,7 +303,7 @@ class ConfigParser{
         }
         return ReturnMethods.returnSuccess(newString);
     }
-    
+
     static evaluateAnswerConditions(ruleList, options, lastAnswer){
         if(!Array.isArray(ruleList)) return ReturnMethods.returnFailure("CParser: Rule List must be list");
         if(!Array.isArray(options)) return ReturnMethods.returnFailure("CParser: Options must be list");
@@ -338,6 +338,163 @@ class ConfigParser{
         } else {
             return ReturnMethods.returnSuccess(ruleList[maxIntersectionIdx].data);
         }
+    }
+    static evaluateExpressionObject(participant, expressionObj){
+        if(typeof expressionObj !== "object"){
+            return ReturnMethods.returnFailure("CParser: expression object must be object")
+        }
+        if(typeof expressionObj.operand1 === "undefined" || typeof expressionObj.operand2 === "undefined"){
+            return ReturnMethods.returnFailure("CParser: operands must not be undefined for evaluation")
+        }
+        if(typeof expressionObj.operand1.value === "undefined" || typeof expressionObj.operand2.value === "undefined"){
+            return ReturnMethods.returnFailure("CParser: operands must not be undefined for evaluation")
+        }
+        if(expressionObj.operand1.type === DevConfig.OPERAND_TYPES.UNDEFINED
+            || expressionObj.operand2.type === DevConfig.OPERAND_TYPES.UNDEFINED){
+            return ReturnMethods.returnFailure("CParser: operands must not be objects/undefined for evaluation")
+        }
+        if(typeof expressionObj.operator === "undefined"
+            || !DevConfig.VALID_CONDITIONAL_OPERATORS.includes(expressionObj.operator)){
+            return ReturnMethods.returnFailure("CParser: operator must be valid for evaluation")
+        }
+        let expObjCopy = JSON.parse(JSON.stringify(expressionObj));
+
+        // Recursively evaluate expressions
+        if(expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.EXPRESSION){
+            let evalObj = this.evaluateExpressionObject(participant, expObjCopy.operand1.value);
+            if(evalObj.returnCode === DevConfig.FAILURE_CODE) return evalObj;
+            expObjCopy.operand1 = evalObj.data;
+        }
+        if(expObjCopy.operand2.type === DevConfig.OPERAND_TYPES.EXPRESSION){
+            let evalObj = this.evaluateExpressionObject(participant, expObjCopy.operand1.value);
+            if(evalObj.returnCode === DevConfig.FAILURE_CODE) return evalObj;
+            expObjCopy.operand1 = evalObj.data;
+        }
+        let evaluation = false;
+        switch(expObjCopy.operator){
+            case "==":
+                if(expObjCopy.operand1.type !== expObjCopy.operand2.type){
+                    return ReturnMethods.returnFailure("CParser: Data types " + expObjCopy.operand1.type
+                        + " and " + expObjCopy.operand2.type + " cannot be compared for equality")
+                }
+                try{
+                    if([DevConfig.OPERAND_TYPES.STRING_ARRAY, DevConfig.OPERAND_TYPES.NUMBER_ARRAY].includes(expObjCopy.operand1.type)){
+                        expObjCopy.operand1.value.sort();
+                        expObjCopy.operand2.value.sort();
+                    }
+                } catch(err){
+                    return ReturnMethods.returnFailure("CParser: Error processing arrays for comparison")
+                }
+
+                evaluation = lodash.isEqual(expObjCopy.operand1.value, expObjCopy.operand2.value);
+                break;
+            case "!=":
+                if(expObjCopy.operand1.type !== expObjCopy.operand2.type){
+                    return ReturnMethods.returnFailure("CParser: Data types " + expObjCopy.operand1.type
+                        + " and " + expObjCopy.operand2.type + " cannot be compared for equality")
+                }
+                try{
+                    if([DevConfig.OPERAND_TYPES.STRING_ARRAY, DevConfig.OPERAND_TYPES.NUMBER_ARRAY].includes(expObjCopy.operand1.type)){
+                        expObjCopy.operand1.value.sort();
+                        expObjCopy.operand2.value.sort();
+                    }
+                } catch(err){
+                    return ReturnMethods.returnFailure("CParser: Error processing arrays for comparison")
+                }
+                evaluation = !lodash.isEqual(expObjCopy.operand1.value, expObjCopy.operand2.value);
+                break;
+            case ">=":
+                if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
+                    || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
+                    return ReturnMethods.returnFailure("CParser: Data types must be number to use comparison operators")
+                }
+                evaluation = expObjCopy.operand1.value >= expObjCopy.operand2.value;
+                break;
+            case ">":
+                if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
+                    || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
+                    return ReturnMethods.returnFailure("CParser: Data types must be number to use comparison operators")
+                }
+                evaluation = expObjCopy.operand1.value > expObjCopy.operand2.value;
+                break;
+            case "<=":
+                if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
+                    || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
+                    return ReturnMethods.returnFailure("CParser: Data types must be number to use comparison operators")
+                }
+                evaluation = expObjCopy.operand1.value <= expObjCopy.operand2.value;
+                break;
+            case "<":
+                if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
+                    || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
+                    return ReturnMethods.returnFailure("CParser: Data types must be number to use comparison operators")
+                }
+                evaluation = expObjCopy.operand1.value < expObjCopy.operand2.value;
+                break;
+            case "AND":
+                if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.BOOLEAN
+                    || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.BOOLEAN){
+                    return ReturnMethods.returnFailure("CParser: Data types must be boolean to use connectors AND/OR")
+                }
+                evaluation = expObjCopy.operand1.value && expObjCopy.operand2.value;
+                break;
+            case "OR":
+                if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.BOOLEAN
+                    || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.BOOLEAN){
+                    return ReturnMethods.returnFailure("CParser: Data types must be boolean to use connectors AND/OR")
+                }
+                evaluation = expObjCopy.operand1.value || expObjCopy.operand2.value;
+                break;
+            case "MULTIPLE_OF":
+                if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.NUMBER
+                    || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.NUMBER){
+                    return ReturnMethods.returnFailure("CParser: Data types must be number to use MULTIPLE_OF")
+                }
+                evaluation = expObjCopy.operand1.value % expObjCopy.operand2.value === 0;
+                break;
+            case "IN_ARRAY":
+                if(!((expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.NUMBER
+                    && expObjCopy.operand2.type === DevConfig.OPERAND_TYPES.NUMBER_ARRAY)
+                    || (expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.STRING
+                        && expObjCopy.operand2.type === DevConfig.OPERAND_TYPES.STRING_ARRAY))){
+                    return ReturnMethods.returnFailure("CParser: first operand must be string or number, " +
+                        "second operand must be array of same type as first operand")
+                }
+                evaluation = expObjCopy.operand2.value.includes(expObjCopy.operand1.value);
+                break;
+            case "CONTAINS_STRING":
+                if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.STRING
+                    || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.STRING){
+                    return ReturnMethods.returnFailure("CParser: Data types must be string to use CONTAINS_STRING")
+                }
+                evaluation = expObjCopy.operand1.value.includes(expObjCopy.operand2.value);
+                break;
+            case "HAS_CHOICE_IDX":
+                if(!(expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.STRING_ARRAY
+                    && expObjCopy.operand2.type === DevConfig.OPERAND_TYPES.NUMBER_ARRAY)){
+                    return ReturnMethods.returnFailure("CParser: Operand 1 must be string array (last answer)," +
+                        "operand 2 must be number array (option indices) to use HAS_CHOICE_IDX");
+                }
+
+                let chosenOptionIdx;
+                try{
+                    let options = participant.currentQuestion.options;
+                    chosenOptionIdx = expObjCopy.operand1.value.map(el => options.indexOf(el));
+                } catch(err){
+                    return ReturnMethods.returnFailure("CParser: Could not find options to compare HAS_CHOICE_IDX");
+                }
+                evaluation = lodash.intersection(chosenOptionIdx, expObjCopy.operand2.value).length > 0;
+                break;
+            default:
+                return ReturnMethods.returnFailure("CParser: operator " + expObjCopy.operator + " not recognized!");
+
+
+        }
+        return ReturnMethods.returnSuccess({
+            type : DevConfig.OPERAND_TYPES.BOOLEAN,
+            value : evaluation
+        })
+
     }
 
     /**

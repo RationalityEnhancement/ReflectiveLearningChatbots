@@ -1120,3 +1120,1137 @@ describe('Get operand type', () => {
     })
 
 })
+
+describe("Evaluate expression object", () => {
+    const part = {
+        uniqueId : "12345",
+        firstName : "John",
+        currentAnswer : ["yes"],
+        currentQuestion : {
+            options: ["yes", "no", "maybe"]
+        },
+        parameters : {
+            language : "English",
+            isSmoker : true
+        }
+    }
+    describe('AND', () => {
+        it('Should return true when true', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                },
+                operator : "AND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : false,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                },
+                operator : "AND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when any operand not boolean', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "AND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+        it('Should fail when any operand value undefined', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : undefined,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                },
+                operator : "AND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+        it('Should fail when any operand type undefined', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.UNDEFINED
+                },
+                operator : "AND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+        it('Should fail when any operand missing', () => {
+            let expressionObj = {
+                operator : "AND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+        it('Should fail when operator invalid', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                },
+                operator : "NAND",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+        it('Should fail when operator missing', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                },
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+    })
+    describe('OR', () => {
+        it('Should return true when true', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                },
+                operator : "OR",
+                operand2 : {
+                    value : false,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : false,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                },
+                operator : "OR",
+                operand2 : {
+                    value : false,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when any operand not boolean', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "OR",
+                operand2 : {
+                    value : true,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+    })
+    describe('<', () => {
+        it('Should return true when true', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 12,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "<",
+                operand2 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "<",
+                operand2 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when any operand not number', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 123,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "<",
+                operand2 : {
+                    value : false,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+    })
+    describe('>', () => {
+        it('Should return true when true', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 123,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : ">",
+                operand2 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : ">",
+                operand2 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when any operand not number', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 123,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : ">",
+                operand2 : {
+                    value : false,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+    })
+    describe('<=', () => {
+        it('Should return true when true', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "<=",
+                operand2 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 14.6,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "<=",
+                operand2 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when any operand not number', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 123,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "<=",
+                operand2 : {
+                    value : false,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+    })
+    describe('>=', () => {
+        it('Should return true when true', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : ">=",
+                operand2 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 14.4,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : ">=",
+                operand2 : {
+                    value : 14.5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when any operand not number', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 123,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : ">=",
+                operand2 : {
+                    value : false,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+    })
+    describe('==', () => {
+        describe('Numbers', () => {
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : 14.5,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : 14.5,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : 14.56,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : 14.5,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should fail when operand types dont match', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : 123,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : false,
+                        type : DevConfig.OPERAND_TYPES.BOOLEAN
+                    }
+                };
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            });
+        })
+        describe('Number Arrays', () => {
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : [14.5, 23],
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : [14.5, 23],
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : [14.56],
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : [14.5, 23],
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+        })
+        describe('Strings', () => {
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : "14.5",
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : "14.5",
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : "14.56",
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : "14.5",
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+        })
+        describe('String Arrays', () => {
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : ["14.5", "23"],
+                        type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : ["23", "14.5"],
+                        type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : ["14.56"],
+                        type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : ["14.5", "12"],
+                        type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+        })
+        describe('Boolean', () => {
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : true,
+                        type : DevConfig.OPERAND_TYPES.BOOLEAN
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : true,
+                        type : DevConfig.OPERAND_TYPES.BOOLEAN
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : true,
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    },
+                    operator : "==",
+                    operand2 : {
+                        value : false,
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+        })
+    })
+    describe('!=', () => {
+        describe('Numbers', () => {
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : 14.5,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : 14.5,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : 14.56,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : 14.5,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should fail when operand types dont match', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : 123,
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : false,
+                        type : DevConfig.OPERAND_TYPES.BOOLEAN
+                    }
+                };
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            });
+        })
+        describe('Number Arrays', () => {
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : [14.5, 23],
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : [14.5, 23],
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : [14.56],
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : [14.5, 23],
+                        type : DevConfig.OPERAND_TYPES.NUMBER
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+        })
+        describe('Strings', () => {
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : "14.5",
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : "14.5",
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : "14.56",
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : "14.5",
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+        })
+        describe('String Arrays', () => {
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : ["14.5", "23"],
+                        type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : ["23", "14.5"],
+                        type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : ["14.56"],
+                        type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : ["14.5", "12"],
+                        type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+        })
+        describe('Boolean', () => {
+            it('Should return false when false', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : true,
+                        type : DevConfig.OPERAND_TYPES.BOOLEAN
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : true,
+                        type : DevConfig.OPERAND_TYPES.BOOLEAN
+                    }
+                };
+                let expectedAnswer = false;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+            it('Should return true when true', () => {
+                let expressionObj = {
+                    operand1 : {
+                        value : true,
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    },
+                    operator : "!=",
+                    operand2 : {
+                        value : false,
+                        type : DevConfig.OPERAND_TYPES.STRING
+                    }
+                };
+                let expectedAnswer = true;
+                let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data.value).to.equal(expectedAnswer);
+                expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+            });
+        })
+    })
+    describe('IN_ARRAY', () => {
+        it('Should return true when true - number', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 3,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "IN_ARRAY",
+                operand2 : {
+                    value : [3,4,5],
+                    type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false - number', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 3,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "IN_ARRAY",
+                operand2 : {
+                    value : [4,5],
+                    type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when operands dont match', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : "true",
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "IN_ARRAY",
+                operand2 : {
+                    value : ["true"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+        it('Should return true when true - string', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : "3",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                },
+                operator : "IN_ARRAY",
+                operand2 : {
+                    value : "[3,4,5]",
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false - number', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : "3",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                },
+                operator : "IN_ARRAY",
+                operand2 : {
+                    value : ["4","5"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when operands dont match - 2', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : "true",
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                },
+                operator : "IN_ARRAY",
+                operand2 : {
+                    value : ["true", "False"],
+                    type : DevConfig.OPERAND_TYPES.STRING
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+    })
+    describe('MULTIPLE_OF', () => {
+        it('Should return true when true', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 12,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "MULTIPLE_OF",
+                operand2 : {
+                    value : 3,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 12,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "MULTIPLE_OF",
+                operand2 : {
+                    value : 5,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when any operand not number', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : 123,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                },
+                operator : "MULTIPLE_OF",
+                operand2 : {
+                    value : false,
+                    type : DevConfig.OPERAND_TYPES.BOOLEAN
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+    })
+    describe('CONTAINS_STRING', () => {
+        it('Should return true when true', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : "[3,4,5]",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                },
+                operator : "CONTAINS_STRING",
+                operand2 : {
+                    value : "3,",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : "[3,4,5]",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                },
+                operator : "CONTAINS_STRING",
+                operand2 : {
+                    value : "6,",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when either operand not string', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : "[3,4,5]",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                },
+                operator : "CONTAINS_STRING",
+                operand2 : {
+                    value : 3,
+                    type : DevConfig.OPERAND_TYPES.NUMBER
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+
+    })
+    describe('HAS_CHOICE_IDX', () => {
+        it('Should return true when match found', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : ["yes"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                },
+                operator : "HAS_CHOICE_IDX",
+                operand2 : {
+                    value : [0,2],
+                    type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when match not found', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : ["no"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                },
+                operator : "HAS_CHOICE_IDX",
+                operand2 : {
+                    value : [0,2],
+                    type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when answer not in options', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : ["pee"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                },
+                operator : "HAS_CHOICE_IDX",
+                operand2 : {
+                    value : [0,2],
+                    type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should fail when first operand not string array', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : "yes",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                },
+                operator : "HAS_CHOICE_IDX",
+                operand2 : {
+                    value : [0,2],
+                    type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+        it('Should fail when second operand not number array', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : ["yes"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                },
+                operator : "HAS_CHOICE_IDX",
+                operand2 : {
+                    value : ["0","2"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                }
+            };
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+        it('Should fail when options missing', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : "yes",
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                },
+                operator : "HAS_CHOICE_IDX",
+                operand2 : {
+                    value : [0,2],
+                    type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+                }
+            };
+            let copyPart = JSON.parse(JSON.stringify(part));
+            delete copyPart["currentQuestion"];
+            let returnObj = ConfigParser.evaluateExpressionObject(copyPart, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+
+    })
+
+
+})

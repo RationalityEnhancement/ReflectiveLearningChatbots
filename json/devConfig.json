@@ -16,7 +16,7 @@
   "SENSITIVE_DATA_VARS" : ["FIRST_NAME"],
   "MS_PER_CHARACTER_DELAY" : 25,
   "DUMMY_QUESTION_TEXT": "[Dummy Question]",
-  "VALID_CONDITIONAL_OPERATORS" : [">", ">=", "<", "<=", "==", "!=", "IS_CHOICE", "HAS_CHOICE", "IN_ARRAY", "ARRAY_HAS", "MULTIPLE_OF", "AND", "OR"],
+  "VALID_CONDITIONAL_OPERATORS" : [">", ">=", "<", "<=", "==", "!=", "HAS_CHOICE_IDX", "IN_ARRAY", "MULTIPLE_OF", "AND", "OR", "CONTAINS_STRING"],
   "VALID_BOOLEAN_CONSTANTS" : ["TRUE", "FALSE"],
   "OPERAND_TYPES" : {
     "EXPRESSION" : "exp",

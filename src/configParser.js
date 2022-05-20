@@ -133,6 +133,7 @@ class ConfigParser{
      * Takes a single variable name, and if a variable exists, return
      * the value of that variable
      *
+     *
      * @param participant participant object data. Must contain the following fields:
      *                      currentAnswer
      *                      firstName
@@ -248,6 +249,19 @@ class ConfigParser{
         return ReturnMethods.returnSuccess(newString);
     }
 
+    /**
+     *
+     * Takes a string and replaces specific variable values in the string
+     * based on the given mapping varVals
+     *
+     * If a value for a variable is not given in the mapping, that variable is
+     * not replaced and will be kept as such
+     *
+     * @param targetString String with variables to replace (e.g., "My name is ${Name}")
+     * @param varVals Mapping between variable names and values (e.g., { "Name" : "John" })
+     * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
+     *              when successful, returns string with replaced variables (e.g., "My name is John")
+     */
     static replaceSpecificVariablesInString(targetString, varVals){
         if(typeof varVals !== 'object' || Array.isArray(varVals)){
             return ReturnMethods.returnFailure("CParser: varVals must be object")
@@ -326,6 +340,354 @@ class ConfigParser{
         }
     }
 
+    /**
+     *
+     * Remove a single set of enclosing brackets for the given expression.
+     * If the bracket at the end of an expression is the closing bracket for
+     * the one at the beginning of the expression, then the entire expression
+     * is enclosed in braces, and this is removed.
+     *
+     * @param expression (string) the expression whose enclosing braces are to be removed
+     * @returns {string|*}
+     */
+    static removeEnclosingBrackets(expression){
+        expression = expression.trim();
+        // Not enclosed in brackets
+        if(expression[0] !== "(" || expression[expression.length-1] !== ")") return expression;
+
+        let openBraces = 1;
+        let enclosed = true;
+        for(let i = 1; i < expression.length-1; i++){
+            if(expression[i] === "(") openBraces += 1;
+            if(expression[i] === ")"){
+                openBraces -= 1;
+                if(openBraces === 0){
+                    enclosed = false;
+                    break;
+                }
+            }
+        }
+        if(enclosed){
+            return expression.substring(1, expression.length - 1);
+        } else {
+            return expression;
+        }
+    }
+
+    /**
+     *
+     * An expression is a single string with a binary operator and two operands.
+     * The operator must be between the operands.
+     * Operand must either be a single token or another expression within parentheses.
+     *
+     * Tokens are:
+     * ${VarName} - Parameter with name VarName (e.g., {$Name})
+     * $S{String} - String constant (e.g., $S{hello} = "hello")
+     * $N{Number} - Number constant (e.g., $N{43} = 43)
+     * $B{Boolean} - boolean constant (e.g., $B{TRUE} = true) (must be TRUE or FALSE)
+     * $S*{String, Array} - Array of strings (e.g., = ["String", "Array"])
+     * $N*{Number Array} - Array of numbers (e.g., $N*{3,4,5} = [3, 4, 5])
+     *
+     * Operators are as defined in VALID_CONDITIONAL_OPERATORS in devConfig,
+     *
+     * @param expression
+     * @returns {
+     *              operand1 : { value, type }, - Extracted string within curly braces as well and the declared type
+     *              operator : String,
+     *              operand2 : { value, type }, - Extracted string within curly braces as well and the declared type
+     *          }
+     */
+    static parseSimpleExpression(expression){
+        if(typeof expression !== 'string') {
+            return ReturnMethods.returnFailure("CParser: Expression must be a string to evaluate")
+        }
+
+        // Remove all enclosing brackets
+        let prevExp;
+        let newExp = expression.slice();
+        while(newExp !== prevExp){
+            prevExp = newExp.slice();
+            newExp = this.removeEnclosingBrackets(newExp);
+        }
+        expression = newExp.slice();
+
+        let returnObj = {
+            "operand1" : {
+                "found" : false
+            },
+            "operator" : undefined,
+            "operand2" : {
+                "found" : false
+            }
+        };
+
+        let currentText = "";
+
+        // Possible states the parser can be when dealing with a single character:
+        let currentState = "start"
+        let openBraces = 0;
+
+        let addToOperand = (value, type) => {
+            if(!returnObj.operand1.found) {
+                returnObj.operand1["found"] = true;
+                returnObj.operand1["value"] = value;
+                returnObj.operand1["type"] = type;
+                currentState = "inOperator";
+            } else if(!returnObj.operand2.found) {
+                returnObj.operand2["found"] = true;
+                returnObj.operand2["value"] = value;
+                returnObj.operand2["type"] = type;
+                currentState = "end";
+            }
+        }
+
+        outer:
+        for(let i = 0; i < expression.length; i++){
+            let char = expression[i];
+            switch(currentState){
+                case "start" :
+                    if(char === "$"){
+                        currentState = "startToken"
+                    } else if(char === "("){
+                        openBraces += 1;
+                        currentState = "inExpression"
+                    } else {
+                        return ReturnMethods.returnFailure("CParser: Expression must begin with $ or ( operand");
+                    }
+                    break;
+                case "inExpression" :
+                    if(char === "("){
+                        currentText += char;
+                        openBraces += 1;
+                    } else if(char ===")") {
+                        openBraces -= 1;
+                        if(openBraces < 0) {
+                            return ReturnMethods.returnFailure("CParser: Expression must have balanced braces");
+                        } else if(openBraces === 0){
+                            // End expression operand here
+                            addToOperand(currentText, DevConfig.OPERAND_TYPES.EXPRESSION)
+                            currentText = "";
+                        } else {
+                            currentText += char;
+                        }
+                    } else {
+                        currentText += char;
+                    }
+                    break;
+                case "inOperator":
+                    if(char === "$"){
+                        currentState = "startToken";
+                        returnObj.operator = currentText.trim();
+                        currentText = "";
+
+                    } else if(char === "("){
+                        openBraces += 1;
+                        currentState = "inExpression";
+                        returnObj.operator = currentText.trim();
+                        currentText = "";
+                    } else if(')/.,:;!@#%^&*'.split('').includes(char)){
+                        return  ReturnMethods.returnFailure("CParser: Invalid character in operator")
+                    } else {
+                        currentText += char;
+                    }
+                    break;
+                // $ signifies the beginning of a reserved phrase (variable, etc.)
+                // Prepare to parse reserved word depending on character occurring after $
+                case "startToken":
+                    if(char === "{"){
+                        currentState = "inVariable";
+
+                    } else if(char === "N") {
+                        currentState = "startNumber";
+                    } else if(char === "S"){
+                        currentState = "startString";
+                    } else if(char === "B"){
+                        currentState = "startBoolean";
+                    } else {
+                        return ReturnMethods.returnFailure("CParser: Invalid character " + char + " in token");
+                    }
+                    break;
+                case "startNumber" :
+                    if(char === "*") {
+                        currentState = "startNumberArray"
+                    } else if(char !== "{"){
+                        return ReturnMethods.returnFailure("CParser: Number token must begin with {");
+                    } else {
+                        currentState = "inNumber";
+                    }
+                    break;
+                case "inNumber" :
+                    if(char === "}"){
+                        addToOperand(currentText.trim(), DevConfig.OPERAND_TYPES.NUMBER)
+                        currentText = "";
+                    } else {
+                        currentText += char;
+                    }
+                    break;
+                case "startNumberArray" :
+                    if(char !== "{") {
+                        return ReturnMethods.returnFailure("CParser: Number array token must begin with {");
+                    } else {
+                        currentState = "inNumberArray";
+                    }
+                    break;
+                case "inNumberArray" : {
+                    if(char === "}"){
+                        addToOperand(currentText.trim(), DevConfig.OPERAND_TYPES.NUMBER_ARRAY)
+                        currentText = "";
+                    } else {
+                        currentText += char;
+                    }
+                    break;
+                }
+                case "startString" :
+                    if(char === "*") {
+                        currentState = "startStringArray"
+                    } else if(char !== "{"){
+                        return ReturnMethods.returnFailure("CParser: String token must begin with {");
+                    } else {
+                        currentState = "inString";
+                    }
+                    break;
+                case "inString" :
+                    if(char === "}"){
+                        addToOperand(currentText.trim(), DevConfig.OPERAND_TYPES.STRING)
+                        currentText = "";
+                    } else {
+                        currentText += char;
+                    }
+                    break;
+                case "startStringArray" :
+                    if(char !== "{") {
+                        return ReturnMethods.returnFailure("CParser: String array token must begin with {");
+                    } else {
+                        currentState = "inStringArray";
+                    }
+                    break;
+                case "inStringArray" : {
+                    if(char === "}"){
+                        addToOperand(currentText.trim(), DevConfig.OPERAND_TYPES.STRING_ARRAY)
+                        currentText = "";
+                    } else {
+                        currentText += char;
+                    }
+                    break;
+                }
+                case "startBoolean" :
+                    if(char !== "{"){
+                        return ReturnMethods.returnFailure("CParser: Boolean token must begin with {");
+                    } else {
+                        currentState = "inBoolean";
+                    }
+                    break;
+                case "inBoolean" :
+                    if(char === "}"){
+                        addToOperand(currentText.trim(), DevConfig.OPERAND_TYPES.BOOLEAN)
+                        currentText = "";
+                    } else {
+                        currentText += char;
+                    }
+                    break;
+                case "inVariable" :
+                    if(char === "}"){
+                        addToOperand(currentText.trim(), DevConfig.OPERAND_TYPES.VARIABLE)
+                        currentText = "";
+                    } else {
+                        currentText += char;
+                    }
+                    break;
+                case "end" :
+                    break outer;
+            }
+        }
+        if(currentState !== "end") {
+            return ReturnMethods.returnFailure("CParser: Token or expression not closed, or expression is incomplete")
+        }
+        if(!returnObj.operand1.found || !returnObj.operand2.found){
+            return ReturnMethods.returnFailure("CParser: One or more operands could not be found")
+        }
+        if(!returnObj.operator){
+            return ReturnMethods.returnFailure("CParser: Operator could not be found")
+        }
+
+        delete returnObj.operand1["found"]
+        delete returnObj.operand2["found"]
+
+        return ReturnMethods.returnSuccess(returnObj);
+
+    }
+    static getNumberFromString(expression){
+        if(typeof expression !== "string"){
+            return ReturnMethods.returnFailure("CParser: Must be a string to get number ")
+        }
+        if(expression.trim().length === 0) {
+            return ReturnMethods.returnFailure("CParser: Cannot get number from empty string");
+        }
+        if(isNaN(expression)){
+            return ReturnMethods.returnFailure("CParser: Cannot convert " + expression + " into number");
+        }
+        let numberForm;
+        if(expression.indexOf('.') !== -1) {
+            numberForm = parseFloat(expression);
+        } else {
+            numberForm = parseInt(expression);
+        }
+        return ReturnMethods.returnSuccess(numberForm)
+    }
+    static getNumberArrayFromString(expression){
+        if(typeof expression !== "string"){
+            return ReturnMethods.returnFailure("CParser: Must be a string to get number ")
+        }
+        if(expression.trim().length === 0) {
+            return ReturnMethods.returnFailure("CParser: Cannot get number array from empty string");
+        }
+        let numSplit = expression.split(',').map(e => e.trim());
+        let newArray = []
+        for(let i = 0; i < numSplit.length; i++){
+            if(isNaN(numSplit[i])){
+                return ReturnMethods.returnFailure("CParser: Cannot convert " + numSplit[i] + " into number");
+            }
+            if(numSplit[i].length === 0) {
+                return ReturnMethods.returnFailure("CParser: Cannot get number from empty string");
+            }
+            let numberForm;
+            if(numSplit[i].indexOf('.') !== -1) {
+                numberForm = parseFloat(numSplit[i]);
+            } else {
+                numberForm = parseInt(numSplit[i]);
+            }
+            newArray.push(numberForm);
+        }
+        return ReturnMethods.returnSuccess(newArray)
+    }
+    static constructExpressionObject(participant, expressionString){
+        let parsedExpObj = this.parseSimpleExpression(expressionString);
+        if(parsedExpObj.returnCode === DevConfig.FAILURE_CODE){
+            return parsedExpObj;
+        }
+
+        let parsedExp = parsedExpObj.data;
+
+        let operator = parsedExp.operator;
+        if(!DevConfig.VALID_CONDITIONAL_OPERATORS.includes(operator)){
+            return ReturnMethods.returnFailure("CParser: Operator not recognized")
+        }
+
+        let operand1 = parsedExp.operand1;
+        switch(operand1.type){
+            case DevConfig.OPERAND_TYPES.EXPRESSION:
+                let expReturnObj = this.constructExpressionObject(participant, operand1.value);
+                if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                    return expReturnObj;
+                }
+                parsedExp[operand1].value = expReturnObj.data;
+                break;
+            case DevConfig.OPERAND_TYPES.NUMBER:
+
+        }
+        let operand2 = parsedExp.operand2;
+        return expressionObj;
+    }
 }
 
 module.exports = ConfigParser;

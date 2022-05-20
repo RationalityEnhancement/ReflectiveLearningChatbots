@@ -15,5 +15,16 @@
   },
   "SENSITIVE_DATA_VARS" : ["FIRST_NAME"],
   "MS_PER_CHARACTER_DELAY" : 25,
-  "DUMMY_QUESTION_TEXT": "[Dummy Question]"
+  "DUMMY_QUESTION_TEXT": "[Dummy Question]",
+  "VALID_CONDITIONAL_OPERATORS" : [">", ">=", "<", "<=", "==", "!=", "IS_CHOICE", "HAS_CHOICE", "IN_ARRAY", "ARRAY_HAS", "MULTIPLE_OF", "AND", "OR"],
+  "VALID_BOOLEAN_CONSTANTS" : ["TRUE", "FALSE"],
+  "OPERAND_TYPES" : {
+    "EXPRESSION" : "exp",
+    "NUMBER": "num",
+    "NUMBER_ARRAY" : "numArr",
+    "STRING" : "string",
+    "STRING_ARRAY" : "strArr",
+    "BOOLEAN" : "bool",
+    "VARIABLE" : "var"
+  }
 }

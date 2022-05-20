@@ -459,3 +459,349 @@ describe('Evaluating conditions ', () => {
         })
     })
 })
+
+describe('Parse simple expression', () => {
+    it('Should parse parameter and number operands normally', () => {
+        let expression = "${Parameter} GREATER_THAN $N{10}"
+        let expectedObj = {
+            operand1: {
+                value : "Parameter",
+                type : DevConfig.OPERAND_TYPES.VARIABLE
+            },
+            operator : "GREATER_THAN",
+            operand2 : {
+                value : "10",
+                type : DevConfig.OPERAND_TYPES.NUMBER
+            }
+        }
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should fail if variable token not closed', () => {
+        let expression = "${Parameter GREATER_THAN $N{10}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if variable token not opened', () => {
+        let expression = "$Parameter} GREATER_THAN $N{10}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if expression doesnt begin with token', () => {
+        let expression = "Parameter GREATER_THAN $N{10}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if expression doesnt have operator', () => {
+        let expression = "${Parameter} $N{10}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if expression doesnt have second operand', () => {
+        let expression = "${Parameter} AND "
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if expression not string', () => {
+        let expression = 132
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if number token braces not opened', () => {
+        let expression = "${Parameter} AND $N10}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if number token braces not closed', () => {
+        let expression = "${Parameter} AND $N{10"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should parse string and number array operands normally', () => {
+        let expression = "$S{John} IS_CHOICE $N*{1,3,4}"
+        let expectedObj = {
+            operand1: {
+                value : "John",
+                type : DevConfig.OPERAND_TYPES.STRING
+            },
+            operator : "IS_CHOICE",
+            operand2 : {
+                value : "1,3,4",
+                type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+            }
+        }
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should fail if string token braces not opened', () => {
+        let expression = "$Shelp} AND $N{10}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if string token braces not closed', () => {
+        let expression = "$S{help AND $N{10}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if number array token braces not opened', () => {
+        let expression = "$S{help} AND $N*1,3,4}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if number array token braces not closed', () => {
+        let expression = "$S{help} AND $N*{1,3,4"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should parse boolean and string array operands normally', () => {
+        let expression = "$B{TRUE} IN_ARRAY $S*{fee,fi,fo,fum}"
+        let expectedObj = {
+            operand1: {
+                value : "TRUE",
+                type : DevConfig.OPERAND_TYPES.BOOLEAN
+            },
+            operator : "IN_ARRAY",
+            operand2 : {
+                value : "fee,fi,fo,fum",
+                type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+            }
+        }
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should fail if boolean token braces not opened', () => {
+        let expression = "$BTRUE} AND $S*{fee,fi,fo,fum}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if boolean token braces not closed', () => {
+        let expression = "$B{TRUE AND $S*{fee,fi,fo,fum}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if string array token braces not opened', () => {
+        let expression = "$B{TRUE} AND $S*fee,fi,fo,fum}"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if string array token braces not closed', () => {
+        let expression = "$B{TRUE} AND $S*{fee,fi,fo,fum"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+
+    it('Should ignore everything after second operand', () => {
+        let expression = "$B{TRUE} IN_ARRAY $S*{fee,fi,fo,fum} hello test"
+        let expectedObj = {
+            operand1: {
+                value : "TRUE",
+                type : DevConfig.OPERAND_TYPES.BOOLEAN
+            },
+            operator : "IN_ARRAY",
+            operand2 : {
+                value : "fee,fi,fo,fum",
+                type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+            }
+        }
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should parse expression operands normally', () => {
+        let expression = "(${isMan} == $B{TRUE}) AND (${isWoman} == $B{FALSE})"
+        let expectedObj = {
+            operand1: {
+                value : "${isMan} == $B{TRUE}",
+                type : DevConfig.OPERAND_TYPES.EXPRESSION
+            },
+            operator : "AND",
+            operand2 : {
+                value : "${isWoman} == $B{FALSE}",
+                type : DevConfig.OPERAND_TYPES.EXPRESSION
+            }
+        }
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should ignore everything after second expression operand', () => {
+        let expression = "(${isMan} == $B{TRUE}) AND (${isWoman} == $B{FALSE}) scoop"
+        let expectedObj = {
+            operand1: {
+                value : "${isMan} == $B{TRUE}",
+                type : DevConfig.OPERAND_TYPES.EXPRESSION
+            },
+            operator : "AND",
+            operand2 : {
+                value : "${isWoman} == $B{FALSE}",
+                type : DevConfig.OPERAND_TYPES.EXPRESSION
+            }
+        }
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should remove arbitrary number of enclosing brackets', () => {
+        let expression = "(((${isMan} == $B{TRUE}) AND (${isWoman} == $B{FALSE})))"
+        let expectedObj = {
+            operand1: {
+                value : "${isMan} == $B{TRUE}",
+                type : DevConfig.OPERAND_TYPES.EXPRESSION
+            },
+            operator : "AND",
+            operand2 : {
+                value : "${isWoman} == $B{FALSE}",
+                type : DevConfig.OPERAND_TYPES.EXPRESSION
+            }
+        }
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.eql(expectedObj);
+    })
+    it('Should fail if expression braces not balanced - extra close', () => {
+        let expression = "(${isMan} == $B{TRUE})) AND (${isWoman} == $B{FALSE})"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('Should fail if expression braces not balanced - extra open', () => {
+        let expression = "((${isMan} == $B{TRUE}) AND (${isWoman} == $B{FALSE})"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+})
+describe('Removing enclosing braces', () => {
+    it('Should remove enclosing braces normally', () => {
+        let testString = "(hello)"
+        let expectedString = "hello"
+        let ret = ConfigParser.removeEnclosingBrackets(testString);
+        expect(ret).to.equal(expectedString);
+    })
+    it('Should remove enclosing braces when there are nested expressions', () => {
+        let testString = "((hello) and (bye))"
+        let expectedString = "(hello) and (bye)"
+        let ret = ConfigParser.removeEnclosingBrackets(testString);
+        expect(ret).to.equal(expectedString);
+    })
+
+    it('Should remove enclosing braces when there are nested expressions - 2', () => {
+        let testString = "((${isMan} == $B{TRUE}) AND (${isWoman} == $B{FALSE}))"
+        let expectedString = "(${isMan} == $B{TRUE}) AND (${isWoman} == $B{FALSE})"
+        let ret = ConfigParser.removeEnclosingBrackets(testString);
+        expect(ret).to.equal(expectedString);
+    })
+    it('Should remove only one set of enclosing braces when there are multiple', () => {
+        let testString = "(((hello) and (bye)))"
+        let expectedString = "((hello) and (bye))"
+        let ret = ConfigParser.removeEnclosingBrackets(testString);
+        expect(ret).to.equal(expectedString);
+    })
+    it('Shouldnt remove when the brackets aint enclosed', () => {
+        let testString = "(hello) and (bye)"
+        let expectedString = "(hello) and (bye)"
+        let ret = ConfigParser.removeEnclosingBrackets(testString);
+        expect(ret).to.equal(expectedString);
+    })
+    it('Shouldnt change when doesnt end in bracket', () => {
+        let testString = "(hello and bye"
+        let expectedString = "(hello and bye"
+        let ret = ConfigParser.removeEnclosingBrackets(testString);
+        expect(ret).to.equal(expectedString);
+    })
+    it('Shouldnt change when doesnt begin with bracket', () => {
+        let testString = "hello and bye)"
+        let expectedString = "hello and bye)"
+        let ret = ConfigParser.removeEnclosingBrackets(testString);
+        expect(ret).to.equal(expectedString);
+    })
+})
+describe('Getting values from strings', () => {
+    describe('Number', () => {
+        it('Should return integer', () => {
+            let testStr = "123";
+            let expectedVal = 123;
+            let returnObj = ConfigParser.getNumberFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return float', () => {
+            let testStr = "123.2";
+            let expectedVal = 123.2;
+            let returnObj = ConfigParser.getNumberFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail when not number', () => {
+            let testStr = "afd";
+            let returnObj = ConfigParser.getNumberFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.getNumberFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when empty string', () => {
+            let testStr = "  ";
+            let returnObj = ConfigParser.getNumberFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
+    describe('Number array', () => {
+        it('Should return integer array', () => {
+            let testStr = "123, 456, 789";
+            let expectedVal = [123, 456, 789];
+            let returnObj = ConfigParser.getNumberArrayFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return float array', () => {
+            let testStr = "123.4, 456.5, 789.6";
+            let expectedVal = [123.4, 456.5, 789.6];
+            let returnObj = ConfigParser.getNumberArrayFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return int array of length 1', () => {
+            let testStr = "123";
+            let expectedVal = [123];
+            let returnObj = ConfigParser.getNumberArrayFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail when any part of string number', () => {
+            let testStr = "123, test, 789";
+            let returnObj = ConfigParser.getNumberArrayFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when any part of string is empty', () => {
+            let testStr = "123,, 789";
+            let returnObj = ConfigParser.getNumberArrayFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.getNumberArrayFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when empty string', () => {
+            let testStr = "  ";
+            let returnObj = ConfigParser.getNumberArrayFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
+})

@@ -9,7 +9,11 @@
     "timezone" : "string"
   },
   "customParameters" : {
-    "pId" : "string"
+    "pId" : "string",
+    "testStrArr" : "strArr",
+    "testBool" : "boolean",
+    "testNum" : "number",
+    "testNumArr" : "numArr"
   },
   "debugExp": true,
   "debugDev" : true,

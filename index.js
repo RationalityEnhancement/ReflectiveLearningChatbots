@@ -334,9 +334,7 @@ bot.start(async ctx => {
   if(!participant){
     try{
       await participants.add(uniqueId);
-      await participants.updateField(uniqueId, 'experimentId', config.experimentId);
-      await participants.updateField(uniqueId, 'parameters', { "language" : config.defaultLanguage });
-      await participants.updateField(uniqueId, 'currentState', 'starting');
+      await participants.initializeParticipant(uniqueId, config);
 
       // Use the new participant henceforth
       participant = await participants.get(uniqueId);

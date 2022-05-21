@@ -115,7 +115,7 @@ describe('Participant Controller API: ', () =>{
 		
 	});
 
-	it('Should update parameter', async () => {
+	it('Should update string parameter', async () => {
 		
 		const paramField = 'timezone';
 		const paramValue = 'zbeengo';
@@ -125,7 +125,46 @@ describe('Participant Controller API: ', () =>{
 		expect(part.parameters[paramField]).to.equal(paramValue);	
 		
 	});
+	it('Should update number parameter', async () => {
 
+		const paramField = 'testNum';
+		const paramValue = 3;
+
+		await participants.updateParameter(testId, paramField, paramValue);
+		let part = await participants.get(testId);
+		expect(part.parameters[paramField]).to.equal(paramValue);
+
+	});
+
+	it('Should add to parameter', async () => {
+
+		const paramField = 'testStrArr';
+		const paramValue = 'zbeengo';
+
+		await participants.addToArrParameter(testId, paramField, paramValue);
+		let part = await participants.get(testId);
+		expect(part.parameters[paramField]).to.eql([paramValue]);
+
+	});
+	it('Should add to parameter - 2', async () => {
+
+		const paramField = 'testStrArr';
+		const paramValue = 'zbeengo2';
+
+		await participants.addToArrParameter(testId, paramField, paramValue);
+		let part = await participants.get(testId);
+		expect(part.parameters[paramField]).to.eql(["zbeengo", paramValue]);
+
+	});
+	it('Should clear array param', async () => {
+
+		const paramField = 'testStrArr';
+
+		await participants.clearArrParamValue(testId, paramField);
+		let part = await participants.get(testId);
+		expect(part.parameters[paramField]).to.eql([]);
+
+	});
 
 	it('Should add an answer', async () => {
 		const testAnswer = {

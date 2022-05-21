@@ -1,6 +1,8 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const participants = require('../src/apiControllers/participantApiController');
+const experiments = require('../src/apiControllers/experimentApiController');
+const idMaps = require('../src/apiControllers/idMapApiController');
 
 const mongo = require('mongoose');
 
@@ -9,9 +11,17 @@ const { assert, expect } = require('chai');
 const DevConfig = require('../json/devConfig.json');
 const config = require('../json/config.json');
 
-const AnswerHandler = require('../src/answerHandler');
+const bot = {
+    telegram : {
+        sendMessage : () => { return; },
+        getChat : (id) => { return { first_name : "John" }}
+    }
+}
 
-const testId = "123";
+const ActionHandler = require('../src/actionHandler');
+
+const testPartId = "123";
+const testChatId = "324235";
 
 describe('DB Connection', () => {
 
@@ -30,711 +40,535 @@ describe('DB Connection', () => {
         });
         it('Should add and update participant parameter', async () => {
 
-            await participants.add(testId);
-            await participants.updateParameter(testId, "language", "English")
-            let participant = await participants.get(testId);
+            await participants.add(testPartId);
+            await participants.initializeParticipant(testPartId, config)
+            let participant = await participants.get(testPartId);
             expect(participant).to.not.be.null;
-            expect(participant.uniqueId).to.equal(testId);
+            expect(participant.uniqueId).to.equal(testPartId);
             expect(participant.parameters.language).to.equal("English");
+            assert("parameterTypes" in participant);
 
+        });
+        it('Should add and update experiment', async () => {
+
+            await experiments.add(config.experimentId);
+            await experiments.initializeExperiment(config.experimentId, config.experimentName, config.experimentConditions, config.conditionAssignments);
+
+            let experiment = await experiments.get(config.experimentId);
+            expect(experiment).to.not.be.null;
+            expect(experiment.experimentId).to.equal(config.experimentId);
+
+        });
+        it('Should add and update id map', async () => {
+
+            await idMaps.addExperiment(config.experimentId);
+            await idMaps.addIDMapping(config.experimentId, testChatId, testPartId);
+
+            let idMap = await idMaps.getExperiment(config.experimentId);
+            expect(idMap).to.not.be.null;
+            assert(idMaps.hasUniqueId(idMap.IDMappings, testPartId));
         });
 
     })
 })
 
-let testQuestion = {
-    qId: "testQ",
-    text: "Test text"
-};
-const testPart = {
-    uniqueId: testId,
-    currentState: "awaitingAnswer",
-    currentQuestion: testQuestion
-}
-describe('Finish answer', () => {
-    describe('Finish string answer with saving', ()=> {
-        const addedAnswer = "Europe/Berlin"
-        let returnObj, participant;
-        it('Should return success with next action string', async () => {
-            testQuestion["saveAnswerTo"] = "timezone";
-            returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
-            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            delete testQuestion["saveAnswerTo"];
-        });
-        it('Should save string answer to parameter', async () => {
-            participant = await participants.get(testPart.uniqueId);
-            expect(participant.parameters.timezone).to.equal(addedAnswer);
-        });
-        it('Should have added answer to participant answer list',  async () => {
-            participant = await participants.get(testPart.uniqueId);
-            let latestAns = participant.answers[participant.answers.length-1];
-            expect(latestAns.qId).to.equal(testQuestion.qId);
-            expect(latestAns.text).to.equal(testQuestion.text);
-            expect(latestAns.answer).to.eql([addedAnswer]);
-        });
-        it('Should update current state to answerReceived',  () => {
-            expect(participant.currentState).to.equal("answerReceived");
-        });
-    });
-
-    describe('Finish array answer without saving', () => {
-        const addedAnswer = ["answer1", "answer2"];
-        let returnObj, participant;
-        it('Should return success with next action string', async () => {
-            returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
-            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-        });
-        it('Should have added answer to participant answer list',  async () => {
-            participant = await participants.get(testPart.uniqueId);
-            let latestAns = participant.answers[participant.answers.length-1];
-            expect(latestAns.qId).to.equal(testQuestion.qId);
-            expect(latestAns.text).to.equal(testQuestion.text);
-            expect(latestAns.answer).to.eql(addedAnswer);
-        });
-        it('Should update current state to answerReceived',  async () => {
-            participant = await participants.get(testPart.uniqueId);
-            expect(participant.currentState).to.equal("answerReceived");
-        });
-    })
-
-    // TODO: Save array answer to parameter, would require specifying string array params in config file
-})
-describe('Process answer', () =>{
-
-    describe('Failing when required', () => {
-        it('Should return no response when participant state is not awaitingAnswer', async () => {
-            testPart['currentState'] = "answerReceived";
-            testPart['currentQuestion'] = testQuestion;
-            let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
-            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
-            testPart['currentState'] = "awaitingAnswer";
-        });
-        it('Should fail when participant is undefined', async () => {
-            let returnObj = await AnswerHandler.processAnswer(undefined, "hello");
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-        })
-        it('Should fail when participant doesnt have uniqueId', async () => {
-            delete testPart["uniqueId"];
-            let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
-            assert("currentState" in testPart);
-            assert("currentQuestion" in testPart);
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            testPart["uniqueId"] = testId;
-        })
-        it('Should fail when participant doesnt have currentState', async () => {
-            delete testPart["currentState"];
-            let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
-            assert("uniqueId" in testPart);
-            assert("currentQuestion" in testPart);
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            testPart["currentState"] = "awaitingAnswer";
-        })
-        it('Should fail when participant doesnt have currentQuestion', async () => {
-            delete testPart["currentQuestion"];
-            let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
-            assert("uniqueId" in testPart);
-            assert("currentState" in testPart);
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            testPart["currentQuestion"] = testQuestion;
-        })
-        it('Should fail when currentQuestion doesnt have qtype', async () => {
-            delete testPart[testQuestion["qType"]];
-            let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
-            assert("uniqueId" in testPart);
-            assert("currentState" in testPart);
-            assert("currentQuestion" in testPart);
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-
-        })
-    })
-    describe('Single choice', () => {
-
-        describe('Option valid', () => {
-            let returnObj;
-            const question = {
-                qId: "test2",
-                text: "questionText",
-                options: ["SC", "bye"],
-                qType: "singleChoice"
-            };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "SC")
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            });
-            let participant;
-            it('Should have added to last anser', async () => {
-                participant = await participants.get(part.uniqueId);
-                let latestAns = participant.answers[participant.answers.length-1].answer;
-                expect(latestAns).to.eql(["SC"])
-            })
-            it('Should be in answerReceived state', async () => {
-                expect(participant.currentState).to.equal("answerReceived");
-            })
-        })
-        describe('Option invalid', () => {
-            let returnObj;
-            const question = {
-                qId: "test2",
-                text: "questionText",
-                options: ["SC", "bye"],
-                qType: "singleChoice"
-            };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return partial failure and repeat question', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "toast")
-                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
-                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
-            });
-            it('Should be in invalidAnswer state', async () => {
-                let participant = await participants.get(part.uniqueId);
-                expect(participant.currentState).to.eql("invalidAnswer");
-            })
-        })
-        describe('Options missing', () => {
-            let returnObj;
-            const question = {
-                qId: "test2",
-                text: "questionText",
-                qType: "singleChoice"
-            };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return failure', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "toast")
-                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            });
-        })
-        describe('Language missing', () => {
-            let returnObj;
-            const question = {
-                qId: "test2",
-                text: "questionText",
-                qType: "singleChoice"
-            };
-            const part = {
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return failure', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "toast")
-                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            });
-        })
-
-    })
-    describe('Qualtrics', () => {
-        const question = {
-            qId: "test2",
-            text: "questionText",
-            qType: "qualtrics"
-        };
-        const part = {
-            parameters: {language: "English"},
-            uniqueId: testId,
-            currentState: "awaitingAnswer",
-            currentQuestion: question,
+describe('Validate action object', () => {
+    it('Should fail when action type not valid', () => {
+        let actionObj = {
+            "aType" : "testAction",
+            "args" : ["1", "2"]
         }
-        describe('String exactly equal expected', () => {
-            let returnObj;
-            let ansString = "Done";
-            it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, ansString)
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            });
-            let participant;
-            it('Should have added answer to part answers', async () => {
-                participant = await participants.get(part.uniqueId);
-                let ans = participant.answers;
-                expect(ans[ans.length-1].answer[0]).to.equal(ansString)
-            });
-            it('Should be in answerReceived state', async () => {
-                expect(participant.currentState).to.eql("answerReceived");
-            })
-        });
-        describe('String expected with some punctuation', () => {
-            let returnObj;
-            let ansString = "?!.Do.ne -;:";
-            it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, ansString)
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            });
-            let participant;
-            it('Should have added answer to part answers', async () => {
-                participant = await participants.get(part.uniqueId);
-                let ans = participant.answers;
-                expect(ans[ans.length-1].answer[0]).to.equal(ansString)
-            });
-            it('Should be in answerReceived state', async () => {
-                expect(participant.currentState).to.eql("answerReceived");
-            })
-        });
-        describe('String expected with wrong case', () => {
-            let returnObj;
-            let ansString = "dOnE";
-            it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, ansString)
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            });
-            let participant;
-            it('Should have added answer to part answers', async () => {
-                participant = await participants.get(part.uniqueId);
-                let ans = participant.answers;
-                expect(ans[ans.length-1].answer[0]).to.equal(ansString)
-            });
-            it('Should be in answerReceived state', async () => {
-                expect(participant.currentState).to.eql("answerReceived");
-            })
-        });
-        describe('String doesnt match', () => {
-            let returnObj;
-            let ansString = "Dodne";
-            it('Should return partial failure and repeat question', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, ansString)
-                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
-                expect(returnObj.successData).to.equal(DevConfig.NO_RESPONSE_STRING);
-            });
+        let ret = ActionHandler.validateActionObject(actionObj);
+        assert(!ret);
+    })
+    it('Should fail when action type undefined', () => {
+        let actionObj = {
+            "args" : ["1", "2"]
+        }
+        let ret = ActionHandler.validateActionObject(actionObj);
+        assert(!ret);
+    })
+    it('Should fail when args not array', () => {
+        let actionObj = {
+            "aType" : "testAction",
+            "args" : "test"
+        }
+        let ret = ActionHandler.validateActionObject(actionObj);
+        assert(!ret);
+    })
+    it('Should fail when number of args doesnt match atype', () => {
+        let actionObj = {
+            "aType" : "setBooleanVar",
+            "args" : ["1"]
+        }
+        let ret = ActionHandler.validateActionObject(actionObj);
+        assert(!ret);
+    })
+    it('Should fail when one arg is undefined', () => {
+        let actionObj = {
+            "aType" : "setBooleanVar",
+            "args" : ["1", undefined]
+        }
+        let ret = ActionHandler.validateActionObject(actionObj);
+        assert(!ret);
+    })
+    it('Should succeed when all is correct', () => {
+        let actionObj = {
+            "aType" : "setBooleanVar",
+            "args" : ["1", "2"]
+        }
+        let ret = ActionHandler.validateActionObject(actionObj);
+        assert(ret);
+    })
+})
 
-        });
-        describe('No part language', () => {
+describe('Processing actions', ()=>{
+    describe('Fails', () => {
+        let returnObj;
+        let outString = "23";
+        let expectedOut = 23;
+
+        it('Should fail when participant not received', async () => {
+            let actionObj = {
+                aType : "saveAnswerTo",
+                args : [234]
+            }
+            returnObj = await ActionHandler.processAction(bot, config, undefined, actionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail when participant not in answerReceived state', async () => {
+            let actionObj = {
+                aType : "saveAnswerTo",
+                args : ["timezone"]
+            }
+            let participant = await participants.get(testPartId);
+            returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail when action object not valid', async () => {
+            let actionObj = {
+                aType : "saveAnswerTooth",
+                args : ["timezone2"]
+            }
+            let participant = await participants.get(testPartId);
+            participant.currentAnswer = ["Europe/Berlin"];
+            participant.currentState = "answerReceived";
+            returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+
+    })
+    describe('SaveAnswerTo', ()=>{
+        describe('String answer', () => {
             let returnObj;
-            let ansString = "dOnE";
-            let part2 = JSON.parse(JSON.stringify(part));
-            delete part2["parameters"]["language"];
-            it('Should return failure', async () => {
-                returnObj = await AnswerHandler.processAnswer(part2, ansString)
+            let actionObj = {
+                aType : "saveAnswerTo",
+                args : ["timezone"]
+            }
+            let outString = "Europe/Berlin";
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = [outString];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal("Europe/Berlin")
+            })
+            it('Should have saved the parameter as string in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(!Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("string");
+                expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+            })
+        })
+        describe('String array', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "saveAnswerTo",
+                args : ["testStrArr"]
+            }
+            let outString = ["1", "2", "3"];
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = outString;
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.eql(outString)
+            })
+            it('Should have saved the parameter as string array in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(participant.parameters[actionObj.args[0]]).to.eql(outString);
+            })
+        })
+        describe('Number answer', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "saveAnswerTo",
+                args : ["testNum"]
+            }
+            let outString = "23";
+            let expectedOut = 23;
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = [outString];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(expectedOut)
+            })
+            it('Should have saved the parameter as number in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(!Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("number");
+                expect(participant.parameters[actionObj.args[0]]).to.equal(expectedOut);
+            })
+            it('Should fail when answer is not num', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["hello"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            })
+        })
+        describe('Fails', () => {
+            let returnObj;
+            let outString = "23";
+            let expectedOut = 23;
+
+            it('Should fail when variable name not string', async () => {
+                let actionObj = {
+                    aType : "saveAnswerTo",
+                    args : [234]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["hello"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            })
+            it('Should fail when current answer missing', async () => {
+                let actionObj = {
+                    aType : "saveAnswerTo",
+                    args : ["timezone"]
+                }
+                let participant = await participants.get(testPartId);
+                delete participant.currentAnswer;
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            })
+            it('Should fail when variable not recognized', async () => {
+                let actionObj = {
+                    aType : "saveAnswerTo",
+                    args : ["timezone2"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            })
+            it('Should fail when cannot save to variable type', async () => {
+                let actionObj = {
+                    aType : "saveAnswerTo",
+                    args : ["testNumArr"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            })
+
+        })
+    })
+    describe('SetBooleanVar', ()=>{
+        describe('Set to true', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "setBooleanVar",
+                args : ["testBool", true]
+            }
+            let outString = true;
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                participant.parameters.testBool = false;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(outString)
+            })
+            it('Should have saved the parameter as string in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("boolean");
+                expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+            })
+        })
+        describe('Set to false', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "setBooleanVar",
+                args : ["testBool", false]
+            }
+            let outString = false;
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                participant.parameters.testBool = true;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(outString)
+            })
+            it('Should have saved the parameter as string in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("boolean");
+                expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+            })
+        })
+        describe('Fails', () => {
+            let returnObj;
+            let outString = "23";
+            let expectedOut = 23;
+
+            it('Should fail when variable name not string', async () => {
+                let actionObj = {
+                    aType : "setBooleanVar",
+                    args : [234, true]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
                 console.log(returnObj.data);
-            });
-
-        });
-    })
-
-    describe('Multi choice', () => {
-
-        describe('Option valid', () => {
-            let returnObj;
-            const question = {
-                qId: "testMC",
-                text: "questionText",
-                options: ["MC1", "MC2"],
-                qType: "multiChoice"
-            };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return success and no response', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "MC1")
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
-            });
-            it('Should have added answer to current answer', async () => {
-                let participant = await participants.get(part.uniqueId);
-                assert(participant.currentAnswer.includes("MC1"));
-            });
-        });
-        describe('Option invalid', () => {
-            let returnObj;
-            const question = {
-                qId: "testMC",
-                text: "questionText",
-                options: ["MC1", "MC2"],
-                qType: "multiChoice"
-            };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return partial failure and repeat question', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "toast")
-                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
-                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
-            });
-        })
-        describe('Terminate choosing', () => {
-            let returnObj;
-            const question = {
-                qId: "testMC",
-                text: "questionText",
-                options: ["MC1", "MC2"],
-                qType: "multiChoice"
-            };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentAnswer : ["MC1"],
-                currentQuestion: question,
-            }
-            it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, config.phrases.keyboards.terminateAnswer[part.parameters.language])
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            });
-            let participant;
-            it('Should have added answers to participant answer and current answer', async () => {
-                participant = await participants.get(part.uniqueId);
-                let latestAns = participant.answers[participant.answers.length-1].answer;
-                expect(latestAns).to.eql(["MC1"]);
-                expect(participant.currentAnswer).to.eql(latestAns);
             })
-            it('Should be in answerReceived state', async () => {
-                expect(participant.currentState).to.eql("answerReceived");
-            })
-        })
-        describe('Options missing', () => {
-            let returnObj;
-            const question = {
-                qId: "testMC",
-                text: "questionText",
-                qType: "multiChoice"
-            };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return failure', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "toast")
+            it('Should fail when new value not bool', async () => {
+                let actionObj = {
+                    aType : "setBooleanVar",
+                    args : ["testBool", "true"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            });
-        })
-        describe('Language missing', () => {
-            let returnObj;
-            const question = {
-                qId: "testMC",
-                text: "questionText",
-                qType: "multiChoice"
-            };
-            const part = {
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return failure', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "toast")
+                console.log(returnObj.data);
+            })
+            it('Should fail when variable not recognized', async () => {
+                let actionObj = {
+                    aType : "setBooleanVar",
+                    args : ["testBoolbs", true]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            });
-        })
-
-    })
-
-    describe('Freeform text', () => {
-
-        describe('Answer is valid text', () => {
-            let returnObj;
-            const question = {
-                qId: "testF",
-                text: "questionText",
-                qType: "freeform"
-            };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "Freeform test")
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            });
-            let participant;
-            it('Should have updated current answer', async () => {
-                participant = await participants.get(part.uniqueId)
-                expect(participant.currentAnswer).to.eql(["Freeform test"]);
-            });
-            it('Should have added to latest answer', async () => {
-                let latestAns = participant.answers[participant.answers.length-1].answer;
-                expect(latestAns).to.eql(["Freeform test"]);
-                await participants.eraseCurrentAnswer(part.uniqueId);
-            });
-            it('Should be in answerReceived state', async () => {
-                expect(participant.currentState).to.eql("answerReceived");
+                console.log(returnObj.data);
             })
-        });
-    })
-    describe('Free-form multiline', () => {
-        let returnObj;
-        const question = {
-            qId: "testFM",
-            text: "questionText",
-            qType: "freeformMulti"
-        };
-        const part = {
-            parameters: {language: "English"},
-            uniqueId: testId,
-            currentState: "awaitingAnswer",
-            currentQuestion: question,
-            currentAnswer: []
-        }
-        describe('First message', () => {
-
-            it('Should return success and no response', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "First message")
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
-            });
-            it('Should have added answer to current answer', async () => {
-                let participant = await participants.get(part.uniqueId);
-                expect(participant.currentAnswer[0]).to.equal("First message");
-                part.currentAnswer.push("First message");
-            });
-        });
-        describe('Second message', () => {
-
-            it('Should return success and no response', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "Second message")
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
-            });
-            it('Should have added answer to current answer', async () => {
-                let participant = await participants.get(part.uniqueId);
-                assert(participant.currentAnswer.includes("First message"));
-                expect(participant.currentAnswer[1]).to.equal("Second message");
-                part.currentAnswer.push("Second message");
-            });
-        });
-        describe('Terminate message', () => {
-
-            it('Should return success and next action', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "done!")
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            });
-            let participant;
-            it('Should have added list of answers to participants latest answer', async () => {
-                participant = await participants.get(part.uniqueId);
-                let latestAns = participant.answers[participant.answers.length-1].answer;
-                expect(latestAns).to.eql(["First message", "Second message"]);
-            })
-            it('Should be in answerReceived state', async () => {
-                expect(participant.currentState).to.eql("answerReceived");
-            })
-        })
-        describe('Fail when participant language missing', () => {
-            let part2 = JSON.parse(JSON.stringify(part));
-            delete part2["parameters"]["language"];
-            it('Should return failure', async () => {
-                returnObj = await AnswerHandler.processAnswer(part2, "done!");
+            it('Should fail when cannot save to variable type', async () => {
+                let actionObj = {
+                    aType : "setBooleanVar",
+                    args : ["testNum", true]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            })
-        })
-
-
-    })
-
-    describe('Number', () => {
-
-        let returnObj;
-        describe('No range', () => {
-            const question = {
-                qId : "test",
-                qType : "number"
-            }
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
-            it('Should return success on integer number', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "234")
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            })
-            it('Should return success on float number', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "234.44")
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            })
-            it('Should return partial failure and repeat question on not number', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "help")
-                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
-                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
-            })
-            it('Should return partial failure and repeat question on empty string', async () => {
-                returnObj = await AnswerHandler.processAnswer(part, "")
-                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
-                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
-            })
-        })
-        describe('With bounds', () => {
-            describe('only lower bound', () =>{
-                const question = {
-                    qId : "test",
-                    qType : "number",
-                    range : {
-                        lower: -10
-                    }
-                }
-                const part = {
-                    parameters: {language: "English"},
-                    uniqueId: testId,
-                    currentState: "awaitingAnswer",
-                    currentQuestion: question,
-                }
-                it('Should return success on integer number above lb', async () => {
-                    returnObj = await AnswerHandler.processAnswer(part, "-5")
-                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                    expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-                })
-                it('Should return success on float number above lb', async () => {
-                    returnObj = await AnswerHandler.processAnswer(part, "11.4")
-                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                    expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-                })
-                it('Should return partial failure and repeat question on int lower than lb', async () => {
-                    returnObj = await AnswerHandler.processAnswer(part, "-12")
-                    expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
-                    expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
-                    // console.log(returnObj.failData);
-                })
-            })
-
-            describe('only upper bound (float)', () =>{
-                const question = {
-                    qId : "test",
-                    qType : "number",
-                    range : {
-                        upper: 10.434
-                    }
-                }
-                const part = {
-                    parameters: {language: "English"},
-                    uniqueId: testId,
-                    currentState: "awaitingAnswer",
-                    currentQuestion: question,
-                }
-                it('Should return success on integer number below ub', async () => {
-                    returnObj = await AnswerHandler.processAnswer(part, "10")
-                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                    expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-                })
-                it('Should return success on float number below ub', async () => {
-                    returnObj = await AnswerHandler.processAnswer(part, "10.433")
-                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                    expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-                })
-                it('Should return partial failure and repeat question on float number below ub', async () => {
-                    returnObj = await AnswerHandler.processAnswer(part, "10.435")
-                    expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
-                    expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
-                    // console.log(returnObj.failData);
-                })
+                console.log(returnObj.data);
             })
 
         })
     })
-});
-describe('Handling no answer', () => {
-    const testQuestion = {
-        qId: "test",
-        text: "testQuestion"
-    }
-    it('Should update answer with no response', async () => {
-        await participants.updateField(testId, "currentState", "awaitingAnswer");
-        await participants.eraseCurrentAnswer(testId);
-        await participants.updateField(testId, "currentQuestion", testQuestion);
-        let returnObj = await AnswerHandler.handleNoResponse(testId);
-        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+    describe('AddAnswerTo', ()=>{
+        describe('String answer', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "addAnswerTo",
+                args : ["testStrArr"]
+            }
+            let outString = "ans1";
+            it('Should return success', async () => {
+                await participants.updateParameter(testPartId, "testStrArr", [])
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = [outString];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(outString)
+            })
+            it('Should have saved the parameter as string in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(participant.parameters[actionObj.args[0]].length).to.equal(1);
+                expect(participant.parameters[actionObj.args[0]]).to.eql([outString]);
+            })
+        })
+        describe('String answer - 2', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "addAnswerTo",
+                args : ["testStrArr"]
+            }
+            let outString = "ans2";
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = [outString];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(outString)
+            })
+            it('Should have saved the parameter as string in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(participant.parameters[actionObj.args[0]].length).to.equal(2);
+                expect(participant.parameters[actionObj.args[0]]).to.eql(["ans1", outString]);
+            })
+        })
+        describe('Number answer', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "addAnswerTo",
+                args : ["testNumArr"]
+            }
+            let outString = "1";
+            let expectedAns = 1;
+            it('Should return success', async () => {
+                await participants.updateParameter(testPartId, "testStrArr", [])
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = [outString];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(expectedAns)
+            })
+            it('Should have saved the parameter as number in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(participant.parameters[actionObj.args[0]].length).to.equal(1);
+                expect(participant.parameters[actionObj.args[0]]).to.eql([expectedAns]);
+            })
+        })
+        describe('Number answer - 2', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "addAnswerTo",
+                args : ["testNumArr"]
+            }
+            let outString = "2";
+            let expectedAns = 2;
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = [outString];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(expectedAns)
+            })
+            it('Should have saved the parameter as number in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(participant.parameters[actionObj.args[0]].length).to.equal(2);
+                expect(participant.parameters[actionObj.args[0]]).to.eql([1, expectedAns]);
+            })
+        })
+        describe('Number answer fails when not a number', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "addAnswerTo",
+                args : ["testNumArr"]
+            }
+            let outString = "spork";
+            let expectedAns = 2;
+            it('Should return failure', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = [outString];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should not have saved the parameter as number in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(participant.parameters[actionObj.args[0]].length).to.equal(2);
+                expect(participant.parameters[actionObj.args[0]]).to.eql([1, expectedAns]);
+            })
+        })
+        describe('Fails', () => {
+            let returnObj;
+            let outString = "23";
+            let expectedOut = 23;
 
-        let participant = await participants.get(testId);
-        let lastAnswer = participant.answers[participant.answers.length-1];
-        expect(lastAnswer.answer).to.eql([DevConfig.NO_RESPONSE_STRING]);
-        expect(lastAnswer.qId).to.equal(testQuestion.qId);
-        expect(lastAnswer.text).to.equal(testQuestion.text);
-        expect(participant.currentState).to.equal("answerReceived");
-    });
-    it('Should update answer with invalid answer', async () => {
-        await participants.updateField(testId, "currentState", "invalidAnswer");
-        await participants.eraseCurrentAnswer(testId);
-        await participants.updateField(testId, "currentQuestion", testQuestion);
-        let returnObj = await AnswerHandler.handleNoResponse(testId);
-        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+            it('Should fail when variable name not string', async () => {
+                let actionObj = {
+                    aType : "saveAnswerTo",
+                    args : [234]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["hello"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+            it('Should fail when current answer missing', async () => {
+                let actionObj = {
+                    aType : "saveAnswerTo",
+                    args : ["timezone"]
+                }
+                let participant = await participants.get(testPartId);
+                delete participant.currentAnswer;
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+            it('Should fail when variable not recognized', async () => {
+                let actionObj = {
+                    aType : "saveAnswerTo",
+                    args : ["timezone2"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+            it('Should fail when cannot add to variable type', async () => {
+                let actionObj = {
+                    aType : "saveAnswerTo",
+                    args : ["testBool"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
 
-        let participant = await participants.get(testId);
-        let lastAnswer = participant.answers[participant.answers.length-1];
-        expect(lastAnswer.answer).to.eql([DevConfig.INVALID_ANSWER_STRING]);
-        expect(lastAnswer.qId).to.equal(testQuestion.qId);
-        expect(lastAnswer.text).to.equal(testQuestion.text);
-        expect(participant.currentState).to.equal("answerReceived");
-    });
-    it('Should update answer with repeat question', async () => {
-        await participants.updateField(testId, "currentState", "repeatQuestion");
-        await participants.eraseCurrentAnswer(testId);
-        await participants.updateField(testId, "currentQuestion", testQuestion);
-        let returnObj = await AnswerHandler.handleNoResponse(testId);
-        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+        })
+    })
 
-        let participant = await participants.get(testId);
-        let lastAnswer = participant.answers[participant.answers.length-1];
-        expect(lastAnswer.answer).to.eql([DevConfig.REPEAT_QUESTION_STRING]);
-        expect(lastAnswer.qId).to.equal(testQuestion.qId);
-        expect(lastAnswer.text).to.equal(testQuestion.text);
-        expect(participant.currentState).to.equal("answerReceived");
-    });
-    it('Should update answer with current Answer', async () => {
-        const currentAnswer = ["a","b","c"];
-        await participants.updateField(testId, "currentState", "awaitingAnswer");
-        await participants.updateField(testId,"currentAnswer", currentAnswer);
-        await participants.updateField(testId, "currentQuestion", testQuestion);
-        let returnObj = await AnswerHandler.handleNoResponse(testId);
-        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-
-        let participant = await participants.get(testId);
-        let lastAnswer = participant.answers[participant.answers.length-1];
-        expect(lastAnswer.answer).to.eql(currentAnswer);
-        expect(lastAnswer.qId).to.equal(testQuestion.qId);
-        expect(lastAnswer.text).to.equal(testQuestion.text);
-        expect(participant.currentState).to.equal("answerReceived");
-
-    });
-
-    it('Should not do anything when not awaiting answer', async () => {
-        await participants.updateField(testId, "currentState", "answerReceived");
-        let returnObj = await AnswerHandler.handleNoResponse(testId);
-        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        expect(returnObj.data).to.equal("");
-    });
 })
+
 describe('Severing DB connection', () => {
     it('Should remove participant', async () => {
-        await participants.remove(testId);
-        let participant = await participants.get(testId);
+        await participants.remove(testPartId);
+        let participant = await participants.get(testPartId);
         expect(participant).to.be.null;
+    });
+    it('Should remove experiment', async () => {
+        await experiments.remove(config.experimentId);
+        let experiment = await experiments.get(config.experimentId);
+        expect(experiment).to.be.null;
+    });
+    it('Should remove idMap', async () => {
+        await idMaps.remove(config.experimentId);
+        let experiment = await idMaps.getExperiment(config.experimentId);
+        expect(experiment).to.be.null;
     });
 
     it('Should close connection', async () => {

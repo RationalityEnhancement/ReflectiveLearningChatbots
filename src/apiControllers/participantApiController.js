@@ -103,6 +103,38 @@ exports.updateParameter = async (uniqueId, param, value) => {
     console.error(err);
   }
 }
+// Update the 'parameters' field of the participant by adding a new value
+exports.addToArrParameter = async (uniqueId, param, value) => {
+
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    let updatedParams = participant.parameters;
+    updatedParams[param].push(value);
+    participant.parameters = updatedParams;
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to add value to parameter');
+    console.error(err);
+  }
+}
+
+// Clear the value of a given parameters
+exports.clearArrParamValue = async (uniqueId, param) => {
+
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    let updatedParams = participant.parameters;
+    if(Array.isArray(updatedParams[param])){
+      updatedParams[param] = [];
+    }
+    participant.parameters = updatedParams;
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to add value to parameter');
+    console.error(err);
+  }
+}
+
 
 // Add an answer to the end of a chronological list of answers
 // given by the participants in response to question prompts

@@ -616,6 +616,7 @@ class ConfigParser{
                 let chosenOptionIdx;
                 try{
                     let options = participant.currentQuestion.options;
+                    if(!Array.isArray(options)) throw "Options not valid"
                     chosenOptionIdx = expObjCopy.operand1.value.map(el => options.indexOf(el));
                 } catch(err){
                     return ReturnMethods.returnFailure("CParser: Could not find options to compare HAS_CHOICE_IDX");

@@ -51,6 +51,9 @@ let processNextSteps = async(bot, uniqueId) => {
         return ReturnMethods.returnFailure("LHandler: Unable to find participant chat ID while processing next");
     }
 
+    let userInfo = await bot.telegram.getChat(secretMap.chatId);
+    participant["firstName"] = userInfo.first_name;
+
     // Get all reply messages and send
     let replyMessagesObj = this.getNextReplies(participant, currentQuestion);
     if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
@@ -210,7 +213,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
 let getNextActions = (participant, currentQuestion) => {
 
     // Validating parameters
-    let requiredPartFields = ["currentAnswer"];
+    let requiredPartFields = ["currentAnswer", "firstName"];
     for(let i = 0; i < requiredPartFields.length; i++){
         if(!(requiredPartFields[i] in participant)){
             return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
@@ -224,7 +227,7 @@ let getNextActions = (participant, currentQuestion) => {
     } else if(!!currentQuestion.cNextActions && currentQuestion.cNextActions.length > 0){
         // Conditional next actions
         // Evaluate the condition
-        let nextActionsObj = ConfigParser.evaluateAnswerConditionsOld(currentQuestion.cNextActions, currentQuestion.options, participant.currentAnswer)
+        let nextActionsObj = ConfigParser.evaluateAnswerConditions(participant, currentQuestion.cNextActions)
         if(nextActionsObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure( "LHandler: Could not process cond next actions: " + nextActionsObj.data);
         } else if (nextActionsObj.returnCode === DevConfig.SUCCESS_CODE) {
@@ -247,7 +250,7 @@ module.exports.getNextActions = getNextActions;
  * @returns {{returnCode: *, data: *}}
  */
 let getNextQuestion = (participant, currentQuestion) => {
-    let requiredPartFields = ["currentAnswer"];
+    let requiredPartFields = ["currentAnswer", "firstName"];
     for(let i = 0; i < requiredPartFields.length; i++){
         if(!(requiredPartFields[i] in participant)){
             return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
@@ -260,8 +263,7 @@ let getNextQuestion = (participant, currentQuestion) => {
     } else if(!!currentQuestion.cNextQuestions && currentQuestion.cNextQuestions.length > 0){
         // Search for conditional next question
         // Evaluate the condition specified
-        let nextQuestionsObj = ConfigParser.evaluateAnswerConditionsOld(currentQuestion.cNextQuestions,
-            currentQuestion.options, participant.currentAnswer);
+        let nextQuestionsObj = ConfigParser.evaluateAnswerConditions(participant, currentQuestion.cNextQuestions);
         if(nextQuestionsObj.returnCode === DevConfig.FAILURE_CODE){
             // Error while processing
             return ReturnMethods.returnFailure("LHandler: Unable to process cond next question: " + nextQuestionsObj.data);
@@ -285,7 +287,7 @@ module.exports.getNextQuestion = getNextQuestion;
  * @returns {{returnCode: *, data: *}}
  */
 let getNextReplies = (participant, currentQuestion) => {
-    let requiredPartFields = ["currentAnswer"];
+    let requiredPartFields = ["currentAnswer", "firstName"];
     for(let i = 0; i < requiredPartFields.length; i++){
         if(!(requiredPartFields[i] in participant)){
             return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
@@ -300,7 +302,7 @@ let getNextReplies = (participant, currentQuestion) => {
         let options = currentQuestion.options;
         let lastAnswer = participant.currentAnswer;
         // Evaluate the condition to get the appropriate result
-        let replyMessagesObj = ConfigParser.evaluateAnswerConditionsOld(rules, options, lastAnswer);
+        let replyMessagesObj = ConfigParser.evaluateAnswerConditions(participant, rules);
         if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
             // Error while evaluating
             return ReturnMethods.returnFailure("LHandler: Could not process conditional replies" + replyMessagesObj.data);

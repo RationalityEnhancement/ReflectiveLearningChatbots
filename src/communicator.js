@@ -45,8 +45,10 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
     let language = participant.parameters.language;
     let delayMs = 500;
 
-    let userInfo = await bot.telegram.getChat(chatId);
-    participant["firstName"] = userInfo.first_name;
+    if(!("firstName" in participant)){
+        let userInfo = await bot.telegram.getChat(chatId);
+        participant["firstName"] = userInfo.first_name;
+    }
 
     question.text = substituteVariables(participant, question.text, false);
 
@@ -183,8 +185,10 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
  */
 module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noDelay = false) => {
 
-    let userInfo = await bot.telegram.getChat(chatId);
-    participant["firstName"] = userInfo.first_name;
+    if(!("firstName" in participant)){
+        let userInfo = await bot.telegram.getChat(chatId);
+        participant["firstName"] = userInfo.first_name;
+    }
 
     // TODO: Set reply delay based on length of message?
     // TODO: Send typing notification while typing out message?
@@ -219,8 +223,10 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
  */
 module.exports.sendMessage = async (bot, participant, chatId, message, noDelay = false) => {
 
-    let userInfo = await bot.telegram.getChat(chatId);
-    participant["firstName"] = userInfo.first_name;
+    if(!("firstName" in participant)){
+        let userInfo = await bot.telegram.getChat(chatId);
+        participant["firstName"] = userInfo.first_name;
+    }
 
     let delayMs = message.length * msPerCharacter;
     if(!noDelay){

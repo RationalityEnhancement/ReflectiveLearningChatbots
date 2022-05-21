@@ -2446,7 +2446,7 @@ describe("Evaluate expression object", () => {
         it('Should fail when options missing', () => {
             let expressionObj = {
                 operand1 : {
-                    value : "yes",
+                    value : ["yes"],
                     type : DevConfig.OPERAND_TYPES.STRING_ARRAY
                 },
                 operator : "HAS_CHOICE_IDX",
@@ -2457,6 +2457,23 @@ describe("Evaluate expression object", () => {
             };
             let copyPart = JSON.parse(JSON.stringify(part));
             delete copyPart["currentQuestion"];
+            let returnObj = ConfigParser.evaluateExpressionObject(copyPart, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        });
+        it('Should fail when options are invalid', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : ["yes"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                },
+                operator : "HAS_CHOICE_IDX",
+                operand2 : {
+                    value : [0,2],
+                    type : DevConfig.OPERAND_TYPES.NUMBER_ARRAY
+                }
+            };
+            let copyPart = JSON.parse(JSON.stringify(part));
+            copyPart["currentQuestion"]["options"] = "options";
             let returnObj = ConfigParser.evaluateExpressionObject(copyPart, expressionObj);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         });

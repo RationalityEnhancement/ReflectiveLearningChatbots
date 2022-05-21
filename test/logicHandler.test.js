@@ -17,7 +17,9 @@ describe('Get Next Action', () => {
                 nextActions : ["saveAnswerTo", "scheduleQuestions"]
             };
             let part = {
-                uniqueId : testId
+                firstName : "John",
+                uniqueId : testId,
+                currentQuestion : question
             }
             let returnObj = LogicHandler.getNextActions(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -29,13 +31,34 @@ describe('Get Next Action', () => {
                 options : "bones",
                 text : "fail",
                 cNextActions : [{
-                    optionIndices : [0],
-                    data : ["saveAnswerTo"]
+                    if : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                    then : ["saveAnswerTo"]
+                }]
+            };
+            let part = {
+                firstName : "John",
+                uniqueId : testId,
+                currentAnswer : ["yes"],
+                currentQuestion : question
+            }
+            let returnObj = LogicHandler.getNextActions(part, question);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+        })
+        it('Should fail when firstname is missing', () => {
+            let question = {
+                qId : "testQ",
+                qType : "singleChoice",
+                options : ["bones"],
+                text : "fail",
+                cNextActions : [{
+                    if : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                    then : ["saveAnswerTo"]
                 }]
             };
             let part = {
                 uniqueId : testId,
-                currentAnswer : ["yes"]
+                currentAnswer : ["yes"],
+                currentQuestion : question
             }
             let returnObj = LogicHandler.getNextActions(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -50,18 +73,20 @@ describe('Get Next Action', () => {
             nextActions : ["saveAnswerTo", "scheduleQuestions"],
             cNextActions : [
                 {
-                    optionIndices: [0],
-                    data : ["saveAnswerTo"]
+                    if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                    then : ["saveAnswerTo"]
                 },
                 {
-                    optionIndices: [1],
-                    data : ["scheduleQuestions"]
+                    if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                    then : ["scheduleQuestions"]
                 }
             ]
         };
         let part = {
+            firstName : "John",
             uniqueId : testId,
-            currentAnswer : ["yes"]
+            currentAnswer : ["yes"],
+            currentQuestion : question
         }
         it('Should get unconditional actions when only that present', () => {
             let copyQuestion = JSON.parse(JSON.stringify(question));
@@ -82,7 +107,7 @@ describe('Get Next Action', () => {
             delete copyQuestion['nextActions'];
             let returnObj = LogicHandler.getNextActions(part, copyQuestion);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(returnObj.data).to.eql(question.cNextActions[0].data);
+            expect(returnObj.data).to.eql(question.cNextActions[0].then);
         })
         it('Should get empty array when no condition met', () => {
             let copyQuestion = JSON.parse(JSON.stringify(question));
@@ -116,7 +141,9 @@ describe('Get Next Replies', () => {
                 replyMessages : ["saveAnswerTo", "scheduleQuestions"]
             };
             let part = {
-                uniqueId : testId
+                firstName : "John",
+                uniqueId : testId,
+                currentQuestion : question
             }
             let returnObj = LogicHandler.getNextReplies(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -128,13 +155,34 @@ describe('Get Next Replies', () => {
                 options : "bones",
                 text : "fail",
                 cReplyMessages : [{
-                    optionIndices : [0],
-                    data : ["saveAnswerTo"]
+                    if : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                    then : ["saveAnswerTo"]
+                }]
+            };
+            let part = {
+                firstName : "John",
+                uniqueId : testId,
+                currentAnswer : ["yes"],
+                currentQuestion : question
+            }
+            let returnObj = LogicHandler.getNextReplies(part, question);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+        })
+        it('Should fail when firstname is missing', () => {
+            let question = {
+                qId : "testQ",
+                qType : "singleChoice",
+                options : ["bones"],
+                text : "fail",
+                cReplyMessages : [{
+                    if : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                    then : ["saveAnswerTo"]
                 }]
             };
             let part = {
                 uniqueId : testId,
-                currentAnswer : ["yes"]
+                currentAnswer : ["yes"],
+                currentQuestion : question
             }
             let returnObj = LogicHandler.getNextReplies(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -149,18 +197,20 @@ describe('Get Next Replies', () => {
             replyMessages : ["saveAnswerTo", "scheduleQuestions"],
             cReplyMessages : [
                 {
-                    optionIndices: [0],
-                    data : ["saveAnswerTo"]
+                    if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                    then : ["saveAnswerTo"]
                 },
                 {
-                    optionIndices: [1],
-                    data : ["scheduleQuestions"]
+                    if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                    then : ["scheduleQuestions"]
                 }
             ]
         };
         let part = {
+            firstName : "John",
             uniqueId : testId,
-            currentAnswer : ["yes"]
+            currentAnswer : ["yes"],
+            currentQuestion : question
         }
         it('Should get unconditional replies when only that present', () => {
             let copyQuestion = JSON.parse(JSON.stringify(question));
@@ -181,7 +231,7 @@ describe('Get Next Replies', () => {
             delete copyQuestion['replyMessages'];
             let returnObj = LogicHandler.getNextReplies(part, copyQuestion);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(returnObj.data).to.eql(question.cReplyMessages[0].data);
+            expect(returnObj.data).to.eql(question.cReplyMessages[0].then);
         })
         it('Should get empty array when no condition met', () => {
             let copyQuestion = JSON.parse(JSON.stringify(question));
@@ -215,7 +265,9 @@ describe('Get Next Question', () => {
                 replyMessages : ["saveAnswerTo", "scheduleQuestions"]
             };
             let part = {
-                uniqueId : testId
+                firstName : "John",
+                uniqueId : testId,
+                currentQuestion : question
             }
             let returnObj = LogicHandler.getNextQuestion(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -227,13 +279,34 @@ describe('Get Next Question', () => {
                 options : "bones",
                 text : "fail",
                 cNextQuestions : [{
-                    optionIndices : [0],
-                    data : ["saveAnswerTo"]
+                    if : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                    then : "saveAnswerTo"
+                }]
+            };
+            let part = {
+                firstName : "John",
+                uniqueId : testId,
+                currentAnswer : ["yes"],
+                currentQuestion : question
+            }
+            let returnObj = LogicHandler.getNextQuestion(part, question);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+        })
+        it('Should fail when firstname is missing', () => {
+            let question = {
+                qId : "testQ",
+                qType : "singleChoice",
+                options : ["bones"],
+                text : "fail",
+                cReplyQuestions : [{
+                    if : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                    then : "saveAnswerTo"
                 }]
             };
             let part = {
                 uniqueId : testId,
-                currentAnswer : ["yes"]
+                currentAnswer : ["yes"],
+                currentQuestion : question
             }
             let returnObj = LogicHandler.getNextQuestion(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -248,18 +321,20 @@ describe('Get Next Question', () => {
             nextQuestion : "saveAnswerTo",
             cNextQuestions : [
                 {
-                    optionIndices: [0],
-                    data : "saveAnswerTo"
+                    if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                    then : "saveAnswerTo"
                 },
                 {
-                    optionIndices: [1],
-                    data : "scheduleQuestions"
+                    if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                    then : "scheduleQuestions"
                 }
             ]
         };
         let part = {
+            firstName : "John",
             uniqueId : testId,
-            currentAnswer : ["yes"]
+            currentAnswer : ["yes"],
+            currentQuestion : question
         }
         it('Should get unconditional question when only that present', () => {
             let copyQuestion = JSON.parse(JSON.stringify(question));
@@ -280,7 +355,7 @@ describe('Get Next Question', () => {
             delete copyQuestion['nextQuestion'];
             let returnObj = LogicHandler.getNextQuestion(part, copyQuestion);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(returnObj.data).to.eql(question.cNextQuestions[0].data);
+            expect(returnObj.data).to.eql(question.cNextQuestions[0].then);
         })
         it('Should get undefined when no condition met', () => {
             let copyQuestion = JSON.parse(JSON.stringify(question));

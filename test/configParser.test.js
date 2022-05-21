@@ -344,7 +344,7 @@ describe('Replacing variables', () => {
     })
 })
 
-describe('Evaluating conditions ', () => {
+describe('Evaluating conditions old', () => {
     const options = ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited", "Secret"];
     const replyRules = [
         {
@@ -365,31 +365,31 @@ describe('Evaluating conditions ', () => {
 
         it('Should return success when match', () =>{
             let answer = ["Frustrated"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[0].data);
         })
         it('Should return narrower match when multiple match', () =>{
             let answer = ["Sad"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[2].data);
         })
         it('Should return success when match - 2', () =>{
             let answer = ["Content"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[1].data);
         })
         it('Should return partial failure when no match', () =>{
             let answer = ["Secret"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
             expect(returnObj.successData).to.equal(DevConfig.NO_RESPONSE_STRING);
         })
         it('Should return partial failure when answer doesnt exist', () =>{
             let answer = ["Peepee"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
             expect(returnObj.successData).to.equal(DevConfig.NO_RESPONSE_STRING);
         })
@@ -397,69 +397,280 @@ describe('Evaluating conditions ', () => {
     describe('Multiple choice ', function () {
         it('Should return correct option when whole match', () =>{
             let answer = ["Frustrated", "Sad"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[0].data);
         })
         it('Should return outweighing match when multiple rules match ', () =>{
             let answer = ["Frustrated", "Sad", "Happy"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[0].data);
         })
         it('Should return first success when even match of even resolution', () =>{
             let answer = ["Frustrated", "Happy"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[0].data);
         })
         it('Should return correct option when whole match - 2', () =>{
             let answer = ["Content", "Excited"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[1].data);
         })
         it('Should return outweighing match when multiple rules match - 2', () =>{
             let answer = ["Content", "Excited", "Stressed"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[1].data);
         })
         it('Should return narrower match when two rules overlap', () =>{
             let answer = ["Sad", "Discontent"];
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules,options,answer);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules,options,answer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[2].data);
         })
     });
     describe('Failures', () => {
         it('Should fail when rule list not list', () => {
-            let returnObj = ConfigParser.evaluateAnswerConditions("test", options, ["Sad"]);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld("test", options, ["Sad"]);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail when options not list', () => {
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules, "options", ["Sad"]);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules, "options", ["Sad"]);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail when answer not list', () => {
-            let returnObj = ConfigParser.evaluateAnswerConditions(replyRules, options, "Sad");
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(replyRules, options, "Sad");
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail when reply rules missing option indices', () => {
             let newRules = JSON.parse(JSON.stringify(replyRules));
             delete newRules[0]['optionIndices'];
-            let returnObj = ConfigParser.evaluateAnswerConditions(newRules, options, ["Sad"]);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(newRules, options, ["Sad"]);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail when reply rules option indices not array', () => {
             let newRules = JSON.parse(JSON.stringify(replyRules));
             newRules[0]['optionIndices'] = "string";
-            let returnObj = ConfigParser.evaluateAnswerConditions(newRules, options, ["Sad"]);
+            let returnObj = ConfigParser.evaluateAnswerConditionsOld(newRules, options, ["Sad"]);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
     })
 })
 
+describe('Evaluating conditions', () => {
+    const options = ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited", "Secret"];
+
+    const participant = {
+        uniqueId : "124",
+        parameters : {
+            language : "English",
+            isSmoker : true
+        },
+        firstName : "John",
+        currentAnswer : [],
+        currentQuestion : {
+            options : options
+        }
+    }
+    describe('If-else', () => {
+        const replyRules = [
+            {
+                if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
+                then: ["Sorry to hear! :("],
+                else : ["Good to know!"]
+            },
+            {
+                if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5}",
+                then: ["Third option! :)"]
+            },
+            {
+                if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
+                then: ["Fourth option! :("]
+            }
+        ]
+        it('Should return success when match', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].then);
+        })
+        it('Should return success when multiple match first', () =>{
+            let answer = ["Frustrated", "Sad", "Happy", "Proud", "Excited"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].then);
+        })
+        it('Should return else when not match', () =>{
+            let answer = ["Happy"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].else);
+        })
+        it('Should return else when answer dont exist', () =>{
+            let answer = ["Peepoo"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].else);
+        })
+        it('Should skip then if not valid', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let rulesCopy = JSON.parse(JSON.stringify(replyRules));
+            rulesCopy[0]["then"] = [];
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, rulesCopy);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[2].then);
+        })
+        it('Should skip else if not valid', () =>{
+            let answer = ["Happy"];
+            participant.currentAnswer = answer;
+            let rulesCopy = JSON.parse(JSON.stringify(replyRules));
+            rulesCopy[0]["else"] = [];
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, rulesCopy);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[1].then);
+        })
+
+
+    })
+    describe('If without else', () => {
+        const replyRules = [
+            {
+                if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
+                then: ["Sorry to hear! :("]
+            },
+            {
+                if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6,7}",
+                then: ["Third option! :)"]
+            }
+        ]
+        it('Should return success when match', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].then);
+        })
+        it('Should return success when multiple match first', () =>{
+            let answer = ["Frustrated", "Sad", "Happy", "Proud", "Excited"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[0].then);
+        })
+        it('Should success on second condition when match', () =>{
+            let answer = ["Happy"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(replyRules[1].then);
+        })
+        it('Should return partial failure when no match', () =>{
+            let answer = ["Secret"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+            expect(returnObj.successData).to.eql(DevConfig.NO_RESPONSE_STRING);
+        })
+        it('Should return partial failure when answer dont exist', () =>{
+            let answer = ["Peepoo"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+            expect(returnObj.successData).to.eql(DevConfig.NO_RESPONSE_STRING);
+        })
+
+
+    })
+    describe('Failures', () => {
+        const replyRules = [
+            {
+                if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
+                then: ["Sorry to hear! :("]
+            },
+            {
+                if: "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6,7}",
+                then: ["Third option! :)"]
+            }
+        ]
+        it('Should fail if rule list is not array', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, "replyRules");
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if participant undefined', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let returnObj = ConfigParser.evaluateAnswerConditions("participant", replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if participant currentAnswer missing with var reference to CURRENT_ANSWER', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let copyPart = JSON.parse(JSON.stringify(participant));
+            delete copyPart["currentAnswer"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(copyPart, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if participant currentQuestion missing with HAS_CHOICE_IDX', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let copyPart = JSON.parse(JSON.stringify(participant));
+            delete copyPart["currentQuestion"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(copyPart, replyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if rule list missing a then', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let copyRules = JSON.parse(JSON.stringify(replyRules));
+            delete copyRules[0]["then"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, copyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if rule list missing an if', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let copyRules = JSON.parse(JSON.stringify(replyRules));
+            delete copyRules[0]["if"];
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, copyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if rule list if not string', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let copyRules = JSON.parse(JSON.stringify(replyRules));
+            copyRules[0]["if"] = 25;
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, copyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if expression syntactically incorrect', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let copyRules = JSON.parse(JSON.stringify(replyRules));
+            copyRules[0]["if"] = "${Participant AND ${isSmoker}";
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, copyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if expression not valid', () =>{
+            let answer = ["Frustrated"];
+            participant.currentAnswer = answer;
+            let copyRules = JSON.parse(JSON.stringify(replyRules));
+            copyRules[0]["if"] = "${Participant} AND ${isSmoker}";
+            let returnObj = ConfigParser.evaluateAnswerConditions(participant, copyRules);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+
+    })
+})
 describe('Parse simple expression', () => {
     it('Should parse parameter and number operands normally', () => {
         let expression = "${Parameter} GREATER_THAN $N{10}"

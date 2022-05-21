@@ -304,7 +304,7 @@ class ConfigParser{
         return ReturnMethods.returnSuccess(newString);
     }
 
-    static evaluateAnswerConditions(ruleList, options, lastAnswer){
+    static evaluateAnswerConditionsOld(ruleList, options, lastAnswer){
         if(!Array.isArray(ruleList)) return ReturnMethods.returnFailure("CParser: Rule List must be list");
         if(!Array.isArray(options)) return ReturnMethods.returnFailure("CParser: Options must be list");
         if(!Array.isArray(lastAnswer)) return ReturnMethods.returnFailure("CParser: Last answer must be list");
@@ -340,6 +340,86 @@ class ConfigParser{
         }
     }
 
+    /**
+     *
+     * Conditional results of cNextReplies, cNextQuestions, and cNextActions can only
+     * either be strings of non-zero length or arrays of non-zero length
+     *
+     * @param result
+     * @returns {boolean}
+     */
+    static isValidConditionalResult(result){
+        if(typeof result === "undefined") return false;
+        if(typeof result === "string" && result.length > 0) return true;
+        if(Array.isArray(result)){
+            return result.length > 0;
+        }
+        return false;
+    }
+
+    /**
+     *
+     * Receive a list of rules of the format:
+     * [ {
+     *      if: valid logical expression,
+     *      then : string or array of outcomes if expression evaluates to true
+     *      else : (optional) string or array of outcomes if expression evaluates to false
+     *  }]
+     *
+     * Evaluates expressions in list order, and returns the first outcome that
+     * corresponds to a true or false evaluation.
+     *
+     * If 'else' is not specified and 'if' evaluates to false, skip to the next rule
+     *
+     * @param participant participant object
+     * @param ruleList list of rules
+     * @returns {{returnCode: *, data: *}|*|{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}}
+     */
+    static evaluateAnswerConditions(participant, ruleList){
+        if(!Array.isArray(ruleList)) return ReturnMethods.returnFailure("CParser: Rule List must be list");
+        if(!participant) return ReturnMethods.returnFailure("CParser: Participant must be valid");
+        if(!ruleList.every(el => ("if" in el) && ("then" in el))){
+            return ReturnMethods.returnFailure("CParser: If and then required for every condition evaluation")
+        }
+        if(!ruleList.every(el => typeof el["if"] === "string")){
+            return ReturnMethods.returnFailure("CParser: Every if condition must be a string")
+        }
+        let found = false;
+        let result;
+        for(let i = 0; i < ruleList.length; i++){
+            // Construct the expression object from the string and evaluate
+            let curConString = ruleList[i]['if'];
+            let constructConObj = this.constructExpressionObject(participant, curConString);
+            if(constructConObj.returnCode === DevConfig.FAILURE_CODE){
+                return constructConObj;
+            }
+            let evaluateConObj = this.evaluateExpressionObject(participant, constructConObj.data);
+            if(evaluateConObj.returnCode === DevConfig.FAILURE_CODE){
+                return evaluateConObj;
+            }
+
+            // "If" is true, return when there is a valid "then" statement
+            if(evaluateConObj.data.value){
+                if(this.isValidConditionalResult(ruleList[i]["then"])){
+                    result = ruleList[i]["then"];
+                    found = true;
+                    break;
+                }
+            } else if(ruleList[i]["else"]){
+                // "if" is false, return if there is a valid "else" statement. Otherwise move on to next condition.
+                if(this.isValidConditionalResult(ruleList[i]["else"])){
+                    result = ruleList[i]["else"];
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if(!found){
+            return ReturnMethods.returnPartialFailure("", DevConfig.NO_RESPONSE_STRING);
+        } else {
+            return ReturnMethods.returnSuccess(result);
+        }
+    }
     /**
      *
      * Recursively evaluates an expression object based on the operands and operators of the object

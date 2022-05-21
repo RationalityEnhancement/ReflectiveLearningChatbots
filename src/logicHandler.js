@@ -224,7 +224,7 @@ let getNextActions = (participant, currentQuestion) => {
     } else if(!!currentQuestion.cNextActions && currentQuestion.cNextActions.length > 0){
         // Conditional next actions
         // Evaluate the condition
-        let nextActionsObj = ConfigParser.evaluateAnswerConditions(currentQuestion.cNextActions, currentQuestion.options, participant.currentAnswer)
+        let nextActionsObj = ConfigParser.evaluateAnswerConditionsOld(currentQuestion.cNextActions, currentQuestion.options, participant.currentAnswer)
         if(nextActionsObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure( "LHandler: Could not process cond next actions: " + nextActionsObj.data);
         } else if (nextActionsObj.returnCode === DevConfig.SUCCESS_CODE) {
@@ -260,7 +260,7 @@ let getNextQuestion = (participant, currentQuestion) => {
     } else if(!!currentQuestion.cNextQuestions && currentQuestion.cNextQuestions.length > 0){
         // Search for conditional next question
         // Evaluate the condition specified
-        let nextQuestionsObj = ConfigParser.evaluateAnswerConditions(currentQuestion.cNextQuestions,
+        let nextQuestionsObj = ConfigParser.evaluateAnswerConditionsOld(currentQuestion.cNextQuestions,
             currentQuestion.options, participant.currentAnswer);
         if(nextQuestionsObj.returnCode === DevConfig.FAILURE_CODE){
             // Error while processing
@@ -300,7 +300,7 @@ let getNextReplies = (participant, currentQuestion) => {
         let options = currentQuestion.options;
         let lastAnswer = participant.currentAnswer;
         // Evaluate the condition to get the appropriate result
-        let replyMessagesObj = ConfigParser.evaluateAnswerConditions(rules, options, lastAnswer);
+        let replyMessagesObj = ConfigParser.evaluateAnswerConditionsOld(rules, options, lastAnswer);
         if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
             // Error while evaluating
             return ReturnMethods.returnFailure("LHandler: Could not process conditional replies" + replyMessagesObj.data);

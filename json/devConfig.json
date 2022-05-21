@@ -27,5 +27,12 @@
     "BOOLEAN" : "bool",
     "VARIABLE" : "var",
     "UNDEFINED" : "undefined"
+  },
+  "VALID_ACTIONS_ARGS" : {
+    "saveAnswerTo" : 1,
+    "setBooleanVar" : 2,
+    "scheduleQuestions" : 0,
+    "assignToCondition" : 0,
+    "addAnswerTo" : 1
   }
 }

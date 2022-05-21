@@ -2,6 +2,8 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const participants = require('../src/apiControllers/participantApiController');
 
+const config = require('../json/config.json')
+
 const mongo = require('mongoose');
 
 const {assert, expect} = require('chai');
@@ -11,7 +13,7 @@ const moment = require('moment-timezone');
 
 const testId = "123";
 const testId2 = "321";
-const testExptId = '98867';
+const testExptId = config.experimentId;
 describe('Participant Controller API: ', () =>{
 		
 
@@ -38,20 +40,28 @@ describe('Participant Controller API: ', () =>{
 		
 	});
 	it('Should initialize a participant', async() => {
-		const testDefaultLang = 'Shona';
 		const expectedParams = {
-			"language": "Shona",
+			"language": "English",
 		};
-		let savedPart = await participants.initializeParticipant(testId, testExptId, testDefaultLang);
+		let savedPart = await participants.initializeParticipant(testId, config);
 		let newPart = await participants.get(testId);
 		expect(newPart['experimentId']).to.equal(testExptId);
-		expect(newPart['parameters']['language']).to.eql("Shona");
+		expect(newPart['parameters']['language']).to.eql(expectedParams.language);
 		expect(newPart['currentState']).to.equal("starting");
+		for(const [key,value] of Object.entries(config.mandatoryParameters)){
+			console.log(key+": "+value);
+			assert(key in newPart.parameterTypes);
+			assert(newPart.parameterTypes[key] === value);
+		}
+		for(const [key,value] of Object.entries(config.customParameters)){
+			assert(key in newPart.parameterTypes);
+			assert(newPart.parameterTypes[key] === value);
+		}
 	})
 	it('Should add and get participant - 2', async () => {
 
 		await participants.add(testId2);
-		var participant = await participants.get(testId2);
+		let participant = await participants.get(testId2);
 		expect(participant).to.not.be.null;
 		expect(participant.uniqueId).to.equal(testId2);
 
@@ -61,13 +71,22 @@ describe('Participant Controller API: ', () =>{
 
 		const testDefaultLang = 'Shona';
 		const expectedParams = {
-			"language": "Shona",
+			"language": "English",
 		};
-		let savedPart = await participants.initializeParticipant(testId2, testExptId, testDefaultLang);
+		let savedPart = await participants.initializeParticipant(testId2, config);
 		let newPart = await participants.get(testId2);
 		expect(newPart['experimentId']).to.equal(testExptId);
-		expect(newPart['parameters']['language']).to.eql("Shona");
+		expect(newPart['parameters']['language']).to.eql(expectedParams.language);
 		expect(newPart['currentState']).to.equal("starting");
+		for(const [key,value] of Object.entries(config.mandatoryParameters)){
+			console.log(key+": "+value);
+			assert(key in newPart.parameterTypes);
+			assert(newPart.parameterTypes[key] === value);
+		}
+		for(const [key,value] of Object.entries(config.customParameters)){
+			assert(key in newPart.parameterTypes);
+			assert(newPart.parameterTypes[key] === value);
+		}
 	})
 	it('Should get all participants by experiment ID', async() => {
 		let pList = await participants.getByExperimentId(testExptId);

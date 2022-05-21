@@ -6,9 +6,10 @@
  * Telegram chat id
  */
 
-const { Participant } = require('../models/Participant');
+const { ParticipantSchemaObject, Participant } = require('../models/Participant');
 const lodash = require('lodash');
 const moment = require('moment-timezone');
+const config = require("../../json/config.json");
 const defaultTimezone = 'Europe/Berlin';
 
 // Get all documents
@@ -50,14 +51,25 @@ exports.add = async (uniqueId) => {
 
 
 // Initialize the experiment document with some basic essential information
-exports.initializeParticipant = async (uniqueId, experimentId, defaultLanguage) => {
+exports.initializeParticipant = async (uniqueId, config) => {
   try{
     const participant = await Participant.findOne({ uniqueId });
-    participant['experimentId'] = experimentId;
+    participant['experimentId'] = config.experimentId;
     participant['parameters'] = {
-      "language" : defaultLanguage
+      "language" : config.defaultLanguage
     };
     participant['currentState'] = "starting";
+    participant["parameterTypes"] = {};
+    for(const[key, value] of Object.entries(config.customParameters)){
+      if(key in ParticipantSchemaObject.parameters){
+        participant["parameterTypes"][key] = value;
+      }
+    }
+    for(const[key, value] of Object.entries(config.mandatoryParameters)){
+      if(key in ParticipantSchemaObject.parameters){
+        participant["parameterTypes"][key] = value;
+      }
+    }
     return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to initializeParticipant');

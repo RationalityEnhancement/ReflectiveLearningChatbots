@@ -1,12 +1,13 @@
 const { Schema, model } = require('mongoose');
 const config = require('../../json/config.json');
-const dataTypeMap = {
-  "string" : String,
-  "number" : Number,
-  "boolean" : Boolean,
-  "date" : Date,
-  "stringArray" : [String]
-};
+const DevConfig = require('../../json/devConfig.json');
+
+const dataTypeMap = {};
+dataTypeMap[DevConfig.OPERAND_TYPES.STRING] = String;
+dataTypeMap[DevConfig.OPERAND_TYPES.NUMBER] = Number;
+dataTypeMap[DevConfig.OPERAND_TYPES.BOOLEAN] = Boolean;
+dataTypeMap[DevConfig.OPERAND_TYPES.STRING_ARRAY] = [String];
+dataTypeMap[DevConfig.OPERAND_TYPES.NUMBER_ARRAY] = [Number];
 
 let schemaObject = {
   experimentId: String,
@@ -14,6 +15,7 @@ let schemaObject = {
   conditionIdx: Number,
   conditionName: String,
   parameters: {},
+  parameterTypes : {},
   currentAnswer: [String],
   currentQuestion: {
     qId: String,
@@ -73,13 +75,18 @@ let schemaObject = {
 }
 
 for(const[key, value] of Object.entries(config.customParameters)){
-  if(value in dataTypeMap)
+  if(value in dataTypeMap){
     schemaObject["parameters"][key] = dataTypeMap[value];
+  }
+
 }
 for(const[key, value] of Object.entries(config.mandatoryParameters)){
-  if(value in dataTypeMap)
+  if(value in dataTypeMap){
     schemaObject["parameters"][key] = dataTypeMap[value];
+  }
 }
+
+exports.ParticipantSchemaObject = schemaObject;
 
 exports.ParticipantSchema = new Schema(schemaObject);
 

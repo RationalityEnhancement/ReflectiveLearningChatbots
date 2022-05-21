@@ -302,15 +302,12 @@
             "nextQuestion" : "eveningQuestions.emotionsReflection",
             "cReplyMessages" : [
               {
-                "optionIndices" : [0,1,2,3],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
+                "then" : {
                   "English" : ["Sorry to hear."],
                   "Deutsch" : ["Das tut mir leid."]
-                }
-              },
-              {
-                "optionIndices" : [4,5,6,7],
-                "data" : {
+                },
+                "else" : {
                   "English" : ["That's great to hear!"],
                   "Deutsch" : ["Das ist gut zu hören!"]
                 }
@@ -379,8 +376,8 @@
             },
             "cReplyMessages" : [
               {
-                "optionIndices": [1],
-                "data": {
+                "if": "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then": {
                   "English" : ["Very well. See you tomorrow!"],
                   "Deutsch" : ["Alles klar. Bis morgen!"]
                 }
@@ -388,8 +385,8 @@
             ],
             "cNextQuestions" : [
               {
-                "optionIndices" : [0],
-                "data" : "eveningQuestions.evaluateReflection"
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "eveningQuestions.evaluateReflection"
               }
             ]
           },
@@ -402,22 +399,22 @@
             "qType" : "likert7",
             "cReplyMessages" : [
               {
-                "optionIndices" : [0,1,2],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2}",
+                "then" : {
                   "English" : ["Sorry to hear, I'll try to do better next time.", "See you tomorrow!"],
                   "Deutsch" : ["Tut mir leid, ich versuche das nächste Mal, Ihnen besser zu helfen.", "Bis morgen!"]
                 }
               },
               {
-                "optionIndices" : [3],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3}",
+                "then" : {
                   "English" : ["Thanks for your feedback.", "See you tomorrow!"],
                   "Deutsch" : ["Danke fürs Feedback.", "Bis morgen!"]
                 }
               },
               {
-                "optionIndices" : [4,5,6],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6}",
+                "then" : {
                   "English" : ["Glad I could help!", "See you tomorrow!"],
                   "Deutsch" : ["Es freut mich, dass ich aushelfen könnte!", "Bis morgen!"]
                 }
@@ -465,14 +462,14 @@
             },
             "cNextQuestions" : [
               {
-                "optionIndices" : [0],
-                "data" : "morningQuestions.addOneGoal"
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "morningQuestions.addOneGoal"
               }
             ],
             "cReplyMessages" : [
               {
-                "optionIndices" : [1],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
                   "English" : ["Got it. Good luck on your goals today, ${FIRST_NAME}!"],
                   "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute, ${FIRST_NAME}!"]
                 }
@@ -516,18 +513,15 @@
             },
             "cNextQuestions" : [
               {
-                "optionIndices" : [0],
-                "data" : "eveningQuestions.moreWork"
-              },
-              {
-                "optionIndices" : [1],
-                "data" : "eveningQuestions.satisfaction"
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "eveningQuestions.moreWork",
+                "else" : "eveningQuestions.satisfaction"
               }
             ],
             "cReplyMessages" : [
               {
-                "optionIndices" : [1],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
                   "English" : ["Very well, let's move on."],
                   "Deutsch" : ["Alles klar, machen wir weiter."]
                 }
@@ -560,22 +554,22 @@
             },
             "cReplyMessages":  [
               {
-                "optionIndices" : [0,1],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+                "then" : {
                   "English" : ["Sorry to hear."],
                   "Deutsch" : ["Das tut mir leid."]
                 }
               },
               {
-                "optionIndices" : [3,4],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+                "then" : {
                   "English" : ["Good to hear!"],
                   "Deutsch" : ["Gut zu hören!"]
                 }
               },
               {
-                "optionIndices" : [2],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+                "then" : {
                   "English" : ["I see."],
                   "Deutsch" : ["Ich verstehe."]
                 }
@@ -596,15 +590,15 @@
             },
             "cReplyMessages" : [
               {
-                "optionIndices" : [0,1,2,3],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
+                "then" : {
                   "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
                   "Deutsch" : ["Das tut mir leid.", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
                 }
               },
               {
-                "optionIndices" : [4,5,6,7],
-                "data" : {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6,7}",
+                "then" : {
                   "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
                   "Deutsch" : ["Das ist gut zu hören!", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
                 }
@@ -694,12 +688,9 @@
             },
             "cNextQuestions" : [
               {
-                "optionIndices" : [0],
-                "data" : "eveningQuestions.howImprove"
-              },
-              {
-                "optionIndices" : [1],
-                "data" : "eveningQuestions.plan"
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "eveningQuestions.howImprove",
+                "else" : "eveningQuestions.plan"
               }
             ]
           },

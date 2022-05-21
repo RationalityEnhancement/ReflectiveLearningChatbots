@@ -27,20 +27,23 @@ let schemaObject = {
     qualtricsLink : String,
     cReplyMessages: [
       {
-        optionIndices : [Number],
-        data: [String]
+        if : String,
+        then: [String],
+        else : [String]
       }
     ],
     cNextQuestions: [
       {
-        optionIndices : [Number],
-        data: String
+        if : String,
+        then: String,
+        else : String
       }
     ],
     cNextActions: [
       {
-        optionIndices : [Number],
-        data: [String]
+        if : String,
+        then: [String],
+        else : [String]
       }
     ],
     range : {

@@ -168,7 +168,8 @@ class AnswerHandler{
                             await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                             let newPart = await participants.get(participant.uniqueId);
 
-                            return ReturnMethods.returnPartialFailure(config.phrases.answerValidation.option[participant.parameters.language], DevConfig.REPEAT_QUESTION_STRING)
+                            let errorMsg = config.phrases.answerValidation.invalidOption[participant.parameters.language]
+                            return ReturnMethods.returnPartialFailure(errorMsg, DevConfig.REPEAT_QUESTION_STRING)
                         }
                     } catch(e){
                         return ReturnMethods.returnFailure("AHandler: SC question options or response phrase not found");
@@ -185,6 +186,13 @@ class AnswerHandler{
                             return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
 
                         } else if(answerText === config.phrases.keyboards.terminateAnswer[participant.parameters.language]) {
+                            // If participant terminates without providing answer
+                            if(participant.currentAnswer.length === 0){
+                                // Repeat the question
+                                await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
+                                let errorMsg = config.phrases.answerValidation.noOptions[participant.parameters.language]
+                                return ReturnMethods.returnPartialFailure(errorMsg, DevConfig.REPEAT_QUESTION_STRING)
+                            }
                             // If participant is finished answering
                             let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
                             // Return failure or trigger the next action
@@ -193,7 +201,8 @@ class AnswerHandler{
                         } else {
                             // Repeat the question
                             await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
-                            return ReturnMethods.returnPartialFailure(config.phrases.answerValidation.option[participant.parameters.language], DevConfig.REPEAT_QUESTION_STRING)
+                            let errorMsg = config.phrases.answerValidation.invalidOption[participant.parameters.language];
+                            return ReturnMethods.returnPartialFailure(errorMsg, DevConfig.REPEAT_QUESTION_STRING)
                         }
                     } catch(e){
                         return ReturnMethods.returnFailure("AHandler: MC question options or response phrase not found");

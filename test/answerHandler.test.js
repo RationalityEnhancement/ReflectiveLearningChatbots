@@ -404,6 +404,27 @@ describe('Process answer', () =>{
                 expect(participant.currentState).to.eql("answerReceived");
             })
         })
+        describe('Terminate choosing when current answer empty', () => {
+            let returnObj;
+            const question = {
+                qId: "testMC",
+                text: "questionText",
+                options: ["MC1", "MC2"],
+                qType: "multiChoice"
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentAnswer : [],
+                currentQuestion: question,
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, config.phrases.keyboards.terminateAnswer[part.parameters.language])
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+            });
+        })
         describe('Options missing', () => {
             let returnObj;
             const question = {

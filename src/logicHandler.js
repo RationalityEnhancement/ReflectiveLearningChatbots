@@ -43,8 +43,6 @@ let processNextSteps = async(bot, uniqueId) => {
     let partLang = participant.parameters.language;
     let partCond = participant.conditionName;
     let currentQuestion = participant.currentQuestion;
-    let debugDev = !!config.debugDev;
-    let debugExp = !!config.debugExp;
 
     // Get chat ID
     let secretMap = await getByUniqueId(config.experimentId, uniqueId);
@@ -62,7 +60,7 @@ let processNextSteps = async(bot, uniqueId) => {
     }
     await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
 
-    // Get all next actions and execute
+    // Get all next actions
     let actionsObj = this.getNextActions(participant, currentQuestion);
     if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
         return actionsObj;
@@ -83,59 +81,6 @@ let processNextSteps = async(bot, uniqueId) => {
         }
         participant["firstName"] = userInfo.first_name;
 
-        // switch(aType){
-        //     case "scheduleQuestions":
-        //         const ScheduleHandler = require("./scheduleHandler");
-        //         // TODO: have disabled overwriting for now, after implementation of /next
-        //         // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
-        //         // if(debugDev){
-        //         //   let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-        //         //   if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
-        //         //     console.error(nowDateObj.data);
-        //         //   }
-        //         //   let qHandler = new QuestionHandler(config);
-        //         //   let schQObj = qHandler.getScheduledQuestions(partCond);
-        //         //   if(schQObj.returnCode === DevConfig.FAILURE_CODE){
-        //         //     return schQObj;
-        //         //   }
-        //         //   ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
-        //         // }
-        //         let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, uniqueId, config, debugExp);
-        //         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-        //             return returnObj
-        //         } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
-        //             return ReturnMethods.returnFailure(returnObj.failData);
-        //         }
-        //         break;
-        //     case "assignToCondition":
-        //         let experiment;
-        //         try{
-        //             experiment = await experiments.get(config.experimentId);
-        //         } catch(err){
-        //             return ReturnMethods.returnFailure("LHandler: could not fetch experiment " + config.experimentId)
-        //         }
-        //         let ID = participant.parameters.pId;
-        //         if(!ID) ID = uniqueId;
-        //         let scheme = config.assignmentScheme;
-        //         let conditionRatios = experiment["conditionAssignments"];
-        //         let currentAssignments = experiment["currentlyAssignedToCondition"];
-        //         let conditionNames = experiment["experimentConditions"];
-        //         let conditionObj = ExperimentUtils.assignToCondition(ID, PIDtoConditionMap, conditionRatios, currentAssignments, scheme);
-        //         if(conditionObj.returnCode === DevConfig.FAILURE_CODE){
-        //             return conditionObj;
-        //         }
-        //         let assignedConditionIdx = conditionObj.data;
-        //         let conditionName = conditionNames[assignedConditionIdx];
-        //         if(debugExp){
-        //             await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, config.debugExp);
-        //         }
-        //         await participants.updateField(uniqueId, "conditionIdx", assignedConditionIdx);
-        //         await participants.updateField(uniqueId, "conditionName", conditionName);
-        //         await experiments.updateConditionAssignees(config.experimentId, assignedConditionIdx, 1);
-        //         break;
-        //     default:
-        //         return ReturnMethods.returnFailure("LHandler: aType not recognized");
-        // }
     }
 
     // Get next question and process

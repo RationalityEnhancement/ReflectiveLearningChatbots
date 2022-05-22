@@ -6,10 +6,10 @@
   "assignmentScheme" : "pid",
   "mandatoryParameters" : {
     "language" : "string",
-    "timezone" : "string"
+    "timezone" : "string",
+    "PID" : "string"
   },
   "customParameters" : {
-    "pId" : "string",
     "testStrArr" : "strArr",
     "testBool" : "boolean",
     "testNum" : "number",
@@ -21,9 +21,13 @@
   "defaultLanguage" : "English",
   "phrases" : {
     "answerValidation": {
-      "option": {
+      "invalidOption": {
         "English": "Please pick <b>only from the given options</b>",
         "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      },
+      "noOptions": {
+        "English": "Please select <b>at least one option</b>",
+        "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>"
       },
       "notANumber": {
         "English": "Please enter a number",
@@ -161,7 +165,7 @@
         "nextActions" : [
           {
             "aType" : "saveAnswerTo",
-            "args" : ["pId"]
+            "args" : ["PID"]
           }
         ],
         "nextQuestion": "setupQuestions.timezoneQuestion"
@@ -318,8 +322,8 @@
             },
             "qType" : "multiChoice",
             "options" : {
-              "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
-              "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
+              "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited", "None"],
+              "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert", "Keine"]
             },
             "nextQuestion" : "eveningQuestions.emotionsReflection",
             "cReplyMessages" : [

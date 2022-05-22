@@ -134,7 +134,12 @@ let processAction = async(bot, config, participant, actionObj) => {
                 || participant.currentAnswer.length === 0){
                 return ReturnMethods.returnFailure("ActHandler: Current answer not available to save");
             }
-            let paramType = participant.parameterTypes[varName];
+            let paramType;
+            try{
+                paramType = participant.parameterTypes[varName];
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
+            }
             switch(paramType){
                 case DevConfig.OPERAND_TYPES.STRING:
                     try{
@@ -174,7 +179,13 @@ let processAction = async(bot, config, participant, actionObj) => {
                 || participant.currentAnswer.length === 0){
                 return ReturnMethods.returnFailure("ActHandler: Current answer not available to save");
             }
-            let aParamType = participant.parameterTypes[aVarName];
+            let aParamType;
+            try{
+                aParamType = participant.parameterTypes[aVarName];
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
+            }
+
             switch(aParamType){
                 case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
                     let conversionObj = ConfigParser.getNumberFromString(participant.currentAnswer[0]);
@@ -195,7 +206,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                     }
                     return ReturnMethods.returnSuccess(participant.currentAnswer[0]);
                 default:
-                    return ReturnMethods.returnFailure("ActHandler: Cannot add to var of type " + paramType);
+                    return ReturnMethods.returnFailure("ActHandler: Cannot add to var of type " + aParamType);
             }
         case "setBooleanVar" :
             let bVarName = actionObj.args[0];
@@ -223,6 +234,29 @@ let processAction = async(bot, config, participant, actionObj) => {
             }
             return ReturnMethods.returnSuccess(newVal);
         case "clearArrVar" :
+            let cVarName = actionObj.args[0];
+            if(typeof cVarName !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: Variable name must be string");
+            }
+
+            let cParamType;
+            try{
+                cParamType = participant.parameterTypes[cVarName];
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
+            }
+            switch(cParamType){
+                case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
+                case DevConfig.OPERAND_TYPES.STRING_ARRAY:
+                    try{
+                        await participants.clearArrParamValue(participant.uniqueId, cVarName);
+                    } catch(err){
+                        return ReturnMethods.returnFailure("ActHandler: could not clear participant parameter " + cVarName);
+                    }
+                    return ReturnMethods.returnSuccess([]);
+                default:
+                    return ReturnMethods.returnFailure("ActHandler: Cannot clear var of type " + cParamType);
+            }
         default:
             return ReturnMethods.returnFailure("LHandler: aType not recognized");
     }

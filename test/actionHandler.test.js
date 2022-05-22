@@ -434,7 +434,7 @@ describe('Processing actions', ()=>{
             let outString = "1";
             let expectedAns = 1;
             it('Should return success', async () => {
-                await participants.updateParameter(testPartId, "testStrArr", [])
+                await participants.updateParameter(testPartId, "testNumArr", [])
                 let participant = await participants.get(testPartId);
                 participant.currentAnswer = [outString];
                 participant.currentState = "answerReceived";
@@ -502,7 +502,7 @@ describe('Processing actions', ()=>{
 
             it('Should fail when variable name not string', async () => {
                 let actionObj = {
-                    aType : "saveAnswerTo",
+                    aType : "addAnswerTo",
                     args : [234]
                 }
                 let participant = await participants.get(testPartId);
@@ -514,7 +514,7 @@ describe('Processing actions', ()=>{
             })
             it('Should fail when current answer missing', async () => {
                 let actionObj = {
-                    aType : "saveAnswerTo",
+                    aType : "addAnswerTo",
                     args : ["timezone"]
                 }
                 let participant = await participants.get(testPartId);
@@ -526,7 +526,7 @@ describe('Processing actions', ()=>{
             })
             it('Should fail when variable not recognized', async () => {
                 let actionObj = {
-                    aType : "saveAnswerTo",
+                    aType : "addAnswerTo",
                     args : ["timezone2"]
                 }
                 let participant = await participants.get(testPartId);
@@ -538,7 +538,93 @@ describe('Processing actions', ()=>{
             })
             it('Should fail when cannot add to variable type', async () => {
                 let actionObj = {
-                    aType : "saveAnswerTo",
+                    aType : "addAnswerTo",
+                    args : ["testBool"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+
+        })
+    })
+    describe('ClearArrVar', ()=>{
+        describe('String array', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "clearArrVar",
+                args : ["testStrArr"]
+            }
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                console.log(participant.parameters);
+                assert(participant.parameters[actionObj.args[0]].length > 0);
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.eql([])
+            })
+            it('Should have cleared the string array in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(participant.parameters[actionObj.args[0]].length).to.equal(0);
+            })
+        })
+        describe('Number array', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "clearArrVar",
+                args : ["testNumArr"]
+            }
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                assert(participant.parameters[actionObj.args[0]].length > 0);
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.eql([])
+            })
+            it('Should have cleared the num array in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(participant.parameters[actionObj.args[0]].length).to.equal(0);
+            })
+        })
+        describe('Fails', () => {
+            let returnObj;
+            let outString = "23";
+            let expectedOut = 23;
+
+            it('Should fail when variable name not string', async () => {
+                let actionObj = {
+                    aType : "clearArrVar",
+                    args : [234]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["hello"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+            it('Should fail when variable not recognized', async () => {
+                let actionObj = {
+                    aType : "clearArrVar",
+                    args : ["timezone2"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+            it('Should fail when cannot clear variable type', async () => {
+                let actionObj = {
+                    aType : "clearArrVar",
                     args : ["testBool"]
                 }
                 let participant = await participants.get(testPartId);

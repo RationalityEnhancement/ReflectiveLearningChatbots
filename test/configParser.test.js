@@ -102,7 +102,7 @@ describe('Replacing variables', () => {
         currentAnswer: ["Mon", "Tue", "Wed"],
         uniqueId: "12345",
         parameters : {
-            "pId" : "80085",
+            "PID" : "80085",
             "pLength" : undefined
         }
     }
@@ -122,10 +122,10 @@ describe('Replacing variables', () => {
             expect(returnObj.data).to.equal(participant.currentAnswer);
         })
         it('Should fetch if variable name is param', () => {
-            let testString = "pId";
+            let testString = "PID";
             let returnObj = ConfigParser.getVariable(participant, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(returnObj.data).to.equal(participant.parameters.pId);
+            expect(returnObj.data).to.equal(participant.parameters.PID);
         })
         it('Should fail if participant undefined', () => {
             let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
@@ -997,6 +997,48 @@ describe('Getting values from strings', () => {
         it('Should fail when empty string', () => {
             let testStr = "  ";
             let returnObj = ConfigParser.getNumberFromString(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
+    describe('Parse Boolean Token', () => {
+        it('Should return true (case insensitive)', () => {
+            let testStr = "$B{tRuE}";
+            let expectedVal = true;
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return false (case insensitive)', () => {
+            let testStr = "$B{FalSe}";
+            let expectedVal = false;
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail when not either true or false', () => {
+            let testStr = "$B{afd}";
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt start with $B{ ', () => {
+            let testStr = "${true}";
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt end with } ', () => {
+            let testStr = "$B{true";
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
 
         })

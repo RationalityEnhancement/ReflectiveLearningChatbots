@@ -20,12 +20,20 @@
   "VALID_BOOLEAN_CONSTANTS" : ["TRUE", "FALSE"],
   "OPERAND_TYPES" : {
     "EXPRESSION" : "exp",
-    "NUMBER": "num",
+    "NUMBER": "number",
     "NUMBER_ARRAY" : "numArr",
     "STRING" : "string",
     "STRING_ARRAY" : "strArr",
-    "BOOLEAN" : "bool",
+    "BOOLEAN" : "boolean",
     "VARIABLE" : "var",
     "UNDEFINED" : "undefined"
+  },
+  "VALID_ACTIONS_ARGS" : {
+    "saveAnswerTo" : 1,
+    "setBooleanVar" : 2,
+    "scheduleQuestions" : 0,
+    "assignToCondition" : 0,
+    "addAnswerTo" : 1,
+    "clearArrVar" : 1
   }
 }

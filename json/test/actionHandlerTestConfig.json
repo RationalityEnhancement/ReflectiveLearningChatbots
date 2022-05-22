@@ -1,17 +1,8 @@
 {
-  "experimentName" : "QHandler",
+  "experimentName" : "ActHandler",
   "experimentId" : "12345",
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
-  "mandatoryParameters" : {
-    "language" : "string",
-    "PID" : "number"
-  },
-  "customParameters" : {
-    "isSmoker" : "boolean",
-    "groups" : "strArr",
-    "groupIds" : "numArr"
-  },
   "assignmentScheme" : "pid",
   "debugDev" : false,
   "debugExp" : false,

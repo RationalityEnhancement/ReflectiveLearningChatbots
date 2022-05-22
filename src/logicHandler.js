@@ -7,8 +7,10 @@ const QuestionHandler = require('./questionHandler');
 const ConfigParser = require('./configParser')
 const Communicator = require('./communicator')
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
+const ActionHandler = require("./actionHandler")
 const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = require("../json/PIDCondMap.json");
+const {next} = require("lodash/seq");
 
 /**
  * Logic handler deals with the logic of what is to occur at each step
@@ -42,8 +44,6 @@ let processNextSteps = async(bot, uniqueId) => {
     let partLang = participant.parameters.language;
     let partCond = participant.conditionName;
     let currentQuestion = participant.currentQuestion;
-    let debugDev = !!config.debugDev;
-    let debugExp = !!config.debugExp;
 
     // Get chat ID
     let secretMap = await getByUniqueId(config.experimentId, uniqueId);
@@ -61,80 +61,69 @@ let processNextSteps = async(bot, uniqueId) => {
     }
     await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
 
-    // Get all next actions and execute
+    let nextQuestionObj;
+
+    // Select and construct the question before actions are performed
+    //  i.e., before participant parameters are updated
+    if(currentQuestion.selectQFirst){
+        // Get the next question ID (based on conditions, if necessary)
+        let returnObj = this.getNextQuestion(participant, currentQuestion);
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            return returnObj;
+        }
+
+        // If next question exists, construct next question
+        if(!!returnObj.data){
+            nextQuestionObj = this.constructNextQuestion(participant, returnObj.data);
+            if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
+                return nextQuestionObj;
+            }
+        }
+    }
+    // Get all next actions
     let actionsObj = this.getNextActions(participant, currentQuestion);
     if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
         return actionsObj;
     }
     let nextActions = actionsObj.data;
 
-    // TODO: Move this to actionHandler
     // Process all next actions, if any
     for(let i = 0; i < nextActions.length; i++){
-        let aType = nextActions[i];
-        switch(aType){
-            case "scheduleQuestions":
-                const ScheduleHandler = require("./scheduleHandler");
-                // TODO: have disabled overwriting for now, after implementation of /next
-                // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
-                // if(debugDev){
-                //   let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-                //   if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
-                //     console.error(nowDateObj.data);
-                //   }
-                //   let qHandler = new QuestionHandler(config);
-                //   let schQObj = qHandler.getScheduledQuestions(partCond);
-                //   if(schQObj.returnCode === DevConfig.FAILURE_CODE){
-                //     return schQObj;
-                //   }
-                //   ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
-                // }
-                let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, uniqueId, config, debugExp);
-                if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                    return returnObj
-                } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
-                    return ReturnMethods.returnFailure(returnObj.failData);
-                }
-                break;
-            case "assignToCondition":
-                let experiment;
-                try{
-                    experiment = await experiments.get(config.experimentId);
-                } catch(err){
-                    return ReturnMethods.returnFailure("LHandler: could not fetch experiment " + config.experimentId)
-                }
-                let ID = participant.parameters.pId;
-                if(!ID) ID = uniqueId;
-                let scheme = config.assignmentScheme;
-                let conditionRatios = experiment["conditionAssignments"];
-                let currentAssignments = experiment["currentlyAssignedToCondition"];
-                let conditionNames = experiment["experimentConditions"];
-                let conditionObj = ExperimentUtils.assignToCondition(ID, PIDtoConditionMap, conditionRatios, currentAssignments, scheme);
-                if(conditionObj.returnCode === DevConfig.FAILURE_CODE){
-                    return conditionObj;
-                }
-                let assignedConditionIdx = conditionObj.data;
-                let conditionName = conditionNames[assignedConditionIdx];
-                if(debugExp){
-                    await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, config.debugExp);
-                }
-                await participants.updateField(uniqueId, "conditionIdx", assignedConditionIdx);
-                await participants.updateField(uniqueId, "conditionName", conditionName);
-                await experiments.updateConditionAssignees(config.experimentId, assignedConditionIdx, 1);
-                break;
-            default:
-                return ReturnMethods.returnFailure("LHandler: aType not recognized");
+        let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i]);
+        if(pActionObj.returnCode === DevConfig.FAILURE_CODE){
+            return pActionObj;
+        }
+        // Get updated participant for next action:
+        try{
+            participant = await participants.get(uniqueId)
+        } catch(err){
+            return ReturnMethods.returnFailure("LHandler: Could not fetch participant again: " + uniqueId)
+        }
+        participant["firstName"] = userInfo.first_name;
+
+    }
+
+    // If question is not selected first, select and construct it after participant parameters are updated
+    if(!currentQuestion.selectQFirst){
+        // Get the ID of the next question
+        let returnObj = this.getNextQuestion(participant, currentQuestion);
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            return returnObj;
+        }
+        if(!!returnObj.data){
+            nextQuestionObj = this.constructNextQuestion(participant, returnObj.data);
+            if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
+                return nextQuestionObj;
+            }
         }
     }
 
-
-    // Get next question and process
-    let nextQuestionObj = this.getNextQuestion(participant, currentQuestion);
-    if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
-        return nextQuestionObj;
-    }
-    if(!!nextQuestionObj.data){
-        await this.sendNextQuestion(bot, participant, secretMap.chatId, config, nextQuestionObj.data);
+    // If a constructed question has been stored in next question obj
+    if(!!nextQuestionObj){
+        let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data, config.debugExp);
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            return returnObj;
+        }
     }
     return ReturnMethods.returnSuccess("");
 
@@ -142,39 +131,24 @@ let processNextSteps = async(bot, uniqueId) => {
 module.exports.processNextSteps = processNextSteps;
 
 /**
-     *
-     * Get the next question based on the ID and send it using communicator
-     *
-     * @param bot Telegram bot instance
-     * @param participant participant object - must contain currentQuestion and parameters.language fields
-     * @param chatId chatId of the participant
-     * @param config loaded config JSON file
-     * @param nextQuestionId ID of the next question to be sent
-     * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
-     */
-module.exports.sendNextQuestion = async (bot, participant, chatId, config, nextQuestionId) => {
+ *
+ * Function to construct the next question with some error handling
+ *
+ * @param participant
+ * @param nextQuestionId
+ * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
+ */
+module.exports.constructNextQuestion = (participant, nextQuestionId) => {
     let requiredPartFields = ["conditionName", "parameters"];
     for(let i = 0; i < requiredPartFields.length; i++){
         if(!(requiredPartFields[i] in participant)){
-            return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
+            return ReturnMethods.returnFailure("LHandler(SNQ): Participant requires field " + requiredPartFields[i]);
         }
     }
-
     let qHandler = new QuestionHandler(config);
     let conditionName = participant["conditionName"];
     let language = participant.parameters["language"];
-
-    let debugDev = config.debugDev;
-    let debugExp = config.debugExp;
-
-    let nextQObj = qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
-    if(nextQObj.returnCode === DevConfig.FAILURE_CODE){
-        return nextQObj;
-    } else {
-        let nextQ = nextQObj.data;
-        await this.sendQuestion(bot, participant, chatId, nextQ, debugExp);
-        return ReturnMethods.returnSuccess("");
-    }
+    return qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
 }
 
 /**
@@ -216,7 +190,7 @@ let getNextActions = (participant, currentQuestion) => {
     let requiredPartFields = ["currentAnswer", "firstName"];
     for(let i = 0; i < requiredPartFields.length; i++){
         if(!(requiredPartFields[i] in participant)){
-            return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
+            return ReturnMethods.returnFailure("LHandler(GNA): Participant requires field " + requiredPartFields[i]);
         }
     }
 
@@ -253,7 +227,7 @@ let getNextQuestion = (participant, currentQuestion) => {
     let requiredPartFields = ["currentAnswer", "firstName"];
     for(let i = 0; i < requiredPartFields.length; i++){
         if(!(requiredPartFields[i] in participant)){
-            return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
+            return ReturnMethods.returnFailure("LHandler(GNQ): Participant requires field " + requiredPartFields[i]);
         }
     }
     let nextQuestion;
@@ -290,7 +264,7 @@ let getNextReplies = (participant, currentQuestion) => {
     let requiredPartFields = ["currentAnswer", "firstName"];
     for(let i = 0; i < requiredPartFields.length; i++){
         if(!(requiredPartFields[i] in participant)){
-            return ReturnMethods.returnFailure("LHandler: Participant requires field " + requiredPartFields[i]);
+            return ReturnMethods.returnFailure("LHandler(GNR): Participant requires field " + requiredPartFields[i]);
         }
     }
     // Search for unconditional replies

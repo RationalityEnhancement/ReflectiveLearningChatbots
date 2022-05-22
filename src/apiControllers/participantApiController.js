@@ -6,9 +6,10 @@
  * Telegram chat id
  */
 
-const { Participant } = require('../models/Participant');
+const { ParticipantSchemaObject, Participant } = require('../models/Participant');
 const lodash = require('lodash');
 const moment = require('moment-timezone');
+const config = require("../../json/config.json");
 const defaultTimezone = 'Europe/Berlin';
 
 // Get all documents
@@ -50,14 +51,25 @@ exports.add = async (uniqueId) => {
 
 
 // Initialize the experiment document with some basic essential information
-exports.initializeParticipant = async (uniqueId, experimentId, defaultLanguage) => {
+exports.initializeParticipant = async (uniqueId, config) => {
   try{
     const participant = await Participant.findOne({ uniqueId });
-    participant['experimentId'] = experimentId;
+    participant['experimentId'] = config.experimentId;
     participant['parameters'] = {
-      "language" : defaultLanguage
+      "language" : config.defaultLanguage
     };
     participant['currentState'] = "starting";
+    participant["parameterTypes"] = {};
+    for(const[key, value] of Object.entries(config.customParameters)){
+      if(key in ParticipantSchemaObject.parameters){
+        participant["parameterTypes"][key] = value;
+      }
+    }
+    for(const[key, value] of Object.entries(config.mandatoryParameters)){
+      if(key in ParticipantSchemaObject.parameters){
+        participant["parameterTypes"][key] = value;
+      }
+    }
     return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to initializeParticipant');
@@ -91,6 +103,38 @@ exports.updateParameter = async (uniqueId, param, value) => {
     console.error(err);
   }
 }
+// Update the 'parameters' field of the participant by adding a new value
+exports.addToArrParameter = async (uniqueId, param, value) => {
+
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    let updatedParams = participant.parameters;
+    updatedParams[param].push(value);
+    participant.parameters = updatedParams;
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to add value to parameter');
+    console.error(err);
+  }
+}
+
+// Clear the value of a given parameters
+exports.clearArrParamValue = async (uniqueId, param) => {
+
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    let updatedParams = participant.parameters;
+    if(Array.isArray(updatedParams[param])){
+      updatedParams[param] = [];
+    }
+    participant.parameters = updatedParams;
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to add value to parameter');
+    console.error(err);
+  }
+}
+
 
 // Add an answer to the end of a chronological list of answers
 // given by the participants in response to question prompts

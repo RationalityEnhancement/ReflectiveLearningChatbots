@@ -6,10 +6,14 @@
   "assignmentScheme" : "pid",
   "mandatoryParameters" : {
     "language" : "string",
-    "timezone" : "string"
+    "timezone" : "string",
+    "PID" : "string"
   },
   "customParameters" : {
-    "pId" : "string"
+    "testStrArr" : "strArr",
+    "testBool" : "boolean",
+    "testNum" : "number",
+    "testNumArr" : "numArr"
   },
   "debugExp": true,
   "debugDev" : true,
@@ -17,9 +21,13 @@
   "defaultLanguage" : "English",
   "phrases" : {
     "answerValidation": {
-      "option": {
+      "invalidOption": {
         "English": "Please pick <b>only from the given options</b>",
         "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      },
+      "noOptions": {
+        "English": "Please select <b>at least one option</b>",
+        "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>"
       },
       "notANumber": {
         "English": "Please enter a number",
@@ -132,7 +140,10 @@
           "English" : ["English", "Deutsch"],
           "Deutsch" : ["English", "Deutsch"]
         },
-        "saveAnswerTo" : "language",
+        "nextActions" : [{
+          "aType" : "saveAnswerTo",
+          "args" : ["language"]
+        }],
         "nextQuestion" : "setupQuestions.pIdQuestion",
         "start" : true
       },
@@ -143,7 +154,6 @@
           "Deutsch": "Danke, dass Sie eine Sprache ausgewählt haben.\nBitte geben Sie Ihre Teilnehmer-ID ein, die Ihnen verteilt wurde."
         },
         "qType": "freeform",
-        "saveAnswerTo": "pId",
         "replyMessages": {
           "English": [
             "Thank you, participant ID has been registered"
@@ -152,8 +162,17 @@
             "Danke, Teilnehmer-ID ist erfasst worden"
           ]
         },
-        "nextActions" : ["assignToCondition"],
-        "nextQuestion": "setupQuestions.timezoneQuestion"
+        "nextActions" : [
+          {
+            "aType" : "saveAnswerTo",
+            "args" : ["PID"]
+          },
+          {
+            "aType" : "assignToCondition"
+          }
+        ],
+        "nextQuestion": "setupQuestions.timezoneQuestion",
+        "selectQFirst" : true
 
       },
       {
@@ -187,8 +206,16 @@
             "Danke, Zeitzone ist erfasst worden"
           ]
         },
-        "nextActions" : ["scheduleQuestions"],
-        "saveAnswerTo": "timezone"
+        "nextActions" : [
+          {
+            "aType" : "saveAnswerTo",
+            "args" : ["timezone"]
+          },
+          { "aType" : "scheduleQuestions" },
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["testBool", "$B{true}"]
+          }]
       }
     ]
   },
@@ -296,8 +323,8 @@
             },
             "qType" : "multiChoice",
             "options" : {
-              "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
-              "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
+              "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited", "None"],
+              "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert", "Keine"]
             },
             "nextQuestion" : "eveningQuestions.emotionsReflection",
             "cReplyMessages" : [
@@ -497,6 +524,12 @@
             "range" : {
               "lower" : 0
             },
+            "nextActions" : [
+              {
+                "aType" : "addAnswerTo",
+                "args" : ["testNumArr"]
+              }
+            ],
             "nextQuestion" : "eveningQuestions.anythingElse",
             "start" : true
           },
@@ -552,6 +585,10 @@
               "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
               "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
             },
+            "nextActions" : [{
+              "aType" : "addAnswerTo",
+              "args" : ["testStrArr"]
+            }],
             "cReplyMessages":  [
               {
                 "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
@@ -630,7 +667,15 @@
               "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
               "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
             },
-            "nextQuestion" : "eveningQuestions.goalsImportance"
+            "nextQuestion" : "eveningQuestions.goalsImportance",
+            "nextActions" : [{
+              "aType" : "clearArrVar",
+              "args" : ["testStrArr"]
+              },
+              {
+                "aType" : "clearArrVar",
+                "args" : ["testNumArr"]
+              }]
           },
           {
             "qId" : "goalsImportance",

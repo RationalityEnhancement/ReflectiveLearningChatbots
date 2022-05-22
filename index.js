@@ -334,9 +334,7 @@ bot.start(async ctx => {
   if(!participant){
     try{
       await participants.add(uniqueId);
-      await participants.updateField(uniqueId, 'experimentId', config.experimentId);
-      await participants.updateField(uniqueId, 'parameters', { "language" : config.defaultLanguage });
-      await participants.updateField(uniqueId, 'currentState', 'starting');
+      await participants.initializeParticipant(uniqueId, config);
 
       // Use the new participant henceforth
       participant = await participants.get(uniqueId);
@@ -399,7 +397,7 @@ bot.on('text', async ctx => {
         // Process the next steps
         let nextStepsObj = await LogicHandler.processNextSteps(bot, uniqueId);
         if(nextStepsObj.returnCode === DevConfig.FAILURE_CODE){
-            return nextStepsObj;
+            throw nextStepsObj.data;
         }
 
       }

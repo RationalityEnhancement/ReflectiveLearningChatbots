@@ -56,15 +56,10 @@ describe('Finish answer', () => {
         const addedAnswer = "Europe/Berlin"
         let returnObj, participant;
         it('Should return success with next action string', async () => {
-            testQuestion["saveAnswerTo"] = "timezone";
             returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             delete testQuestion["saveAnswerTo"];
-        });
-        it('Should save string answer to parameter', async () => {
-            participant = await participants.get(testPart.uniqueId);
-            expect(participant.parameters.timezone).to.equal(addedAnswer);
         });
         it('Should have added answer to participant answer list',  async () => {
             participant = await participants.get(testPart.uniqueId);
@@ -408,6 +403,27 @@ describe('Process answer', () =>{
             it('Should be in answerReceived state', async () => {
                 expect(participant.currentState).to.eql("answerReceived");
             })
+        })
+        describe('Terminate choosing when current answer empty', () => {
+            let returnObj;
+            const question = {
+                qId: "testMC",
+                text: "questionText",
+                options: ["MC1", "MC2"],
+                qType: "multiChoice"
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentAnswer : [],
+                currentQuestion: question,
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, config.phrases.keyboards.terminateAnswer[part.parameters.language])
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+            });
         })
         describe('Options missing', () => {
             let returnObj;

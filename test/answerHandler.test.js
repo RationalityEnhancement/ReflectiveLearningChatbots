@@ -56,15 +56,10 @@ describe('Finish answer', () => {
         const addedAnswer = "Europe/Berlin"
         let returnObj, participant;
         it('Should return success with next action string', async () => {
-            testQuestion["saveAnswerTo"] = "timezone";
             returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             delete testQuestion["saveAnswerTo"];
-        });
-        it('Should save string answer to parameter', async () => {
-            participant = await participants.get(testPart.uniqueId);
-            expect(participant.parameters.timezone).to.equal(addedAnswer);
         });
         it('Should have added answer to participant answer list',  async () => {
             participant = await participants.get(testPart.uniqueId);

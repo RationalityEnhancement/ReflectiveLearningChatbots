@@ -22,7 +22,6 @@ let schemaObject = {
     text: String,
     qType: String,
     options: [String],
-    saveAnswerTo: String,
     replyMessages: [String],
     nextActions: [{
       aType : String,
@@ -47,8 +46,14 @@ let schemaObject = {
     cNextActions: [
       {
         if : String,
-        then: [String],
-        else : [String]
+        then: [{
+          aType : String,
+          args : [String]
+        }],
+        else : [{
+          aType : String,
+          args : [String]
+        }]
       }
     ],
     range : {

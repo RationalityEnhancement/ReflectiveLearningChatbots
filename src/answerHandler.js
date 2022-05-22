@@ -84,15 +84,6 @@ class AnswerHandler{
      */
     static async finishAnswering(uniqueId, currentQuestion, fullAnswer){
         try{
-            // Save answer to parameters if necessary
-            if(!!currentQuestion.saveAnswerTo){
-                await participants.updateParameter(uniqueId, currentQuestion.saveAnswerTo, fullAnswer);
-            }
-        } catch(e){
-            ReturnMethods.returnFailure("AHandler: unable to update parameter with answer")
-        }
-
-        try{
             let participant = await participants.get(uniqueId);
             let tz = participant.parameters.timezone;
             // Add the answer to the list of answers in the database

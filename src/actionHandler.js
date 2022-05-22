@@ -2,7 +2,6 @@ const participants = require("./apiControllers/participantApiController");
 const experiments = require("./apiControllers/experimentApiController");
 const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
-const QuestionHandler = require('./questionHandler');
 const ConfigParser = require('./configParser')
 const Communicator = require('./communicator')
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
@@ -93,11 +92,12 @@ let processAction = async(bot, config, participant, actionObj) => {
             // }
             let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, participant.uniqueId, config, debugExp);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                return returnObj
+                return returnObj;
             } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
                 return ReturnMethods.returnFailure(returnObj.failData);
             }
-            break;
+            return returnObj;
+
         case "assignToCondition":
             let experiment;
             try{
@@ -106,11 +106,12 @@ let processAction = async(bot, config, participant, actionObj) => {
                 return ReturnMethods.returnFailure("LHandler: could not fetch experiment " + config.experimentId)
             }
             let ID = participant.parameters.pId;
-            if(!ID) ID = config.uniqueId;
+            if(!ID) ID = participant.uniqueId;
             let scheme = config.assignmentScheme;
             let conditionRatios = experiment["conditionAssignments"];
             let currentAssignments = experiment["currentlyAssignedToCondition"];
             let conditionNames = experiment["experimentConditions"];
+
             let conditionObj = ExperimentUtils.assignToCondition(ID, PIDtoConditionMap, conditionRatios, currentAssignments, scheme);
             if(conditionObj.returnCode === DevConfig.FAILURE_CODE){
                 return conditionObj;
@@ -120,10 +121,18 @@ let processAction = async(bot, config, participant, actionObj) => {
             if(debugExp){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, config.debugExp);
             }
-            await participants.updateField(config.uniqueId, "conditionIdx", assignedConditionIdx);
-            await participants.updateField(config.uniqueId, "conditionName", conditionName);
-            await experiments.updateConditionAssignees(config.experimentId, assignedConditionIdx, 1);
-            break;
+            try{
+                await participants.updateField(participant.uniqueId, "conditionIdx", assignedConditionIdx);
+                await participants.updateField(participant.uniqueId, "conditionName", conditionName);
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: Unable to update condition fields");
+            }
+            try{
+                await experiments.updateConditionAssignees(config.experimentId, assignedConditionIdx, 1);
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: Unable to update experiment condition numbers");
+            }
+            return ReturnMethods.returnSuccess(conditionName);
         case "saveAnswerTo" :
             let varName = actionObj.args[0];
             if(typeof varName !== "string"){

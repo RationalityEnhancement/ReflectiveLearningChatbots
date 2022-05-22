@@ -397,7 +397,7 @@ bot.on('text', async ctx => {
         // Process the next steps
         let nextStepsObj = await LogicHandler.processNextSteps(bot, uniqueId);
         if(nextStepsObj.returnCode === DevConfig.FAILURE_CODE){
-            return nextStepsObj;
+            throw nextStepsObj.data;
         }
 
       }

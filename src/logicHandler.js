@@ -152,42 +152,6 @@ module.exports.constructNextQuestion = (participant, nextQuestionId) => {
 }
 
 /**
-     *
-     * Get the next question based on the ID and send it using communicator
-     *
-     * @param bot Telegram bot instance
-     * @param participant participant object - must contain currentQuestion and parameters.language fields
-     * @param chatId chatId of the participant
-     * @param config loaded config JSON file
-     * @param nextQuestionId ID of the next question to be sent
-     * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
-     */
-module.exports.sendNextQuestion = async (bot, participant, chatId, config, nextQuestionId) => {
-    let requiredPartFields = ["conditionName", "parameters"];
-    for(let i = 0; i < requiredPartFields.length; i++){
-        if(!(requiredPartFields[i] in participant)){
-            return ReturnMethods.returnFailure("LHandler(SNQ): Participant requires field " + requiredPartFields[i]);
-        }
-    }
-
-    let qHandler = new QuestionHandler(config);
-    let conditionName = participant["conditionName"];
-    let language = participant.parameters["language"];
-
-    let debugDev = config.debugDev;
-    let debugExp = config.debugExp;
-
-    let nextQObj = qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
-    if(nextQObj.returnCode === DevConfig.FAILURE_CODE){
-        return nextQObj;
-    } else {
-        let nextQ = nextQObj.data;
-
-        return ReturnMethods.returnSuccess("");
-    }
-}
-
-/**
  *
  * Method to send a single question
  *

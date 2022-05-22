@@ -214,8 +214,8 @@ let processAction = async(bot, config, participant, actionObj) => {
                 return ReturnMethods.returnFailure("ActHandler: Variable name (arg1) must be string");
             }
             let newVal = actionObj.args[1];
-            if(typeof newVal !== "boolean"){
-                return ReturnMethods.returnFailure("ActHandler: Boolean value (arg2) must be boolean");
+            if(typeof newVal !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: Boolean token (arg2) must be string");
             }
             let bParamType;
             try{
@@ -227,12 +227,17 @@ let processAction = async(bot, config, participant, actionObj) => {
             if(bParamType !== DevConfig.OPERAND_TYPES.BOOLEAN){
                 return ReturnMethods.returnFailure("ActHandler: Can save boolean only to boolean param")
             }
+            let boolValObj = ConfigParser.parseBooleanToken(newVal);
+            if(boolValObj.returnCode === DevConfig.FAILURE_CODE){
+                return ReturnMethods.returnFailure("ActHandler: Unable to parse boolean token")
+            }
+            let boolVal = boolValObj.data;
             try{
-                await participants.updateParameter(participant.uniqueId, bVarName, newVal);
+                await participants.updateParameter(participant.uniqueId, bVarName, boolVal);
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: could not update participant params");
             }
-            return ReturnMethods.returnSuccess(newVal);
+            return ReturnMethods.returnSuccess(boolVal);
         case "clearArrVar" :
             let cVarName = actionObj.args[0];
             if(typeof cVarName !== "string"){

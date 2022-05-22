@@ -289,7 +289,7 @@ describe('Processing actions', ()=>{
             let returnObj;
             let actionObj = {
                 aType : "setBooleanVar",
-                args : ["testBool", true]
+                args : ["testBool", "$B{true}"]
             }
             let outString = true;
             it('Should return success', async () => {
@@ -310,7 +310,7 @@ describe('Processing actions', ()=>{
             let returnObj;
             let actionObj = {
                 aType : "setBooleanVar",
-                args : ["testBool", false]
+                args : ["testBool", "$B{false}"]
             }
             let outString = false;
             it('Should return success', async () => {
@@ -335,7 +335,7 @@ describe('Processing actions', ()=>{
             it('Should fail when variable name not string', async () => {
                 let actionObj = {
                     aType : "setBooleanVar",
-                    args : [234, true]
+                    args : [234, "$B{true}"]
                 }
                 let participant = await participants.get(testPartId);
                 participant.currentState = "answerReceived";
@@ -343,10 +343,10 @@ describe('Processing actions', ()=>{
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
                 console.log(returnObj.data);
             })
-            it('Should fail when new value not bool', async () => {
+            it('Should fail when new value not string', async () => {
                 let actionObj = {
                     aType : "setBooleanVar",
-                    args : ["testBool", "true"]
+                    args : ["testBool", true]
                 }
                 let participant = await participants.get(testPartId);
                 participant.currentState = "answerReceived";
@@ -357,7 +357,7 @@ describe('Processing actions', ()=>{
             it('Should fail when variable not recognized', async () => {
                 let actionObj = {
                     aType : "setBooleanVar",
-                    args : ["testBoolbs", true]
+                    args : ["testBoolbs", "$B{true}"]
                 }
                 let participant = await participants.get(testPartId);
                 participant.currentState = "answerReceived";
@@ -368,7 +368,7 @@ describe('Processing actions', ()=>{
             it('Should fail when cannot save to variable type', async () => {
                 let actionObj = {
                     aType : "setBooleanVar",
-                    args : ["testNum", true]
+                    args : ["testNum", "$B{true}"]
                 }
                 let participant = await participants.get(testPartId);
                 participant.currentState = "answerReceived";
@@ -561,7 +561,6 @@ describe('Processing actions', ()=>{
             it('Should return success', async () => {
                 let participant = await participants.get(testPartId);
                 participant.currentState = "answerReceived";
-                console.log(participant.parameters);
                 assert(participant.parameters[actionObj.args[0]].length > 0);
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);

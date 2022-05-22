@@ -947,6 +947,23 @@ class ConfigParser{
 
     /**
      *
+     * Parse a single boolean token of the form $B{TRUE/FALSE}. Return the truth value
+     * if valid, return error if not valid
+     *
+     * @param expression
+     */
+    static parseBooleanToken(expression){
+        if(typeof expression != "string"){
+            return ReturnMethods.returnFailure("CParser: Boolean token must be string");
+        }
+        if(!expression.startsWith("$B{") || !expression.endsWith("}")){
+            return ReturnMethods.returnFailure("CParser: Boolean token in incorrect format - must be $B{...}");
+        }
+        let trimmedExpression = expression.substring(3,expression.length-1);
+        return this.getBooleanFromString(trimmedExpression);
+    }
+    /**
+     *
      * Take a string value and get the corresponding boolean value
      * "TRUE" (case insensitive) => true
      * "FALSE" (case insensitive) => false

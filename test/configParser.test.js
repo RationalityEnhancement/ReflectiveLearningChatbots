@@ -1001,6 +1001,48 @@ describe('Getting values from strings', () => {
 
         })
     })
+    describe('Parse Boolean Token', () => {
+        it('Should return true (case insensitive)', () => {
+            let testStr = "$B{tRuE}";
+            let expectedVal = true;
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return false (case insensitive)', () => {
+            let testStr = "$B{FalSe}";
+            let expectedVal = false;
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail when not either true or false', () => {
+            let testStr = "$B{afd}";
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt start with $B{ ', () => {
+            let testStr = "${true}";
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt end with } ', () => {
+            let testStr = "$B{true";
+            let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
     describe('Number array', () => {
         it('Should return integer array', () => {
             let testStr = "123, 456, 789";

@@ -23,6 +23,7 @@ let schemaObject = {
     qType: String,
     options: [String],
     replyMessages: [String],
+    selectQFirst : Boolean,
     nextActions: [{
       aType : String,
       args : [String]

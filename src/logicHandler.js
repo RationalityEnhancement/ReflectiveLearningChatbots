@@ -10,6 +10,7 @@ const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ActionHandler = require("./actionHandler")
 const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = require("../json/PIDCondMap.json");
+const {next} = require("lodash/seq");
 
 /**
  * Logic handler deals with the logic of what is to occur at each step
@@ -60,6 +61,25 @@ let processNextSteps = async(bot, uniqueId) => {
     }
     await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
 
+    let nextQuestionObj;
+
+    // Select and construct the question before actions are performed
+    //  i.e., before participant parameters are updated
+    if(currentQuestion.selectQFirst){
+        // Get the next question ID (based on conditions, if necessary)
+        let returnObj = this.getNextQuestion(participant, currentQuestion);
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            return returnObj;
+        }
+
+        // If next question exists, construct next question
+        if(!!returnObj.data){
+            nextQuestionObj = this.constructNextQuestion(participant, returnObj.data);
+            if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
+                return nextQuestionObj;
+            }
+        }
+    }
     // Get all next actions
     let actionsObj = this.getNextActions(participant, currentQuestion);
     if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
@@ -83,13 +103,24 @@ let processNextSteps = async(bot, uniqueId) => {
 
     }
 
-    // Get next question and process
-    let nextQuestionObj = this.getNextQuestion(participant, currentQuestion);
-    if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
-        return nextQuestionObj;
+    // If question is not selected first, select and construct it after participant parameters are updated
+    if(!currentQuestion.selectQFirst){
+        // Get the ID of the next question
+        let returnObj = this.getNextQuestion(participant, currentQuestion);
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            return returnObj;
+        }
+        if(!!returnObj.data){
+            nextQuestionObj = this.constructNextQuestion(participant, returnObj.data);
+            if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
+                return nextQuestionObj;
+            }
+        }
     }
-    if(!!nextQuestionObj.data){
-        let returnObj = await this.sendNextQuestion(bot, participant, secretMap.chatId, config, nextQuestionObj.data);
+
+    // If a constructed question has been stored in next question obj
+    if(!!nextQuestionObj){
+        let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data, config.debugExp);
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             return returnObj;
         }
@@ -98,6 +129,27 @@ let processNextSteps = async(bot, uniqueId) => {
 
 }
 module.exports.processNextSteps = processNextSteps;
+
+/**
+ *
+ * Function to construct the next question with some error handling
+ *
+ * @param participant
+ * @param nextQuestionId
+ * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
+ */
+module.exports.constructNextQuestion = (participant, nextQuestionId) => {
+    let requiredPartFields = ["conditionName", "parameters"];
+    for(let i = 0; i < requiredPartFields.length; i++){
+        if(!(requiredPartFields[i] in participant)){
+            return ReturnMethods.returnFailure("LHandler(SNQ): Participant requires field " + requiredPartFields[i]);
+        }
+    }
+    let qHandler = new QuestionHandler(config);
+    let conditionName = participant["conditionName"];
+    let language = participant.parameters["language"];
+    return qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
+}
 
 /**
      *
@@ -130,7 +182,7 @@ module.exports.sendNextQuestion = async (bot, participant, chatId, config, nextQ
         return nextQObj;
     } else {
         let nextQ = nextQObj.data;
-        await this.sendQuestion(bot, participant, chatId, nextQ, debugExp);
+
         return ReturnMethods.returnSuccess("");
     }
 }

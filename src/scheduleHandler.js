@@ -520,6 +520,9 @@ class ScheduleHandler{
                 } catch(err){
                     console.log(err);
                 }
+
+                // Check if there is a condition to display the scheduled question
+                // if yes, evaluate that condition and get the truth value
                 let evaluation = true;
                 if(questionInfo.if){
                     let userInfo = await bot.telegram.getChat(chatId);
@@ -528,6 +531,7 @@ class ScheduleHandler{
                     if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
                         evaluation = evaluationObj.data.value;
                     } else {
+                        // If failure to evaluate, don't show question
                         evaluation = false;
                     }
                 }

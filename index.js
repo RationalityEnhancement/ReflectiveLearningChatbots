@@ -258,12 +258,14 @@ bot.command('next', async ctx => {
             // Send a message about when the question will appear
             let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
 
+            // Show the next question only if it passes the required condition
             let evaluation = true;
             if(nextQObj.if){
                 let evaluationObj = ConfigParser.evaluateConditionString(participant, nextQObj.if)
                 if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
                     evaluation = evaluationObj.data.value;
                 } else {
+                    console.log(evaluationObj.data);
                     evaluation = false;
                 }
             }

@@ -295,10 +295,10 @@ class ScheduleHandler{
                 }
                 let chatId = secretMap.chatId;
                 // TODO: send a message about the scheduled messages anyway, or only when debug mode?
-                if(debug || !debug) {
+                if(config.debugExp) {
                     await Communicator.sendMessage(bot, participant, chatId,
-                        config.phrases.schedule.scheduleNotif[partLang]
-                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '), debug);
+                        "(Debug) " + config.phrases.schedule.scheduleNotif[partLang]
+                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '), config.debugExp);
                 }
                 succeededQuestions.push(scheduleObj.data)
             }

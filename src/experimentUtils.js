@@ -126,6 +126,13 @@ let parseMomentDateString = (dateString) => {
     ReturnMethods.returnFailure(errorMsg);
   }
 
+  let jsDate = new Date();
+  jsDate.setDate(dateObj.days);
+  jsDate.setMonth(dateObj.months-1);
+  jsDate.setFullYear(dateObj.years);
+
+  dateObj.dayOfWeek = jsDate.getDay();
+
   return ReturnMethods.returnSuccess(dateObj);
 }
 
@@ -151,7 +158,60 @@ module.exports.getNowDateObject = (timezone) => {
  */
 module.exports.rotateLeftByOne = (array) => {
   if(!Array.isArray(array)) return [];
+  if(array.length === 0) return [];
   let el = array.shift();
   array.push(el);
   return array;
+}
+
+/**
+ * Takes an array and rotates in place to the left by one
+ * Takes the first item and appends it to the end while preserving the length
+ *
+ * @param array array to be rotated
+ */
+module.exports.rotateLeftByMany = (array, count) => {
+  if(!Array.isArray(array)) return [];
+  if(array.length === 0) return [];
+  for(let i = 0; i < count; i++){
+    this.rotateLeftByOne(array);
+  }
+  return array;
+
+}
+
+/**
+ *
+ * Get the difference in minutes between two objects:
+ *
+ * {
+ *     dayIndex: 0 - 6 (Sun - Sat)
+ *     time: 00:00 - 24:00
+ * }
+ *
+ * @param obj1 first time point
+ * @param obj2 second time point (assumed to be after)
+ */
+module.exports.getMinutesDiff = (obj1, obj2) => {
+  let day1 = obj1.dayIndex;
+  let day2 = obj2.dayIndex;
+
+  let hrs1 = parseInt(obj1.time.substring(0,2));
+  let mins1 = parseInt(obj1.time.substring(3));
+
+  let day1mins = hrs1 * 60 + mins1;
+
+  let hrs2 = parseInt(obj2.time.substring(0,2));
+  let mins2 = parseInt(obj2.time.substring(3));
+  let day2mins = hrs2 * 60 + mins2;
+
+  if(day2 < day1 || (day2 === day1 && day2mins <= day1mins)){
+    day2 += 7;
+  }
+
+  let totalMins1 = day1 * 24 * 60 + day1mins;
+  let totalMins2 = day2 * 24 * 60 + day2mins;
+
+  return totalMins2 - totalMins1;
+
 }

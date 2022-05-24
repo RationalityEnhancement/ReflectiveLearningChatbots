@@ -8,6 +8,7 @@ const assert = require('chai').assert
 const DevConfig = require('../json/devConfig.json');
 const sendQuestion = require('./logicHandler').sendQuestion;
 const ConfigParser = require('./configParser');
+const ExperimentUtils = require('./experimentUtils')
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -17,6 +18,7 @@ class ScheduleHandler{
         "schedules" : {}
     };
     static debugQueue = {};
+    static debugQueueAdjusted = {}
     /**
      *
      * Delete all jobs for a given participant from the local scheduling queue
@@ -61,7 +63,10 @@ class ScheduleHandler{
             return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
                 failedRemovals.join('\n'), succeededRemovals);
         }
-        if(uniqueId in this.debugQueue) delete this.debugQueue[uniqueId];
+        if(uniqueId in this.debugQueue) {
+            delete this.debugQueue[uniqueId];
+            delete this.debugQueueAdjusted[uniqueId];
+        }
         return ReturnMethods.returnSuccess(succeededRemovals)
 
     }
@@ -243,6 +248,7 @@ class ScheduleHandler{
         }
         // Add temporally ordered scheduled questions to participant's debug queue:
         this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestions);
+        this.debugQueueAdjusted[uniqueId] = false;
 
         return ReturnMethods.returnSuccess(succeededQuestions)
     }
@@ -314,6 +320,8 @@ class ScheduleHandler{
         }
         // Add temporally ordered scheduled questions to participant's debug queue:
         this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestionsList);
+        this.debugQueueAdjusted[uniqueId] = false;
+
         return ReturnMethods.returnSuccess(succeededQuestions)
     }
 
@@ -544,6 +552,14 @@ class ScheduleHandler{
         });
     }
 
+    /**
+     *
+     * Takes a list of questions that occur on the same day and
+     * sorts them based on the time of day that they are scheduled
+     *
+     * @param qInfoArray array of questions
+     * @returns {*[]|*}
+     */
     static sortQInfoByTime(qInfoArray){
         if(!Array.isArray(qInfoArray)) return [];
         if(qInfoArray.length === 0) return qInfoArray;
@@ -566,7 +582,21 @@ class ScheduleHandler{
         return sortedArray;
     }
 
-    static getTemporalOrderArray(qInfoArray){
+
+    /**
+     *
+     * Goes through the entire week to form a temporally-ordered list
+     * of all the questions that are scheduled to be asked.
+     *
+     * This is used for debug purposes to scroll through the list of questions
+     *
+     * List is repeated for n weeks to capture full duration of experiment
+     *
+     * @param qInfoArray array of all the scheduled questions as specified in config file
+     * @param numWeeks the number of weeks to repeat
+     * @returns {*[]|*}
+     */
+    static getTemporalOrderArray(qInfoArray, numWeeks){
         if(!Array.isArray(qInfoArray)) return [];
         if(qInfoArray.length === 0) return qInfoArray;
         // Loop through all days, starting from Sunday
@@ -592,8 +622,61 @@ class ScheduleHandler{
                 })
             }
         }
-        return tempOrderArr;
+        let repeatedArray = [].concat(...Array(numWeeks).fill(tempOrderArr));
+        return repeatedArray;
     }
+
+    /**
+     *
+     * Takes a given date and then rotates the array to the left
+     * until the first member of the array is the next question
+     * based on the passed date
+     *
+     * @param qInfoArray the array to be shifted (sorted in temporal order
+     *                  of days of the week and time of the question)
+     * @param date moment timezone date
+     *
+     * @returns the array rotated so that the first in the list corresponds
+     *          to the question in the list which would occurs next after the
+     *          time/day mentioned in the given date
+     */
+    static shiftTemporalOrderArray(qInfoArray, date){
+        if(!Array.isArray(qInfoArray)) return [];
+        if(qInfoArray.length === 0) return qInfoArray;
+
+        let dateObjObj = ExperimentUtils.parseMomentDateString(date.format());
+        if(dateObjObj.returnCode === DevConfig.FAILURE_CODE){
+            return [];
+        }
+        let dateObj = dateObjObj.data;
+        let diffObj = {
+            dayIndex: dateObj.dayOfWeek,
+            time: (dateObj.hours < 10 ? '0' : '') + dateObj.hours + ":" + (dateObj.minutes < 10 ? '0' : '') + dateObj.minutes
+        };
+
+        let closestQIdx = 0;
+        let leastTimeDiff = 10080;
+
+        for(let i = 0; i < qInfoArray.length; i++){
+            let curDay = qInfoArray[i].onDays[0];
+            let curDayIdx = this.dayIndexOrdering.indexOf(curDay);
+            let curTime = qInfoArray[i].atTime;
+            let diff = ExperimentUtils.getMinutesDiff(diffObj,{
+                dayIndex: curDayIdx,
+                time: curTime
+            })
+
+            if(diff < leastTimeDiff){
+                closestQIdx = i;
+                leastTimeDiff = diff;
+            }
+        }
+        ExperimentUtils.rotateLeftByMany(qInfoArray,closestQIdx);
+
+        return qInfoArray;
+    }
+
+
 }
 
 module.exports = ScheduleHandler;

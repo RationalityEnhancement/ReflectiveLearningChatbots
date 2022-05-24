@@ -1,4 +1,5 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const moment = require('moment-timezone');
 
 const participants = require('../src/apiControllers/participantApiController');
 const idMaps = require('../src/apiControllers/idMapApiController')
@@ -76,7 +77,7 @@ describe('Scheduling one question', () =>{
         })
         describe('Building array by temporal order', ()=>{
             it('Should build list in temporal order', () => {
-                let tempOrd = ScheduleHandler.getTemporalOrderArray(testSchQs);
+                let tempOrd = ScheduleHandler.getTemporalOrderArray(testSchQs, 1);
                 expect(tempOrd.length).to.equal(12);
                 assert(tempOrd.every(qInfo => qInfo.onDays.length === 1));
                 let idx = 0;
@@ -118,16 +119,142 @@ describe('Scheduling one question', () =>{
                 idx++;
 
             })
+            it('Should repeat the array for multiple weeks', () => {
+                let numWeeks = 3;
+                let tempOrd = ScheduleHandler.getTemporalOrderArray(testSchQs, numWeeks);
+                expect(tempOrd.length).to.equal(numWeeks * 12);
+                assert(tempOrd.every(qInfo => qInfo.onDays.length === 1));
+                let idx = 0;
+                for(let i = 0; i < numWeeks; i++){
+                    expect(tempOrd[idx].qId).to.equal('test1')
+                    expect(tempOrd[idx].onDays).to.eql(["Sun"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test4')
+                    expect(tempOrd[idx].onDays).to.eql(["Sun"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test2')
+                    expect(tempOrd[idx].onDays).to.eql(["Mon"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test3')
+                    expect(tempOrd[idx].onDays).to.eql(["Tue"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test1')
+                    expect(tempOrd[idx].onDays).to.eql(["Tue"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test3')
+                    expect(tempOrd[idx].onDays).to.eql(["Wed"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test2')
+                    expect(tempOrd[idx].onDays).to.eql(["Wed"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test2')
+                    expect(tempOrd[idx].onDays).to.eql(["Thu"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test1')
+                    expect(tempOrd[idx].onDays).to.eql(["Thu"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test4')
+                    expect(tempOrd[idx].onDays).to.eql(["Fri"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test3')
+                    expect(tempOrd[idx].onDays).to.eql(["Sat"])
+                    idx++;
+                    expect(tempOrd[idx].qId).to.equal('test4')
+                    expect(tempOrd[idx].onDays).to.eql(["Sat"])
+                    idx++;
+                }
+
+            })
             it('Should return empty when not array', () => {
-                let sortedQs = ScheduleHandler.getTemporalOrderArray("lol");
+                let sortedQs = ScheduleHandler.getTemporalOrderArray("lol", 1);
                 assert(Array.isArray(sortedQs));
                 expect(sortedQs.length).to.equal(0)
             })
             it('Should return empty when array empty', () => {
-                let sortedQs = ScheduleHandler.getTemporalOrderArray([]);
+                let sortedQs = ScheduleHandler.getTemporalOrderArray([], 1);
                 assert(Array.isArray(sortedQs));
                 expect(sortedQs.length).to.equal(0)
             })
+        })
+        describe('Rotating temporal array', () => {
+            let testQs = [
+                {
+                    "qId" : "test1",
+                    "atTime" : "09:00",
+                    "onDays" : ["Sun"]
+                },
+                {
+                    "qId" : "test2",
+                    "atTime" : "18:00",
+                    "onDays" : ["Sun"]
+                },
+                {
+                    "qId" : "test3",
+                    "atTime" : "12:00",
+                    "onDays" : ["Mon"]
+                },
+                {
+                    "qId" : "test4",
+                    "atTime" : "19:00",
+                    "onDays" : ["Mon"]
+                },
+                {
+                    "qId" : "test5",
+                    "atTime" : "09:00",
+                    "onDays" : ["Thu"]
+                },
+                {
+                    "qId" : "test6",
+                    "atTime" : "17:00",
+                    "onDays" : ["Fri"]
+                },
+                {
+                    "qId" : "test7",
+                    "atTime" : "21:00",
+                    "onDays" : ["Sat"]
+                },
+                {
+                    "qId" : "test8",
+                    "atTime" : "07:00",
+                    "onDays" : ["Sun"]
+                }
+
+            ]
+            it('Should return correct ordering - 1', () => {
+                let date = moment.tz("2022-05-22 07:59:59", 'Europe/Berlin');
+                let copyQs = JSON.parse(JSON.stringify(testQs));
+                let shiftedQs = ScheduleHandler.shiftTemporalOrderArray(copyQs, date);
+                expect(shiftedQs).to.eql(copyQs);
+                expect(shiftedQs.length).to.equal(testQs.length);
+                expect(shiftedQs[0].qId).to.equal("test1")
+            })
+            it('Should return correct ordering - 2', () => {
+                let date = moment.tz("2022-05-23 16:59:59", 'Europe/Berlin');
+                let copyQs = JSON.parse(JSON.stringify(testQs));
+                let shiftedQs = ScheduleHandler.shiftTemporalOrderArray(copyQs, date);
+                expect(shiftedQs).to.eql(copyQs);
+                expect(shiftedQs.length).to.equal(testQs.length);
+                expect(shiftedQs[0].qId).to.equal("test4")
+            })
+            it('Should return correct ordering - wrap around', () => {
+                let date = moment.tz("2022-05-22 04:59:59", 'Europe/Berlin');
+                let copyQs = JSON.parse(JSON.stringify(testQs));
+                let shiftedQs = ScheduleHandler.shiftTemporalOrderArray(copyQs, date);
+                expect(shiftedQs).to.eql(copyQs);
+                expect(shiftedQs.length).to.equal(testQs.length);
+                expect(shiftedQs[0].qId).to.equal("test8")
+            })
+            it('Should return empty when not array', () => {
+                let sortedQs = ScheduleHandler.shiftTemporalOrderArray("lol", new Date());
+                assert(Array.isArray(sortedQs));
+                expect(sortedQs.length).to.equal(0)
+            })
+            it('Should return empty when array empty', () => {
+                let sortedQs = ScheduleHandler.shiftTemporalOrderArray([], new Date());
+                assert(Array.isArray(sortedQs));
+                expect(sortedQs.length).to.equal(0)
+            })
+
         })
 
     });
@@ -459,7 +586,9 @@ describe('Scheduling one question', () =>{
         });
         it('Should have added jobs to debug list', async () => {
             assert(testId in ScheduleHandler.debugQueue);
+            assert(testId in ScheduleHandler.debugQueueAdjusted)
             assert(Array.isArray(ScheduleHandler.debugQueue[testId]));
+            assert(typeof ScheduleHandler.debugQueueAdjusted[testId] === "boolean");
 
         });
     })
@@ -611,7 +740,9 @@ describe('Scheduling one question', () =>{
         });
         it('Should have added jobs to debug list', async () => {
             assert(testId in ScheduleHandler.debugQueue);
+            assert(testId in ScheduleHandler.debugQueueAdjusted)
             assert(Array.isArray(ScheduleHandler.debugQueue[testId]));
+            assert(typeof ScheduleHandler.debugQueueAdjusted[testId] === "boolean");
         });
 
     })
@@ -798,6 +929,8 @@ describe('Scheduling one question', () =>{
         });
         it('Should remove participant from debug queue', async () => {
             assert(!(testId in ScheduleHandler.debugQueue));
+            assert(!(testId in ScheduleHandler.debugQueueAdjusted));
+
         })
     })
 

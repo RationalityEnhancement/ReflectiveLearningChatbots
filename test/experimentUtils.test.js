@@ -149,44 +149,190 @@ describe('Condition assignment', () => {
 })
 
 describe('Date functions', () => {
-	it('Should parse a moment date string properly (ahead of UTC)', () => {
-		let dateString = "2022-04-29T01:32:34+02:00";
-		let dateObjObj = experimentUtils.parseMomentDateString(dateString);
-		let dateObj = dateObjObj.data;
-		expect(dateObjObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-		expect(dateObj.days).to.equal(29);
-		expect(dateObj.years).to.equal(2022);
-		expect(dateObj.months).to.equal(4);
-		expect(dateObj.hours).to.equal(1);
-		expect(dateObj.minutes).to.equal(32);
-		expect(dateObj.seconds).to.equal(34);
+	describe('Get date object', () => {
+		it('Should parse a moment date string properly (ahead of UTC)', () => {
+			let dateString = "2022-04-29T01:32:34+02:00";
+			let dateObjObj = experimentUtils.parseMomentDateString(dateString);
+			let dateObj = dateObjObj.data;
+			expect(dateObjObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			expect(dateObj.days).to.equal(29);
+			expect(dateObj.years).to.equal(2022);
+			expect(dateObj.months).to.equal(4);
+			expect(dateObj.hours).to.equal(1);
+			expect(dateObj.minutes).to.equal(32);
+			expect(dateObj.seconds).to.equal(34);
+			expect(dateObj.dayOfWeek).to.equal(5);
 
+		})
+
+		it('Should parse a moment date string properly (behind UTC)', () => {
+			let dateString = "2022-05-24T01:32:34-02:00";
+			let dateObjObj = experimentUtils.parseMomentDateString(dateString);
+			let dateObj = dateObjObj.data;
+			expect(dateObjObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			expect(dateObj.days).to.equal(24);
+			expect(dateObj.years).to.equal(2022);
+			expect(dateObj.months).to.equal(5);
+			expect(dateObj.hours).to.equal(1);
+			expect(dateObj.minutes).to.equal(32);
+			expect(dateObj.seconds).to.equal(34);
+			expect(dateObj.dayOfWeek).to.equal(2);
+		})
 	})
-
-	it('Should parse a moment date string properly (behind of UTC)', () => {
-		let dateString = "2022-04-29T01:32:34-02:00";
-		let dateObjObj = experimentUtils.parseMomentDateString(dateString);
-		let dateObj = dateObjObj.data;
-		expect(dateObjObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-		expect(dateObj.days).to.equal(29);
-		expect(dateObj.years).to.equal(2022);
-		expect(dateObj.months).to.equal(4);
-		expect(dateObj.hours).to.equal(1);
-		expect(dateObj.minutes).to.equal(32);
-		expect(dateObj.seconds).to.equal(34);
-
+	describe('Get minutes diff', () => {
+		it('Should work for same day, time2 > time1', () => {
+			let time1 = {
+				dayIndex: 1,
+				time: "13:00"
+			};
+			let time2 = {
+				dayIndex : 1,
+				time: "15:48"
+			}
+			let diff = experimentUtils.getMinutesDiff(time1, time2);
+			expect(diff).to.equal(2*60 + 48);
+		})
+		it('Should work for same day, time2 > time1, min1 > min2', () => {
+			let time1 = {
+				dayIndex: 1,
+				time: "13:50"
+			};
+			let time2 = {
+				dayIndex : 1,
+				time: "15:48"
+			}
+			let diff = experimentUtils.getMinutesDiff(time1, time2);
+			expect(diff).to.equal(60 + 58);
+		})
+		it('Should work for day2 > day1, time2 > time1', () => {
+			let time1 = {
+				dayIndex: 1,
+				time: "13:00"
+			};
+			let time2 = {
+				dayIndex : 4,
+				time: "15:48"
+			}
+			let diff = experimentUtils.getMinutesDiff(time1, time2);
+			expect(diff).to.equal(3 * 24 * 60 + 2*60 + 48);
+		})
+		it('Should work for day2 > day1, time2 < time1', () => {
+			let time1 = {
+				dayIndex: 1,
+				time: "15:48"
+			};
+			let time2 = {
+				dayIndex : 4,
+				time: "13:00"
+			}
+			let diff = experimentUtils.getMinutesDiff(time1, time2);
+			expect(diff).to.equal(3 * 24 * 60 - 2*60 - 48);
+		})
+		it('Should work for day1 > day2, time2 > time1', () => {
+			let time1 = {
+				dayIndex: 3,
+				time: "13:00"
+			};
+			let time2 = {
+				dayIndex : 1,
+				time: "15:48"
+			}
+			let diff = experimentUtils.getMinutesDiff(time1, time2);
+			expect(diff).to.equal(5 * 24 * 60 + 2*60 + 48);
+		})
+		it('Should work for day1 > day2, time2 < time1', () => {
+			let time1 = {
+				dayIndex: 3,
+				time: "15:48"
+			};
+			let time2 = {
+				dayIndex : 1,
+				time: "13:00"
+			}
+			let diff = experimentUtils.getMinutesDiff(time1, time2);
+			expect(diff).to.equal(5 * 24 * 60 - 2*60 - 48);
+		})
+		it('Should work for same day, time2 < time1', () => {
+			let time1 = {
+				dayIndex: 0,
+				time: "15:48"
+			};
+			let time2 = {
+				dayIndex : 0,
+				time: "13:00"
+			}
+			let diff = experimentUtils.getMinutesDiff(time1, time2);
+			expect(diff).to.equal(7 * 24 * 60 - 2*60 - 48);
+		})
 	})
-
 
 })
 
-describe('Rotate left by one', () => {
-	it('Should rotate left normally', () => {
-		let arr = [1,2,3,4,5];
-		let newArr = experimentUtils.rotateLeftByOne(arr);
-		expect(newArr).to.eql(arr);
-		expect(arr.length).to.equal(5);
-		expect(arr[0]).to.equal(2)
-		expect(arr[4]).to.equal(1);
+describe('Rotate left', () => {
+	describe('Rotate left by one', () => {
+		it('Should rotate left normally', () => {
+			let arr = [1,2,3,4,5];
+			let newArr = experimentUtils.rotateLeftByOne(arr);
+			expect(newArr).to.eql(arr);
+			expect(arr.length).to.equal(5);
+			expect(arr[0]).to.equal(2)
+			expect(arr[4]).to.equal(1);
+		})
+		it('Should return empty if array is empty', () => {
+			let arr = [];
+			let newArr = experimentUtils.rotateLeftByOne(arr);
+			expect(newArr).to.eql(arr);
+			expect(arr).to.eql([])
+		})
+		it('Should return empty if arg not array', () => {
+			let arr = "stimp";
+			let newArr = experimentUtils.rotateLeftByOne(arr);
+			expect(newArr).to.eql([])
+		})
+	})
+	describe('Rotate left by many', () => {
+		it('Should rotate left by one', () => {
+			let arr = [1,2,3,4,5];
+			let newArr = experimentUtils.rotateLeftByMany(arr, 1);
+			expect(newArr).to.eql(arr);
+			expect(arr.length).to.equal(5);
+			expect(arr[0]).to.equal(2)
+			expect(arr[4]).to.equal(1);
+		})
+		it('Should rotate left by two', () => {
+			let arr = [1,2,3,4,5];
+			let newArr = experimentUtils.rotateLeftByMany(arr, 2);
+			expect(newArr).to.eql(arr);
+			expect(arr.length).to.equal(5);
+			expect(arr[0]).to.equal(3)
+			expect(arr[4]).to.equal(2);
+		})
+		it('Should rotate left by zero', () => {
+			let arr = [1,2,3,4,5];
+			let newArr = experimentUtils.rotateLeftByMany(arr, 0);
+			expect(newArr).to.eql(arr);
+			expect(arr.length).to.equal(5);
+			expect(arr[0]).to.equal(1)
+			expect(arr[4]).to.equal(5);
+		})
+		it('Should rotate left more than array length', () => {
+			let arr = [1,2,3,4,5];
+			let newArr = experimentUtils.rotateLeftByMany(arr, 7);
+			expect(newArr).to.eql(arr);
+			expect(arr.length).to.equal(5);
+			expect(arr[0]).to.equal(3)
+			expect(arr[4]).to.equal(2);
+		})
+		it('Should return empty if array is empty', () => {
+			let arr = [];
+			let newArr = experimentUtils.rotateLeftByMany(arr, 1);
+			expect(newArr).to.eql(arr);
+			expect(arr).to.eql([])
+		})
+		it('Should return empty if arg not array', () => {
+			let arr = "stimp";
+			let newArr = experimentUtils.rotateLeftByMany(arr, 1);
+			expect(newArr).to.eql([])
+		})
 	})
 })

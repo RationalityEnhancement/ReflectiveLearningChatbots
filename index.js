@@ -216,16 +216,18 @@ bot.command('next', async ctx => {
         }
         let uniqueId = secretMap.uniqueId;
 
-        // Check if there are any scheduled questions
-        if(!ScheduleHandler.debugQueue[uniqueId]) {
-            console.log("No scheduled questions (yet)!");
-            return;
-        }
 
         // Get the participant
         let participant = await getParticipant(uniqueId);
         let userInfo = bot.telegram.getChat(ctx.from.id);
         participant["firstName"] = userInfo["first_name"];
+
+        // Shift the debug queue for the participant if it hasn't been done already
+        let shiftObj = ScheduleHandler.shiftDebugQueueToToday(uniqueId, participant.parameters.timezone);
+        if(shiftObj.returnCode === DevConfig.FAILURE_CODE){
+            console.log(shiftObj.data);
+            return;
+        }
 
         let partCond = participant.conditionName;
         let partLang = participant.parameters.language;
@@ -238,7 +240,12 @@ bot.command('next', async ctx => {
             iterationCount++;
 
             // Get the next temporally ordered scheduled question
-            let nextQObj = ScheduleHandler.debugQueue[uniqueId][0];
+            let nextQObjObj = ScheduleHandler.getNextDebugQuestion(uniqueId);
+            if(nextQObjObj.returnCode === DevConfig.FAILURE_CODE){
+                console.log(nextQObjObj.data);
+                break;
+            }
+            let nextQObj = nextQObjObj.data;
 
             // Construct the question based on the ID and participant condition
             let qHandler = new QuestionHandler(config);
@@ -250,9 +257,6 @@ bot.command('next', async ctx => {
 
             // Send a message about when the question will appear
             let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
-
-            // Send the current question to the end of the queue to make prepare for the next /next call
-            ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
 
             let evaluation = true;
             if(nextQObj.if){
@@ -274,7 +278,6 @@ bot.command('next', async ctx => {
                 nextQuestionFound = true;
             }
         }
-
 
     } catch(err){
         console.log("Failed to serve next scheduled question");

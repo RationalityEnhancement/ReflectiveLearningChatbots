@@ -4,6 +4,7 @@
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
+  "experimentLengthWeeks" : 3,
   "mandatoryParameters" : {
     "language" : "string",
     "timezone" : "string",
@@ -19,8 +20,8 @@
     "experimenter" : true,
     "actionMessages" : true,
     "enableNext" : true,
-    "messageDelay" : true,
-    "developer" : true
+    "messageDelay" : false,
+    "developer" : false
   },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",

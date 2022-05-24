@@ -9,6 +9,7 @@ const DevConfig = require('../json/devConfig.json');
 const sendQuestion = require('./logicHandler').sendQuestion;
 const ConfigParser = require('./configParser');
 const ExperimentUtils = require('./experimentUtils')
+const moment = require('moment-timezone');
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -247,7 +248,7 @@ class ScheduleHandler{
                 failedQuestions.join('\n'), succeededQuestions);
         }
         // Add temporally ordered scheduled questions to participant's debug queue:
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestions);
+        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestions, config.experimentLengthWeeks);
         this.debugQueueAdjusted[uniqueId] = false;
 
         return ReturnMethods.returnSuccess(succeededQuestions)
@@ -319,7 +320,7 @@ class ScheduleHandler{
                 failedQuestions.join('\n'), succeededQuestions);
         }
         // Add temporally ordered scheduled questions to participant's debug queue:
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestionsList);
+        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestionsList,config.experimentLengthWeeks);
         this.debugQueueAdjusted[uniqueId] = false;
 
         return ReturnMethods.returnSuccess(succeededQuestions)
@@ -674,6 +675,53 @@ class ScheduleHandler{
         ExperimentUtils.rotateLeftByMany(qInfoArray,closestQIdx);
 
         return qInfoArray;
+    }
+
+    /**
+     *
+     * Return the first question in the debug queue, which should
+     * correspond to the next question that is to be asked
+     *
+     */
+    static getNextDebugQuestion(uniqueId){
+        if(!this.debugQueue[uniqueId]) {
+            return ReturnMethods.returnFailure("No scheduled questions (yet)!");
+        }
+
+        let nextQ = this.debugQueue[uniqueId][0];
+
+        // Send the current question to the end of the queue to make prepare for the next /next call
+        ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
+
+        return ReturnMethods.returnSuccess(nextQ);
+
+    }
+
+    /**
+     *
+     * Shift the debug queue to adjust to the current time if it hasn't been
+     * done already. this should be done only once upon server start.
+     *
+     * This is done so that the first question that appears when the experimenter
+     * types "/next" is the one that is supposed to appear next
+     *
+     * @param uniqueId
+     * @param timezone
+     */
+    static shiftDebugQueueToToday(uniqueId, timezone){
+        if(typeof this.debugQueue[uniqueId] === "undefined") {
+            return ReturnMethods.returnFailure("No questions scheduled for participant!");
+        }
+        if(!timezone){
+            return ReturnMethods.returnFailure("Participant timezone not set yet!");
+        }
+        let now = moment.tz(timezone);
+
+        if(!this.debugQueueAdjusted[uniqueId]) {
+            this.shiftTemporalOrderArray(this.debugQueue[uniqueId], now);
+            this.debugQueueAdjusted[uniqueId] = true;
+        }
+        return ReturnMethods.returnSuccess("");
     }
 
 

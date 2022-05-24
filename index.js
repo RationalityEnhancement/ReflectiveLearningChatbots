@@ -94,7 +94,7 @@ bot.catch((err, ctx) => {
 
 // Log the current participant
 bot.command('log_part', async ctx => {
-    if(!config.debugExp) return;
+    if(!config.debug.experimenter) return;
     try{
       let secretMap = await getByChatId(config.experimentId, ctx.from.id);
       if(!secretMap){
@@ -116,7 +116,7 @@ bot.command('log_part', async ctx => {
 
 // Log the current experiment
 bot.command('log_exp', async ctx => {
-    if(!config.debugExp) return;
+    if(!config.debug.experimenter) return;
     try{
     console.log('Logging experiment.');
     let experiment = await experiments.get(config.experimentId);
@@ -131,7 +131,7 @@ bot.command('log_exp', async ctx => {
 
 // Delete the participant
 bot.command('delete_me', async ctx => {
-    if(!config.debugExp) return;
+    if(!config.debug.experimenter) return;
 
     // Check if participant exists
     try{
@@ -173,7 +173,7 @@ bot.command('delete_exp', async ctx => {
   // TODO: Delete all participants when experiment is deleted?
   // TODO: OR add up all participants when experiment is created again?
   // TODO: OR perhaps recount each time the experiment starts up for a sanity check?
-    if(!config.debugExp) return;
+    if(!config.debug.experimenter) return;
   try{
       // Check if experiment exists
     let experiment = await experiments.get(config.experimentId);
@@ -205,11 +205,9 @@ bot.command('delete_exp', async ctx => {
 
 // Next command to pre-empt next scheduled question
 bot.command('next', async ctx => {
-    if(!config.debugExp) return;
+    if(!config.debug.enableNext) return;
     try{
         // Get the participant's unique ID
-        let debugExp = config.debugExp;
-        let debugDev = config.debugDev;
         let secretMap = await idMaps.getByChatId(config.experimentId, ctx.from.id);
         if(!secretMap){
             console.log("Participant not initialized yet!");
@@ -225,6 +223,9 @@ bot.command('next', async ctx => {
 
         // Get the participant
         let participant = await getParticipant(uniqueId);
+        let userInfo = bot.telegram.getChat(ctx.from.id);
+        participant["firstName"] = userInfo["first_name"];
+
         let partCond = participant.conditionName;
         let partLang = participant.parameters.language;
 
@@ -254,8 +255,6 @@ bot.command('next', async ctx => {
 
             let evaluation = true;
             if(nextQObj.if){
-                let userInfo = bot.telegram.getChat(ctx.from.id);
-                participant["firstName"] = userInfo["first_name"];
                 let evaluationObj = ConfigParser.evaluateConditionString(participant, nextQObj.if)
                 if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
                     evaluation = evaluationObj.data.value;
@@ -266,8 +265,8 @@ bot.command('next', async ctx => {
 
             // Send the message and the question, if the question is meant to be sent at that time
             if(evaluation){
-                await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
-                let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp);
+                await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
+                let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, !config.debug.messageDelay);
                 if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                     throw returnObj.data;
                 }
@@ -297,7 +296,7 @@ bot.command('repeat', async ctx => {
   if(participant.currentState === "awaitingAnswer"){
       await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;
-    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, config.debugExp);
+    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, !config.debug.messageDelay);
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
           throw returnObj.data;
       }
@@ -376,7 +375,7 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, config.debugExp);
+      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, !config.debug.messageDelay);
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
           throw returnObj.data;
       }
@@ -417,7 +416,8 @@ bot.on('text', async ctx => {
         // Move on to the next actions
         // Send this message only if participant has finished choosing from multi-choice
         if(participant.currentQuestion.qType === "multiChoice"){
-          await Communicator.sendMessage(bot, participant, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], config.debugExp);
+          await Communicator.sendMessage(bot, participant, ctx.from.id,
+              config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], !config.debug.messageDelay);
         }
         // Process the next steps
         let nextStepsObj = await LogicHandler.processNextSteps(bot, uniqueId);
@@ -431,10 +431,11 @@ bot.on('text', async ctx => {
     // Answer was invalid (not part of options, etc.)
     case DevConfig.PARTIAL_FAILURE_CODE:
         // Send the error message
-        await Communicator.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, config.debugExp);
+        await Communicator.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, !config.debug.messageDelay);
       // Repeat the question if needed
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
-        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, config.debugExp)
+        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
+            participant.currentQuestion, !config.debug.messageDelay)
           if(returnObj.returnCode === DevConfig.FAILURE_CODE){
               throw returnObj.data;
           }

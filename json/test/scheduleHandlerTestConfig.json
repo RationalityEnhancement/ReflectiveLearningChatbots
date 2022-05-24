@@ -11,8 +11,13 @@
   "customParameters" : {
     "pId" : "string"
   },
-  "debugDev" : false,
-  "debugExp" : false,
+  "debug" : {
+    "experimenter" : true,
+    "actionMessages" : true,
+    "enableNext" : true,
+    "messageDelay" : false,
+    "developer" : true
+  },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {

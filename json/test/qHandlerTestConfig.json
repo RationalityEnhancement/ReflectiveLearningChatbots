@@ -13,8 +13,13 @@
     "groupIds" : "numArr"
   },
   "assignmentScheme" : "pid",
-  "debugDev" : false,
-  "debugExp" : false,
+  "debug" : {
+    "experimenter" : true,
+    "actionMessages" : true,
+    "enableNext" : true,
+    "messageDelay" : false,
+    "developer" : true
+  },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "languageSelectionQuestion" : "LanguageQuestion",

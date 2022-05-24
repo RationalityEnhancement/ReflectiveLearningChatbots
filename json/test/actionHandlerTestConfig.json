@@ -4,8 +4,13 @@
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
-  "debugDev" : false,
-  "debugExp" : false,
+  "debug" : {
+    "experimenter" : true,
+    "actionMessages" : true,
+    "enableNext" : true,
+    "messageDelay" : false,
+    "developer" : true
+  },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "languageSelectionQuestion" : "LanguageQuestion",

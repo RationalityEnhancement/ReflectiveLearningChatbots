@@ -223,34 +223,59 @@ bot.command('next', async ctx => {
             return;
         }
 
-        // Get the next temporally ordered scheduled question
-        let nextQObj = ScheduleHandler.debugQueue[uniqueId][0];
-
         // Get the participant
         let participant = await getParticipant(uniqueId);
         let partCond = participant.conditionName;
         let partLang = participant.parameters.language;
 
-        // Construct the question based on the ID and participant condition
-        let qHandler = new QuestionHandler(config);
-        let nextQReturnObj = qHandler.constructQuestionByID(partCond, nextQObj.qId, partLang);
-        if(nextQReturnObj.returnCode === DevConfig.FAILURE_CODE){
-            throw "ERROR: " + nextQReturnObj.data;
+        let nextQuestionFound = false;
+        let iterationCount = 0;
+        let maxIterationCount = 1000;
+
+        while(!nextQuestionFound && iterationCount <= maxIterationCount){
+            iterationCount++;
+
+            // Get the next temporally ordered scheduled question
+            let nextQObj = ScheduleHandler.debugQueue[uniqueId][0];
+
+            // Construct the question based on the ID and participant condition
+            let qHandler = new QuestionHandler(config);
+            let nextQReturnObj = qHandler.constructQuestionByID(partCond, nextQObj.qId, partLang);
+            if(nextQReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                throw "ERROR: " + nextQReturnObj.data;
+            }
+            let nextQuestion = nextQReturnObj.data;
+
+            // Send a message about when the question will appear
+            let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
+
+            // Send the current question to the end of the queue to make prepare for the next /next call
+            ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
+
+            let evaluation = true;
+            if(nextQObj.if){
+                let userInfo = bot.telegram.getChat(ctx.from.id);
+                participant["firstName"] = userInfo["first_name"];
+                let evaluationObj = ConfigParser.evaluateConditionString(participant, nextQObj.if)
+                if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
+                    evaluation = evaluationObj.data.value;
+                } else {
+                    evaluation = false;
+                }
+            }
+
+            // Send the message and the question, if the question is meant to be sent at that time
+            if(evaluation){
+                await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
+                let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp);
+                if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                    throw returnObj.data;
+                }
+                nextQuestionFound = true;
+            }
         }
-        let nextQuestion = nextQReturnObj.data;
 
-        // Send a message about when the question will appear
-        let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
 
-        // Send the current question to the end of the queue to make prepare for the next /next call
-        ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
-
-        // Send the message and the question
-        await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
-        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp);
-        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-            throw returnObj.data;
-        }
     } catch(err){
         console.log("Failed to serve next scheduled question");
         console.error(err);

@@ -77,6 +77,7 @@ let schemaObject = {
         qId: String,
         atTime : String,
         onDays : [String],
+        if : String,
         tz : String
       }
     ]

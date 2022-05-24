@@ -4,6 +4,7 @@ const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
 const ConfigParser = require('./configParser')
 const Communicator = require('./communicator')
+const QuestionHandler = require('./questionHandler');
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = require("../json/PIDCondMap.json");
@@ -76,18 +77,18 @@ let processAction = async(bot, config, participant, actionObj) => {
             const ScheduleHandler = require("./scheduleHandler");
             // TODO: have disabled overwriting for now, after implementation of /next
             // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
-            // if(debugDev){
-            //   let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-            //   if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
-            //     console.error(nowDateObj.data);
-            //   }
-            //   let qHandler = new QuestionHandler(config);
-            //   let schQObj = qHandler.getScheduledQuestions(partCond);
-            //   if(schQObj.returnCode === DevConfig.FAILURE_CODE){
-            //     return schQObj;
-            //   }
-            //   ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
-            // }
+            if(config.debugDev){
+              let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
+              if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
+                console.error(nowDateObj.data);
+              }
+              let qHandler = new QuestionHandler(config);
+              let schQObj = qHandler.getScheduledQuestions(participant.conditionName);
+              if(schQObj.returnCode === DevConfig.FAILURE_CODE){
+                return schQObj;
+              }
+              ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
+            }
             let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, participant.uniqueId, config, debugExp);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 return returnObj;

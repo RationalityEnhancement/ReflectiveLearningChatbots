@@ -7,6 +7,7 @@ const Communicator = require('./communicator')
 const assert = require('chai').assert
 const DevConfig = require('../json/devConfig.json');
 const sendQuestion = require('./logicHandler').sendQuestion;
+const ConfigParser = require('./configParser');
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -221,6 +222,7 @@ class ScheduleHandler{
                 qId : jobInfo.qId,
                 atTime : jobInfo.atTime,
                 onDays : jobInfo.onDays,
+                if: jobInfo.if,
                 tz: participant.parameters.timezone
             }
             let returnObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, questionInfo, config,false);
@@ -350,7 +352,8 @@ class ScheduleHandler{
             let newSchedObj = {
                 qId: scheduledQuestions[i].qId,
                 atTime: timeString,
-                onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                if: scheduledQuestions[i].if
             };
             scheduledQuestions[i] = newSchedObj;
         }
@@ -430,6 +433,7 @@ class ScheduleHandler{
             qId: questionInfo.qId,
             atTime: questionInfo.atTime,
             onDays: questionInfo.onDays,
+            if: questionInfo.if,
             tz: questionInfo.tz
         }
         // Check if already not in scheduledQuestions
@@ -488,6 +492,7 @@ class ScheduleHandler{
             return ReturnMethods.returnFailure(questionObj.data);
         }
         let question = questionObj.data;
+
         let job;
         try{
             // Get the telegram chatID of the participant
@@ -499,7 +504,27 @@ class ScheduleHandler{
 
             // Schedule the question to be sent
             job = scheduler.scheduleJob(recRule, async function(){
-                await sendQuestion(bot, participant, chatId, question);
+                // Get the updated participant
+                let newParticipant;
+                try {
+                    newParticipant = await participants.get(uniqueId);
+                } catch(err){
+                    console.log(err);
+                }
+                let evaluation = true;
+                if(questionInfo.if){
+                    let userInfo = await bot.telegram.getChat(chatId);
+                    newParticipant["firstName"] = userInfo["first_name"];
+                    let evaluationObj = ConfigParser.evaluateConditionString(newParticipant, questionInfo.if);
+                    if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
+                        evaluation = evaluationObj.data.value;
+                    } else {
+                        evaluation = false;
+                    }
+                }
+                if(evaluation){
+                    await sendQuestion(bot, newParticipant, chatId, question, config.debugExp);
+                }
             })
             // Add to local store and if necessary, to DB
             this.scheduledOperations["questions"][jobId] = job;
@@ -562,7 +587,8 @@ class ScheduleHandler{
                 tempOrderArr.push({
                     qId: sortedDayQs[i].qId,
                     atTime: sortedDayQs[i].atTime,
-                    onDays: [curDay]
+                    onDays: [curDay],
+                    if: sortedDayQs[i].if
                 })
             }
         }

@@ -104,6 +104,11 @@ describe('Replacing variables', () => {
         parameters : {
             "PID" : "80085",
             "pLength" : undefined
+        },
+        stages : {
+            activity : [],
+            stageName : "Test",
+            stageDay : 0
         }
     }
 
@@ -126,6 +131,18 @@ describe('Replacing variables', () => {
             let returnObj = ConfigParser.getVariable(participant, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(participant.parameters.PID);
+        })
+        it('Should fetch if variable name is STAGE_Name', () => {
+            let testString = DevConfig.VAR_STRINGS.STAGE_NAME;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(participant.stages.stageName);
+        })
+        it('Should fetch if variable name is STAGE_DAY', () => {
+            let testString = DevConfig.VAR_STRINGS.STAGE_DAY;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(participant.stages.stageDay);
         })
         it('Should fail if participant undefined', () => {
             let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
@@ -158,6 +175,14 @@ describe('Replacing variables', () => {
             delete participant["uniqueId"];
             let returnObj = ConfigParser.getVariable(participant, testString);
             participant["uniqueId"] = "12345";
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail if participant dont have stages', () => {
+            let testString = DevConfig.VAR_STRINGS.STAGE_NAME;
+            let copyPart = JSON.parse(JSON.stringify(participant));
+            delete copyPart["stages"];
+            let returnObj = ConfigParser.getVariable(copyPart, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
 
         })
@@ -473,6 +498,11 @@ describe('Evaluating conditions', () => {
         currentAnswer : [],
         currentQuestion : {
             options : options
+        },
+        stages : {
+            activity : [],
+            stageName : "Test",
+            stageDay : 0
         }
     }
     describe('If-else', () => {
@@ -1160,6 +1190,11 @@ describe('Construct expression object', () => {
         parameters : {
             language : "English",
             isSmoker : true
+        },
+        stages : {
+            activity : [],
+            stageDay : 0,
+            stageName : "Test"
         }
     }
     it('Should parse parameter and number operands normally', () => {
@@ -1443,6 +1478,11 @@ describe("Evaluate expression object", () => {
         parameters : {
             language : "English",
             isSmoker : true
+        },
+        stages : {
+            activity : [],
+            stageName : "Test",
+            stageDay : 0
         }
     }
     describe('AND', () => {

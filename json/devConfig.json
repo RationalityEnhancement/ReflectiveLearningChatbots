@@ -12,7 +12,9 @@
   "VAR_STRINGS" : {
     "FIRST_NAME" : "FIRST_NAME",
     "CURRENT_ANSWER" : "CURRENT_ANSWER",
-    "UNIQUE_ID" : "UNIQUE_ID"
+    "UNIQUE_ID" : "UNIQUE_ID",
+    "STAGE_NAME" : "STAGE_NAME",
+    "STAGE_DAY" : "STAGE_DAY"
   },
   "SENSITIVE_DATA_VARS" : ["FIRST_NAME"],
   "MS_PER_CHARACTER_DELAY" : 25,
@@ -37,5 +39,7 @@
     "addAnswerTo" : 1,
     "clearArrVar" : 1,
     "addValueTo" : 2
-  }
+  },
+  "END_STAGE_STRING" : "end",
+  "BEGIN_STAGE_STRING": "begin"
 }

@@ -138,6 +138,8 @@ class ConfigParser{
      *                      currentAnswer
      *                      firstName
      *                      uniqueId
+     *                      stages
+     *
      * @param varName the name of the variable to be returned
      * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
      *              returns success code along with data being the value of the variable or the error msg
@@ -151,7 +153,7 @@ class ConfigParser{
         if(!participant || typeof participant !== 'object') {
             return ReturnMethods.returnFailure("CParser: Participant object required to replace variables")
         }
-        let requiredParams = ["firstName", "currentAnswer", "uniqueId"];
+        let requiredParams = ["firstName", "currentAnswer", "uniqueId", "stages"];
         for(let i = 0; i < requiredParams.length; i++){
             let param = requiredParams[i];
             if(!(param in participant)){
@@ -174,6 +176,15 @@ class ConfigParser{
             case DevConfig.VAR_STRINGS.UNIQUE_ID:
                 varVal = participant["uniqueId"];
                 foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.STAGE_NAME :
+                varVal = participant.stages["stageName"]
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.STAGE_DAY :
+                varVal = participant.stages["stageDay"]
+                foundReserved = true;
+                break;
             default:
         }
         // Look in parameters

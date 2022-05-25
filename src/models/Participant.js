@@ -14,9 +14,17 @@ let schemaObject = {
   uniqueId: String,
   conditionIdx: Number,
   conditionName: String,
-  parameters: {
-    STAGE_DAY : Boolean,
-    STAGE_NAME : String,
+  parameters: {},
+  stages :{
+    activity : [
+      {
+        name: String,
+        what: String,
+        when: String
+      }
+    ],
+    stageDay : Number,
+    stageName : String
   },
   parameterTypes : {},
   currentAnswer: [String],
@@ -98,19 +106,6 @@ for(const[key, value] of Object.entries(config.mandatoryParameters)){
     schemaObject["parameters"][key] = dataTypeMap[value];
   }
 }
-for(let i = 0; i < config.experimentConditions.length; i++){
-  let condStages = config.experimentStages[config.experimentConditions[i]];
-  let varNameStart = condStages.name + "_START_DAY";
-  let varNameEnd = condStages.name + "_END_DAY";
-  if(!(varNameStart in schemaObject)){
-    schemaObject[varNameStart] = String;
-  }
-  if(!(varNameEnd in schemaObject)){
-    schemaObject[varNameEnd] = String;
-  }
-
-}
-
 
 exports.ParticipantSchemaObject = schemaObject;
 

@@ -172,7 +172,6 @@ describe('Processing actions', ()=>{
                 participant.currentAnswer = [outString];
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                console.log(returnObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal("Europe/Berlin")
             })
@@ -283,6 +282,18 @@ describe('Processing actions', ()=>{
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             })
+            it('Should fail when trying to save to reserved variable', async () => {
+                let actionObj = {
+                    aType : "saveAnswerTo",
+                    args : ["STAGE_DAY"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["4"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
 
         })
     })
@@ -371,6 +382,17 @@ describe('Processing actions', ()=>{
                 let actionObj = {
                     aType : "setBooleanVar",
                     args : ["testNum", "$B{true}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when trying to save to reserved variable', async () => {
+                let actionObj = {
+                    aType : "setBooleanVar",
+                    args : ["STAGE_DAY", "$B{true}"]
                 }
                 let participant = await participants.get(testPartId);
                 participant.currentState = "answerReceived";
@@ -550,6 +572,18 @@ describe('Processing actions', ()=>{
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
                 console.log(returnObj.data)
             })
+            it('Should fail when cannot add to reserved var', async () => {
+                let actionObj = {
+                    aType : "addAnswerTo",
+                    args : ["STAGE_NAME"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
 
         })
     })
@@ -627,6 +661,18 @@ describe('Processing actions', ()=>{
                 let actionObj = {
                     aType : "clearArrVar",
                     args : ["testBool"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+            it('Should fail when cannot clear reserved var', async () => {
+                let actionObj = {
+                    aType : "clearArrVar",
+                    args : ["STAGE_NAME"]
                 }
                 let participant = await participants.get(testPartId);
                 participant.currentAnswer = ["Europe/Berlin"];

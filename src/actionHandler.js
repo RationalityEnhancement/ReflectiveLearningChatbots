@@ -159,6 +159,10 @@ let processAction = async(bot, config, participant, actionObj) => {
                 return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
             }
             let returnVal;
+
+            if(DevConfig.RESERVED_VARIABLES.includes(varName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
             // Check which data type the target parameter is
             switch(paramType){
                 // For string and string array, no conversion required, since current Answer is already string array
@@ -221,6 +225,9 @@ let processAction = async(bot, config, participant, actionObj) => {
                 return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
             }
 
+            if(DevConfig.RESERVED_VARIABLES.includes(aVarName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
             // Process only when the target parameter is strArr or numArr
             switch(aParamType){
                 case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
@@ -272,11 +279,15 @@ let processAction = async(bot, config, participant, actionObj) => {
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: variable not found : " + bVarName);
             }
+            if(DevConfig.RESERVED_VARIABLES.includes(bVarName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
 
             // Process only if target variable is boolean type
             if(bParamType !== DevConfig.OPERAND_TYPES.BOOLEAN){
                 return ReturnMethods.returnFailure("ActHandler: Can save boolean only to boolean param")
             }
+
 
             // Parse the boolean token
             let boolValObj = ConfigParser.parseBooleanToken(newVal);
@@ -310,6 +321,9 @@ let processAction = async(bot, config, participant, actionObj) => {
                 cParamType = participant.parameterTypes[cVarName];
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
+            }
+            if(DevConfig.RESERVED_VARIABLES.includes(cVarName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
             }
             // Can only clear array parameters
             switch(cParamType){

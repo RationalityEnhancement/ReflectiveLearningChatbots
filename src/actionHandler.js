@@ -4,6 +4,7 @@ const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
 const ConfigParser = require('./configParser')
 const Communicator = require('./communicator')
+const QuestionHandler = require('./questionHandler');
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = require("../json/PIDCondMap.json");
@@ -59,8 +60,6 @@ let processAction = async(bot, config, participant, actionObj) => {
         return ReturnMethods.returnFailure("ActHandler: Action is not valid")
     }
 
-    let debugExp = !!config.debugExp;
-
     // Get chat ID
     let secretMap = await getByUniqueId(config.experimentId, participant.uniqueId);
     if(!secretMap){
@@ -76,19 +75,19 @@ let processAction = async(bot, config, participant, actionObj) => {
             const ScheduleHandler = require("./scheduleHandler");
             // TODO: have disabled overwriting for now, after implementation of /next
             // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
-            // if(debugDev){
-            //   let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-            //   if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
-            //     console.error(nowDateObj.data);
-            //   }
-            //   let qHandler = new QuestionHandler(config);
-            //   let schQObj = qHandler.getScheduledQuestions(partCond);
-            //   if(schQObj.returnCode === DevConfig.FAILURE_CODE){
-            //     return schQObj;
-            //   }
-            //   ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
-            // }
-            let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, participant.uniqueId, config, debugExp);
+            if(config.debug.developer){
+              let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
+              if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
+                console.error(nowDateObj.data);
+              }
+              let qHandler = new QuestionHandler(config);
+              let schQObj = qHandler.getScheduledQuestions(participant.conditionName);
+              if(schQObj.returnCode === DevConfig.FAILURE_CODE){
+                return schQObj;
+              }
+              ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
+            }
+            let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, participant.uniqueId, config, config.debug.experimenter);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 return returnObj;
             } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
@@ -122,8 +121,8 @@ let processAction = async(bot, config, participant, actionObj) => {
             // Save assigned condition to participant
             let assignedConditionIdx = conditionObj.data;
             let conditionName = conditionNames[assignedConditionIdx];
-            if(debugExp){
-                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, config.debugExp);
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, !config.debug.messageDelay);
             }
             try{
                 await participants.updateField(participant.uniqueId, "conditionIdx", assignedConditionIdx);
@@ -159,6 +158,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
             }
+            let returnVal;
             // Check which data type the target parameter is
             switch(paramType){
                 // For string and string array, no conversion required, since current Answer is already string array
@@ -168,14 +168,16 @@ let processAction = async(bot, config, participant, actionObj) => {
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler: could not update participant params");
                     }
-                    return ReturnMethods.returnSuccess(participant.currentAnswer[0]);
+                    returnVal = participant.currentAnswer[0];
+                    break;
                 case DevConfig.OPERAND_TYPES.STRING_ARRAY:
                     try{
                         await participants.updateParameter(participant.uniqueId, varName, participant.currentAnswer);
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler: could not update participant params");
                     }
-                    return ReturnMethods.returnSuccess(participant.currentAnswer);
+                    returnVal = participant.currentAnswer;
+                    break;
                 // Save to number variable if first entry can be parsed to number
                 case DevConfig.OPERAND_TYPES.NUMBER:
                     let conversionObj = ConfigParser.getNumberFromString(participant.currentAnswer[0]);
@@ -187,10 +189,16 @@ let processAction = async(bot, config, participant, actionObj) => {
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler: could not update participant params");
                     }
-                    return ReturnMethods.returnSuccess(conversionObj.data);
+                    returnVal = conversionObj.data;
+                    break;
                 default:
                     return ReturnMethods.returnFailure("ActHandler: Cannot save to var of type " + paramType);
             }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Answer "
+                    + returnVal.toString() + " saved to " + varName, true);
+            }
+            return ReturnMethods.returnSuccess(returnVal);
         // Add current answer (string, number) to array variable (strArr, numArr)
         case "addAnswerTo" :
             // First argument is the answer to save it to
@@ -206,6 +214,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                 return ReturnMethods.returnFailure("ActHandler: Current answer not available to save");
             }
             let aParamType;
+            let aReturnVal;
             try{
                 aParamType = participant.parameterTypes[aVarName];
             } catch(err){
@@ -226,7 +235,8 @@ let processAction = async(bot, config, participant, actionObj) => {
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler: could not add to participant params");
                     }
-                    return ReturnMethods.returnSuccess(conversionObj.data);
+                    aReturnVal = conversionObj.data;
+                    break;
                 case DevConfig.OPERAND_TYPES.STRING_ARRAY:
                     // Update the array parameter
                     try{
@@ -234,10 +244,16 @@ let processAction = async(bot, config, participant, actionObj) => {
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler: could not add to participant params");
                     }
-                    return ReturnMethods.returnSuccess(participant.currentAnswer[0]);
+                    aReturnVal = participant.currentAnswer[0];
+                    break;
                 default:
                     return ReturnMethods.returnFailure("ActHandler: Cannot add to var of type " + aParamType);
             }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Answer "
+                    + aReturnVal.toString() + " added to " + aVarName, true);
+            }
+            return ReturnMethods.returnSuccess(aReturnVal);
         // Set the value of a boolean variable to true or false
         case "setBooleanVar" :
             // First argument must be the name of the variable
@@ -275,7 +291,12 @@ let processAction = async(bot, config, participant, actionObj) => {
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: could not update participant params");
             }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Var "
+                    + bVarName + " set to " + boolVal, true);
+            }
             return ReturnMethods.returnSuccess(boolVal);
+
         // Clear the value of an array parameter
         case "clearArrVar" :
             // First argument must be name of target variable
@@ -284,7 +305,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                 return ReturnMethods.returnFailure("ActHandler: Variable name must be string");
             }
 
-            let cParamType;
+            let cParamType, cReturnVal;
             try{
                 cParamType = participant.parameterTypes[cVarName];
             } catch(err){
@@ -299,10 +320,16 @@ let processAction = async(bot, config, participant, actionObj) => {
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler: could not clear participant parameter " + cVarName);
                     }
-                    return ReturnMethods.returnSuccess([]);
+                    cReturnVal = [];
+                    break;
                 default:
                     return ReturnMethods.returnFailure("ActHandler: Cannot clear var of type " + cParamType);
             }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Variable "
+                    + cVarName + " cleared", true);
+            }
+            return ReturnMethods.returnSuccess(cReturnVal);
         default:
             return ReturnMethods.returnFailure("LHandler: aType not recognized");
     }

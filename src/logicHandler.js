@@ -59,7 +59,7 @@ let processNextSteps = async(bot, uniqueId) => {
     if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
         return replyMessagesObj;
     }
-    await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, config.debugExp);
+    await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, !config.debug.messageDelay);
 
     let nextQuestionObj;
 
@@ -120,7 +120,7 @@ let processNextSteps = async(bot, uniqueId) => {
 
     // If a constructed question has been stored in next question obj
     if(!!nextQuestionObj){
-        let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data, config.debugExp);
+        let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data, !config.debug.messageDelay);
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             return returnObj;
         }

@@ -14,7 +14,8 @@ const config = require('../json/config.json');
 const bot = {
     telegram : {
         sendMessage : () => { return; },
-        getChat : (id) => { return { first_name : "John" }}
+        getChat : (id) => { return { first_name : "John" }},
+        sendChatAction: () => { return; }
     }
 }
 
@@ -171,6 +172,7 @@ describe('Processing actions', ()=>{
                 participant.currentAnswer = [outString];
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                console.log(returnObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal("Europe/Berlin")
             })

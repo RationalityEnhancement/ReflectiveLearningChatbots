@@ -16,6 +16,7 @@ const BOT_TOKEN =  process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
 const ConfigParser = require('./src/configParser')
+const moment = require('moment-timezone')
 const LogicHandler = require('./src/logicHandler')
 
 const ExperimentUtils = require("./src/experimentUtils");
@@ -94,7 +95,7 @@ bot.catch((err, ctx) => {
 
 // Log the current participant
 bot.command('log_part', async ctx => {
-    if(!config.debugExp) return;
+    if(!config.debug.experimenter) return;
     try{
       let secretMap = await getByChatId(config.experimentId, ctx.from.id);
       if(!secretMap){
@@ -116,7 +117,7 @@ bot.command('log_part', async ctx => {
 
 // Log the current experiment
 bot.command('log_exp', async ctx => {
-    if(!config.debugExp) return;
+    if(!config.debug.experimenter) return;
     try{
     console.log('Logging experiment.');
     let experiment = await experiments.get(config.experimentId);
@@ -131,7 +132,7 @@ bot.command('log_exp', async ctx => {
 
 // Delete the participant
 bot.command('delete_me', async ctx => {
-    if(!config.debugExp) return;
+    if(!config.debug.experimenter) return;
 
     // Check if participant exists
     try{
@@ -173,7 +174,7 @@ bot.command('delete_exp', async ctx => {
   // TODO: Delete all participants when experiment is deleted?
   // TODO: OR add up all participants when experiment is created again?
   // TODO: OR perhaps recount each time the experiment starts up for a sanity check?
-    if(!config.debugExp) return;
+    if(!config.debug.experimenter) return;
   try{
       // Check if experiment exists
     let experiment = await experiments.get(config.experimentId);
@@ -205,11 +206,9 @@ bot.command('delete_exp', async ctx => {
 
 // Next command to pre-empt next scheduled question
 bot.command('next', async ctx => {
-    if(!config.debugExp) return;
+    if(!config.debug.enableNext) return;
     try{
         // Get the participant's unique ID
-        let debugExp = config.debugExp;
-        let debugDev = config.debugDev;
         let secretMap = await idMaps.getByChatId(config.experimentId, ctx.from.id);
         if(!secretMap){
             console.log("Participant not initialized yet!");
@@ -217,40 +216,71 @@ bot.command('next', async ctx => {
         }
         let uniqueId = secretMap.uniqueId;
 
-        // Check if there are any scheduled questions
-        if(!ScheduleHandler.debugQueue[uniqueId]) {
-            console.log("No scheduled questions (yet)!");
-            return;
-        }
-
-        // Get the next temporally ordered scheduled question
-        let nextQObj = ScheduleHandler.debugQueue[uniqueId][0];
 
         // Get the participant
         let participant = await getParticipant(uniqueId);
+        let userInfo = bot.telegram.getChat(ctx.from.id);
+        participant["firstName"] = userInfo["first_name"];
+
+        // Shift the debug queue for the participant if it hasn't been done already
+        let shiftObj = ScheduleHandler.shiftDebugQueueToToday(uniqueId, participant.parameters.timezone);
+        if(shiftObj.returnCode === DevConfig.FAILURE_CODE){
+            console.log(shiftObj.data);
+            return;
+        }
+
         let partCond = participant.conditionName;
         let partLang = participant.parameters.language;
 
-        // Construct the question based on the ID and participant condition
-        let qHandler = new QuestionHandler(config);
-        let nextQReturnObj = qHandler.constructQuestionByID(partCond, nextQObj.qId, partLang);
-        if(nextQReturnObj.returnCode === DevConfig.FAILURE_CODE){
-            throw "ERROR: " + nextQReturnObj.data;
+        let nextQuestionFound = false;
+        let iterationCount = 0;
+        let maxIterationCount = 1000;
+
+        while(!nextQuestionFound && iterationCount <= maxIterationCount){
+            iterationCount++;
+
+            // Get the next temporally ordered scheduled question
+            let nextQObjObj = ScheduleHandler.getNextDebugQuestion(uniqueId);
+            if(nextQObjObj.returnCode === DevConfig.FAILURE_CODE){
+                console.log(nextQObjObj.data);
+                break;
+            }
+            let nextQObj = nextQObjObj.data;
+
+            // Construct the question based on the ID and participant condition
+            let qHandler = new QuestionHandler(config);
+            let nextQReturnObj = qHandler.constructQuestionByID(partCond, nextQObj.qId, partLang);
+            if(nextQReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                throw "ERROR: " + nextQReturnObj.data;
+            }
+            let nextQuestion = nextQReturnObj.data;
+
+            // Send a message about when the question will appear
+            let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
+
+            // Show the next question only if it passes the required condition
+            let evaluation = true;
+            if(nextQObj.if){
+                let evaluationObj = ConfigParser.evaluateConditionString(participant, nextQObj.if)
+                if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
+                    evaluation = evaluationObj.data.value;
+                } else {
+                    console.log(evaluationObj.data);
+                    evaluation = false;
+                }
+            }
+
+            // Send the message and the question, if the question is meant to be sent at that time
+            if(evaluation){
+                await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
+                let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, !config.debug.messageDelay);
+                if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                    throw returnObj.data;
+                }
+                nextQuestionFound = true;
+            }
         }
-        let nextQuestion = nextQReturnObj.data;
 
-        // Send a message about when the question will appear
-        let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
-
-        // Send the current question to the end of the queue to make prepare for the next /next call
-        ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
-
-        // Send the message and the question
-        await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, debugExp);
-        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, debugExp);
-        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-            throw returnObj.data;
-        }
     } catch(err){
         console.log("Failed to serve next scheduled question");
         console.error(err);
@@ -272,7 +302,7 @@ bot.command('repeat', async ctx => {
   if(participant.currentState === "awaitingAnswer"){
       await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;
-    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, config.debugExp);
+    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, !config.debug.messageDelay);
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
           throw returnObj.data;
       }
@@ -351,7 +381,7 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, config.debugExp);
+      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, !config.debug.messageDelay);
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
           throw returnObj.data;
       }
@@ -392,7 +422,8 @@ bot.on('text', async ctx => {
         // Move on to the next actions
         // Send this message only if participant has finished choosing from multi-choice
         if(participant.currentQuestion.qType === "multiChoice"){
-          await Communicator.sendMessage(bot, participant, ctx.from.id, config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], config.debugExp);
+          await Communicator.sendMessage(bot, participant, ctx.from.id,
+              config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], !config.debug.messageDelay);
         }
         // Process the next steps
         let nextStepsObj = await LogicHandler.processNextSteps(bot, uniqueId);
@@ -406,10 +437,11 @@ bot.on('text', async ctx => {
     // Answer was invalid (not part of options, etc.)
     case DevConfig.PARTIAL_FAILURE_CODE:
         // Send the error message
-        await Communicator.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, config.debugExp);
+        await Communicator.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, !config.debug.messageDelay);
       // Repeat the question if needed
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
-        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, participant.currentQuestion, config.debugExp)
+        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
+            participant.currentQuestion, !config.debug.messageDelay)
           if(returnObj.returnCode === DevConfig.FAILURE_CODE){
               throw returnObj.data;
           }

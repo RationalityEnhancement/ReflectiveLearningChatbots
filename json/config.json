@@ -4,6 +4,7 @@
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
+  "experimentLengthWeeks" : 3,
   "mandatoryParameters" : {
     "language" : "string",
     "timezone" : "string",
@@ -15,8 +16,13 @@
     "testNum" : "number",
     "testNumArr" : "numArr"
   },
-  "debugExp": true,
-  "debugDev" : true,
+  "debug" : {
+    "experimenter" : true,
+    "actionMessages" : true,
+    "enableNext" : true,
+    "messageDelay" : false,
+    "developer" : false
+  },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {
@@ -528,6 +534,10 @@
               {
                 "aType" : "addAnswerTo",
                 "args" : ["testNumArr"]
+              },
+              {
+                "aType" : "saveAnswerTo",
+                "args" : ["testNum"]
               }
             ],
             "nextQuestion" : "eveningQuestions.anythingElse",
@@ -776,6 +786,29 @@
               "English" : ["Very well. Good job reflecting today. See you tomorrow!"],
               "Deutsch" : ["Alles klar. Sie haben heute gut reflektiert. Bis morgen!"]
             }
+          },
+          {
+            "qId" : "satisfactionSurvey",
+            "qType" : "qualtrics",
+            "qualtricsLink" : "www.google.com/12345",
+            "qualtricsFields" : [
+              {
+                "field" : "uniqueId",
+                "value" : "${UNIQUE_ID}"
+              },
+              {
+                "field" : "condition",
+                "value" : "Control"
+              }
+            ],
+            "text" : {
+              "English" : "We have a few questions about how you are feeling this morning",
+              "Deutsch" : "Wir haben ein Paar Fragen dazu, wie Sie sich heute fühlen"
+            },
+            "replyMessages" : {
+              "English" : ["Thanks for doing that!"],
+              "Deutsch" : ["Danke dafür!"]
+            }
           }
         ]
       },
@@ -789,6 +822,12 @@
           "qId" : "eveningQuestions.numGoals",
           "atTime" : "18:00",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        },
+        {
+          "qId" : "eveningQuestions.satisfactionSurvey",
+          "atTime" : "18:05",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          "if" : "${testNum} == $N{100}"
         }
       ]
     }

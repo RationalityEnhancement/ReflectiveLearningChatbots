@@ -7,6 +7,9 @@ const Communicator = require('./communicator')
 const assert = require('chai').assert
 const DevConfig = require('../json/devConfig.json');
 const sendQuestion = require('./logicHandler').sendQuestion;
+const ConfigParser = require('./configParser');
+const ExperimentUtils = require('./experimentUtils')
+const moment = require('moment-timezone');
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -16,6 +19,7 @@ class ScheduleHandler{
         "schedules" : {}
     };
     static debugQueue = {};
+    static debugQueueAdjusted = {}
     /**
      *
      * Delete all jobs for a given participant from the local scheduling queue
@@ -60,7 +64,10 @@ class ScheduleHandler{
             return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
                 failedRemovals.join('\n'), succeededRemovals);
         }
-        if(uniqueId in this.debugQueue) delete this.debugQueue[uniqueId];
+        if(uniqueId in this.debugQueue) {
+            delete this.debugQueue[uniqueId];
+            delete this.debugQueueAdjusted[uniqueId];
+        }
         return ReturnMethods.returnSuccess(succeededRemovals)
 
     }
@@ -221,6 +228,7 @@ class ScheduleHandler{
                 qId : jobInfo.qId,
                 atTime : jobInfo.atTime,
                 onDays : jobInfo.onDays,
+                if: jobInfo.if,
                 tz: participant.parameters.timezone
             }
             let returnObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, questionInfo, config,false);
@@ -240,7 +248,8 @@ class ScheduleHandler{
                 failedQuestions.join('\n'), succeededQuestions);
         }
         // Add temporally ordered scheduled questions to participant's debug queue:
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestions);
+        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestions, config.experimentLengthWeeks);
+        this.debugQueueAdjusted[uniqueId] = false;
 
         return ReturnMethods.returnSuccess(succeededQuestions)
     }
@@ -293,10 +302,10 @@ class ScheduleHandler{
                 }
                 let chatId = secretMap.chatId;
                 // TODO: send a message about the scheduled messages anyway, or only when debug mode?
-                if(debug || !debug) {
+                if(config.debug.actionMessages) {
                     await Communicator.sendMessage(bot, participant, chatId,
-                        config.phrases.schedule.scheduleNotif[partLang]
-                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '), debug);
+                        "(Debug) " + config.phrases.schedule.scheduleNotif[partLang]
+                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '), true);
                 }
                 succeededQuestions.push(scheduleObj.data)
             }
@@ -311,7 +320,9 @@ class ScheduleHandler{
                 failedQuestions.join('\n'), succeededQuestions);
         }
         // Add temporally ordered scheduled questions to participant's debug queue:
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestionsList);
+        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestionsList,config.experimentLengthWeeks);
+        this.debugQueueAdjusted[uniqueId] = false;
+
         return ReturnMethods.returnSuccess(succeededQuestions)
     }
 
@@ -350,7 +361,8 @@ class ScheduleHandler{
             let newSchedObj = {
                 qId: scheduledQuestions[i].qId,
                 atTime: timeString,
-                onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                onDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                if: scheduledQuestions[i].if
             };
             scheduledQuestions[i] = newSchedObj;
         }
@@ -430,6 +442,7 @@ class ScheduleHandler{
             qId: questionInfo.qId,
             atTime: questionInfo.atTime,
             onDays: questionInfo.onDays,
+            if: questionInfo.if,
             tz: questionInfo.tz
         }
         // Check if already not in scheduledQuestions
@@ -488,6 +501,7 @@ class ScheduleHandler{
             return ReturnMethods.returnFailure(questionObj.data);
         }
         let question = questionObj.data;
+
         let job;
         try{
             // Get the telegram chatID of the participant
@@ -499,7 +513,31 @@ class ScheduleHandler{
 
             // Schedule the question to be sent
             job = scheduler.scheduleJob(recRule, async function(){
-                await sendQuestion(bot, participant, chatId, question);
+                // Get the updated participant
+                let newParticipant;
+                try {
+                    newParticipant = await participants.get(uniqueId);
+                } catch(err){
+                    console.log(err);
+                }
+
+                // Check if there is a condition to display the scheduled question
+                // if yes, evaluate that condition and get the truth value
+                let evaluation = true;
+                if(questionInfo.if){
+                    let userInfo = await bot.telegram.getChat(chatId);
+                    newParticipant["firstName"] = userInfo["first_name"];
+                    let evaluationObj = ConfigParser.evaluateConditionString(newParticipant, questionInfo.if);
+                    if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
+                        evaluation = evaluationObj.data.value;
+                    } else {
+                        // If failure to evaluate, don't show question
+                        evaluation = false;
+                    }
+                }
+                if(evaluation){
+                    await sendQuestion(bot, newParticipant, chatId, question, !config.debug.messageDelay);
+                }
             })
             // Add to local store and if necessary, to DB
             this.scheduledOperations["questions"][jobId] = job;
@@ -519,6 +557,14 @@ class ScheduleHandler{
         });
     }
 
+    /**
+     *
+     * Takes a list of questions that occur on the same day and
+     * sorts them based on the time of day that they are scheduled
+     *
+     * @param qInfoArray array of questions
+     * @returns {*[]|*}
+     */
     static sortQInfoByTime(qInfoArray){
         if(!Array.isArray(qInfoArray)) return [];
         if(qInfoArray.length === 0) return qInfoArray;
@@ -541,7 +587,21 @@ class ScheduleHandler{
         return sortedArray;
     }
 
-    static getTemporalOrderArray(qInfoArray){
+
+    /**
+     *
+     * Goes through the entire week to form a temporally-ordered list
+     * of all the questions that are scheduled to be asked.
+     *
+     * This is used for debug purposes to scroll through the list of questions
+     *
+     * List is repeated for n weeks to capture full duration of experiment
+     *
+     * @param qInfoArray array of all the scheduled questions as specified in config file
+     * @param numWeeks the number of weeks to repeat
+     * @returns {*[]|*}
+     */
+    static getTemporalOrderArray(qInfoArray, numWeeks){
         if(!Array.isArray(qInfoArray)) return [];
         if(qInfoArray.length === 0) return qInfoArray;
         // Loop through all days, starting from Sunday
@@ -562,12 +622,113 @@ class ScheduleHandler{
                 tempOrderArr.push({
                     qId: sortedDayQs[i].qId,
                     atTime: sortedDayQs[i].atTime,
-                    onDays: [curDay]
+                    onDays: [curDay],
+                    if: sortedDayQs[i].if
                 })
             }
         }
-        return tempOrderArr;
+        let repeatedArray = [].concat(...Array(numWeeks).fill(tempOrderArr));
+        return repeatedArray;
     }
+
+    /**
+     *
+     * Takes a given date and then rotates the array to the left
+     * until the first member of the array is the next question
+     * based on the passed date
+     *
+     * @param qInfoArray the array to be shifted (sorted in temporal order
+     *                  of days of the week and time of the question)
+     * @param date moment timezone date
+     *
+     * @returns the array rotated so that the first in the list corresponds
+     *          to the question in the list which would occurs next after the
+     *          time/day mentioned in the given date
+     */
+    static shiftTemporalOrderArray(qInfoArray, date){
+        if(!Array.isArray(qInfoArray)) return [];
+        if(qInfoArray.length === 0) return qInfoArray;
+
+        let dateObjObj = ExperimentUtils.parseMomentDateString(date.format());
+        if(dateObjObj.returnCode === DevConfig.FAILURE_CODE){
+            return [];
+        }
+        let dateObj = dateObjObj.data;
+        let diffObj = {
+            dayIndex: dateObj.dayOfWeek,
+            time: (dateObj.hours < 10 ? '0' : '') + dateObj.hours + ":" + (dateObj.minutes < 10 ? '0' : '') + dateObj.minutes
+        };
+
+        let closestQIdx = 0;
+        let leastTimeDiff = 10080;
+
+        for(let i = 0; i < qInfoArray.length; i++){
+            let curDay = qInfoArray[i].onDays[0];
+            let curDayIdx = this.dayIndexOrdering.indexOf(curDay);
+            let curTime = qInfoArray[i].atTime;
+            let diff = ExperimentUtils.getMinutesDiff(diffObj,{
+                dayIndex: curDayIdx,
+                time: curTime
+            })
+
+            if(diff < leastTimeDiff){
+                closestQIdx = i;
+                leastTimeDiff = diff;
+            }
+        }
+        ExperimentUtils.rotateLeftByMany(qInfoArray,closestQIdx);
+
+        return qInfoArray;
+    }
+
+    /**
+     *
+     * Return the first question in the debug queue, which should
+     * correspond to the next question that is to be asked
+     *
+     */
+    static getNextDebugQuestion(uniqueId){
+        if(!this.debugQueue[uniqueId]) {
+            return ReturnMethods.returnFailure("No scheduled questions (yet)!");
+        }
+
+        let nextQ = this.debugQueue[uniqueId][0];
+
+        // Send the current question to the end of the queue to make prepare for the next /next call
+        ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
+
+        return ReturnMethods.returnSuccess(nextQ);
+
+    }
+
+    /**
+     *
+     * Shift the debug queue to adjust to the current time if it hasn't been
+     * done already. this should be done only once upon server start.
+     *
+     * This is done so that the first question that appears when the experimenter
+     * types "/next" is the one that is supposed to appear next
+     *
+     * @param uniqueId
+     * @param timezone
+     */
+    static shiftDebugQueueToToday(uniqueId, timezone){
+        if(typeof this.debugQueue[uniqueId] === "undefined") {
+            return ReturnMethods.returnFailure("No questions scheduled for participant!");
+        }
+        if(!timezone){
+            return ReturnMethods.returnFailure("Participant timezone not set yet!");
+        }
+        let now = moment.tz(timezone);
+
+        if(!this.debugQueueAdjusted[uniqueId]) {
+            this.shiftTemporalOrderArray(this.debugQueue[uniqueId], now);
+            this.debugQueueAdjusted[uniqueId] = true;
+        }
+        return ReturnMethods.returnSuccess("");
+    }
+
+
 }
 
 module.exports = ScheduleHandler;

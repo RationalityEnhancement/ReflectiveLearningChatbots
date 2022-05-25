@@ -36,8 +36,10 @@ let substituteVariables = (participant, text, sensitiveDataAlso) => {
  * Also sends prompt messages as required for the question type, after a delay
  *
  * @param bot current telegram bot instance
+ * @param participant object of current participant
  * @param chatId telegram chatId of user to send message to
  * @param question question object
+ * @param noDelay
  * @returns {Promise<void>}
  */
 module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay = false) => {
@@ -45,7 +47,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
     let language = participant.parameters.language;
     let delayMs = 500;
 
-    if(!("firstName" in participant)){
+    if(!("firstName" in participant) || !participant["firstName"]){
         let userInfo = await bot.telegram.getChat(chatId);
         participant["firstName"] = userInfo.first_name;
     }
@@ -185,7 +187,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
  */
 module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noDelay = false) => {
 
-    if(!("firstName" in participant)){
+    if(!("firstName" in participant) || !participant["firstName"]){
         let userInfo = await bot.telegram.getChat(chatId);
         participant["firstName"] = userInfo.first_name;
     }
@@ -223,7 +225,7 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
  */
 module.exports.sendMessage = async (bot, participant, chatId, message, noDelay = false) => {
 
-    if(!("firstName" in participant)){
+    if(!("firstName" in participant) || !participant["firstName"]){
         let userInfo = await bot.telegram.getChat(chatId);
         participant["firstName"] = userInfo.first_name;
     }

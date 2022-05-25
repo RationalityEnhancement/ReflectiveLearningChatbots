@@ -359,6 +359,24 @@ class ConfigParser{
 
     /**
      *
+     * Function to take a condition string and evaluate it
+     * by using the functions to construct an expression object
+     * and then evaluate it
+     *
+     * @param participant
+     * @param condString
+     * @returns {{returnCode: *, data: *}|*}
+     */
+    static evaluateConditionString(participant, condString){
+        let constructConObj = this.constructExpressionObject(participant, condString);
+        if(constructConObj.returnCode === DevConfig.FAILURE_CODE){
+            return constructConObj;
+        }
+        let evaluateConObj = this.evaluateExpressionObject(participant, constructConObj.data);
+        return evaluateConObj;
+    }
+    /**
+     *
      * Receive a list of rules of the format:
      * [ {
      *      if: valid logical expression,
@@ -389,11 +407,7 @@ class ConfigParser{
         for(let i = 0; i < ruleList.length; i++){
             // Construct the expression object from the string and evaluate
             let curConString = ruleList[i]['if'];
-            let constructConObj = this.constructExpressionObject(participant, curConString);
-            if(constructConObj.returnCode === DevConfig.FAILURE_CODE){
-                return constructConObj;
-            }
-            let evaluateConObj = this.evaluateExpressionObject(participant, constructConObj.data);
+            let evaluateConObj = this.evaluateConditionString(participant, curConString);
             if(evaluateConObj.returnCode === DevConfig.FAILURE_CODE){
                 return evaluateConObj;
             }

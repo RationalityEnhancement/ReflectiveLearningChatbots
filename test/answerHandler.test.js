@@ -494,13 +494,13 @@ describe('Process answer', () =>{
                 expect(participant.currentState).to.eql("answerReceived");
             })
         });
-        describe('Answer not long enough', () => {
+        describe('Answer not long enough (chars)', () => {
             let returnObj;
             const question = {
                 qId: "testF",
                 text: "questionText",
                 qType: "freeform",
-                minLength : 10
+                minLengthChars : 10
             };
             const part = {
                 parameters: {language: "English"},
@@ -514,13 +514,13 @@ describe('Process answer', () =>{
                 expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
             });
         });
-        describe('Answer long enough', () => {
+        describe('Answer long enough (chars)', () => {
             let returnObj;
             const question = {
                 qId: "testF",
                 text: "questionText",
                 qType: "freeform",
-                minLength : 10
+                minLengthChars : 10
             };
             const part = {
                 parameters: {language: "English"},
@@ -530,6 +530,46 @@ describe('Process answer', () =>{
             }
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "not less than 10")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+            });
+        });
+        describe('Answer not long enough (words)', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeform",
+                minLengthWords : 5
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "these are four words")
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+            });
+        });
+        describe('Answer long enough (words)', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeform",
+                minLengthWords : 5
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "these are more than five words")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             });
@@ -594,13 +634,13 @@ describe('Process answer', () =>{
                 expect(participant.currentState).to.eql("answerReceived");
             })
         })
-        describe('Answer not long enough', () => {
+        describe('Answer not long enough (chars)', () => {
             let returnObj;
             const question = {
                 qId: "testF",
                 text: "questionText",
                 qType: "freeformMulti",
-                minLength : 10
+                minLengthChars : 10
             };
             const part = {
                 parameters: {language: "English"},
@@ -615,13 +655,13 @@ describe('Process answer', () =>{
                 expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
             });
         });
-        describe('Answer long enough', () => {
+        describe('Answer long enough (chars)', () => {
             let returnObj;
             const question = {
                 qId: "testF",
                 text: "questionText",
                 qType: "freeformMulti",
-                minLength : 10
+                minLengthChars : 10
             };
             const part = {
                 parameters: {language: "English"},
@@ -629,6 +669,48 @@ describe('Process answer', () =>{
                 currentState: "awaitingAnswer",
                 currentQuestion: question,
                 currentAnswer : ["not", "less than", "10"]
+            }
+            it('Should return success and next action', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "done")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+            });
+        });
+        describe('Answer not long enough (words)', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeformMulti",
+                minLengthWords : 5
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+                currentAnswer : ["less", "than", "five words"]
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "done")
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+            });
+        });
+        describe('Answer long enough (words)', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeformMulti",
+                minLengthWords : 5
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+                currentAnswer : ["not", "less than", "five words", "this time"]
             }
             it('Should return success and next action', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "done")

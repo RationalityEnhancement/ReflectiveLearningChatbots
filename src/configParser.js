@@ -185,10 +185,16 @@ class ConfigParser{
                 varVal = participant.stages["stageDay"]
                 foundReserved = true;
                 break;
-            case DevConfig.VAR_STRINGS.ANSWER_LENGTH:
+            case DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS:
                 let curAns = participant.currentAnswer;
                 let curAnsLens = curAns.map(el => el.length);
                 varVal = curAnsLens.length > 0 ? curAnsLens.reduce((partialSum, ans) => partialSum + ans) : 0;
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS:
+                let currAns = participant.currentAnswer;
+                let currAnsWords = currAns.join(" ").split(" ").filter(el => el.trim().length > 0);
+                varVal = currAnsWords.length;
                 foundReserved = true;
                 break;
 

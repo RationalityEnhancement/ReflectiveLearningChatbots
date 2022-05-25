@@ -78,9 +78,13 @@
         "English": "Please enter a number above ${LowerBound}",
         "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
       },
-      "notLongEnough" : {
+      "notLongEnoughChars" : {
         "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} characters.",
         "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Charaktere betragen."
+      },
+      "notLongEnoughWords" : {
+        "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
+        "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
       },
       "terminateAnswerProperly" : {
         "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
@@ -519,7 +523,7 @@
             },
             "qType" : "freeform",
             "nextQuestion" :"morningQuestions.askAddGoal",
-            "minLength" : 10
+            "minLengthChars" : 10
           },
           {
             "qId" : "askAddGoal",
@@ -628,8 +632,9 @@
               "English" : ["Good to know!"],
               "Deutsch" : ["Gut zu wissen!"]
             },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.satisfaction"
+            "qType" : "freeformMulti",
+            "nextQuestion" : "eveningQuestions.satisfaction",
+            "minLengthWords" : 5
           },
           {
             "qId" : "satisfaction",

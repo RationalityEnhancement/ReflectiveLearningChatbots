@@ -144,23 +144,44 @@ describe('Replacing variables', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(participant.stages.stageDay);
         })
-        it('Should fetch ANSWER_LENGTH if it is more than one element', () => {
+        it('Should fetch ANSWER_LEN_CHARS if it is more than one element', () => {
             participant.currentAnswer = ["o", "on", "one"];
-            let testString = DevConfig.VAR_STRINGS.ANSWER_LENGTH;
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS;
             let returnObj = ConfigParser.getVariable(participant, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(6);
         })
-        it('Should fetch ANSWER_LENGTH if it is one element', () => {
+        it('Should fetch ANSWER_LEN_CHARS if it is one element', () => {
             participant.currentAnswer = ["oneone"];
-            let testString = DevConfig.VAR_STRINGS.ANSWER_LENGTH;
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS;
             let returnObj = ConfigParser.getVariable(participant, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(6);
         })
-        it('Should fetch ANSWER_LENGTH if it is empty', () => {
+        it('Should fetch ANSWER_LEN_CHARS if it is empty', () => {
             participant.currentAnswer = [];
-            let testString = DevConfig.VAR_STRINGS.ANSWER_LENGTH;
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(0);
+        })
+        it('Should fetch ANSWER_LEN_WORDS if it is more than one element', () => {
+            participant.currentAnswer = ["I had breakfast", "on the beach", "last Tuesday"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(8);
+        })
+        it('Should fetch ANSWER_LEN_WORDS if it is one element', () => {
+            participant.currentAnswer = ["I had breakfast"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(3);
+        })
+        it('Should fetch ANSWER_LEN_WORDS if it is empty', () => {
+            participant.currentAnswer = [];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS;
             let returnObj = ConfigParser.getVariable(participant, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(0);

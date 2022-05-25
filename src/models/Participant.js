@@ -72,7 +72,8 @@ let schemaObject = {
       lower: Number,
       upper: Number
     },
-    minLength : Number
+    minLengthChars : Number,
+    minLengthWords : Number
   },
   currentState: String,
   answers:

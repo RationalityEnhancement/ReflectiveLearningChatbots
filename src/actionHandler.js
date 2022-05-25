@@ -8,6 +8,7 @@ const QuestionHandler = require('./questionHandler');
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = require("../json/PIDCondMap.json");
+const StageHandler = require('./stageHandler')
 
 /**
  * Action handler deals with the processing of actions
@@ -395,6 +396,58 @@ let processAction = async(bot, config, participant, actionObj) => {
                     + newNumVal + " added to " + addVarName, true);
             }
             return ReturnMethods.returnSuccess(newNumVal);
+        case "startStage" :
+            // First argument must be the name of the stage
+            let startStage = actionObj.args[0];
+            if(typeof startStage !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: Stage name (arg1) must be string");
+            }
+
+            // Start the given stage
+            let startStageObj = await StageHandler.startStage(participant, startStage);
+            if(startStageObj.returnCode === DevConfig.FAILURE_CODE){
+                return startStageObj;
+            }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
+                    + startStageObj.data + " stage started.", true);
+            }
+            return startStageObj;
+        case "incrementStageDay" :
+            // No arguments
+
+            let incStageObj = await StageHandler.updateStageDay(config, participant.uniqueId);
+            if(incStageObj.returnCode === DevConfig.FAILURE_CODE){
+                return incStageObj;
+            }
+            if(config.debug.actionMessages){
+                let message;
+                if(typeof incStageObj.data === "string"){
+                    message = "New stage " + incStageObj.data+ " has been started at day 0"
+                } else if(incStageObj.data === -1){
+                    message = "Final stage terminated, experiment has been ended";
+                } else {
+                    message = "Stage " + participant.stages.stageName + " updated to day " + incStageObj.data;
+                }
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
+                    + message, true);
+            }
+            return incStageObj;
+        // End the experiment simply by updating the state and cancelling all operations
+        case "endExperiment" :
+            let endReturnObj = await StageHandler.endExperiment(participant.uniqueId);
+            if(endReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                return endReturnObj
+            }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Experiment " +
+                    "successfully ended, all operations cancelled."
+                    , true);
+            }
+            await Communicator.sendMessage(bot, participant, secretMap.chatId,
+                config.phrases.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+            return endReturnObj;
+
         default:
             return ReturnMethods.returnFailure("LHandler: aType not recognized");
     }

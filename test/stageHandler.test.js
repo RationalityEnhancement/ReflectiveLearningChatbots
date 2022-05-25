@@ -317,6 +317,7 @@ describe('Update Stage Day', () => {
             returnObj = await StageHandler.updateStageDay(testConfig, testPartId);
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(1);
             expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(stageName);
         })
@@ -336,6 +337,7 @@ describe('Update Stage Day', () => {
             returnObj = await StageHandler.updateStageDay(testConfig, testPartId);
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(nextStageName);
             expect(newPart.stages.stageDay).to.equal(0);
             expect(newPart.stages.stageName).to.equal(nextStageName);
         })

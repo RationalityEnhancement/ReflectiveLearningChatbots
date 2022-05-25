@@ -52,7 +52,7 @@
     "actionMessages" : true,
     "enableNext" : true,
     "messageDelay" : false,
-    "developer" : false
+    "developer" : true
   },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
@@ -162,6 +162,10 @@
         "English" : "Question scheduled for the following time:",
         "Deutsch" : "Frage geplant zur folgenden Zeit:"
       }
+    },
+    "endExperiment" : {
+      "English" : "You have successfully completed the experiment! Thank you for participating.",
+      "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Danke für Ihre Teilnahme."
     }
   },
   "questionCategories": {
@@ -537,6 +541,14 @@
                   "English" : ["Got it. Good luck on your goals today, ${FIRST_NAME}!"],
                   "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute, ${FIRST_NAME}!"]
                 }
+              }
+            ],
+            "cNextActions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : [{
+                  "aType" : "endExperiment"
+                }]
               }
             ]
           },

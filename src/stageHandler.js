@@ -1,8 +1,6 @@
 const ReturnMethods = require('./returnMethods');
 const DevConfig = require('../json/devConfig.json');
-const lodash = require('lodash');
 const participants = require('./apiControllers/participantApiController')
-const {next} = require("lodash/seq");
 const moment = require('moment-timezone')
 
 /**
@@ -143,8 +141,20 @@ module.exports.getNextStageName = (config, conditionName, stageName) => {
     }
 }
 
+/**
+ *
+ * Updates the current stage by a single day. Then, check whether
+ * the stage should be updated to the next stage based on the prescribed
+ * length of the stage as given in the config file.
+ *
+ * If last stage day limit has been reached, end the experiment
+ *
+ * @param config
+ * @param uniqueId
+ * @returns {Promise<{returnCode: *, data: *}|*>}
+ */
 module.exports.updateStageDay = async (config, uniqueId) => {
-    let newStageDay, participant;
+    let newStageDay, participant, returnVal;
     try{
         participant = await participants.get(uniqueId);
     } catch(err){
@@ -182,6 +192,7 @@ module.exports.updateStageDay = async (config, uniqueId) => {
         } else if(nextStageObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
             // End of experiment reached when no next stage found
             newStageDay = -1;
+            returnVal = newStageDay;
 
             // End the current stage
             let endObj = await this.endCurrentStage(participant);
@@ -190,7 +201,8 @@ module.exports.updateStageDay = async (config, uniqueId) => {
             }
 
             // End experiment
-            await participants.updateField(participant.uniqueId, "currentState", "experimentEnd");
+            let endExpObj = await this.endExperiment(participant.uniqueId);
+            return endExpObj;
 
         } else {
             // Start the next stage (which includes ending the current stage)
@@ -198,14 +210,16 @@ module.exports.updateStageDay = async (config, uniqueId) => {
             if(startObj.returnCode === DevConfig.FAILURE_CODE){
                 return startObj;
             }
+            returnVal = startObj.data;
         }
 
     } else {
         // Otherwise update and move on
         await participants.updateStageParameter(uniqueId, "stageDay", newStageDay);
+        returnVal = newStageDay;
     }
 
-    return ReturnMethods.returnSuccess(newStageDay);
+    return ReturnMethods.returnSuccess(returnVal);
 }
 
 /**
@@ -300,4 +314,30 @@ module.exports.startStage = async (participant, nextStageName) => {
         return ReturnMethods.returnFailure("StageHandler: Unable to update participant parameters to start stage")
     }
     return ReturnMethods.returnSuccess(nextStageName);
+}
+
+/**
+ *
+ * Ends the experiment. Cancels all scheduled jobs and then updates the participant's state
+ *
+ * @param uniqueId
+ * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}|{returnCode: *, data: *}>}
+ */
+module.exports.endExperiment = async (uniqueId) => {
+    // Put require here because of dependency issues or sth, I guess.
+    const ScheduleHandler = require('./scheduleHandler');
+    let removeReturnObj = await ScheduleHandler.removeAllJobsForParticipant(uniqueId);
+
+    if(removeReturnObj.returnCode === DevConfig.FAILURE_CODE){
+        return removeReturnObj;
+    } else if(removeReturnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
+        return ReturnMethods.returnFailure(removeReturnObj.failData);
+    }
+
+    try{
+        await participants.updateField(uniqueId, "currentState", "experimentEnd");
+    } catch(err){
+        return ReturnMethods.returnFailure("StageHandler: Unable to update participant state to end");
+    }
+    return ReturnMethods.returnSuccess(-1);
 }

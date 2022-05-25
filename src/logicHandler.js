@@ -66,20 +66,13 @@ let processNextSteps = async(bot, uniqueId) => {
     // Select and construct the question before actions are performed
     //  i.e., before participant parameters are updated
     if(currentQuestion.selectQFirst){
-        // Get the next question ID (based on conditions, if necessary)
-        let returnObj = this.getNextQuestion(participant, currentQuestion);
-        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-            return returnObj;
-        }
-
-        // If next question exists, construct next question
-        if(!!returnObj.data){
-            nextQuestionObj = this.constructNextQuestion(participant, returnObj.data);
-            if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
-                return nextQuestionObj;
-            }
+        // Get the next question
+        nextQuestionObj = this.getAndConstructNextQuestion(participant, currentQuestion);
+        if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
+            return nextQuestionObj;
         }
     }
+
     // Get all next actions
     let actionsObj = this.getNextActions(participant, currentQuestion);
     if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
@@ -105,24 +98,17 @@ let processNextSteps = async(bot, uniqueId) => {
 
     }
 
-    // TODO: Move this to function select and construct
     // If question is not selected first, select and construct it after participant parameters are updated
     if(!currentQuestion.selectQFirst){
-        // Get the ID of the next question
-        let returnObj = this.getNextQuestion(participant, currentQuestion);
-        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-            return returnObj;
-        }
-        if(!!returnObj.data){
-            nextQuestionObj = this.constructNextQuestion(participant, returnObj.data);
-            if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
-                return nextQuestionObj;
-            }
+        // Get the next question
+        nextQuestionObj = this.getAndConstructNextQuestion(participant, currentQuestion);
+        if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
+            return nextQuestionObj;
         }
     }
 
     // If a constructed question has been stored in next question obj
-    if(!!nextQuestionObj){
+    if(!!nextQuestionObj.data){
         let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data, !config.debug.messageDelay);
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             return returnObj;
@@ -135,25 +121,37 @@ module.exports.processNextSteps = processNextSteps;
 
 /**
  *
- * Function to construct the next question with some error handling
+ * Function to get and construct the next question with some error handling,
+ *  based on the current question and current participant parameters
  *
  * @param participant
- * @param nextQuestionId
+ * @param currentQuestion
  * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
  */
-module.exports.constructNextQuestion = (participant, nextQuestionId) => {
+module.exports.getAndConstructNextQuestion = (participant, currentQuestion) => {
     let requiredPartFields = ["conditionName", "parameters"];
-    for(let i = 0; i < requiredPartFields.length; i++){
-        if(!(requiredPartFields[i] in participant)){
+    for (let i = 0; i < requiredPartFields.length; i++) {
+        if (!(requiredPartFields[i] in participant)) {
             return ReturnMethods.returnFailure("LHandler(SNQ): Participant requires field " + requiredPartFields[i]);
         }
     }
-    let qHandler = new QuestionHandler(config);
-    let conditionName = participant["conditionName"];
-    let language = participant.parameters["language"];
-    return qHandler.constructQuestionByID(conditionName, nextQuestionId, language);
-}
 
+    // Get the ID of the next question
+    let returnObj = this.getNextQuestion(participant, currentQuestion);
+    if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
+        return returnObj;
+    }
+
+    let nextQuestionObj;
+    if (!!returnObj.data) {
+        let qHandler = new QuestionHandler(config);
+        let conditionName = participant["conditionName"];
+        let language = participant.parameters["language"];
+        nextQuestionObj = qHandler.constructQuestionByID(conditionName, returnObj.data, language);
+        return nextQuestionObj;
+    }
+    return ReturnMethods.returnSuccess(nextQuestionObj);
+}
 /**
  *
  * Method to send a single question

@@ -144,6 +144,27 @@ describe('Replacing variables', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(participant.stages.stageDay);
         })
+        it('Should fetch ANSWER_LENGTH if it is more than one element', () => {
+            participant.currentAnswer = ["o", "on", "one"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LENGTH;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(6);
+        })
+        it('Should fetch ANSWER_LENGTH if it is one element', () => {
+            participant.currentAnswer = ["oneone"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LENGTH;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(6);
+        })
+        it('Should fetch ANSWER_LENGTH if it is empty', () => {
+            participant.currentAnswer = [];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LENGTH;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(0);
+        })
         it('Should fail if participant undefined', () => {
             let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
             let returnObj = ConfigParser.getVariable(undefined, testString);

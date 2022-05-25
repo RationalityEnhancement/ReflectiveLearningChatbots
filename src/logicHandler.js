@@ -90,6 +90,8 @@ let processNextSteps = async(bot, uniqueId) => {
     // Process all next actions, if any
     for(let i = 0; i < nextActions.length; i++){
         let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i]);
+
+        // TODO: continue with other actions if a single action fails?
         if(pActionObj.returnCode === DevConfig.FAILURE_CODE){
             return pActionObj;
         }
@@ -103,6 +105,7 @@ let processNextSteps = async(bot, uniqueId) => {
 
     }
 
+    // TODO: Move this to function select and construct
     // If question is not selected first, select and construct it after participant parameters are updated
     if(!currentQuestion.selectQFirst){
         // Get the ID of the next question

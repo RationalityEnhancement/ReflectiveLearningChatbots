@@ -27,7 +27,6 @@ class AnswerHandler{
      *
      */
     static async handleNoResponse(uniqueId){
-        // TODO: error handling for getting participant
         let participant;
         try{
             participant = await participants.get(uniqueId);

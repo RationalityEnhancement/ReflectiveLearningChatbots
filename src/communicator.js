@@ -59,6 +59,8 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
 
     let qLength = question.text.length;
     let qDelayMs = qLength * msPerCharacter;
+
+    // Simulate typing by adding delay and sending chat action
     if(!noDelay){
         bot.telegram.sendChatAction(chatId, "typing");
         await new Promise(res => {
@@ -192,10 +194,11 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
         participant["firstName"] = userInfo.first_name;
     }
 
-    // TODO: Set reply delay based on length of message?
-    // TODO: Send typing notification while typing out message?
+    // Send each reply message
 	for(let i = 0; i < replyMessages.length; i++){
 		const reply = replyMessages[i];
+
+        // Simulate typing by adding delay and sending chat action
         if(!noDelay){
             bot.telegram.sendChatAction(chatId, "typing");
             let delayMs = reply.length * msPerCharacter;
@@ -204,6 +207,7 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
             });
         }
 
+        // Send the message
 		await bot.telegram.sendMessage(chatId, substituteVariables(participant, reply, true), {
             parse_mode: "HTML",
             reply_markup: InputOptions.removeKeyboard().reply_markup
@@ -231,6 +235,8 @@ module.exports.sendMessage = async (bot, participant, chatId, message, noDelay =
     }
 
     let delayMs = message.length * msPerCharacter;
+
+    // Simulate typing by adding delay and sending chat action
     if(!noDelay){
         bot.telegram.sendChatAction(chatId, "typing");
         await new Promise(res => {

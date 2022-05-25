@@ -32,16 +32,16 @@ module.exports.checkConfig = () => {
   
   assert(config.conditionAssignments.every(val => !isNaN(val)), "condition assignments should be numbers");
 
-  // TODO: Check parameter data types are valid
-  // TODO: Validate presence of all languages in all questions
-  // TODO: Validate parameter names
-  // TODO: Validate presence of all phrases
-  // TODO: Check if all question categories have unique names
-  // TODO: Validate presence of options depending on question type
-  // TODO: Check if setup questions are present
-  // TODO: Check if all nextquestions are valid question IDs or question chain
-  // TODO: Check for duplicate question IDs
-  // TODO: Check if each question category has only one start question
-  // TODO: Check whether scheduled questions have necessary components
+  // : Check parameter data types are valid
+  // : Validate presence of all languages in all questions
+  // : Validate parameter names
+  // : Validate presence of all phrases
+  // : Check if all question categories have unique names
+  // : Validate presence of options depending on question type
+  // : Check if setup questions are present
+  // : Check if all nextquestions are valid question IDs or question chain
+  // : Check for duplicate question IDs
+  // : Check if each question category has only one start question
+  // : Check whether scheduled questions have necessary components
   console.log('Config file valid');
 }

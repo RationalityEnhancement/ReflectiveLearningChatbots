@@ -52,14 +52,13 @@ const testPart = {
     currentQuestion: testQuestion
 }
 describe('Finish answer', () => {
-    describe('Finish string answer with saving', ()=> {
+    describe('Finish string answer', ()=> {
         const addedAnswer = "Europe/Berlin"
         let returnObj, participant;
         it('Should return success with next action string', async () => {
             returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
-            delete testQuestion["saveAnswerTo"];
         });
         it('Should have added answer to participant answer list',  async () => {
             participant = await participants.get(testPart.uniqueId);
@@ -72,12 +71,12 @@ describe('Finish answer', () => {
             expect(participant.currentState).to.equal("answerReceived");
         });
     });
-
-    describe('Finish array answer without saving', () => {
-        const addedAnswer = ["answer1", "answer2"];
+    describe('Finish string array', ()=> {
+        const addedAnswer = "Europe/Berlin"
         let returnObj, participant;
+        let curAns = ["ans1", "ans2"];
         it('Should return success with next action string', async () => {
-            returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
+            returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, curAns);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
         });
@@ -86,15 +85,13 @@ describe('Finish answer', () => {
             let latestAns = participant.answers[participant.answers.length-1];
             expect(latestAns.qId).to.equal(testQuestion.qId);
             expect(latestAns.text).to.equal(testQuestion.text);
-            expect(latestAns.answer).to.eql(addedAnswer);
+            expect(latestAns.answer).to.eql(curAns);
         });
-        it('Should update current state to answerReceived',  async () => {
-            participant = await participants.get(testPart.uniqueId);
+        it('Should update current state to answerReceived',  () => {
             expect(participant.currentState).to.equal("answerReceived");
         });
-    })
+    });
 
-    // TODO: Save array answer to parameter, would require specifying string array params in config file
 })
 describe('Process answer', () =>{
 

@@ -73,8 +73,8 @@ let processAction = async(bot, config, participant, actionObj) => {
         // Schedule all questions specified for given condition in config file
         case "scheduleQuestions":
             const ScheduleHandler = require("./scheduleHandler");
-            // TODO: have disabled overwriting for now, after implementation of /next
-            // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
+
+            // Debug to schedule all sets of scheduled questions in X minute intervals from now
             if(config.debug.developer){
               let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
               if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
@@ -87,6 +87,8 @@ let processAction = async(bot, config, participant, actionObj) => {
               }
               ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
             }
+
+            // Schedule all questions
             let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, participant.uniqueId, config, config.debug.experimenter);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 return returnObj;

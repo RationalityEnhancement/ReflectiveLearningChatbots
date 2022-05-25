@@ -310,14 +310,14 @@ let processAction = async(bot, config, participant, actionObj) => {
             }
             return ReturnMethods.returnSuccess(boolVal);
         // Clear the value of an array parameter
-        case "clearArrVar" :
+        case "clearVar" :
             // First argument must be name of target variable
             let cVarName = actionObj.args[0];
             if(typeof cVarName !== "string"){
                 return ReturnMethods.returnFailure("ActHandler: Variable name must be string");
             }
 
-            let cParamType, cReturnVal;
+            let cParamType;
             try{
                 cParamType = participant.parameterTypes[cVarName];
             } catch(err){
@@ -326,25 +326,22 @@ let processAction = async(bot, config, participant, actionObj) => {
             if(DevConfig.RESERVED_VARIABLES.includes(cVarName)){
                 return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
             }
-            // Can only clear array parameters
-            switch(cParamType){
-                case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
-                case DevConfig.OPERAND_TYPES.STRING_ARRAY:
-                    try{
-                        await participants.clearArrParamValue(participant.uniqueId, cVarName);
-                    } catch(err){
-                        return ReturnMethods.returnFailure("ActHandler: could not clear participant parameter " + cVarName);
-                    }
-                    cReturnVal = [];
-                    break;
-                default:
-                    return ReturnMethods.returnFailure("ActHandler: Cannot clear var of type " + cParamType);
+            // If type is unrecognized (mostly when varname doesnt exist)
+            if(!Object.values(DevConfig.OPERAND_TYPES).includes(cParamType)){
+                return ReturnMethods.returnFailure("ActHandler: did not recognize variable type " + cParamType);
+            }
+
+            // Clear the parameter value
+            try{
+                await participants.clearParamValue(participant.uniqueId, cVarName);
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: could not clear participant parameter " + cVarName);
             }
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Variable "
                     + cVarName + " cleared", true);
             }
-            return ReturnMethods.returnSuccess(cReturnVal);
+            return ReturnMethods.returnSuccess([]);
         // Add a value to a number variable
         case "addValueTo" :
             // First argument must be the name of the variable

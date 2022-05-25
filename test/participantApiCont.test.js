@@ -155,6 +155,15 @@ describe('Participant Controller API: ', () =>{
 		expect(part.stages[paramField]).to.equal(paramValue);
 
 	});
+	it('Should clear stage parameter', async () => {
+
+		const paramField = 'stageDay';
+
+		await participants.clearStageParam(testId, paramField);
+		let part = await participants.get(testId);
+		expect(part.stages[paramField]).to.be.undefined;
+
+	});
 
 	it('Should add to parameter', async () => {
 
@@ -180,9 +189,18 @@ describe('Participant Controller API: ', () =>{
 
 		const paramField = 'testStrArr';
 
-		await participants.clearArrParamValue(testId, paramField);
+		await participants.clearParamValue(testId, paramField);
 		let part = await participants.get(testId);
 		expect(part.parameters[paramField]).to.eql([]);
+
+	});
+	it('Should clear non array param', async () => {
+
+		const paramField = 'timezone';
+
+		await participants.clearParamValue(testId, paramField);
+		let part = await participants.get(testId);
+		expect(part.parameters[paramField]).to.be.undefined;
 
 	});
 

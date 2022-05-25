@@ -84,7 +84,7 @@ exports.updateField = async (uniqueId, field, value) => {
     participant[field] = value;
     return participant.save();
   } catch(err){
-    console.log('Participant API Controller: Unable to update field');
+    console.log('Participant API Controller: Unable to update field ' + field);
     console.error(err);
   }
 }
@@ -99,7 +99,7 @@ exports.updateParameter = async (uniqueId, param, value) => {
     participant.parameters = updatedParams;
     return participant.save();
   } catch(err){
-    console.log('Participant API Controller: Unable to update parameters');
+    console.log('Participant API Controller: Unable to update parameters ' + param);
     console.error(err);
   }
 }
@@ -114,7 +114,22 @@ exports.updateStageParameter = async (uniqueId, param, value) => {
     participant.stages = updatedParams;
     return participant.save();
   } catch(err){
-    console.log('Participant API Controller: Unable to update parameters');
+    console.log('Participant API Controller: Unable to update stage parameter ' + param);
+    console.error(err);
+  }
+}
+
+// Clear the value of a given parameters
+exports.clearStageParam = async (uniqueId, param) => {
+
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    if(param in participant.stages){
+      participant.stages[param] = undefined;
+    }
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to clear stage parameter ' + param);
     console.error(err);
   }
 }
@@ -129,7 +144,7 @@ exports.addToArrParameter = async (uniqueId, param, value) => {
     participant.parameters = updatedParams;
     return participant.save();
   } catch(err){
-    console.log('Participant API Controller: Unable to add value to parameter');
+    console.log('Participant API Controller: Unable to add value to array parameter');
     console.error(err);
   }
 }
@@ -145,24 +160,22 @@ exports.addToArrField = async (uniqueId, fieldName, value) => {
     return participant.save();
   }
   catch(err){
-    console.log('Participant API Controller: Unable to add scheduled question');
+    console.log('Participant API Controller: Unable to add to array field ' + fieldName);
     console.error(err);
   }
 }
 
 // Clear the value of a given parameters
-exports.clearArrParamValue = async (uniqueId, param) => {
+exports.clearParamValue = async (uniqueId, param) => {
 
   try{
     let participant = await Participant.findOne({ uniqueId });
-    let updatedParams = participant.parameters;
-    if(Array.isArray(updatedParams[param])){
-      updatedParams[param] = [];
+    if(param in participant.parameters){
+      participant.parameters[param] = undefined;
     }
-    participant.parameters = updatedParams;
     return participant.save();
   } catch(err){
-    console.log('Participant API Controller: Unable to add value to parameter');
+    console.log('Participant API Controller: Unable to clear parameter value');
     console.error(err);
   }
 }

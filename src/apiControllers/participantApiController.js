@@ -103,6 +103,22 @@ exports.updateParameter = async (uniqueId, param, value) => {
     console.error(err);
   }
 }
+
+// Update a value of the object 'stages' of the participant with a new value
+exports.updateStageParameter = async (uniqueId, param, value) => {
+
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    let updatedParams = participant.stages;
+    updatedParams[param] = value;
+    participant.stages = updatedParams;
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to update parameters');
+    console.error(err);
+  }
+}
+
 // Update the 'parameters' field of the participant by adding a new value
 exports.addToArrParameter = async (uniqueId, param, value) => {
 
@@ -158,6 +174,18 @@ exports.addAnswer = async (uniqueId, answer) => {
   try{
     let participant = await Participant.findOne({ uniqueId });  
     participant.answers.push(answer);
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to add answer');
+    console.error(err);
+  }
+}
+
+// Adds an object to the stages.activity array
+exports.addStageActivity = async (uniqueId, activity) => {
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    participant.stages.activity.push(activity);
     return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');

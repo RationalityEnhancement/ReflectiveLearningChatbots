@@ -135,6 +135,26 @@ describe('Participant Controller API: ', () =>{
 		expect(part.parameters[paramField]).to.equal(paramValue);
 
 	});
+	it('Should update string stages parameter', async () => {
+
+		const paramField = 'stageName';
+		const paramValue = 'zbeengo';
+
+		await participants.updateStageParameter(testId, paramField, paramValue);
+		let part = await participants.get(testId);
+		expect(part.stages[paramField]).to.equal(paramValue);
+
+	});
+	it('Should update number stages parameter', async () => {
+
+		const paramField = 'stageDay';
+		const paramValue = 3;
+
+		await participants.updateStageParameter(testId, paramField, paramValue);
+		let part = await participants.get(testId);
+		expect(part.stages[paramField]).to.equal(paramValue);
+
+	});
 
 	it('Should add to parameter', async () => {
 
@@ -195,6 +215,19 @@ describe('Participant Controller API: ', () =>{
 		expect(participant["answers"][1]['text']).to.eql(testAnswer.text);
 		expect(participant["answers"][1]['timeStamp']).to.eql(testAnswer.timeStamp);
 		expect(participant["answers"][1]['answer']).to.eql(testAnswer.answer);
+	});
+	it('Should add stage activity', async () => {
+		const testActivity = {
+			name : "test",
+			what : "add",
+			when : "now"
+		}
+		await participants.addStageActivity(testId, testActivity);
+		let participant = await participants.get(testId)
+		expect(participant["stages"]["activity"].length).to.equal(1);
+		expect(participant["stages"]["activity"][0]['name']).to.eql(testActivity.name);
+		expect(participant["stages"]["activity"][0]['when']).to.eql(testActivity.when);
+		expect(participant["stages"]["activity"][0]['what']).to.eql(testActivity.what);
 	});
 	const testJob = {
 		jobId: "testJobJa",

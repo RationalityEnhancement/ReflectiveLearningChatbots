@@ -210,11 +210,28 @@ class AnswerHandler{
 
                 // Question with free text input
                 case 'freeform':
-                    // Complete answering
-                    let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
-                    // Return failure or trigger the next action
-                    return finishObj;
+                    let meetsMinLen = true;
 
+                    // Check minimum length requirement
+
+                    let ansLen = answerText.length;
+
+                    if(currentQuestion.minLength && ansLen < currentQuestion.minLength) meetsMinLen = false;
+
+                    if(meetsMinLen){
+                        // Complete answering
+                        let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
+                        // Return failure or trigger the next action
+                        return finishObj;
+                    } else {
+                        // Repeat the question
+                        await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
+                        let errorString = config.phrases.answerValidation.notLongEnough[participant.parameters.language]
+                        let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
+                            {"MinLength" : currentQuestion.minLength})
+                        if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
+                        return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING)
+                    }
                 // Question with free text input but over multiple messages
                 case 'freeformMulti':
                     let termination = config.phrases.keyboards.terminateAnswer[participant.parameters.language];
@@ -232,10 +249,29 @@ class AnswerHandler{
 
                     // Check if user has typed termination answer
                     if(trimmedTerm === trimmedAns){
-                        // If participant is finished answering
-                        let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
-                        // Return failure or trigger the next action
-                        return finishObj;
+
+                        let meetsMinLen = true;
+                        // Check minimum length requirement
+                        let curAns = participant.currentAnswer;
+                        let curAnsLens = curAns.map(el => el.length);
+                        let ansLen = curAnsLens.length > 0 ? curAnsLens.reduce((partialSum, ans) => partialSum + ans) : 0;
+                        if(currentQuestion.minLength && ansLen < currentQuestion.minLength) meetsMinLen = false;
+
+                        if(meetsMinLen){
+                            // If participant is finished answering
+                            let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
+                            // Return failure or trigger the next action
+                            return finishObj;
+                        } else {
+                            // Repeat the question
+                            await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
+                            let errorString = config.phrases.answerValidation.notLongEnough[participant.parameters.language]
+                            let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
+                                {"MinLength" : currentQuestion.minLength})
+                            if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
+                            return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING)
+                        }
+
                     } else {
                         // Save the answer to participant's current answer
                         await participants.addToCurrentAnswer(participant.uniqueId, answerText);

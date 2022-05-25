@@ -494,6 +494,46 @@ describe('Process answer', () =>{
                 expect(participant.currentState).to.eql("answerReceived");
             })
         });
+        describe('Answer not long enough', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeform",
+                minLength : 10
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "<10")
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+            });
+        });
+        describe('Answer long enough', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeform",
+                minLength : 10
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "not less than 10")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+            });
+        });
     })
     describe('Free-form multiline', () => {
         let returnObj;
@@ -512,6 +552,7 @@ describe('Process answer', () =>{
         describe('First message', () => {
 
             it('Should return success and no response', async () => {
+                await participants.updateField(part.uniqueId, "currentAnswer", []);
                 returnObj = await AnswerHandler.processAnswer(part, "First message")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
@@ -553,6 +594,48 @@ describe('Process answer', () =>{
                 expect(participant.currentState).to.eql("answerReceived");
             })
         })
+        describe('Answer not long enough', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeformMulti",
+                minLength : 10
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+                currentAnswer : ["less", "10"]
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "done")
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+            });
+        });
+        describe('Answer long enough', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeformMulti",
+                minLength : 10
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+                currentAnswer : ["not", "less than", "10"]
+            }
+            it('Should return success and next action', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "done")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+            });
+        });
         describe('Fail when participant language missing', () => {
             let part2 = JSON.parse(JSON.stringify(part));
             delete part2["parameters"]["language"];

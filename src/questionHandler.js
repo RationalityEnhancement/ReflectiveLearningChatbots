@@ -156,7 +156,7 @@ function QuestionHandler(config){
         }
 
         const optionalParams = ["options", "replyMessages", "saveAnswerTo", "nextQuestion", "nextActions",
-        "cReplyMessages", "cNextActions","cNextQuestions", "range", "selectQFirst"]
+        "cReplyMessages", "cNextActions","cNextQuestions", "range", "selectQFirst", "minLength"]
         for(let i = 0; i < optionalParams.length; i++){
             let field = optionalParams[i];
             let languageReplacedValue = this.replaceLanguageDeeply(selectedQuestion[field], config.languages, language)

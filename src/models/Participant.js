@@ -71,7 +71,8 @@ let schemaObject = {
     range : {
       lower: Number,
       upper: Number
-    }
+    },
+    minLength : Number
   },
   currentState: String,
   answers:

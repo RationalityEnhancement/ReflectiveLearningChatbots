@@ -151,6 +151,7 @@ module.exports.updateStageDay = async (config, uniqueId) => {
         return ReturnMethods.returnFailure("StageHandler: Unable to fetch participant to update stage day")
     }
 
+    // Get the current stage information
     let currentStage, stageDay;
     try{
         currentStage = participant.stages.stageName;
@@ -160,7 +161,7 @@ module.exports.updateStageDay = async (config, uniqueId) => {
     }
 
     if(typeof currentStage === "undefined" || typeof stageDay === "undefined"){
-        return ReturnMethods.returnPartialFailure("StageHandler: no stage has begun yet!", -1);
+        return ReturnMethods.returnFailure("StageHandler: no stage currently underway!");
     }
 
     // Check if current stage has a specific length
@@ -168,6 +169,8 @@ module.exports.updateStageDay = async (config, uniqueId) => {
     if(stageLengthObj.returnCode === DevConfig.FAILURE_CODE){
         return stageLengthObj;
     }
+
+    // Update the day
     let curStageLength = stageLengthObj.data;
     newStageDay = stageDay + 1;
 
@@ -229,7 +232,7 @@ module.exports.endCurrentStage = async (participant) => {
 
     // If there is no current stage, then it cannot be ended
     if(typeof currentStage === "undefined" || typeof stageDay === "undefined"){
-        return ReturnMethods.returnFailure("StageHandler: no stage has begun yet!", -1);
+        return ReturnMethods.returnFailure("StageHandler: no stage currently underway!");
     }
 
     // Update the activity and the parameters

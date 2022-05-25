@@ -299,3 +299,96 @@ describe('End/Begin Stage', () => {
         })
     })
 })
+
+describe('Update Stage Day', () => {
+
+    describe('Current stage, update normally', () => {
+        let returnObj, newPart;
+        let stageName = "Test";
+        it('Should update participant to test stage', async () => {
+            let participant = await participants.get(testPartId);
+            returnObj = await StageHandler.startStage(participant, stageName);
+            newPart = await participants.get(testPartId);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageName).to.equal(stageName);
+        })
+        it('Should update stage day', async () => {
+            returnObj = await StageHandler.updateStageDay(testConfig, testPartId);
+            newPart = await participants.get(testPartId);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(newPart.stages.stageDay).to.equal(1);
+            expect(newPart.stages.stageName).to.equal(stageName);
+        })
+    })
+
+    describe('Switch to next stage after exceed days', () => {
+        let returnObj, newPart;
+        let stageName = "Test";
+        let nextStageName = "Post-Test";
+        it('Should update participant days to 7', async () => {
+            await participants.updateStageParameter(testPartId, "stageDay", 7)
+            newPart = await participants.get(testPartId);
+            expect(newPart.stages.stageDay).to.equal(7);
+            expect(newPart.stages.stageName).to.equal(stageName);
+        })
+        it('Should update stage', async () => {
+            returnObj = await StageHandler.updateStageDay(testConfig, testPartId);
+            newPart = await participants.get(testPartId);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageName).to.equal(nextStageName);
+        })
+        it('Should have added new activity', async () => {
+            let activity = newPart.stages.activity;
+            expect(activity[activity.length-1].name).to.equal(nextStageName);
+            expect(activity[activity.length-1].what).to.equal(DevConfig.BEGIN_STAGE_STRING);
+            expect(typeof activity[activity.length-1].when).to.equal("string");
+            expect(activity[activity.length-2].name).to.equal(stageName);
+            expect(activity[activity.length-2].what).to.equal(DevConfig.END_STAGE_STRING);
+            expect(typeof activity[activity.length-2].when).to.equal("string");
+        })
+
+    })
+
+    describe('End experiment when no next stage', () => {
+        let returnObj, newPart;
+        let stageName = "Post-Test";
+        it('Should update participant days to 2', async () => {
+            await participants.updateStageParameter(testPartId, "stageDay", 2)
+            newPart = await participants.get(testPartId);
+            expect(newPart.stages.stageDay).to.equal(2);
+            expect(newPart.stages.stageName).to.equal(stageName);
+        })
+        it('Should end experiment', async () => {
+            returnObj = await StageHandler.updateStageDay(testConfig, testPartId);
+            newPart = await participants.get(testPartId);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(-1);
+            expect(newPart.stages.stageDay).to.be.undefined;
+            expect(newPart.stages.stageName).to.be.undefined;
+            expect(newPart.currentState).to.equal("experimentEnd")
+        })
+        it('Should have added new activity', async () => {
+            let activity = newPart.stages.activity;
+            expect(activity[activity.length-1].name).to.equal(stageName);
+            expect(activity[activity.length-1].what).to.equal(DevConfig.END_STAGE_STRING);
+            expect(typeof activity[activity.length-1].when).to.equal("string");
+        })
+    })
+
+    describe('Fails', () => {
+        it('Should fail when stage day not present', async () => {
+            await participants.updateStageParameter(testPartId, "stageDay", undefined);
+            let returnObj = await StageHandler.updateStageDay(config, testPartId);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail when stage name not present', async () => {
+            await participants.updateStageParameter(testPartId, "stageDay", 3);
+            await participants.updateStageParameter(testPartId, "stageName", undefined);
+            let returnObj = await StageHandler.updateStageDay(config, testPartId);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+    })
+
+})

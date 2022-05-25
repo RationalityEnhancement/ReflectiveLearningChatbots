@@ -181,6 +181,21 @@ describe('Participant Controller API: ', () =>{
 		expect(participant["answers"][0]['timeStamp']).to.eql(testAnswer.timeStamp);
 		expect(participant["answers"][0]['answer']).to.eql(testAnswer.answer);
 	});
+	it('Should add to an array field', async () => {
+		const testAnswer = {
+			qId : "Zombotron2",
+			text: "Are you a zombie please?",
+			timeStamp: moment.tz().format(),
+			answer: ["yes","no","maybe so"]
+		}
+		await participants.addToArrField(testId, "answers", testAnswer);
+		let participant = await participants.get(testId)
+		expect(participant["answers"].length).to.equal(2);
+		expect(participant["answers"][1]['qId']).to.eql(testAnswer.qId);
+		expect(participant["answers"][1]['text']).to.eql(testAnswer.text);
+		expect(participant["answers"][1]['timeStamp']).to.eql(testAnswer.timeStamp);
+		expect(participant["answers"][1]['answer']).to.eql(testAnswer.answer);
+	});
 	const testJob = {
 		jobId: "testJobJa",
 		qId : "speep.Zombotron",

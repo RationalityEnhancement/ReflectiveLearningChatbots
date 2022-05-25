@@ -118,6 +118,22 @@ exports.addToArrParameter = async (uniqueId, param, value) => {
   }
 }
 
+// Add a value to an array parameter
+exports.addToArrField = async (uniqueId, fieldName, value) => {
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    let ans = participant[fieldName];
+    if(Array.isArray(ans)){
+      participant[fieldName].push(value);
+    }
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled question');
+    console.error(err);
+  }
+}
+
 // Clear the value of a given parameters
 exports.clearArrParamValue = async (uniqueId, param) => {
 
@@ -142,7 +158,6 @@ exports.addAnswer = async (uniqueId, answer) => {
   try{
     let participant = await Participant.findOne({ uniqueId });  
     participant.answers.push(answer);
-    
     return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');

@@ -37,7 +37,7 @@
     "scheduleQuestions" : 0,
     "assignToCondition" : 0,
     "addAnswerTo" : 1,
-    "clearArrVar" : 1,
+    "clearVar" : 1,
     "addValueTo" : 2
   },
   "END_STAGE_STRING" : "end",

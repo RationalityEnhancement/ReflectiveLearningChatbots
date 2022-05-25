@@ -9,11 +9,15 @@
   },
   "experimentStages" : [
     {
-      "name" : "Pre"
+      "name" : "Pre-Test"
     },
     {
-      "name" : "Post",
+      "name" : "Test",
       "lengthDays" : 7
+    },
+    {
+      "name" : "Post-Test",
+      "lengthDays" : 2
     }
   ],
   "customParameters" : {

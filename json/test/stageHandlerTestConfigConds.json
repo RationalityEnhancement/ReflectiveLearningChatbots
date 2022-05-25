@@ -1,0 +1,273 @@
+{
+  "experimentName" : "QHandler",
+  "experimentId" : "12345",
+  "experimentConditions" : ["Experimental", "Fail1", "Fail2", "Extra"],
+  "conditionAssignments" : [0.5, 0.5],
+  "mandatoryParameters" : {
+    "language" : "string",
+    "PID" : "number"
+  },
+  "experimentStages" : {
+    "Experimental" : [
+      {
+        "name" : "Pre"
+      },
+      {
+        "name": "Post",
+        "lengthDays" : 8
+      },
+      {
+        "name" : "FailStage",
+        "lengthDays" : "notANumber"
+      }],
+    "Fail1" : "notAnArray",
+    "Fail2" : [
+      {
+        "lengthDays" : 6
+      }
+    ]
+  },
+  "customParameters" : {
+    "isSmoker" : "boolean",
+    "groups" : "strArr",
+    "groupIds" : "numArr"
+  },
+  "assignmentScheme" : "pid",
+  "debug" : {
+    "experimenter" : true,
+    "actionMessages" : true,
+    "enableNext" : true,
+    "messageDelay" : false,
+    "developer" : true
+  },
+  "languages" : ["English", "Deutsch"],
+  "defaultLanguage" : "English",
+  "languageSelectionQuestion" : "LanguageQuestion",
+  "questionCategories" : {
+    "chain1": [
+      {
+        "qId": "q1",
+        "start": true,
+        "text": {
+          "English": "EnglishQ1",
+          "Deutsch": "DeutschQ1"
+        },
+        "qType": "freeform",
+        "saveAnswerTo": "pid",
+        "replyMessages": {
+          "English": [
+            "EnglishReply1"
+          ],
+          "Deutsch": [
+            "DeutschReply1"
+          ]
+        },
+        "nextQuestion": "chain1.q2"
+      },
+      {
+        "qId": "q2",
+        "text": {
+          "English": "EnglishQ2",
+          "Deutsch": "DeutschQ2"
+        },
+        "qType": "singleChoice",
+        "options": {
+          "English": [
+            "EnglishO1",
+            "EnglishO2"
+          ],
+          "Deutsch": [
+            "DeutschO1",
+            "DeutschO2"
+          ]
+        }
+      },
+      {
+        "qId": "likert1",
+        "text": {
+          "English": "LikertEN1",
+          "Deutsch": "LikertDE1"
+        },
+        "qType": "likert5",
+        "nextQuestion": "chain1.likert2"
+      },
+      {
+        "qId": "likert2",
+        "text": {
+          "English": "LikertEN2",
+          "Deutsch": "LikertDE2"
+        },
+        "qType": "likert7"
+      }
+    ],
+    "chain2" : [
+      {
+        "qId": "q1",
+        "text": {
+          "English": "EnglishQ3",
+          "Deutsch": "DeutschQ3"
+        },
+        "qType": "freeform",
+        "saveAnswerTo": "pid",
+        "replyMessages": {
+          "English": [
+            "EnglishReply3"
+          ],
+          "Deutsch": [
+            "DeutschReply3"
+          ]
+        }
+      },
+      {
+        "qId": "qual1",
+        "text": {
+          "English": "EnglishQ4",
+          "Deutsch": "DeutschQ4"
+        },
+        "qType": "qualtrics",
+        "qualtricsLink": "www.google.com/12345",
+        "qualtricsFields" : [
+          {
+            "value" : "Spork"
+          },
+          {
+            "field": "UniqueId",
+            "value" : "${UNIQUE_ID}"
+          },
+          {
+            "field" : "Condition",
+            "value" : "Experimental"
+          }
+        ]
+      },
+      {
+        "qId": "qual2",
+        "text": {
+          "English": "EnglishQ5",
+          "Deutsch": "DeutschQ5"
+        },
+        "qType": "qualtrics",
+        "qualtricsLink": "www.google.com/12345"
+      },
+      {
+        "qId": "qual3",
+        "text": {
+          "English": "EnglishQ6",
+          "Deutsch": "DeutschQ6"
+        },
+        "qType": "qualtrics",
+        "qualtricsLink": "www.google.com/12345",
+        "qualtricsFields" : [
+          {
+            "field": "Condition",
+            "value" : "Experimental"
+          },
+          {
+            "field" : "UniqueId"
+          }
+        ]
+      },
+      {
+        "qId": "qual4",
+        "text": {
+          "English": "EnglishQ7",
+          "Deutsch": "DeutschQ7"
+        },
+        "qType": "qualtrics"
+      }
+    ]
+  },
+  "scheduledQuestions" : [{
+    "qId": "chain1.q1",
+    "atTime" : "13:00",
+    "onDays" : ["Mon"]
+  }],
+  "phrases" : {
+    "answerValidation": {
+      "option": {
+        "English": "Please pick <b>only from the given options</b>",
+        "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      },
+      "notANumber": {
+        "English": "Please enter a number",
+        "Deutsch": "Geben Sie eine Zahl ein"
+      },
+      "numberTooHigh": {
+        "English": "Please enter a number below ${UpperBound}",
+        "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
+      },
+      "numberTooLow": {
+        "English": "Please enter a number above ${LowerBound}",
+        "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+      }
+    },
+    "keyboards": {
+      "singleChoice": {
+        "English": "Please pick one from the given options",
+        "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen"
+      },
+      "multiChoice": {
+        "English": "Choose as many options as you like. Click Done to finish choosing.",
+        "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
+      },
+      "terminateAnswer": {
+        "English": "Done",
+        "Deutsch": "Fertig"
+      },
+      "finishedChoosingReply": {
+        "English": "I have noted down your choices",
+        "Deutsch": "Ich habe Ihre Wahlen notiert"
+      },
+      "qualtricsFillPrompt" : {
+        "English" : "Please fill out the following survey",
+        "Deutsch" : "Füllen Sie die folgende Umfrage aus"
+      },
+      "qualtricsDonePrompt" : {
+        "English" : "Send <i>Done</i> when you are finished with the survey.",
+        "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
+      },
+      "likert5Options": {
+        "English": [
+          "Strongly Disagree",
+          "Disagree",
+          "Neither",
+          "Agree",
+          "Strongly Agree"
+        ],
+        "Deutsch": [
+          "Stimme vollständig nicht zu",
+          "Stimme nicht zu",
+          "Weder noch",
+          "Stimme zu",
+          "Stimme vollständig zu"
+        ]
+      },
+      "likert7Options": {
+        "English": [
+          "Strongly Disagree",
+          "Disagree",
+          "Somewhat Disagree",
+          "Neither",
+          "Somewhat Agree",
+          "Agree",
+          "Strongly Agree"
+        ],
+        "Deutsch": [
+          "Stimme vollständig nicht zu",
+          "Stimme nicht zu",
+          "Stimme eher nicht zu",
+          "Weder noch",
+          "Stimme eher zu",
+          "Stimme zu",
+          "Stimme vollständig zu"
+        ]
+      }
+    },
+    "schedule" : {
+      "scheduleNotif" : {
+        "English" : "Question scheduled for the following time:",
+        "Deutsch" : "Frage geplant zur folgenden Zeit:"
+      }
+    }
+  }
+}

@@ -5,6 +5,37 @@
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
   "experimentLengthWeeks" : 3,
+  "experimentStages" : {
+    "Control" : [
+      {
+        "name": "Pre-Test",
+        "lengthDays": 2
+      },
+      {
+        "name": "Test",
+        "lengthDays": 7
+      },
+      {
+        "name" : "Post-Test",
+        "lengthDays": 2
+      }
+    ],
+    "Experimental" : [
+      {
+        "name": "Pre-Test",
+        "lengthDays": 2
+      },
+      {
+        "name": "Test",
+        "lengthDays": 7
+      },
+      {
+        "name" : "Post-Test",
+        "lengthDays": 2
+      }
+    ]
+
+  },
   "mandatoryParameters" : {
     "language" : "string",
     "timezone" : "string",

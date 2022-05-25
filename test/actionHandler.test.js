@@ -159,6 +159,121 @@ describe('Processing actions', ()=>{
         })
 
     })
+    describe('AddValueTo', ()=>{
+        describe('Add to undefined', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "addValueTo",
+                args : ["testNum", "$N{3}"]
+            }
+            let outString = 3;
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                expect(participant.parameters.testNum).to.be.undefined;
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(outString)
+            })
+            it('Should have added the number to participant parameter', async ()=>{
+                let participant = await participants.get(testPartId);
+                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("number");
+                expect(participant.parameters[actionObj.args[0]]).to.equal(3);
+            })
+        })
+        describe('Add to pre-existing value', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "addValueTo",
+                args : ["testNum", "$N{5}"]
+            }
+            let outString = 8;
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                expect(participant.parameters.testNum).to.equal(3);
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(outString)
+            })
+            it('Should have added the number to participant parameter', async ()=>{
+                let participant = await participants.get(testPartId);
+                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("number");
+                expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+            })
+        })
+        describe('Fails', () => {
+            let returnObj;
+
+            it('Should fail when variable name not string', async () => {
+                let actionObj = {
+                    aType : "addValueTo",
+                    args : [234, "$N{23}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when new value not string', async () => {
+                let actionObj = {
+                    aType : "addValueTo",
+                    args : ["testNum", 23]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when variable not recognized', async () => {
+                let actionObj = {
+                    aType : "addValueTo",
+                    args : ["testNumbs", "$N{34}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when cannot save to variable type', async () => {
+                let actionObj = {
+                    aType : "addValueTo",
+                    args : ["testBool", "$N{12}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when number token is invalid', async () => {
+                let actionObj = {
+                    aType : "addValueTo",
+                    args : ["testNum", "$N{12three}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when trying to save to reserved variable', async () => {
+                let actionObj = {
+                    aType : "addValueTo",
+                    args : ["STAGE_DAY", "$N{1}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+
+        })
+    })
     describe('SaveAnswerTo', ()=>{
         describe('String answer', () => {
             let returnObj;
@@ -403,6 +518,7 @@ describe('Processing actions', ()=>{
 
         })
     })
+
     describe('AddAnswerTo', ()=>{
         describe('String answer', () => {
             let returnObj;

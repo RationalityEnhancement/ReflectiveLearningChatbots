@@ -8,6 +8,7 @@
   "INVALID_ANSWER_STRING" : "[Invalid Answer]",
   "qTypeAliases" : ["likert5", "likert7"],
   "validAssignmentSchemes" : ["pid", "balanced", "random"],
+  "RESERVED_VARIABLES" : ["STAGE_NAME", "STAGE_DAY"],
   "VAR_STRINGS" : {
     "FIRST_NAME" : "FIRST_NAME",
     "CURRENT_ANSWER" : "CURRENT_ANSWER",
@@ -34,6 +35,7 @@
     "scheduleQuestions" : 0,
     "assignToCondition" : 0,
     "addAnswerTo" : 1,
-    "clearArrVar" : 1
+    "clearArrVar" : 1,
+    "addValueTo" : 2
   }
 }

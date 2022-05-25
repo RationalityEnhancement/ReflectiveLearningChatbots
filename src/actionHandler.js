@@ -307,7 +307,6 @@ let processAction = async(bot, config, participant, actionObj) => {
                     + bVarName + " set to " + boolVal, true);
             }
             return ReturnMethods.returnSuccess(boolVal);
-
         // Clear the value of an array parameter
         case "clearArrVar" :
             // First argument must be name of target variable
@@ -344,6 +343,59 @@ let processAction = async(bot, config, participant, actionObj) => {
                     + cVarName + " cleared", true);
             }
             return ReturnMethods.returnSuccess(cReturnVal);
+        // Add a value to a number variable
+        case "addValueTo" :
+            // First argument must be the name of the variable
+            let addVarName = actionObj.args[0];
+            if(typeof addVarName !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: Variable name (arg1) must be string");
+            }
+            // Second argument must be a number token
+            let addVal = actionObj.args[1];
+            if(typeof addVal !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: Number token (arg2) must be string");
+            }
+            let addParamType;
+            try{
+                addParamType = participant.parameterTypes[addVarName];
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: variable not found : " + addVarName);
+            }
+            if(DevConfig.RESERVED_VARIABLES.includes(addVarName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
+
+            // Process only if target variable is number type
+            if(addParamType !== DevConfig.OPERAND_TYPES.NUMBER){
+                return ReturnMethods.returnFailure("ActHandler: Can add number only to number type")
+            }
+
+            // Parse the number token
+            let addValObj = ConfigParser.parseNumberToken(addVal);
+            if(addValObj.returnCode === DevConfig.FAILURE_CODE){
+                return ReturnMethods.returnFailure("ActHandler: Unable to parse number token")
+            }
+
+            // If parameter hasn't been set already, initialize it
+            let newNumVal;
+            if(typeof participant.parameters[addVarName] === "undefined"){
+                newNumVal = 0;
+            } else {
+                newNumVal = participant.parameters[addVarName];
+            }
+            newNumVal += addValObj.data;
+
+            // Update the parameter with the new value
+            try{
+                await participants.updateParameter(participant.uniqueId, addVarName, newNumVal);
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+            }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
+                    + newNumVal + " added to " + addVarName, true);
+            }
+            return ReturnMethods.returnSuccess(newNumVal);
         default:
             return ReturnMethods.returnFailure("LHandler: aType not recognized");
     }

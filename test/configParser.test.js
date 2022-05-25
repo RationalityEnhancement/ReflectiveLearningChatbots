@@ -1043,6 +1043,64 @@ describe('Getting values from strings', () => {
 
         })
     })
+    describe('Parse Number Token', () => {
+        it('Should return integer', () => {
+            let testStr = "$N{12}";
+            let expectedVal = 12;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return zero', () => {
+            let testStr = "$N{0}";
+            let expectedVal = 0;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return negative', () => {
+            let testStr = "$N{-19}";
+            let expectedVal = -19;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return float', () => {
+            let testStr = "$N{13.55}";
+            let expectedVal = 13.55;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail when not number', () => {
+            let testStr = "$N{afd}";
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt start with $N{ ', () => {
+            let testStr = "${23}";
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt end with } ', () => {
+            let testStr = "$N{23";
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
     describe('Number array', () => {
         it('Should return integer array', () => {
             let testStr = "123, 456, 789";

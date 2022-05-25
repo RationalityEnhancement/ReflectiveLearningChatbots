@@ -961,6 +961,23 @@ class ConfigParser{
 
     /**
      *
+     * Parse a single number token of the form $N{<number>}. Return the number value
+     * if valid, return error if not valid
+     *
+     * @param expression
+     */
+    static parseNumberToken(expression){
+        if(typeof expression != "string"){
+            return ReturnMethods.returnFailure("CParser: Number token must be string");
+        }
+        if(!expression.startsWith("$N{") || !expression.endsWith("}")){
+            return ReturnMethods.returnFailure("CParser: Number token in incorrect format - must be $N{...}");
+        }
+        let trimmedExpression = expression.substring(3,expression.length-1);
+        return this.getNumberFromString(trimmedExpression);
+    }
+    /**
+     *
      * Parse a single boolean token of the form $B{TRUE/FALSE}. Return the truth value
      * if valid, return error if not valid
      *

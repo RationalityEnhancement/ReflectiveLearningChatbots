@@ -166,9 +166,13 @@
       }
     },
     "schedule" : {
-      "scheduleNotif" : {
+      "scheduleQNotif" : {
         "English" : "Question scheduled for the following time:",
         "Deutsch" : "Frage geplant zur folgenden Zeit:"
+      },
+      "scheduleANotif" : {
+        "English" : "Action scheduled for the following time:",
+        "Deutsch" : "Handlung geplant zur folgenden Zeit:"
       }
     },
     "endExperiment" : {

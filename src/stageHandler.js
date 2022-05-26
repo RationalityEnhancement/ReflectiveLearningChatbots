@@ -341,3 +341,7 @@ module.exports.endExperiment = async (uniqueId) => {
     }
     return ReturnMethods.returnSuccess(-1);
 }
+
+module.exports.scheduleStageUpdates = () => {
+
+}

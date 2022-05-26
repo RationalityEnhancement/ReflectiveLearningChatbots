@@ -206,13 +206,13 @@ exports.addStageActivity = async (uniqueId, activity) => {
   }
 }
 
-exports.hasScheduledQuestion = async (uniqueId, jobInfo) => {
+exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
     let exists = false;
     let participant = await Participant.findOne({uniqueId});
-    let scheduledQuestions = participant.scheduledOperations["questions"];
-    for(let i = 0; i < scheduledQuestions.length; i++){
-      let curQ = scheduledQuestions[i];
+    let scheduledOperations = participant.scheduledOperations[type];
+    for(let i = 0; i < scheduledOperations.length; i++){
+      let curQ = scheduledOperations[i];
       let allEqual = true;
       for(const [key, value] of Object.entries(jobInfo)){
         if(!lodash.isEqual(jobInfo[key], curQ[key])){
@@ -233,12 +233,12 @@ exports.hasScheduledQuestion = async (uniqueId, jobInfo) => {
   }
 }
 
-exports.addScheduledQuestion = async (uniqueId, jobInfo) => {
+exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
     let participant = await Participant.findOne({ uniqueId });
-    let hasQAlready = await exports.hasScheduledQuestion(uniqueId, jobInfo)
-    if(!hasQAlready){
-      participant.scheduledOperations["questions"].push(jobInfo);
+    let hasOAlready = await exports.hasScheduledOperation(uniqueId, type, jobInfo)
+    if(!hasOAlready){
+      participant.scheduledOperations[type].push(jobInfo);
     }
     return participant.save();
   }
@@ -247,10 +247,10 @@ exports.addScheduledQuestion = async (uniqueId, jobInfo) => {
     console.error(err);
   }
 }
-exports.removeScheduledQuestion = async (uniqueId, jobId) => {
+exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
   try{
     let participant = await Participant.findOne({ uniqueId });
-    let scheduledQs = participant.scheduledOperations["questions"];
+    let scheduledQs = participant.scheduledOperations[type];
     let jobIdx = -1;
     for(let i = 0; i < scheduledQs.length; i++){
       let scheduledQ = scheduledQs[i];
@@ -259,7 +259,7 @@ exports.removeScheduledQuestion = async (uniqueId, jobId) => {
         break;
       }
     }
-    if(jobIdx != -1) participant.scheduledOperations["questions"].splice(jobIdx,1);
+    if(jobIdx != -1) participant.scheduledOperations[type].splice(jobIdx,1);
 
     return participant.save();
   }

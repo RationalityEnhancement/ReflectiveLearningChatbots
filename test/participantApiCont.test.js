@@ -247,39 +247,38 @@ describe('Participant Controller API: ', () =>{
 		expect(participant["stages"]["activity"][0]['when']).to.eql(testActivity.when);
 		expect(participant["stages"]["activity"][0]['what']).to.eql(testActivity.what);
 	});
-	const testJob = {
+	const testQJob = {
 		jobId: "testJobJa",
 		qId : "speep.Zombotron",
 		atTime: "10:00",
 		onDays: ["Mon", "Tue", "Wed"]
-
 	}
 	it('Should add a scheduled question', async () => {
 
-		await participants.addScheduledQuestion(testId, testJob);
+		await participants.addScheduledOperation(testId, "questions", testQJob);
 		let participant = await participants.get(testId)
 		let scheduledQs = participant["scheduledOperations"]["questions"];
-		expect(scheduledQs[0]['jobId']).to.eql(testJob.jobId);
-		expect(scheduledQs[0]['qId']).to.eql(testJob.qId);
-		expect(scheduledQs[0]['atTime']).to.eql(testJob.atTime);
-		expect(scheduledQs[0]['onDays']).to.eql(testJob.onDays);
+		expect(scheduledQs[0]['jobId']).to.eql(testQJob.jobId);
+		expect(scheduledQs[0]['qId']).to.eql(testQJob.qId);
+		expect(scheduledQs[0]['atTime']).to.eql(testQJob.atTime);
+		expect(scheduledQs[0]['onDays']).to.eql(testQJob.onDays);
 	});
 	it('Should have the scheduled question', async () => {
-		let hasQ = await participants.hasScheduledQuestion(testId, testJob);
+		let hasQ = await participants.hasScheduledOperation(testId, "questions", testQJob);
 		assert(hasQ);
 	})
 	it('Should not have a question that wasnt scheduled', async () => {
 		let fakeJob = {};
-		fakeJob = Object.assign(fakeJob, testJob);
+		fakeJob = Object.assign(fakeJob, testQJob);
 		fakeJob.qId = "fakeQuestion";
-		let hasQ = await participants.hasScheduledQuestion(testId, fakeJob);
+		let hasQ = await participants.hasScheduledOperation(testId, "questions", fakeJob);
 		assert(!hasQ);
 	})
 	it('Should not add the same scheduled question again', async () => {
 
 		let participant = await participants.get(testId);
 		expect(participant.scheduledOperations["questions"].length).to.equal(1);
-		await participants.addScheduledQuestion(testId, testJob);
+		await participants.addScheduledOperation(testId, "questions", testQJob);
 		participant = await participants.get(testId)
 		expect(participant.scheduledOperations["questions"].length).to.equal(1);
 	});
@@ -294,10 +293,10 @@ describe('Participant Controller API: ', () =>{
 			}
 			return foundJob;
 		}
-		await participants.removeScheduledQuestion(testId, 'fakeJobId');
+		await participants.removeScheduledOperation(testId, "questions",'fakeJobId');
 		let participant = await participants.get(testId)
 		let scheduledQs = participant["scheduledOperations"]["questions"];
-		assert(DBHasJob(scheduledQs, testJob.jobId));
+		assert(DBHasJob(scheduledQs, testQJob.jobId));
 	});
 	it('Should remove a scheduled question', async () => {
 		let DBHasJob = (jobArray, jobId) => {
@@ -310,10 +309,79 @@ describe('Participant Controller API: ', () =>{
 			}
 			return foundJob;
 		}
-		await participants.removeScheduledQuestion(testId, testJob.jobId);
+		await participants.removeScheduledOperation(testId, "questions", testQJob.jobId);
 		let participant = await participants.get(testId)
 		let scheduledQs = participant["scheduledOperations"]["questions"];
-		assert(!DBHasJob(scheduledQs, testJob.jobId));
+		assert(!DBHasJob(scheduledQs, testQJob.jobId));
+	});
+	const testAJob = {
+		jobId: "testActionJa",
+		aType : "Zombotron",
+		args : ["test1", "test2"],
+		atTime: "10:00",
+		onDays: ["Mon", "Tue", "Wed"]
+	}
+	it('Should add a scheduled action', async () => {
+
+		await participants.addScheduledOperation(testId, "actions", testAJob);
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["actions"];
+		expect(scheduledQs[0]['jobId']).to.eql(testAJob.jobId);
+		expect(scheduledQs[0]['aType']).to.eql(testAJob.aType);
+		expect(scheduledQs[0]['args']).to.eql(testAJob.args);
+		expect(scheduledQs[0]['atTime']).to.eql(testAJob.atTime);
+		expect(scheduledQs[0]['onDays']).to.eql(testAJob.onDays);
+	});
+	it('Should have the scheduled question', async () => {
+		let hasQ = await participants.hasScheduledOperation(testId, "actions", testAJob);
+		assert(hasQ);
+	})
+	it('Should not have a question that wasnt scheduled', async () => {
+		let fakeJob = {};
+		fakeJob = Object.assign(fakeJob, testAJob);
+		fakeJob.qId = "fakeQuestion";
+		let hasQ = await participants.hasScheduledOperation(testId, "actions", fakeJob);
+		assert(!hasQ);
+	})
+	it('Should not add the same scheduled action again', async () => {
+
+		let participant = await participants.get(testId);
+		expect(participant.scheduledOperations["actions"].length).to.equal(1);
+		await participants.addScheduledOperation(testId, "actions", testAJob);
+		participant = await participants.get(testId)
+		expect(participant.scheduledOperations["actions"].length).to.equal(1);
+	});
+	it('Should return normally if removed action doesnt exist', async () => {
+		let DBHasJob = (jobArray, jobId) => {
+			let foundJob = false;
+			for(let i = 0; i < jobArray.length; i++){
+				if(jobArray[i]["jobId"] === jobId){
+					foundJob = true;
+					break;
+				}
+			}
+			return foundJob;
+		}
+		await participants.removeScheduledOperation(testId, "actions",'fakeJobId');
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["actions"];
+		assert(DBHasJob(scheduledQs, testAJob.jobId));
+	});
+	it('Should remove a scheduled action', async () => {
+		let DBHasJob = (jobArray, jobId) => {
+			let foundJob = false;
+			for(let i = 0; i < jobArray.length; i++){
+				if(jobArray[i]["jobId"] === jobId){
+					foundJob = true;
+					break;
+				}
+			}
+			return foundJob;
+		}
+		await participants.removeScheduledOperation(testId, "actions", testAJob.jobId);
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["actions"];
+		assert(!DBHasJob(scheduledQs, testAJob.jobId));
 	});
 	it('Should add an answer to current answer', async () => {
 

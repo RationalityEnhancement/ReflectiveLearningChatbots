@@ -92,6 +92,17 @@ let schemaObject = {
         onDays : [String],
         if : String,
         tz : String
+      },
+    ],
+    actions : [
+      {
+        jobId : String,
+        aType: String,
+        args: [String],
+        atTime : String,
+        onDays : [String],
+        if : String,
+        tz : String
       }
     ]
   }

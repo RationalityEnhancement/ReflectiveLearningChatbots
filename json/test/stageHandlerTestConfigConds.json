@@ -10,7 +10,8 @@
   "experimentStages" : {
     "Experimental" : [
       {
-        "name" : "Pre"
+        "name" : "Pre",
+        "onDays" : ["Sat", "Sun"]
       },
       {
         "name": "Post",
@@ -18,7 +19,13 @@
       },
       {
         "name" : "FailStage",
-        "lengthDays" : "notANumber"
+        "lengthDays" : "notANumber",
+        "onDays" : ["Dog"]
+      },
+      {
+        "name" : "FailStage2",
+        "lengthDays" : 3,
+        "onDays" : "Dog"
       }],
     "Fail1" : "notAnArray",
     "Fail2" : [

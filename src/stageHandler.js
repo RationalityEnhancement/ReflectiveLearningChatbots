@@ -5,33 +5,30 @@ const moment = require('moment-timezone')
 
 /**
  * Stage handler class that takes in a config as a parameter
- *  Purpose of the class is to deal with stages as defined in the config
- *  file
+ *  Purpose of the class is to deal with all things related
+ *  to experiment stages
  *
  */
 
 /**
  *
- * Read the passed in config file to get the length of the days for a given
- * stage name in a given condition
+ * Gets the list of stages from the config file along with validation,
+ * based on the condition
  *
- * Return -1 if no length of days is specified
+ * If condition is undefined, expect experimentStages field of config
+ * to be a list and not an object with condition names
  *
  * @param config
  * @param conditionName
- * @param stageName
  * @returns {{returnCode: *, data: *}}
  */
-module.exports.getStageLengthDays = (config, conditionName, stageName) => {
+module.exports.getStageList = (config, conditionName) => {
     try{
         if(conditionName && !config.experimentConditions.includes(conditionName)){
             return ReturnMethods.returnFailure("StageHandler: Condition " + conditionName + " doesn't exist")
         }
     } catch(err){
         return ReturnMethods.returnFailure("StageHandler: Config experiment conditions missing")
-    }
-    if(typeof stageName !== "string"){
-        return ReturnMethods.returnFailure("StageHandler: stage name must be string");
     }
 
     let condition;
@@ -51,6 +48,31 @@ module.exports.getStageLengthDays = (config, conditionName, stageName) => {
         return ReturnMethods.returnFailure("StageHandler: Every experiment stage must be an object with" +
             " at least field 'name'")
     }
+    return ReturnMethods.returnSuccess(condition);
+}
+
+/**
+ *
+ * Read the passed in config file to get the length of the days for a given
+ * stage name in a given condition
+ *
+ * Return -1 if no length of days is specified
+ *
+ * @param config
+ * @param conditionName
+ * @param stageName
+ * @returns {{returnCode: *, data: *}}
+ */
+module.exports.getStageParam = (config, conditionName, stageName, param) => {
+
+    if(typeof stageName !== "string"){
+        return ReturnMethods.returnFailure("StageHandler: stage name must be string");
+    }
+    let stageListObj = this.getStageList(config, conditionName);
+    if(stageListObj.returnCode === DevConfig.FAILURE_CODE){
+        return stageListObj;
+    }
+    let condition = stageListObj.data;
 
     let curObj;
     for(let i = 0; i < condition.length; i++){
@@ -64,11 +86,19 @@ module.exports.getStageLengthDays = (config, conditionName, stageName) => {
         return ReturnMethods.returnFailure("StageHandler: Stage " + stageName + " doesn't exist!");
     }
 
-    if(curObj.lengthDays){
-        if(typeof curObj.lengthDays !== "number"){
+    if(curObj[param]){
+        if(param === DevConfig.STAGE_PARAMS.LENGTH_DAYS && typeof curObj[param] !== "number"){
             return ReturnMethods.returnFailure("StageHandler: stage length days must be a number")
         }
-        return ReturnMethods.returnSuccess(curObj.lengthDays)
+        if(param === DevConfig.STAGE_PARAMS.ON_DAYS){
+            if(!Array.isArray(curObj[param])) {
+                return ReturnMethods.returnFailure("StageHandler: stage on days must be a list")
+            }
+            if(!curObj[param].every(e => DevConfig.DAY_INDEX_ORDERING.includes(e))) {
+                return ReturnMethods.returnFailure("StageHandler: on days must contain valid day names")
+            }
+        }
+        return ReturnMethods.returnSuccess(curObj[param])
     } else {
         return ReturnMethods.returnSuccess(-1)
     }
@@ -92,34 +122,16 @@ module.exports.getStageLengthDays = (config, conditionName, stageName) => {
  * @returns {{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}}
  */
 module.exports.getNextStageName = (config, conditionName, stageName) => {
-    try{
-        if(conditionName && !config.experimentConditions.includes(conditionName)){
-            return ReturnMethods.returnFailure("StageHandler: Condition " + conditionName + " doesn't exist")
-        }
-    } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Config experiment conditions missing")
-    }
+
     if(typeof stageName !== "string"){
         return ReturnMethods.returnFailure("StageHandler: stage name must be string");
     }
 
-    let condition;
-    if(!conditionName){
-        condition = config.experimentStages;
-    } else {
-        if(!(conditionName in config["experimentStages"])){
-            let errorMsg = "StageHandler: Condition " + conditionName + " does not exist in experiment stages!";
-            return ReturnMethods.returnFailure(errorMsg)
-        }
-        condition = config["experimentStages"][conditionName];
+    let stageListObj = this.getStageList(config, conditionName);
+    if(stageListObj.returnCode === DevConfig.FAILURE_CODE){
+        return stageListObj;
     }
-    if(!Array.isArray(condition)){
-        return ReturnMethods.returnFailure("StageHandler: Experiment stages must be array!")
-    }
-    if(!condition.every(e => typeof e === "object" && "name" in e)){
-        return ReturnMethods.returnFailure("StageHandler: Every experiment stage must be an object with" +
-            " at least field 'name'")
-    }
+    let condition = stageListObj.data;
 
     let curStageIdx = -1;
     for(let i = 0; i < condition.length; i++){
@@ -175,7 +187,7 @@ module.exports.updateStageDay = async (config, uniqueId) => {
     }
 
     // Check if current stage has a specific length
-    let stageLengthObj = this.getStageLengthDays(config, participant.conditionName, currentStage);
+    let stageLengthObj = this.getStageParam(config, participant.conditionName, currentStage, DevConfig.STAGE_PARAMS.LENGTH_DAYS);
     if(stageLengthObj.returnCode === DevConfig.FAILURE_CODE){
         return stageLengthObj;
     }
@@ -342,6 +354,11 @@ module.exports.endExperiment = async (uniqueId) => {
     return ReturnMethods.returnSuccess(-1);
 }
 
-module.exports.scheduleStageUpdates = () => {
-
+module.exports.getStageUpdateActionList = (config, conditionName) => {
+    // Need all stage names
+    // Need all on days
+    // Group all stages based on onDays
+    // If only one group, then only one action needed with no if
+    // If more than one group, then as many actions as there are groups with stage names of all stages in that
+    //      group in the if condition for that action.
 }

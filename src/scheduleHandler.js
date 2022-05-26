@@ -135,6 +135,7 @@ class ScheduleHandler{
      * from the database based on the jobId
      *
      * @param jobId ID of the job to be cancelled
+     * @param type "questions" or "actions" depending on which type of operation to be removed
      * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
      */
     static async removeJobByID(jobId, type){
@@ -160,6 +161,7 @@ class ScheduleHandler{
      *  Cancelling means that the operation will no longer be scheduled
      *
      * @param jobId ID of the job to be cancelled
+     * @param type "questions" or "actions" depending on which type of operation to be removed
      * @returns {{returnCode: *, data: *}}
      */
     static cancelJobByID(jobId, type){
@@ -295,6 +297,7 @@ class ScheduleHandler{
      * @param bot Telegram bot instance
      * @param uniqueId uniqueId of the participant for whom questions are to be scheduled
      * @param config loaded config file of experiment
+     * @param actionList A list of actions to be scheduled, if any
      * @param debug flag whether in debug mode or not
      * @returns {Promise<{returnCode: number, data}|{returnCode: *, data: *}|{returnCode: *, successData: *, failData: *}>}
      */
@@ -403,7 +406,6 @@ class ScheduleHandler{
      * @param startTime the time from which the new timings of questions should start
      * @param interval the interval between each successive question
      */
-
     static overrideScheduleForIntervals(scheduledQuestions, startTime, interval){
         let now = startTime;
         let minutes = now.minutes;
@@ -466,7 +468,7 @@ class ScheduleHandler{
         try{
             let scheduleDays = questionInfo.onDays;
             for(let i = 0; i < scheduleDays.length; i++){
-                let idx = this.dayIndexOrdering.indexOf(scheduleDays[i]);
+                let idx = DevConfig.DAY_INDEX_ORDERING.indexOf(scheduleDays[i]);
                 if(idx === -1) throw "Scheduler: " + questionInfo.qId + " - Day not recognized";
                 else {
                     if(!scheduleDayIndices.includes(idx)){
@@ -491,11 +493,11 @@ class ScheduleHandler{
 
     /**
      *
-     * Write operation info to database, if not already present in database
+     * Write question info to database, if not already present in database
      *
      * @param uniqueId uniqueId of the participant for whom job is being scheduled
      * @param jobId ID of the job being scheduled
-     * @param questionInfo Info about the question that is being scheduled
+     * @param questionInfo Info about the question that has been scheduled
      * @returns {Promise<{returnCode: *, data: *}>}
      */
     static async writeQuestionInfoToDB(uniqueId, jobId, questionInfo){
@@ -517,6 +519,15 @@ class ScheduleHandler{
 
     }
 
+    /**
+     *
+     * Write action info to database, if not already present in database
+     *
+     * @param uniqueId uniqueId of the participant for whom job is being scheduled
+     * @param jobId ID of the job being scheduled
+     * @param actionInfo Info about the action that has been scheduled
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
     static async writeActionInfoToDB(uniqueId, jobId, actionInfo){
         let jobInfo = {
             jobId: jobId,
@@ -543,7 +554,7 @@ class ScheduleHandler{
      * @param bot Telegram bot instance
      * @param uniqueId uniqueID of participant for whom q is to be scheduled
      * @param qHandler QuestionHandler instance with loaded expt config file
-     * @param questionInfo info of question to be scheduled
+     * @param questionInfo info of question to be scheduled - must contain qId, onDays, atTime, tz (if optional)
      * @param config loaded expt config file
      * @param isNew flag whether question is new or not (i.e., already present in DB or not)
      * @returns {Promise<{returnCode: *, data: *}>}
@@ -635,6 +646,17 @@ class ScheduleHandler{
         });
     }
 
+    /**
+     *
+     * Schedule a single action for a participant
+     *
+     * @param bot Telegram bot instance
+     * @param uniqueId uniqueID of participant for whom q is to be scheduled
+     * @param actionInfo info of action to be scheduled - must contain aType, onDays, atTime, tz (args, if optional)
+     * @param config loaded expt config file
+     * @param isNew flag whether question is new or not (i.e., already present in DB or not)
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
     static async scheduleOneAction(bot, uniqueId, actionInfo, config, isNew = true){
         const { processAction } = require('./actionHandler');
         if(!("aType" in actionInfo)){
@@ -763,8 +785,8 @@ class ScheduleHandler{
         if(qInfoArray.length === 0) return qInfoArray;
         // Loop through all days, starting from Sunday
         let tempOrderArr = []
-        for(let dayIdx = 0;dayIdx < this.dayIndexOrdering.length; dayIdx++){
-            let curDay = this.dayIndexOrdering[dayIdx];
+        for(let dayIdx = 0;dayIdx < DevConfig.DAY_INDEX_ORDERING.length; dayIdx++){
+            let curDay = DevConfig.DAY_INDEX_ORDERING[dayIdx];
             let dayQuestions = []
             // Get all questions that are to be asked on this day
             for(let i = 0; i < qInfoArray.length; i++){
@@ -823,7 +845,7 @@ class ScheduleHandler{
 
         for(let i = 0; i < qInfoArray.length; i++){
             let curDay = qInfoArray[i].onDays[0];
-            let curDayIdx = this.dayIndexOrdering.indexOf(curDay);
+            let curDayIdx = DevConfig.DAY_INDEX_ORDERING.indexOf(curDay);
             let curTime = qInfoArray[i].atTime;
             let diff = ExperimentUtils.getMinutesDiff(diffObj,{
                 dayIndex: curDayIdx,

@@ -9,22 +9,79 @@ const mongo = require("mongoose");
 const participants = require("../src/apiControllers/participantApiController");
 const config = require("../json/config.json");
 
-describe('Get length days', () => {
+describe('Get stage list', () => {
+    describe('Fails', () => {
+        it('Should fail when condition doesnt exist', () => {
+            let returnObj = StageHandler.getStageList(testConfigConds, "FakeCondition")
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when condition not in experiment stages', () => {
+            let returnObj = StageHandler.getStageList(testConfigConds, "Extra")
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when stages not array', () => {
+            let returnObj = StageHandler.getStageList(testConfigConds, "Fail1")
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when conditions exist but pass undefined', () => {
+            let returnObj = StageHandler.getStageList(testConfigConds, undefined)
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when not all stages have a name', () => {
+            let returnObj = StageHandler.getStageList(testConfigConds, "Fail2")
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+
+    })
+    describe('No conds', () => {
+        it('Should succeed normally', () => {
+            let returnObj = StageHandler.getStageList(testConfig, undefined)
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(testConfig.experimentStages);
+        })
+    })
+    describe('Yes conds', () => {
+        it('Should succeed normally', () => {
+            let returnObj = StageHandler.getStageList(testConfigConds, "Experimental")
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(testConfigConds.experimentStages.Experimental);
+        })
+    })
+})
+describe('Get stage params', () => {
     describe('No conditions', () => {
         it('Should return correct number of days', () => {
 
-            let returnObj = StageHandler.getStageLengthDays(testConfig, undefined, "Post-Test")
+            let returnObj = StageHandler.getStageParam(testConfig, undefined, "Post-Test", DevConfig.STAGE_PARAMS.LENGTH_DAYS)
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(testConfig.experimentStages[2].lengthDays)
         })
-        it('Should return -1', () => {
+        it('Should return -1 when no current days', () => {
 
-            let returnObj = StageHandler.getStageLengthDays(testConfig, undefined, "Pre-Test")
+            let returnObj = StageHandler.getStageParam(testConfig, undefined, "Pre-Test", DevConfig.STAGE_PARAMS.LENGTH_DAYS)
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(-1)
+        })
+        it('Should return correct onDays', () => {
+
+            let returnObj = StageHandler.getStageParam(testConfig, undefined, "Test", DevConfig.STAGE_PARAMS.ON_DAYS)
+            console.log(returnObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(testConfig.experimentStages[1].onDays)
+        })
+        it('Should return -1 when no onDays', () => {
+
+            let returnObj = StageHandler.getStageParam(testConfig, undefined, "Pre-Test", DevConfig.STAGE_PARAMS.ON_DAYS)
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(-1)
         })
         it('Should fail when stage doesnt exist', () => {
-            let returnObj = StageHandler.getStageLengthDays(testConfig, undefined, "Prep")
+            let returnObj = StageHandler.getStageParam(testConfig, undefined, "Prep", DevConfig.STAGE_PARAMS.LENGTH_DAYS)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         })
@@ -32,43 +89,50 @@ describe('Get length days', () => {
     describe('Yes conditions', () => {
         it('Should return correct number of days', () => {
 
-            let returnObj = StageHandler.getStageLengthDays(testConfigConds, "Experimental", "Post")
+            let returnObj = StageHandler.getStageParam(testConfigConds, "Experimental", "Post", DevConfig.STAGE_PARAMS.LENGTH_DAYS)
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(testConfigConds.experimentStages.Experimental[1].lengthDays)
         })
-        it('Should return -1', () => {
+        it('Should return -1 when no length', () => {
 
-            let returnObj = StageHandler.getStageLengthDays(testConfigConds, "Experimental", "Pre")
+            let returnObj = StageHandler.getStageParam(testConfigConds, "Experimental", "Pre", DevConfig.STAGE_PARAMS.LENGTH_DAYS)
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(-1)
+        })
+        it('Should return correct onDays', () => {
+
+            let returnObj = StageHandler.getStageParam(testConfigConds, "Experimental", "Pre", DevConfig.STAGE_PARAMS.ON_DAYS)
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(testConfigConds.experimentStages.Experimental[0].onDays)
+        })
+        it('Should return -1 when no onDays', () => {
+
+            let returnObj = StageHandler.getStageParam(testConfigConds, "Experimental", "Post", DevConfig.STAGE_PARAMS.ON_DAYS)
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(-1)
         })
         it('Should fail when stage doesnt exist', () => {
-            let returnObj = StageHandler.getStageLengthDays(testConfigConds, "Experimental", "Prep")
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            console.log(returnObj.data);
-        })
-        it('Should fail when condition doesnt exist', () => {
-            let returnObj = StageHandler.getStageLengthDays(testConfigConds, "FakeCondition", "Prep")
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            console.log(returnObj.data);
-        })
-        it('Should fail when stages not array', () => {
-            let returnObj = StageHandler.getStageLengthDays(testConfigConds, "Fail1", "Prep")
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            console.log(returnObj.data);
-        })
-        it('Should fail when not all stages have a name', () => {
-            let returnObj = StageHandler.getStageLengthDays(testConfigConds, "Fail2", "Prep")
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-            console.log(returnObj.data);
-        })
-        it('Should fail when length days is not a number', () => {
-            let returnObj = StageHandler.getStageLengthDays(testConfigConds, "Experimental", "FailStage")
+            let returnObj = StageHandler.getStageParam(testConfigConds, "Experimental", "Prep", DevConfig.STAGE_PARAMS.LENGTH_DAYS)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         })
         it('Should fail when stage name is not a string', () => {
-            let returnObj = StageHandler.getStageLengthDays(testConfigConds, "Experimental", true)
+            let returnObj = StageHandler.getStageParam(testConfigConds, "Experimental", true, DevConfig.STAGE_PARAMS.LENGTH_DAYS)
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when stage onDays contains invalid day', () => {
+            let returnObj = StageHandler.getStageParam(testConfigConds, "Experimental", "FailStage", DevConfig.STAGE_PARAMS.ON_DAYS)
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when length days is not a number', () => {
+            let returnObj = StageHandler.getStageParam(testConfigConds, "Experimental", "FailStage", DevConfig.STAGE_PARAMS.LENGTH_DAYS)
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when stage onDays is not an array', () => {
+            let returnObj = StageHandler.getStageParam(testConfigConds, "Experimental", "FailStage2", DevConfig.STAGE_PARAMS.ON_DAYS)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         })
@@ -103,7 +167,7 @@ describe('Get next stage name', () => {
         })
         it('Should return -1 when no next stage', () => {
 
-            let returnObj = StageHandler.getNextStageName(testConfigConds, "Experimental", "FailStage")
+            let returnObj = StageHandler.getNextStageName(testConfigConds, "Experimental", "FailStage2")
             expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
             expect(returnObj.successData).to.equal(-1)
         })

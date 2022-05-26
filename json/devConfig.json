@@ -46,5 +46,10 @@
     "endExperiment" : 0
   },
   "END_STAGE_STRING" : "end",
-  "BEGIN_STAGE_STRING": "begin"
+  "BEGIN_STAGE_STRING": "begin",
+  "DAY_INDEX_ORDERING" : ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  "STAGE_PARAMS" : {
+    "LENGTH_DAYS" : "lengthDays",
+    "ON_DAYS" : "onDays"
+  }
 }

@@ -3,6 +3,8 @@ const config = require("../json/config.json");
 const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
 const lodash = require('lodash');
+const moment = require('moment-timezone')
+const ExperimentUtils = require('./experimentUtils')
 
 /**
  *
@@ -195,6 +197,11 @@ class ConfigParser{
                 let currAns = participant.currentAnswer;
                 let currAnsWords = currAns.join(" ").split(" ").filter(el => el.trim().length > 0);
                 varVal = currAnsWords.length;
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.TODAY:
+                let dateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
+                varVal = DevConfig.DAY_INDEX_ORDERING[dateObj.dayOfWeek];
                 foundReserved = true;
                 break;
 

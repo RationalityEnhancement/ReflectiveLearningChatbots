@@ -148,7 +148,7 @@ module.exports.getNowDateObject = (timezone) => {
   let now = moment.tz(timezone);
   let dateObj = parseMomentDateString(now.format());
 
-  return dateObj;
+  return dateObj.data;
 }
 /**
  * Takes an array and rotates in place to the left by one

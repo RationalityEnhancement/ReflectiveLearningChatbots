@@ -75,9 +75,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             // Debug to schedule all sets of scheduled questions in X minute intervals from now
             if(config.debug.developer){
               let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-              if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
-                console.error(nowDateObj.data);
-              }
+
               let qHandler = new QuestionHandler(config);
               let schQObj = qHandler.getScheduledQuestions(participant.conditionName);
               if(schQObj.returnCode === DevConfig.FAILURE_CODE){

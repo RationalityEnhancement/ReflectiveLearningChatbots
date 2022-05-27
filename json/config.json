@@ -524,7 +524,7 @@
           {
             "qId" : "mainGoal",
             "text" : {
-              "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today (${TODAY})? Tip: Make it SMART.",
               "Deutsch" : "${FIRST_NAME} was ist die Hauptsache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen?"
             },
             "qType" : "freeform",

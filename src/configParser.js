@@ -1217,6 +1217,44 @@ class ConfigParser{
 
         return ReturnMethods.returnSuccess(parsedExp);
     }
+
+    /**
+     *
+     * Function to build a logical expression of multiple conjunctions,
+     * using the same operand1 and operator, but different operand2s
+     *
+     * E.g., "((${STAGE_NAME} == $S{s1}) AND (${STAGE_NAME} == $S{s2})) AND (${STAGE_NAME} == $S{s3})
+     *
+     * @param operand1
+     * @param operator
+     * @param operand2List
+     * @returns {{returnCode: *, data: *}}
+     */
+    static buildMultipleANDCondition(operand1, operator, operand2List){
+        if(!Array.isArray(operand2List)){
+            return ReturnMethods.returnFailure("CParser: operand 2 must be list")
+        }
+        if(!DevConfig.VALID_CONDITIONAL_OPERATORS.includes(operator)){
+            return ReturnMethods.returnFailure("CParser: operator must be valid")
+        }
+
+        let expression;
+        switch(operand2List.length){
+            case 0:
+                return ReturnMethods.returnFailure("CParser: Must have at least one operand 2 in list");
+            case 1:
+                expression = operand1 + " " + operator + " " + operand2List[0];
+                break;
+            default:
+                let newList = operand2List.slice();
+                newList[0] = operand1 + " " + operator + " " + operand2List[0];
+                expression = newList.reduce((prev, curr) => {
+                    let newExp = "(" + prev + ")" + " AND (" + operand1 + " " + operator + " " + curr + ")";
+                    return newExp;
+                })
+        }
+        return ReturnMethods.returnSuccess(expression);
+    }
 }
 
 module.exports = ConfigParser;

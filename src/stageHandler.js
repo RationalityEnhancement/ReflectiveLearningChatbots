@@ -2,6 +2,7 @@ const ReturnMethods = require('./returnMethods');
 const DevConfig = require('../json/devConfig.json');
 const participants = require('./apiControllers/participantApiController')
 const moment = require('moment-timezone')
+const ConfigParser = require('./configParser')
 
 /**
  * Stage handler class that takes in a config as a parameter
@@ -43,6 +44,9 @@ module.exports.getStageList = (config, conditionName) => {
     }
     if(!Array.isArray(condition)){
         return ReturnMethods.returnFailure("StageHandler: Experiment stages must be array!")
+    }
+    if(condition.length === 0){
+        return ReturnMethods.returnFailure("StageHandler: There must be at least one stage!")
     }
     if(!condition.every(e => typeof e === "object" && "name" in e)){
         return ReturnMethods.returnFailure("StageHandler: Every experiment stage must be an object with" +
@@ -354,11 +358,121 @@ module.exports.endExperiment = async (uniqueId) => {
     return ReturnMethods.returnSuccess(-1);
 }
 
-module.exports.getStageUpdateActionList = (config, conditionName) => {
+/**
+ *
+ * Groups all stages based on the days on which they are to be
+ * updated
+ *
+ * Returns an object with the keys being a string corresponding to
+ * the days on which they are to be presented, and the values
+ * being a list of all the stage names that are to be presented
+ * on that exact set of days
+ *
+ * e.g., {
+ *     "Mon,Tue,Wed" : [stage1, stage2],
+ *     "Sat,Sun" : [stage3]
+ * }
+ *
+ * If a stage does not have onDays specified, it defaults to all days
+ *
+ *
+ * @param stageList list of stage objects, each at least having a name field
+ * @returns {{returnCode: *, data: *}}
+ */
+module.exports.createOnDaysObj = (stageList) => {
+    let onDaysObj = {};
+    try{
+        stageList.forEach(stage => {
+            let keyString;
+            // If on days specified, build string, otherwise default to all days
+            if(stage.onDays && stage.onDays.length > 0){
+                keyString = stage.onDays.sort().join();
+            } else {
+                keyString = DevConfig.DAY_INDEX_ORDERING.sort().join();
+            }
+            // Add key if necessary and then stage name to object
+            if(!(keyString in onDaysObj)) onDaysObj[keyString] = [];
+            onDaysObj[keyString].push(stage.name);
+        })
+    } catch(err){
+        return ReturnMethods.returnFailure("StageHandler: Unable to create on days obj")
+    }
+    return ReturnMethods.returnSuccess(onDaysObj);
+}
+
+/**
+ *
+ * Creates a list with action objects corresponding to daily stage updates
+ * Since different stages can be specified to operate on different days,
+ * multiple actions are created for each of those sets of different days,
+ * and these actions are executed only when the corresponding stages are the
+ * current stage.
+ *
+ * As many action objects are created as there are differing sets of days
+ * on which stages are to operate.
+ *
+ * Each action object is of the form : {
+ *     aType : incrementStageDay,
+ *     atTime : DevConfig.STAGE_UPDATE_TIME,
+ *     onDays : taken from stage on days,
+ *     if : undefined if all stages occur on the same days (no condition required)
+ *          conjunction of stage name equality comparisons if not all stages occur on same days
+ * }
+ *
+ * @param config loaded config file with stages
+ * @param conditionName name of the condition whose stages are to be served
+ * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}|*}
+ *              if success, list with one or more action objects as described above
+ */
+module.exports.createStageUpdateActionList = (config, conditionName) => {
     // Need all stage names
-    // Need all on days
-    // Group all stages based on onDays
-    // If only one group, then only one action needed with no if
-    // If more than one group, then as many actions as there are groups with stage names of all stages in that
-    //      group in the if condition for that action.
+    let stageNameObj = this.getStageList(config, conditionName);
+    if(stageNameObj.returnCode === DevConfig.FAILURE_CODE){
+        return stageNameObj;
+    }
+    let stageList = stageNameObj.data;
+
+    // Ensure that all days are valid
+    if(!stageList.every(stage => !("onDays" in stage)
+        || stage.onDays.every(day => DevConfig.DAY_INDEX_ORDERING.includes(day)))){
+        return ReturnMethods.returnFailure("StageHandler: All days in onDays must be valid days of week");
+    }
+
+    // Get the groupings of stages based on days of presentation
+    let onDaysObj = this.createOnDaysObj(stageList);
+    if(onDaysObj.returnCode === DevConfig.FAILURE_CODE){
+        return ReturnMethods.returnFailure("StageHandler: Could not create onDays object");
+    }
+
+    let actionList = [];
+
+    let multipleGroupings = (Object.keys(onDaysObj.data).length > 1);
+    // For each grouping of days, build an action scheduler object
+    for(const [key, stages] of Object.entries(onDaysObj.data)){
+        let onDaysList = key.split(',');
+        let stageTokens = stages.map(stage => "$S{" + stage + "}")
+
+        let condition;
+
+        // If there are multiple groupings, then create the conditions under
+        //  which the update occurs on the days of the current grouping
+        //  condition is based on the stage name
+        if(multipleGroupings){
+            let conditionBuildObj = ConfigParser.buildMultipleANDCondition(
+                "${STAGE_NAME}", "==", stageTokens);
+            if(conditionBuildObj.returnCode === DevConfig.FAILURE_CODE){
+                return conditionBuildObj
+            }
+            condition = conditionBuildObj.data;
+        }
+        let actionObj = {
+            aType : "incrementStageDay",
+            onDays : onDaysList,
+            atTime : DevConfig.STAGE_UPDATE_TIME,
+            if: condition
+        }
+        actionList.push(actionObj)
+    }
+
+    return ReturnMethods.returnSuccess(actionList);
 }

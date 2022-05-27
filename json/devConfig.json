@@ -51,5 +51,6 @@
   "STAGE_PARAMS" : {
     "LENGTH_DAYS" : "lengthDays",
     "ON_DAYS" : "onDays"
-  }
+  },
+  "STAGE_UPDATE_TIME" : "21:00"
 }

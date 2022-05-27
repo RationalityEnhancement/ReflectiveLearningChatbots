@@ -1463,6 +1463,51 @@ describe('Construct expression object', () => {
         expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
 })
+describe('Constructing expressions', () => {
+    describe('Multiple AND conditions', () => {
+        let op1 = "A";
+        let operator = "=="
+        it('Should work for length 1', () => {
+            let op2List = ["B"];
+            let expResult = "A == B"
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(expResult);
+        })
+        it('Should work for length 2', () => {
+            let op2List = ["B","C"];
+            let expResult = "(A == B) AND (A == C)"
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(expResult);
+        })
+        it('Should work for length 3', () => {
+            let op2List = ["B","C","D"];
+            let expResult = "((A == B) AND (A == C)) AND (A == D)"
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(expResult);
+        })
+        it('Should fail when operator not valid', () => {
+            let op2List = ["B","C","D"];
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, "NOT", op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when op2 list empty', () => {
+            let op2List = [];
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when op2 list not list', () => {
+            let op2List = "string";
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+    })
+})
 describe('Get operand type', () => {
     it('Should return number array', () => {
         let testVal = [1,23];

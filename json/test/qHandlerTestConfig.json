@@ -1,8 +1,6 @@
 {
   "experimentName" : "QHandler",
   "experimentId" : "12345",
-  "experimentConditions" : ["Control", "Experimental"],
-  "conditionAssignments" : [0.5, 0.5],
   "mandatoryParameters" : {
     "language" : "string",
     "PID" : "number"

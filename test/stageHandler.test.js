@@ -36,8 +36,13 @@ describe('Get stage list', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         })
-
+        it('Should fail when stage list empty', () => {
+            let returnObj = StageHandler.getStageList(testConfigConds, "Fail3")
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
     })
+    
     describe('No conds', () => {
         it('Should succeed normally', () => {
             let returnObj = StageHandler.getStageList(testConfig, undefined)
@@ -70,7 +75,6 @@ describe('Get stage params', () => {
         it('Should return correct onDays', () => {
 
             let returnObj = StageHandler.getStageParam(testConfig, undefined, "Test", DevConfig.STAGE_PARAMS.ON_DAYS)
-            console.log(returnObj);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(testConfig.experimentStages[1].onDays)
         })
@@ -457,4 +461,177 @@ describe('Update Stage Day', () => {
         })
     })
 
+})
+
+describe('Creating action list', () => {
+    describe('Getting on days object', () => {
+        let allDaysKey = DevConfig.DAY_INDEX_ORDERING.sort().join();
+        it('Should work when no on days are present', () => {
+            let stageList = [
+                {
+                    name: "Test1",
+                },
+                {
+                    name: "Test2",
+                },
+                {
+                    name: "Test3",
+                }
+            ]
+            let returnObj = StageHandler.createOnDaysObj(stageList);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(typeof returnObj.data).to.equal("object");
+            expect(Object.keys(returnObj.data).length).to.equal(1);
+            assert(allDaysKey in returnObj.data);
+            expect(returnObj.data[allDaysKey].length).to.equal(3);
+            stageList.forEach(stage => assert(returnObj.data[allDaysKey].includes(stage.name)));
+        })
+        it('Should default when onDays array is empty', () => {
+            let stageList = [
+                {
+                    name: "Test1",
+                    onDays : []
+                },
+                {
+                    name: "Test2",
+                },
+                {
+                    name: "Test3",
+                }
+            ]
+            let returnObj = StageHandler.createOnDaysObj(stageList);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(typeof returnObj.data).to.equal("object");
+            expect(Object.keys(returnObj.data).length).to.equal(1);
+            assert(allDaysKey in returnObj.data);
+            expect(returnObj.data[allDaysKey].length).to.equal(3);
+            stageList.forEach(stage => assert(returnObj.data[allDaysKey].includes(stage.name)));
+        })
+        it('Should work when some on days are present', () => {
+            let stageList = [
+                {
+                    name: "Test1",
+                },
+                {
+                    name: "Test2",
+                    onDays : ["Mon", "Tue", "Sat"]
+                },
+                {
+                    name: "Test3",
+                }
+            ]
+            let returnObj = StageHandler.createOnDaysObj(stageList);
+            let expKey = stageList[1].onDays.sort().join()
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(typeof returnObj.data).to.equal("object");
+            expect(Object.keys(returnObj.data).length).to.equal(2);
+            assert(allDaysKey in returnObj.data);
+            assert(expKey in returnObj.data);
+            expect(returnObj.data[allDaysKey].length).to.equal(2);
+            expect(returnObj.data[expKey].length).to.equal(1);
+            assert(returnObj.data[allDaysKey].includes(stageList[0].name));
+            assert(returnObj.data[expKey].includes(stageList[1].name));
+            assert(returnObj.data[allDaysKey].includes(stageList[2].name));
+        })
+        it('Should work when two have same non-default on days', () => {
+            let stageList = [
+                {
+                    name: "Test1",
+                },
+                {
+                    name: "Test2",
+                    onDays : ["Mon", "Tue", "Sat"]
+                },
+                {
+                    name: "Test3",
+                    onDays : ["Sat", "Mon", "Tue"]
+                }
+            ]
+            let returnObj = StageHandler.createOnDaysObj(stageList);
+            let expKey = stageList[1].onDays.sort().join()
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(typeof returnObj.data).to.equal("object");
+            expect(Object.keys(returnObj.data).length).to.equal(2);
+            assert(allDaysKey in returnObj.data);
+            assert(expKey in returnObj.data);
+            expect(returnObj.data[allDaysKey].length).to.equal(1);
+            expect(returnObj.data[expKey].length).to.equal(2);
+            assert(returnObj.data[allDaysKey].includes(stageList[0].name));
+            assert(returnObj.data[expKey].includes(stageList[1].name));
+            assert(returnObj.data[expKey].includes(stageList[2].name));
+        })
+        it('Should work when all have same non-default on days', () => {
+            let stageList = [
+                {
+                    name: "Test1",
+                    onDays : ["Tue", "Sat", "Mon"]
+                },
+                {
+                    name: "Test2",
+                    onDays : ["Mon", "Tue", "Sat"]
+                },
+                {
+                    name: "Test3",
+                    onDays : ["Sat", "Mon", "Tue"]
+                }
+            ]
+            let returnObj = StageHandler.createOnDaysObj(stageList);
+            let expKey = stageList[1].onDays.sort().join()
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(typeof returnObj.data).to.equal("object");
+            expect(Object.keys(returnObj.data).length).to.equal(1);
+            assert(expKey in returnObj.data);
+            expect(returnObj.data[expKey].length).to.equal(3);
+            assert(returnObj.data[expKey].includes(stageList[0].name));
+            assert(returnObj.data[expKey].includes(stageList[1].name));
+            assert(returnObj.data[expKey].includes(stageList[2].name));
+        })
+
+    })
+    describe('Creating action list', () => {
+        it('Should create one action', () => {
+            let dayList = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+            let returnObj = StageHandler.createStageUpdateActionList(testConfigConds, "TestOneGroup");
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.length).to.equal(1);
+            expect(returnObj.data[0].onDays.sort()).to.eql(dayList.sort());
+            expect(returnObj.data[0].if).to.be.undefined;
+            expect(returnObj.data[0].aType).to.equal("incrementStageDay");
+            expect(returnObj.data[0].atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
+        })
+        it('Should create multiple actions', () => {
+            let dayList2 = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+            let dayList13 = ["Mon", "Tue", "Wed"];
+            let dayList4 = DevConfig.DAY_INDEX_ORDERING;
+            let returnObj = StageHandler.createStageUpdateActionList(testConfigConds, "TestManyGroup");
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.length).to.equal(3);
+            returnObj.data.forEach(actionObj => {
+                expect(actionObj.aType).to.equal("incrementStageDay");
+                expect(actionObj.atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
+                try{
+                    expect(actionObj.onDays.sort()).to.eql(dayList2.sort());
+                    expect(actionObj.if).to.equal("${STAGE_NAME} == $S{2}");
+                } catch(e){
+                    try{
+                        expect(actionObj.onDays.sort()).to.eql(dayList13.sort());
+                        let possConditions = ["(${STAGE_NAME} == $S{1}) AND (${STAGE_NAME} == $S{3})",
+                            "(${STAGE_NAME} == $S{3}) AND (${STAGE_NAME} == $S{1})"]
+                        assert(possConditions.includes(actionObj.if));
+                    } catch(err){
+                        expect(actionObj.onDays.sort()).to.eql(dayList4.sort());
+                        expect(actionObj.if).to.equal("${STAGE_NAME} == $S{4}");
+                    }
+                }
+
+
+            })
+
+        })
+        it('Should fail if days are invalid', () => {
+            let returnObj = StageHandler.createStageUpdateActionList(testConfigConds, "Experimental");
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+    })
 })

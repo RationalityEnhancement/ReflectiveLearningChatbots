@@ -8,10 +8,16 @@
   "INVALID_ANSWER_STRING" : "[Invalid Answer]",
   "qTypeAliases" : ["likert5", "likert7"],
   "validAssignmentSchemes" : ["pid", "balanced", "random"],
+  "RESERVED_VARIABLES" : ["STAGE_NAME", "STAGE_DAY"],
   "VAR_STRINGS" : {
     "FIRST_NAME" : "FIRST_NAME",
     "CURRENT_ANSWER" : "CURRENT_ANSWER",
-    "UNIQUE_ID" : "UNIQUE_ID"
+    "UNIQUE_ID" : "UNIQUE_ID",
+    "STAGE_NAME" : "STAGE_NAME",
+    "STAGE_DAY" : "STAGE_DAY",
+    "ANSWER_LEN_CHARS" : "ANSWER_LEN_CHARS",
+    "ANSWER_LEN_WORDS" : "ANSWER_LEN_WORDS",
+    "TODAY" : "TODAY"
   },
   "SENSITIVE_DATA_VARS" : ["FIRST_NAME"],
   "MS_PER_CHARACTER_DELAY" : 25,
@@ -34,6 +40,18 @@
     "scheduleQuestions" : 0,
     "assignToCondition" : 0,
     "addAnswerTo" : 1,
-    "clearArrVar" : 1
-  }
+    "clearVar" : 1,
+    "addValueTo" : 2,
+    "startStage" : 1,
+    "incrementStageDay" : 0,
+    "endExperiment" : 0
+  },
+  "END_STAGE_STRING" : "end",
+  "BEGIN_STAGE_STRING": "begin",
+  "DAY_INDEX_ORDERING" : ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  "STAGE_PARAMS" : {
+    "LENGTH_DAYS" : "lengthDays",
+    "ON_DAYS" : "onDays"
+  },
+  "STAGE_UPDATE_TIME" : "21:00"
 }

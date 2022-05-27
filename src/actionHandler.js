@@ -8,6 +8,7 @@ const QuestionHandler = require('./questionHandler');
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = require("../json/PIDCondMap.json");
+const StageHandler = require('./stageHandler')
 
 /**
  * Action handler deals with the processing of actions
@@ -53,9 +54,6 @@ let processAction = async(bot, config, participant, actionObj) => {
     if(!participant){
         return ReturnMethods.returnFailure("ActHandler: Participant not received")
     }
-    if(participant.currentState !== "answerReceived"){
-        return ReturnMethods.returnFailure("ActHandler: Can process next steps only after answer received")
-    }
     if(!validateActionObject(actionObj)) {
         return ReturnMethods.returnFailure("ActHandler: Action is not valid")
     }
@@ -73,13 +71,11 @@ let processAction = async(bot, config, participant, actionObj) => {
         // Schedule all questions specified for given condition in config file
         case "scheduleQuestions":
             const ScheduleHandler = require("./scheduleHandler");
-            // TODO: have disabled overwriting for now, after implementation of /next
-            // Debug to schedule all sets of scheduled questions in 3 minute intervals from now
+
+            // Debug to schedule all sets of scheduled questions in X minute intervals from now
             if(config.debug.developer){
               let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-              if(nowDateObj.returnCode === DevConfig.FAILURE_CODE){
-                console.error(nowDateObj.data);
-              }
+
               let qHandler = new QuestionHandler(config);
               let schQObj = qHandler.getScheduledQuestions(participant.conditionName);
               if(schQObj.returnCode === DevConfig.FAILURE_CODE){
@@ -87,7 +83,13 @@ let processAction = async(bot, config, participant, actionObj) => {
               }
               ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
             }
-            let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, participant.uniqueId, config, config.debug.experimenter);
+
+            // Schedule all questions and actions
+            let actionsObj = StageHandler.createStageUpdateActionList(config, participant.conditionName);
+            if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
+                return actionObj;
+            }
+            let returnObj = await ScheduleHandler.scheduleAllOperations(bot, participant.uniqueId, config, actionsObj.data, config.debug.experimenter);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 return returnObj;
             } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
@@ -159,6 +161,10 @@ let processAction = async(bot, config, participant, actionObj) => {
                 return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
             }
             let returnVal;
+
+            if(DevConfig.RESERVED_VARIABLES.includes(varName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
             // Check which data type the target parameter is
             switch(paramType){
                 // For string and string array, no conversion required, since current Answer is already string array
@@ -221,6 +227,9 @@ let processAction = async(bot, config, participant, actionObj) => {
                 return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
             }
 
+            if(DevConfig.RESERVED_VARIABLES.includes(aVarName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
             // Process only when the target parameter is strArr or numArr
             switch(aParamType){
                 case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
@@ -272,11 +281,15 @@ let processAction = async(bot, config, participant, actionObj) => {
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: variable not found : " + bVarName);
             }
+            if(DevConfig.RESERVED_VARIABLES.includes(bVarName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
 
             // Process only if target variable is boolean type
             if(bParamType !== DevConfig.OPERAND_TYPES.BOOLEAN){
                 return ReturnMethods.returnFailure("ActHandler: Can save boolean only to boolean param")
             }
+
 
             // Parse the boolean token
             let boolValObj = ConfigParser.parseBooleanToken(newVal);
@@ -296,40 +309,149 @@ let processAction = async(bot, config, participant, actionObj) => {
                     + bVarName + " set to " + boolVal, true);
             }
             return ReturnMethods.returnSuccess(boolVal);
-
         // Clear the value of an array parameter
-        case "clearArrVar" :
+        case "clearVar" :
             // First argument must be name of target variable
             let cVarName = actionObj.args[0];
             if(typeof cVarName !== "string"){
                 return ReturnMethods.returnFailure("ActHandler: Variable name must be string");
             }
 
-            let cParamType, cReturnVal;
+            let cParamType;
             try{
                 cParamType = participant.parameterTypes[cVarName];
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
             }
-            // Can only clear array parameters
-            switch(cParamType){
-                case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
-                case DevConfig.OPERAND_TYPES.STRING_ARRAY:
-                    try{
-                        await participants.clearArrParamValue(participant.uniqueId, cVarName);
-                    } catch(err){
-                        return ReturnMethods.returnFailure("ActHandler: could not clear participant parameter " + cVarName);
-                    }
-                    cReturnVal = [];
-                    break;
-                default:
-                    return ReturnMethods.returnFailure("ActHandler: Cannot clear var of type " + cParamType);
+            if(DevConfig.RESERVED_VARIABLES.includes(cVarName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
+            // If type is unrecognized (mostly when varname doesnt exist)
+            if(!Object.values(DevConfig.OPERAND_TYPES).includes(cParamType)){
+                return ReturnMethods.returnFailure("ActHandler: did not recognize variable type " + cParamType);
+            }
+
+            // Clear the parameter value
+            try{
+                await participants.clearParamValue(participant.uniqueId, cVarName);
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: could not clear participant parameter " + cVarName);
             }
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Variable "
                     + cVarName + " cleared", true);
             }
-            return ReturnMethods.returnSuccess(cReturnVal);
+            return ReturnMethods.returnSuccess([]);
+        // Add a value to a number variable
+        case "addValueTo" :
+            // First argument must be the name of the variable
+            let addVarName = actionObj.args[0];
+            if(typeof addVarName !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: Variable name (arg1) must be string");
+            }
+            // Second argument must be a number token
+            let addVal = actionObj.args[1];
+            if(typeof addVal !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: Number token (arg2) must be string");
+            }
+            let addParamType;
+            try{
+                addParamType = participant.parameterTypes[addVarName];
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: variable not found : " + addVarName);
+            }
+            if(DevConfig.RESERVED_VARIABLES.includes(addVarName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
+
+            // Process only if target variable is number type
+            if(addParamType !== DevConfig.OPERAND_TYPES.NUMBER){
+                return ReturnMethods.returnFailure("ActHandler: Can add number only to number type")
+            }
+
+            // Parse the number token
+            let addValObj = ConfigParser.parseNumberToken(addVal);
+            if(addValObj.returnCode === DevConfig.FAILURE_CODE){
+                return ReturnMethods.returnFailure("ActHandler: Unable to parse number token")
+            }
+
+            // If parameter hasn't been set already, initialize it
+            let newNumVal;
+            if(typeof participant.parameters[addVarName] === "undefined"){
+                newNumVal = 0;
+            } else {
+                newNumVal = participant.parameters[addVarName];
+            }
+            newNumVal += addValObj.data;
+
+            // Update the parameter with the new value
+            try{
+                await participants.updateParameter(participant.uniqueId, addVarName, newNumVal);
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+            }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
+                    + newNumVal + " added to " + addVarName, true);
+            }
+            return ReturnMethods.returnSuccess(newNumVal);
+        case "startStage" :
+            // First argument must be the name of the stage
+            let startStage = actionObj.args[0];
+            if(typeof startStage !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: Stage name (arg1) must be string");
+            }
+
+            // Start the given stage
+            let startStageObj = await StageHandler.startStage(participant, startStage);
+            if(startStageObj.returnCode === DevConfig.FAILURE_CODE){
+                return startStageObj;
+            }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
+                    + startStageObj.data + " stage started.", true);
+            }
+            return startStageObj;
+        case "incrementStageDay" :
+            // No arguments
+
+            let incStageObj = await StageHandler.updateStageDay(config, participant.uniqueId);
+            if(incStageObj.returnCode === DevConfig.FAILURE_CODE){
+                return incStageObj;
+            }
+            if(config.debug.actionMessages){
+                let message;
+                if(typeof incStageObj.data === "string"){
+                    message = "New stage " + incStageObj.data+ " has been started at day 1"
+                } else if(incStageObj.data === -1){
+                    message = "Final stage terminated, experiment has been ended";
+                } else {
+                    message = "Stage " + participant.stages.stageName + " updated to day " + incStageObj.data;
+                }
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
+                    + message, true);
+                // Send the participant a message that the experiment has ended.
+                if(incStageObj.data === -1){
+                    await Communicator.sendMessage(bot, participant, secretMap.chatId,
+                        config.phrases.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+                }
+            }
+            return incStageObj;
+        // End the experiment simply by updating the state and cancelling all operations
+        case "endExperiment" :
+            let endReturnObj = await StageHandler.endExperiment(participant.uniqueId);
+            if(endReturnObj.returnCode === DevConfig.FAILURE_CODE){
+                return endReturnObj
+            }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Experiment " +
+                    "successfully ended, all operations cancelled."
+                    , true);
+            }
+            await Communicator.sendMessage(bot, participant, secretMap.chatId,
+                config.phrases.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+            return endReturnObj;
+
         default:
             return ReturnMethods.returnFailure("LHandler: aType not recognized");
     }

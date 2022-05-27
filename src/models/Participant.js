@@ -15,6 +15,17 @@ let schemaObject = {
   conditionIdx: Number,
   conditionName: String,
   parameters: {},
+  stages :{
+    activity : [
+      {
+        name: String,
+        what: String,
+        when: String
+      }
+    ],
+    stageDay : Number,
+    stageName : String
+  },
   parameterTypes : {},
   currentAnswer: [String],
   currentQuestion: {
@@ -60,7 +71,9 @@ let schemaObject = {
     range : {
       lower: Number,
       upper: Number
-    }
+    },
+    minLengthChars : Number,
+    minLengthWords : Number
   },
   currentState: String,
   answers:
@@ -75,6 +88,17 @@ let schemaObject = {
       {
         jobId : String,
         qId: String,
+        atTime : String,
+        onDays : [String],
+        if : String,
+        tz : String
+      },
+    ],
+    actions : [
+      {
+        jobId : String,
+        aType: String,
+        args: [String],
         atTime : String,
         onDays : [String],
         if : String,

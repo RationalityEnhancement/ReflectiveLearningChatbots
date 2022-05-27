@@ -27,7 +27,6 @@ class AnswerHandler{
      *
      */
     static async handleNoResponse(uniqueId){
-        // TODO: error handling for getting participant
         let participant;
         try{
             participant = await participants.get(uniqueId);
@@ -211,11 +210,38 @@ class AnswerHandler{
 
                 // Question with free text input
                 case 'freeform':
-                    // Complete answering
-                    let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
-                    // Return failure or trigger the next action
-                    return finishObj;
+                    let meetsMinLen = true;
 
+                    // Check minimum length requirement
+
+                    let ansLenChars = answerText.length;
+                    let errorString, minLength;
+                    if(currentQuestion.minLengthChars && ansLenChars < currentQuestion.minLengthChars){
+                        meetsMinLen = false;
+                        errorString = config.phrases.answerValidation.notLongEnoughChars[participant.parameters.language]
+                        minLength = currentQuestion.minLengthChars;
+                    }
+
+                    let ansLenWords = answerText.split(" ").filter(e => e.trim().length > 0).length;
+                    if(currentQuestion.minLengthWords && ansLenWords < currentQuestion.minLengthWords){
+                        meetsMinLen = false;
+                        errorString = config.phrases.answerValidation.notLongEnoughWords[participant.parameters.language]
+                        minLength = currentQuestion.minLengthWords;
+                    }
+
+                    if(meetsMinLen){
+                        // Complete answering
+                        let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
+                        // Return failure or trigger the next action
+                        return finishObj;
+                    } else {
+                        // Repeat the question
+                        await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
+                        let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
+                            {"MinLength" : minLength})
+                        if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
+                        return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING)
+                    }
                 // Question with free text input but over multiple messages
                 case 'freeformMulti':
                     let termination = config.phrases.keyboards.terminateAnswer[participant.parameters.language];
@@ -233,10 +259,40 @@ class AnswerHandler{
 
                     // Check if user has typed termination answer
                     if(trimmedTerm === trimmedAns){
-                        // If participant is finished answering
-                        let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
-                        // Return failure or trigger the next action
-                        return finishObj;
+
+                        let meetsMinLen = true;
+
+                        // Check minimum length requirement
+                        let curAns = participant.currentAnswer;
+                        let curAnsLens = curAns.map(el => el.length);
+                        let ansLenChars = curAnsLens.length > 0 ? curAnsLens.reduce((partialSum, ans) => partialSum + ans) : 0;
+                        let errorString, minLength;
+                        if(currentQuestion.minLengthChars && ansLenChars < currentQuestion.minLengthChars){
+                            meetsMinLen = false;
+                            errorString = config.phrases.answerValidation.notLongEnoughChars[participant.parameters.language]
+                            minLength = currentQuestion.minLengthChars;
+                        }
+
+                        let ansLenWords = curAns.join(" ").split(" ").filter(e => e.trim().length > 0).length;
+                        if(currentQuestion.minLengthWords && ansLenWords < currentQuestion.minLengthWords){
+                            meetsMinLen = false;
+                            errorString = config.phrases.answerValidation.notLongEnoughWords[participant.parameters.language]
+                            minLength = currentQuestion.minLengthWords;
+                        }
+                        if(meetsMinLen){
+                            // If participant is finished answering
+                            let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, participant.currentAnswer);
+                            // Return failure or trigger the next action
+                            return finishObj;
+                        } else {
+                            // Repeat the question
+                            await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
+                            let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
+                                {"MinLength" : minLength})
+                            if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
+                            return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING)
+                        }
+
                     } else {
                         // Save the answer to participant's current answer
                         await participants.addToCurrentAnswer(participant.uniqueId, answerText);

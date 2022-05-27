@@ -1,10 +1,25 @@
 {
   "experimentName" : "QHandler",
   "experimentId" : "12345",
+  "conditionAssignments" : [0.5, 0.5],
   "mandatoryParameters" : {
     "language" : "string",
     "PID" : "number"
   },
+  "experimentStages" : [
+    {
+      "name" : "Pre-Test"
+    },
+    {
+      "name" : "Test",
+      "lengthDays" : 7,
+      "onDays" : ["Mon","Tue","Wed"]
+    },
+    {
+      "name" : "Post-Test",
+      "lengthDays" : 2
+    }
+  ],
   "customParameters" : {
     "isSmoker" : "boolean",
     "groups" : "strArr",

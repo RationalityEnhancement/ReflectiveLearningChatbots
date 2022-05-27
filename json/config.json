@@ -5,6 +5,39 @@
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
   "experimentLengthWeeks" : 3,
+  "experimentStages" : {
+    "Control" : [
+      {
+        "name": "Pre-Test",
+        "lengthDays": 2,
+        "onDays" : ["Mon", "Tue", "Wed"]
+      },
+      {
+        "name": "Test",
+        "lengthDays": 7
+      },
+      {
+        "name" : "Post-Test",
+        "lengthDays": 2
+      }
+    ],
+    "Experimental" : [
+      {
+        "name": "Pre-Test",
+        "lengthDays": 2,
+        "onDays" : ["Mon", "Tue", "Wed"]
+      },
+      {
+        "name": "Test",
+        "lengthDays": 2
+      },
+      {
+        "name" : "Post-Test",
+        "lengthDays": 2
+      }
+    ]
+
+  },
   "mandatoryParameters" : {
     "language" : "string",
     "timezone" : "string",
@@ -46,6 +79,14 @@
       "numberTooLow": {
         "English": "Please enter a number above ${LowerBound}",
         "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+      },
+      "notLongEnoughChars" : {
+        "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} characters.",
+        "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Charaktere betragen."
+      },
+      "notLongEnoughWords" : {
+        "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
+        "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
       },
       "terminateAnswerProperly" : {
         "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
@@ -127,10 +168,18 @@
       }
     },
     "schedule" : {
-      "scheduleNotif" : {
+      "scheduleQNotif" : {
         "English" : "Question scheduled for the following time:",
         "Deutsch" : "Frage geplant zur folgenden Zeit:"
+      },
+      "scheduleANotif" : {
+        "English" : "Action scheduled for the following time:",
+        "Deutsch" : "Handlung geplant zur folgenden Zeit:"
       }
+    },
+    "endExperiment" : {
+      "English" : "You have successfully completed the experiment! Thank you for participating.",
+      "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Danke für Ihre Teilnahme."
     }
   },
   "questionCategories": {
@@ -475,12 +524,16 @@
           {
             "qId" : "mainGoal",
             "text" : {
-              "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today (${TODAY})? Tip: Make it SMART.",
               "Deutsch" : "${FIRST_NAME} was ist die Hauptsache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen?"
             },
             "qType" : "freeform",
-            "nextQuestion" :"morningQuestions.askAddGoal"
-
+            "nextQuestion" :"morningQuestions.askAddGoal",
+            "minLengthChars" : 10,
+            "nextActions" : [{
+              "aType" : "startStage",
+              "args" : ["Pre-Test"]
+            }]
           },
           {
             "qId" : "askAddGoal",
@@ -506,6 +559,14 @@
                   "English" : ["Got it. Good luck on your goals today, ${FIRST_NAME}!"],
                   "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute, ${FIRST_NAME}!"]
                 }
+              }
+            ],
+            "cNextActions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : [{
+                  "aType" : "endExperiment"
+                }]
               }
             ]
           },
@@ -581,8 +642,9 @@
               "English" : ["Good to know!"],
               "Deutsch" : ["Gut zu wissen!"]
             },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.satisfaction"
+            "qType" : "freeformMulti",
+            "nextQuestion" : "eveningQuestions.satisfaction",
+            "minLengthWords" : 5
           },
           {
             "qId" : "satisfaction",
@@ -821,7 +883,8 @@
         {
           "qId" : "eveningQuestions.numGoals",
           "atTime" : "18:00",
-          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          "if" : "${STAGE_DAY} >= $N{0}"
         },
         {
           "qId" : "eveningQuestions.satisfactionSurvey",

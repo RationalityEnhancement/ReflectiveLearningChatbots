@@ -104,6 +104,11 @@ describe('Replacing variables', () => {
         parameters : {
             "PID" : "80085",
             "pLength" : undefined
+        },
+        stages : {
+            activity : [],
+            stageName : "Test",
+            stageDay : 0
         }
     }
 
@@ -126,6 +131,60 @@ describe('Replacing variables', () => {
             let returnObj = ConfigParser.getVariable(participant, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(participant.parameters.PID);
+        })
+        it('Should fetch if variable name is STAGE_Name', () => {
+            let testString = DevConfig.VAR_STRINGS.STAGE_NAME;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(participant.stages.stageName);
+        })
+        it('Should fetch if variable name is STAGE_DAY', () => {
+            let testString = DevConfig.VAR_STRINGS.STAGE_DAY;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(participant.stages.stageDay);
+        })
+        it('Should fetch ANSWER_LEN_CHARS if it is more than one element', () => {
+            participant.currentAnswer = ["o", "on", "one"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(6);
+        })
+        it('Should fetch ANSWER_LEN_CHARS if it is one element', () => {
+            participant.currentAnswer = ["oneone"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(6);
+        })
+        it('Should fetch ANSWER_LEN_CHARS if it is empty', () => {
+            participant.currentAnswer = [];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(0);
+        })
+        it('Should fetch ANSWER_LEN_WORDS if it is more than one element', () => {
+            participant.currentAnswer = ["I had breakfast", "on the beach", "last Tuesday"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(8);
+        })
+        it('Should fetch ANSWER_LEN_WORDS if it is one element', () => {
+            participant.currentAnswer = ["I had breakfast"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(3);
+        })
+        it('Should fetch ANSWER_LEN_WORDS if it is empty', () => {
+            participant.currentAnswer = [];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(0);
         })
         it('Should fail if participant undefined', () => {
             let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
@@ -158,6 +217,14 @@ describe('Replacing variables', () => {
             delete participant["uniqueId"];
             let returnObj = ConfigParser.getVariable(participant, testString);
             participant["uniqueId"] = "12345";
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail if participant dont have stages', () => {
+            let testString = DevConfig.VAR_STRINGS.STAGE_NAME;
+            let copyPart = JSON.parse(JSON.stringify(participant));
+            delete copyPart["stages"];
+            let returnObj = ConfigParser.getVariable(copyPart, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
 
         })
@@ -473,6 +540,11 @@ describe('Evaluating conditions', () => {
         currentAnswer : [],
         currentQuestion : {
             options : options
+        },
+        stages : {
+            activity : [],
+            stageName : "Test",
+            stageDay : 0
         }
     }
     describe('If-else', () => {
@@ -1043,6 +1115,64 @@ describe('Getting values from strings', () => {
 
         })
     })
+    describe('Parse Number Token', () => {
+        it('Should return integer', () => {
+            let testStr = "$N{12}";
+            let expectedVal = 12;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return zero', () => {
+            let testStr = "$N{0}";
+            let expectedVal = 0;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return negative', () => {
+            let testStr = "$N{-19}";
+            let expectedVal = -19;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return float', () => {
+            let testStr = "$N{13.55}";
+            let expectedVal = 13.55;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail when not number', () => {
+            let testStr = "$N{afd}";
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt start with $N{ ', () => {
+            let testStr = "${23}";
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt end with } ', () => {
+            let testStr = "$N{23";
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
     describe('Number array', () => {
         it('Should return integer array', () => {
             let testStr = "123, 456, 789";
@@ -1102,6 +1232,11 @@ describe('Construct expression object', () => {
         parameters : {
             language : "English",
             isSmoker : true
+        },
+        stages : {
+            activity : [],
+            stageDay : 0,
+            stageName : "Test"
         }
     }
     it('Should parse parameter and number operands normally', () => {
@@ -1328,6 +1463,51 @@ describe('Construct expression object', () => {
         expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
 })
+describe('Constructing expressions', () => {
+    describe('Multiple AND conditions', () => {
+        let op1 = "A";
+        let operator = "=="
+        it('Should work for length 1', () => {
+            let op2List = ["B"];
+            let expResult = "A == B"
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(expResult);
+        })
+        it('Should work for length 2', () => {
+            let op2List = ["B","C"];
+            let expResult = "(A == B) AND (A == C)"
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(expResult);
+        })
+        it('Should work for length 3', () => {
+            let op2List = ["B","C","D"];
+            let expResult = "((A == B) AND (A == C)) AND (A == D)"
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(expResult);
+        })
+        it('Should fail when operator not valid', () => {
+            let op2List = ["B","C","D"];
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, "NOT", op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when op2 list empty', () => {
+            let op2List = [];
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+        it('Should fail when op2 list not list', () => {
+            let op2List = "string";
+            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data);
+        })
+    })
+})
 describe('Get operand type', () => {
     it('Should return number array', () => {
         let testVal = [1,23];
@@ -1385,6 +1565,11 @@ describe("Evaluate expression object", () => {
         parameters : {
             language : "English",
             isSmoker : true
+        },
+        stages : {
+            activity : [],
+            stageName : "Test",
+            stageDay : 0
         }
     }
     describe('AND', () => {

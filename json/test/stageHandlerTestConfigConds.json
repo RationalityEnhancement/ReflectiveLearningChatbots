@@ -1,9 +1,70 @@
 {
   "experimentName" : "QHandler",
   "experimentId" : "12345",
+  "experimentConditions" : ["Experimental", "Fail1", "Fail2", "Fail3", "Extra", "TestOneGroup", "TestManyGroup"],
+  "conditionAssignments" : [0.5, 0.5],
   "mandatoryParameters" : {
     "language" : "string",
     "PID" : "number"
+  },
+  "experimentStages" : {
+    "Experimental" : [
+      {
+        "name" : "Pre",
+        "onDays" : ["Sat", "Sun"]
+      },
+      {
+        "name": "Post",
+        "lengthDays" : 8
+      },
+      {
+        "name" : "FailStage",
+        "lengthDays" : "notANumber",
+        "onDays" : ["Dog"]
+      },
+      {
+        "name" : "FailStage2",
+        "lengthDays" : 3,
+        "onDays" : "Dog"
+      }],
+    "Fail1" : "notAnArray",
+    "Fail2" : [
+      {
+        "lengthDays" : 6
+      }
+    ],
+    "Fail3" : [],
+    "TestOneGroup" : [
+      {
+        "name" : "1",
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+      },
+      {
+        "name" : "2",
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+      },
+      {
+        "name" : "3",
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+      }
+    ],
+    "TestManyGroup" : [
+      {
+        "name" : "1",
+        "onDays" : ["Mon", "Tue", "Wed"]
+      },
+      {
+        "name" : "2",
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+      },
+      {
+        "name" : "3",
+        "onDays" : ["Mon", "Tue", "Wed"]
+      },
+      {
+        "name" : "4"
+      }
+    ]
   },
   "customParameters" : {
     "isSmoker" : "boolean",

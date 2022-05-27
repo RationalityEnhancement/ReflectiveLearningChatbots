@@ -15,8 +15,7 @@ class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     static scheduledOperations = {
         "questions" : {},
-        "cancels" : {},
-        "schedules" : {}
+        "actions" : {}
     };
     static debugQueue = {};
     static debugQueueAdjusted = {}
@@ -30,28 +29,33 @@ class ScheduleHandler{
      */
     static async removeAllJobsForParticipant(uniqueId){
 
-        // Get all the scheduled operations from the local store
-        let scheduledQs = this.scheduledOperations["questions"];
-        let partJobIDList = [];
-
-        // Find those operations which belong to the current participant
-        // based on the job ID (starts with participant ID)
-        for(const [jobId, job] of Object.entries(scheduledQs)){
-            if(jobId.startsWith(''+uniqueId)){
-                partJobIDList.push(jobId);
-            }
-        }
+        let operationTypes = ["questions", "actions"];
         let failedRemovals = [];
         let succeededRemovals = [];
 
-        // Call the function to remove each selected job by jobID
-        // register which were successes and which were failures
-        for(let i = 0; i < partJobIDList.length; i++){
-            let returnObj = await this.removeJobByID(partJobIDList[i]);
-            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                failedRemovals.push(returnObj.data);
-            } else {
-                succeededRemovals.push(returnObj.data)
+        for(let i = 0; i < operationTypes.length; i++){
+            let oType = operationTypes[i];
+            // Get all the scheduled operations from the local store
+            let scheduledOs = this.scheduledOperations[oType];
+            let partJobIDList = [];
+
+            // Find those operations which belong to the current participant
+            // based on the job ID (starts with participant ID)
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+uniqueId)){
+                    partJobIDList.push(jobId);
+                }
+            }
+
+            // Call the function to remove each selected job by jobID
+            // register which were successes and which were failures
+            for(let i = 0; i < partJobIDList.length; i++){
+                let returnObj = await this.removeJobByID(partJobIDList[i], oType);
+                if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                    failedRemovals.push(returnObj.data);
+                } else {
+                    succeededRemovals.push(returnObj.data)
+                }
             }
         }
 
@@ -81,28 +85,35 @@ class ScheduleHandler{
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
      */
     static async cancelAllJobsForParticipant(uniqueId){
-        // Get all the scheduled operations from the local store
-        let scheduledQs = this.scheduledOperations["questions"];
-        let partJobIDList = [];
 
-        // Find those operations which belong to the current participant
-        // based on the job ID (starts with participant ID)
-        for(const [jobId, job] of Object.entries(scheduledQs)){
-            if(jobId.startsWith(''+uniqueId)){
-                partJobIDList.push(jobId);
-            }
-        }
+        let operationTypes = ["questions", "actions"];
         let failedRemovals = [];
         let succeededRemovals = [];
 
-        // Call the function to cancel each selected job by jobID
-        // register which were successes and which were failure
-        for(let i = 0; i < partJobIDList.length; i++){
-            let returnObj = await this.cancelQuestionByJobID(partJobIDList[i]);
-            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                failedRemovals.push(returnObj.data);
-            } else {
-                succeededRemovals.push(returnObj.data)
+        for(let i = 0; i < operationTypes.length; i++){
+            let oType = operationTypes[i];
+            // Get all the scheduled operations from the local store
+            let scheduledOs = this.scheduledOperations[oType];
+
+            let partJobIDList = [];
+
+            // Find those operations which belong to the current participant
+            // based on the job ID (starts with participant ID)
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+uniqueId)){
+                    partJobIDList.push(jobId);
+                }
+            }
+
+            // Call the function to cancel each selected job by jobID
+            // register which were successes and which were failure
+            for(let i = 0; i < partJobIDList.length; i++){
+                let returnObj = this.cancelJobByID(partJobIDList[i], oType);
+                if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                    failedRemovals.push(returnObj.data);
+                } else {
+                    succeededRemovals.push(returnObj.data)
+                }
             }
         }
 
@@ -124,22 +135,23 @@ class ScheduleHandler{
      * from the database based on the jobId
      *
      * @param jobId ID of the job to be cancelled
+     * @param type "questions" or "actions" depending on which type of operation to be removed
      * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
      */
-    static async removeJobByID(jobId){
+    static async removeJobByID(jobId, type){
         let uniqueId;
         // Attempt to get the participant ID from the jobID
         // And then call the DB Api controller to remove that jobID from DB
         try{
             uniqueId = jobId.split('_')[0];
             assert(!isNaN(parseInt(uniqueId)));
-            await participants.removeScheduledQuestion(uniqueId, jobId);
+            await participants.removeScheduledOperation(uniqueId, type, jobId);
 
         } catch(err) {
             return ReturnMethods.returnFailure("Scheduler: Cannot remove job " + jobId);
         }
         // Cancel the job
-        return this.cancelQuestionByJobID(jobId);
+        return this.cancelJobByID(jobId, type);
 
     }
 
@@ -149,13 +161,14 @@ class ScheduleHandler{
      *  Cancelling means that the operation will no longer be scheduled
      *
      * @param jobId ID of the job to be cancelled
+     * @param type "questions" or "actions" depending on which type of operation to be removed
      * @returns {{returnCode: *, data: *}}
      */
-    static cancelQuestionByJobID(jobId){
+    static cancelJobByID(jobId, type){
         try{
             // Get the job and cancel it, and then remove it from the local store entirely
-            this.scheduledOperations["questions"][jobId].cancel();
-            delete this.scheduledOperations["questions"][jobId];
+            this.scheduledOperations[type][jobId].cancel();
+            delete this.scheduledOperations[type][jobId];
         } catch(err){
             return ReturnMethods.returnFailure("Scheduler: Failed to cancel job " + jobId);
         }
@@ -216,9 +229,10 @@ class ScheduleHandler{
         let participant = await participants.get(uniqueId);
         let scheduledOperations = participant.scheduledOperations;
         let scheduledQuestions = scheduledOperations["questions"];
+        let scheduledActions = scheduledOperations["actions"];
         const qHandler = new QuestionHandler(config);
-        let failedQuestions = [];
-        let succeededQuestions = [];
+        let failedOperations = [];
+        let succeededOperations = [];
 
         // Go through each scheduled Question for participant
         for(let i = 0; i < scheduledQuestions.length; i++){
@@ -233,25 +247,46 @@ class ScheduleHandler{
             }
             let returnObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, questionInfo, config,false);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                failedQuestions.push(returnObj.data);
+                failedOperations.push(returnObj.data);
             } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
-                succeededQuestions.push(returnObj.data);
+                succeededOperations.push(returnObj.data);
             }
         }
 
-        if(failedQuestions.length > 0) {
-            if(succeededQuestions.length === 0){
+        for(let i =0; i < scheduledActions.length; i++){
+            let jobInfo = scheduledActions[i];
+            let actionInfo = {
+                aType : jobInfo.aType,
+                args : jobInfo.args,
+                atTime : jobInfo.atTime,
+                onDays : jobInfo.onDays,
+                if: jobInfo.if,
+                tz: participant.parameters.timezone
+            }
+            let returnObj = await this.scheduleOneAction(bot, uniqueId, actionInfo, config,false);
+            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                failedOperations.push(returnObj.data);
+            } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
+                succeededOperations.push(returnObj.data);
+            }
+        }
+
+        if(failedOperations.length > 0) {
+            if(succeededOperations.length === 0){
                 return ReturnMethods.returnFailure("Scheduler: failed to reschedule the following questions:\n"+
-                    failedQuestions.join('\n'));
+                    failedOperations.join('\n'));
             }
             return ReturnMethods.returnPartialFailure("Scheduler: failed to reschedule the following questions:\n"+
-                failedQuestions.join('\n'), succeededQuestions);
+                failedOperations.join('\n'), succeededOperations);
         }
-        // Add temporally ordered scheduled questions to participant's debug queue:
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestions, config.experimentLengthWeeks);
+
+
+        // Add temporally ordered scheduled operations to participant's debug queue:
+        let scheduledOps = scheduledQuestions.concat(scheduledActions);
+        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
         this.debugQueueAdjusted[uniqueId] = false;
 
-        return ReturnMethods.returnSuccess(succeededQuestions)
+        return ReturnMethods.returnSuccess(succeededOperations)
     }
 
     /**
@@ -262,11 +297,11 @@ class ScheduleHandler{
      * @param bot Telegram bot instance
      * @param uniqueId uniqueId of the participant for whom questions are to be scheduled
      * @param config loaded config file of experiment
+     * @param actionList A list of actions to be scheduled, if any
      * @param debug flag whether in debug mode or not
      * @returns {Promise<{returnCode: number, data}|{returnCode: *, data: *}|{returnCode: *, successData: *, failData: *}>}
      */
-
-    static async scheduleAllQuestions(bot, uniqueId, config, debug = false){
+    static async scheduleAllOperations(bot, uniqueId, config, actionList, debug = false){
         const qHandler = new QuestionHandler(config);
         const participant = await participants.get(uniqueId);
 
@@ -280,8 +315,8 @@ class ScheduleHandler{
             return schQObj;
         }
         let scheduledQuestionsList = schQObj.data;
-        let failedQuestions = [];
-        let succeededQuestions = [];
+        let failedOperations = [];
+        let succeededOperations = [];
 
         // loop through all fetched questions that are to be scheduled
         for(let i = 0; i < scheduledQuestionsList.length; i++){
@@ -292,7 +327,7 @@ class ScheduleHandler{
             // Call the function to schedule a single operation
             let scheduleObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, scheduledQuestionInfo, config,true);
             if(scheduleObj.returnCode === DevConfig.FAILURE_CODE){
-                failedQuestions.push(scheduleObj.data)
+                failedOperations.push(scheduleObj.data)
             } else if(scheduleObj.returnCode === DevConfig.SUCCESS_CODE){
                 // If successful, send a message to the participant that a particular question
                 // has been scheduled
@@ -301,29 +336,60 @@ class ScheduleHandler{
                     return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
                 }
                 let chatId = secretMap.chatId;
-                // TODO: send a message about the scheduled messages anyway, or only when debug mode?
                 if(config.debug.actionMessages) {
                     await Communicator.sendMessage(bot, participant, chatId,
-                        "(Debug) " + config.phrases.schedule.scheduleNotif[partLang]
-                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', '), true);
+                        "(Debug) Question scheduled for following time: "
+                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', ')  + "\n"
+                        + ((scheduledQuestionInfo.if) ? "if: " + scheduledQuestionInfo.if : ""), true, true);
                 }
-                succeededQuestions.push(scheduleObj.data)
+                succeededOperations.push(scheduleObj.data)
             }
         }
 
-        if(failedQuestions.length > 0) {
-            if(succeededQuestions.length === 0){
+        // loop through all actions that are to be scheduled
+        for(let i = 0; i < actionList.length; i++){
+            // Append participant timezone to scheduled question
+            let scheduledActionInfo = actionList[i];
+            scheduledActionInfo["tz"] = participant.parameters.timezone;
+
+            // Call the function to schedule a single action
+            let scheduleObj = await this.scheduleOneAction(bot, uniqueId, scheduledActionInfo, config,true);
+            if(scheduleObj.returnCode === DevConfig.FAILURE_CODE){
+                failedOperations.push(scheduleObj.data)
+            } else if(scheduleObj.returnCode === DevConfig.SUCCESS_CODE){
+                // If successful, send a message to the participant that a particular question
+                // has been scheduled
+                let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
+                if(!secretMap){
+                    return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+                }
+                let chatId = secretMap.chatId;
+                let conditionString = ((scheduledActionInfo.if) ? "if: " + scheduledActionInfo.if : "")
+                if(config.debug.actionMessages) {
+                    await Communicator.sendMessage(bot, participant, chatId,
+                        "(Debug) Action scheduled for following time: "
+                        + '\n' + scheduledActionInfo.atTime + " - " + scheduledActionInfo.onDays.join(', ') + "\n"
+                        + conditionString, true, true);
+                }
+                succeededOperations.push(scheduleObj.data)
+            }
+        }
+
+        if(failedOperations.length > 0) {
+            if(succeededOperations.length === 0){
                 return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
-                    failedQuestions.join('\n'));
+                    failedOperations.join('\n'));
             }
             return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
-                failedQuestions.join('\n'), succeededQuestions);
+                failedOperations.join('\n'), succeededOperations);
         }
+
         // Add temporally ordered scheduled questions to participant's debug queue:
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledQuestionsList,config.experimentLengthWeeks);
+        let scheduledOps = scheduledQuestionsList.concat(actionList);
+        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps,config.experimentLengthWeeks);
         this.debugQueueAdjusted[uniqueId] = false;
 
-        return ReturnMethods.returnSuccess(succeededQuestions)
+        return ReturnMethods.returnSuccess(succeededOperations)
     }
 
     /**
@@ -341,7 +407,6 @@ class ScheduleHandler{
      * @param startTime the time from which the new timings of questions should start
      * @param interval the interval between each successive question
      */
-
     static overrideScheduleForIntervals(scheduledQuestions, startTime, interval){
         let now = startTime;
         let minutes = now.minutes;
@@ -404,7 +469,7 @@ class ScheduleHandler{
         try{
             let scheduleDays = questionInfo.onDays;
             for(let i = 0; i < scheduleDays.length; i++){
-                let idx = this.dayIndexOrdering.indexOf(scheduleDays[i]);
+                let idx = DevConfig.DAY_INDEX_ORDERING.indexOf(scheduleDays[i]);
                 if(idx === -1) throw "Scheduler: " + questionInfo.qId + " - Day not recognized";
                 else {
                     if(!scheduleDayIndices.includes(idx)){
@@ -429,14 +494,14 @@ class ScheduleHandler{
 
     /**
      *
-     * Write operation info to database, if not already present in database
+     * Write question info to database, if not already present in database
      *
      * @param uniqueId uniqueId of the participant for whom job is being scheduled
      * @param jobId ID of the job being scheduled
-     * @param questionInfo Info about the question that is being scheduled
+     * @param questionInfo Info about the question that has been scheduled
      * @returns {Promise<{returnCode: *, data: *}>}
      */
-    static async writeOperationInfoToDB(uniqueId, jobId, questionInfo){
+    static async writeQuestionInfoToDB(uniqueId, jobId, questionInfo){
         let jobInfo = {
             jobId: jobId,
             qId: questionInfo.qId,
@@ -447,10 +512,7 @@ class ScheduleHandler{
         }
         // Check if already not in scheduledQuestions
         try{
-            let alreadyInDB = await participants.hasScheduledQuestion(uniqueId, jobInfo);
-            if(!alreadyInDB){
-                await participants.addScheduledQuestion(uniqueId, jobInfo);
-            }
+            await participants.addScheduledOperation(uniqueId, "questions", jobInfo);
             return ReturnMethods.returnSuccess(jobInfo);
         } catch(err){
             return ReturnMethods.returnFailure("Scheduler: Unable to write job to DB\n" + err)
@@ -460,12 +522,40 @@ class ScheduleHandler{
 
     /**
      *
+     * Write action info to database, if not already present in database
+     *
+     * @param uniqueId uniqueId of the participant for whom job is being scheduled
+     * @param jobId ID of the job being scheduled
+     * @param actionInfo Info about the action that has been scheduled
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
+    static async writeActionInfoToDB(uniqueId, jobId, actionInfo){
+        let jobInfo = {
+            jobId: jobId,
+            aType: actionInfo.aType,
+            args: actionInfo.args,
+            atTime: actionInfo.atTime,
+            onDays: actionInfo.onDays,
+            if: actionInfo.if,
+            tz: actionInfo.tz
+        }
+        // Add to database
+        try{
+            await participants.addScheduledOperation(uniqueId, "actions", jobInfo);
+            return ReturnMethods.returnSuccess(jobInfo);
+        } catch(err){
+            return ReturnMethods.returnFailure("Scheduler: Unable to write job to DB\n" + err)
+        }
+    }
+
+    /**
+     *
      * Schedule a single question for a participant
      *
      * @param bot Telegram bot instance
      * @param uniqueId uniqueID of participant for whom q is to be scheduled
      * @param qHandler QuestionHandler instance with loaded expt config file
-     * @param questionInfo info of question to be scheduled
+     * @param questionInfo info of question to be scheduled - must contain qId, onDays, atTime, tz (if optional)
      * @param config loaded expt config file
      * @param isNew flag whether question is new or not (i.e., already present in DB or not)
      * @returns {Promise<{returnCode: *, data: *}>}
@@ -542,7 +632,97 @@ class ScheduleHandler{
             // Add to local store and if necessary, to DB
             this.scheduledOperations["questions"][jobId] = job;
             if(isNew) {
-                let writeReturn = await this.writeOperationInfoToDB(uniqueId, jobId, questionInfo);
+                let writeReturn = await this.writeQuestionInfoToDB(uniqueId, jobId, questionInfo);
+                if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
+                    return writeReturn;
+                }
+            }
+        } catch(err){
+            let errorMsg = "Scheduler: Unable to schedule with given params"
+            return ReturnMethods.returnFailure(errorMsg);
+        }
+        return ReturnMethods.returnSuccess({
+            jobId: jobId,
+            job: job
+        });
+    }
+
+    /**
+     *
+     * Schedule a single action for a participant
+     *
+     * @param bot Telegram bot instance
+     * @param uniqueId uniqueID of participant for whom q is to be scheduled
+     * @param actionInfo info of action to be scheduled - must contain aType, onDays, atTime, tz (args, if optional)
+     * @param config loaded expt config file
+     * @param isNew flag whether question is new or not (i.e., already present in DB or not)
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
+    static async scheduleOneAction(bot, uniqueId, actionInfo, config, isNew = true){
+        const { processAction } = require('./actionHandler');
+        if(!("aType" in actionInfo)){
+            return ReturnMethods.returnFailure("Scheduler: Action type not specified")
+        }
+
+        // Build the recurrence rule
+        let recurrenceRuleObj = this.buildRecurrenceRule(actionInfo);
+        if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
+            return ReturnMethods.returnFailure(recurrenceRuleObj.data)
+        }
+        let recRule = recurrenceRuleObj.data;
+
+        let argsStr = (actionInfo.args && actionInfo.args.length > 0) ? actionInfo.args.join("") + "_" : ""
+        // Construct the jobID for the job
+        let jobId = uniqueId + "_" + actionInfo.aType + "_" + argsStr
+            + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
+
+        // Create the action
+        let actionObj = {
+            aType: actionInfo.aType,
+            args: actionInfo.args
+        };
+
+        let job;
+        try{
+            // Get the telegram chatID of the participant
+            let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
+            if(!secretMap){
+                return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+            }
+            let chatId = secretMap.chatId;
+
+            // Schedule the question to be sent
+            job = scheduler.scheduleJob(recRule, async function(){
+                // Get the updated participant
+                let newParticipant;
+                try {
+                    newParticipant = await participants.get(uniqueId);
+                } catch(err){
+                    console.log(err);
+                }
+
+                // Check if there is a condition to display the scheduled question
+                // if yes, evaluate that condition and get the truth value
+                let evaluation = true;
+                if(actionInfo.if){
+                    let userInfo = await bot.telegram.getChat(chatId);
+                    newParticipant["firstName"] = userInfo["first_name"];
+                    let evaluationObj = ConfigParser.evaluateConditionString(newParticipant, actionInfo.if);
+                    if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
+                        evaluation = evaluationObj.data.value;
+                    } else {
+                        // If failure to evaluate, don't show question
+                        evaluation = false;
+                    }
+                }
+                if(evaluation){
+                    await processAction(bot, config, newParticipant, actionObj);
+                }
+            })
+            // Add to local store and if necessary, to DB
+            this.scheduledOperations["actions"][jobId] = job;
+            if(isNew) {
+                let writeReturn = await this.writeActionInfoToDB(uniqueId, jobId, actionInfo);
                 if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
                     return writeReturn;
                 }
@@ -606,8 +786,8 @@ class ScheduleHandler{
         if(qInfoArray.length === 0) return qInfoArray;
         // Loop through all days, starting from Sunday
         let tempOrderArr = []
-        for(let dayIdx = 0;dayIdx < this.dayIndexOrdering.length; dayIdx++){
-            let curDay = this.dayIndexOrdering[dayIdx];
+        for(let dayIdx = 0;dayIdx < DevConfig.DAY_INDEX_ORDERING.length; dayIdx++){
+            let curDay = DevConfig.DAY_INDEX_ORDERING[dayIdx];
             let dayQuestions = []
             // Get all questions that are to be asked on this day
             for(let i = 0; i < qInfoArray.length; i++){
@@ -621,6 +801,8 @@ class ScheduleHandler{
             for(let i = 0; i < sortedDayQs.length; i++){
                 tempOrderArr.push({
                     qId: sortedDayQs[i].qId,
+                    aType : sortedDayQs[i].aType,
+                    args: sortedDayQs[i].args,
                     atTime: sortedDayQs[i].atTime,
                     onDays: [curDay],
                     if: sortedDayQs[i].if
@@ -664,7 +846,7 @@ class ScheduleHandler{
 
         for(let i = 0; i < qInfoArray.length; i++){
             let curDay = qInfoArray[i].onDays[0];
-            let curDayIdx = this.dayIndexOrdering.indexOf(curDay);
+            let curDayIdx = DevConfig.DAY_INDEX_ORDERING.indexOf(curDay);
             let curTime = qInfoArray[i].atTime;
             let diff = ExperimentUtils.getMinutesDiff(diffObj,{
                 dayIndex: curDayIdx,

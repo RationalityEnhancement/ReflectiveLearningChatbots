@@ -84,7 +84,7 @@ exports.updateField = async (uniqueId, field, value) => {
     participant[field] = value;
     return participant.save();
   } catch(err){
-    console.log('Participant API Controller: Unable to update field');
+    console.log('Participant API Controller: Unable to update field ' + field);
     console.error(err);
   }
 }
@@ -99,10 +99,41 @@ exports.updateParameter = async (uniqueId, param, value) => {
     participant.parameters = updatedParams;
     return participant.save();
   } catch(err){
-    console.log('Participant API Controller: Unable to update parameters');
+    console.log('Participant API Controller: Unable to update parameters ' + param);
     console.error(err);
   }
 }
+
+// Update a value of the object 'stages' of the participant with a new value
+exports.updateStageParameter = async (uniqueId, param, value) => {
+
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    let updatedParams = participant.stages;
+    updatedParams[param] = value;
+    participant.stages = updatedParams;
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to update stage parameter ' + param);
+    console.error(err);
+  }
+}
+
+// Clear the value of a given parameters
+exports.clearStageParam = async (uniqueId, param) => {
+
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    if(param in participant.stages){
+      participant.stages[param] = undefined;
+    }
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to clear stage parameter ' + param);
+    console.error(err);
+  }
+}
+
 // Update the 'parameters' field of the participant by adding a new value
 exports.addToArrParameter = async (uniqueId, param, value) => {
 
@@ -113,24 +144,38 @@ exports.addToArrParameter = async (uniqueId, param, value) => {
     participant.parameters = updatedParams;
     return participant.save();
   } catch(err){
-    console.log('Participant API Controller: Unable to add value to parameter');
+    console.log('Participant API Controller: Unable to add value to array parameter');
+    console.error(err);
+  }
+}
+
+// Add a value to an array parameter
+exports.addToArrField = async (uniqueId, fieldName, value) => {
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    let ans = participant[fieldName];
+    if(Array.isArray(ans)){
+      participant[fieldName].push(value);
+    }
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add to array field ' + fieldName);
     console.error(err);
   }
 }
 
 // Clear the value of a given parameters
-exports.clearArrParamValue = async (uniqueId, param) => {
+exports.clearParamValue = async (uniqueId, param) => {
 
   try{
     let participant = await Participant.findOne({ uniqueId });
-    let updatedParams = participant.parameters;
-    if(Array.isArray(updatedParams[param])){
-      updatedParams[param] = [];
+    if(param in participant.parameters){
+      participant.parameters[param] = undefined;
     }
-    participant.parameters = updatedParams;
     return participant.save();
   } catch(err){
-    console.log('Participant API Controller: Unable to add value to parameter');
+    console.log('Participant API Controller: Unable to clear parameter value');
     console.error(err);
   }
 }
@@ -142,7 +187,6 @@ exports.addAnswer = async (uniqueId, answer) => {
   try{
     let participant = await Participant.findOne({ uniqueId });  
     participant.answers.push(answer);
-    
     return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
@@ -150,13 +194,25 @@ exports.addAnswer = async (uniqueId, answer) => {
   }
 }
 
-exports.hasScheduledQuestion = async (uniqueId, jobInfo) => {
+// Adds an object to the stages.activity array
+exports.addStageActivity = async (uniqueId, activity) => {
+  try{
+    let participant = await Participant.findOne({ uniqueId });
+    participant.stages.activity.push(activity);
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to add answer');
+    console.error(err);
+  }
+}
+
+exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
     let exists = false;
     let participant = await Participant.findOne({uniqueId});
-    let scheduledQuestions = participant.scheduledOperations["questions"];
-    for(let i = 0; i < scheduledQuestions.length; i++){
-      let curQ = scheduledQuestions[i];
+    let scheduledOperations = participant.scheduledOperations[type];
+    for(let i = 0; i < scheduledOperations.length; i++){
+      let curQ = scheduledOperations[i];
       let allEqual = true;
       for(const [key, value] of Object.entries(jobInfo)){
         if(!lodash.isEqual(jobInfo[key], curQ[key])){
@@ -177,12 +233,12 @@ exports.hasScheduledQuestion = async (uniqueId, jobInfo) => {
   }
 }
 
-exports.addScheduledQuestion = async (uniqueId, jobInfo) => {
+exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
     let participant = await Participant.findOne({ uniqueId });
-    let hasQAlready = await exports.hasScheduledQuestion(uniqueId, jobInfo)
-    if(!hasQAlready){
-      participant.scheduledOperations["questions"].push(jobInfo);
+    let hasOAlready = await exports.hasScheduledOperation(uniqueId, type, jobInfo)
+    if(!hasOAlready){
+      participant.scheduledOperations[type].push(jobInfo);
     }
     return participant.save();
   }
@@ -191,10 +247,10 @@ exports.addScheduledQuestion = async (uniqueId, jobInfo) => {
     console.error(err);
   }
 }
-exports.removeScheduledQuestion = async (uniqueId, jobId) => {
+exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
   try{
     let participant = await Participant.findOne({ uniqueId });
-    let scheduledQs = participant.scheduledOperations["questions"];
+    let scheduledQs = participant.scheduledOperations[type];
     let jobIdx = -1;
     for(let i = 0; i < scheduledQs.length; i++){
       let scheduledQ = scheduledQs[i];
@@ -203,7 +259,7 @@ exports.removeScheduledQuestion = async (uniqueId, jobId) => {
         break;
       }
     }
-    if(jobIdx != -1) participant.scheduledOperations["questions"].splice(jobIdx,1);
+    if(jobIdx != -1) participant.scheduledOperations[type].splice(jobIdx,1);
 
     return participant.save();
   }

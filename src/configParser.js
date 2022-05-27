@@ -3,6 +3,8 @@ const config = require("../json/config.json");
 const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
 const lodash = require('lodash');
+const moment = require('moment-timezone')
+const ExperimentUtils = require('./experimentUtils')
 
 /**
  *
@@ -138,6 +140,8 @@ class ConfigParser{
      *                      currentAnswer
      *                      firstName
      *                      uniqueId
+     *                      stages
+     *
      * @param varName the name of the variable to be returned
      * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
      *              returns success code along with data being the value of the variable or the error msg
@@ -151,7 +155,7 @@ class ConfigParser{
         if(!participant || typeof participant !== 'object') {
             return ReturnMethods.returnFailure("CParser: Participant object required to replace variables")
         }
-        let requiredParams = ["firstName", "currentAnswer", "uniqueId"];
+        let requiredParams = ["firstName", "currentAnswer", "uniqueId", "stages"];
         for(let i = 0; i < requiredParams.length; i++){
             let param = requiredParams[i];
             if(!(param in participant)){
@@ -174,6 +178,33 @@ class ConfigParser{
             case DevConfig.VAR_STRINGS.UNIQUE_ID:
                 varVal = participant["uniqueId"];
                 foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.STAGE_NAME :
+                varVal = participant.stages["stageName"]
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.STAGE_DAY :
+                varVal = participant.stages["stageDay"]
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS:
+                let curAns = participant.currentAnswer;
+                let curAnsLens = curAns.map(el => el.length);
+                varVal = curAnsLens.length > 0 ? curAnsLens.reduce((partialSum, ans) => partialSum + ans) : 0;
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS:
+                let currAns = participant.currentAnswer;
+                let currAnsWords = currAns.join(" ").split(" ").filter(el => el.trim().length > 0);
+                varVal = currAnsWords.length;
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.TODAY:
+                let dateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
+                varVal = DevConfig.DAY_INDEX_ORDERING[dateObj.dayOfWeek];
+                foundReserved = true;
+                break;
+
             default:
         }
         // Look in parameters
@@ -961,6 +992,23 @@ class ConfigParser{
 
     /**
      *
+     * Parse a single number token of the form $N{<number>}. Return the number value
+     * if valid, return error if not valid
+     *
+     * @param expression
+     */
+    static parseNumberToken(expression){
+        if(typeof expression != "string"){
+            return ReturnMethods.returnFailure("CParser: Number token must be string");
+        }
+        if(!expression.startsWith("$N{") || !expression.endsWith("}")){
+            return ReturnMethods.returnFailure("CParser: Number token in incorrect format - must be $N{...}");
+        }
+        let trimmedExpression = expression.substring(3,expression.length-1);
+        return this.getNumberFromString(trimmedExpression);
+    }
+    /**
+     *
      * Parse a single boolean token of the form $B{TRUE/FALSE}. Return the truth value
      * if valid, return error if not valid
      *
@@ -1175,6 +1223,44 @@ class ConfigParser{
         }
 
         return ReturnMethods.returnSuccess(parsedExp);
+    }
+
+    /**
+     *
+     * Function to build a logical expression of multiple conjunctions,
+     * using the same operand1 and operator, but different operand2s
+     *
+     * E.g., "((${STAGE_NAME} == $S{s1}) AND (${STAGE_NAME} == $S{s2})) AND (${STAGE_NAME} == $S{s3})
+     *
+     * @param operand1
+     * @param operator
+     * @param operand2List
+     * @returns {{returnCode: *, data: *}}
+     */
+    static buildMultipleANDCondition(operand1, operator, operand2List){
+        if(!Array.isArray(operand2List)){
+            return ReturnMethods.returnFailure("CParser: operand 2 must be list")
+        }
+        if(!DevConfig.VALID_CONDITIONAL_OPERATORS.includes(operator)){
+            return ReturnMethods.returnFailure("CParser: operator must be valid")
+        }
+
+        let expression;
+        switch(operand2List.length){
+            case 0:
+                return ReturnMethods.returnFailure("CParser: Must have at least one operand 2 in list");
+            case 1:
+                expression = operand1 + " " + operator + " " + operand2List[0];
+                break;
+            default:
+                let newList = operand2List.slice();
+                newList[0] = operand1 + " " + operator + " " + operand2List[0];
+                expression = newList.reduce((prev, curr) => {
+                    let newExp = "(" + prev + ")" + " AND (" + operand1 + " " + operator + " " + curr + ")";
+                    return newExp;
+                })
+        }
+        return ReturnMethods.returnSuccess(expression);
     }
 }
 

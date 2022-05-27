@@ -42,7 +42,7 @@ describe('Get stage list', () => {
             console.log(returnObj.data);
         })
     })
-    
+
     describe('No conds', () => {
         it('Should succeed normally', () => {
             let returnObj = StageHandler.getStageList(testConfig, undefined)
@@ -263,7 +263,7 @@ describe('End/Begin Stage', () => {
             expect(typeof newActivity.when).to.equal("string");
         })
         it('Should have updated stage day and stage name', async () => {
-            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(stageName);
         })
     })
@@ -307,7 +307,7 @@ describe('End/Begin Stage', () => {
             expect(typeof newActivity.when).to.equal("string");
         })
         it('Should have updated stage day and stage name', async () => {
-            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(stageName);
         })
     })
@@ -337,7 +337,7 @@ describe('End/Begin Stage', () => {
             expect(typeof newActivity.when).to.equal("string");
         })
         it('Should have updated stage day and stage name', async () => {
-            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(stageName);
         })
     })
@@ -378,15 +378,15 @@ describe('Update Stage Day', () => {
             returnObj = await StageHandler.startStage(participant, stageName);
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(stageName);
         })
         it('Should update stage day', async () => {
             returnObj = await StageHandler.updateStageDay(testConfig, testPartId);
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(returnObj.data).to.equal(1);
-            expect(newPart.stages.stageDay).to.equal(1);
+            expect(returnObj.data).to.equal(2);
+            expect(newPart.stages.stageDay).to.equal(2);
             expect(newPart.stages.stageName).to.equal(stageName);
         })
     })
@@ -406,7 +406,7 @@ describe('Update Stage Day', () => {
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(nextStageName);
-            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(nextStageName);
         })
         it('Should have added new activity', async () => {
@@ -465,7 +465,7 @@ describe('Update Stage Day', () => {
 
 describe('Creating action list', () => {
     describe('Getting on days object', () => {
-        let allDaysKey = DevConfig.DAY_INDEX_ORDERING.sort().join();
+        let allDaysKey = DevConfig.DAY_INDEX_ORDERING.slice().sort().join();
         it('Should work when no on days are present', () => {
             let stageList = [
                 {
@@ -595,7 +595,7 @@ describe('Creating action list', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data.length).to.equal(1);
             expect(returnObj.data[0].onDays.sort()).to.eql(dayList.sort());
-            expect(returnObj.data[0].if).to.be.undefined;
+            expect(returnObj.data[0].if).to.equal("${STAGE_DAY} >= $N{0}");
             expect(returnObj.data[0].aType).to.equal("incrementStageDay");
             expect(returnObj.data[0].atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
         })
@@ -634,4 +634,25 @@ describe('Creating action list', () => {
             console.log(returnObj.data)
         })
     })
+})
+
+describe('Severing DB connection', () => {
+    it('Should remove participant', async () => {
+        await participants.remove(testPartId);
+        let participant = await participants.get(testPartId);
+        expect(participant).to.be.null;
+    });
+
+    it('Should close connection', async () => {
+        try
+        {
+            await mongo.connection.close();
+            console.log('\tConnection closed!')
+        } catch(err) {
+            console.log(err)
+        }
+
+        const result = mongo.connection.readyState;
+        expect(result).to.equal(0);
+    });
 })

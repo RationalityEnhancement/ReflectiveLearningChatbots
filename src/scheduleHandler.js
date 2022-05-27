@@ -339,8 +339,8 @@ class ScheduleHandler{
                 if(config.debug.actionMessages) {
                     await Communicator.sendMessage(bot, participant, chatId,
                         "(Debug) Question scheduled for following time: "
-                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', ')
-                        + (scheduledQuestionInfo.if) ? "if: " + scheduledQuestionInfo.if : "", true);
+                        + '\n' + scheduledQuestionInfo.atTime + " - " + scheduledQuestionInfo.onDays.join(', ')  + "\n"
+                        + ((scheduledQuestionInfo.if) ? "if: " + scheduledQuestionInfo.if : ""), true, true);
                 }
                 succeededOperations.push(scheduleObj.data)
             }
@@ -364,11 +364,12 @@ class ScheduleHandler{
                     return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
                 }
                 let chatId = secretMap.chatId;
+                let conditionString = ((scheduledActionInfo.if) ? "if: " + scheduledActionInfo.if : "")
                 if(config.debug.actionMessages) {
                     await Communicator.sendMessage(bot, participant, chatId,
                         "(Debug) Action scheduled for following time: "
-                        + '\n' + scheduledActionInfo.atTime + " - " + scheduledActionInfo.onDays.join(', ')
-                        + (scheduledActionInfo.if) ? "if: " + scheduledActionInfo.if : "", true);
+                        + '\n' + scheduledActionInfo.atTime + " - " + scheduledActionInfo.onDays.join(', ') + "\n"
+                        + conditionString, true, true);
                 }
                 succeededOperations.push(scheduleObj.data)
             }

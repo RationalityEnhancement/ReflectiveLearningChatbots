@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
 const ConfigParser = require('./src/configParser')
 const moment = require('moment-timezone')
+const ActionHandler = require('./src/actionHandler');
 const LogicHandler = require('./src/logicHandler')
 
 const ExperimentUtils = require("./src/experimentUtils");
@@ -247,17 +248,6 @@ bot.command('next', async ctx => {
             }
             let nextQObj = nextQObjObj.data;
 
-            // Construct the question based on the ID and participant condition
-            let qHandler = new QuestionHandler(config);
-            let nextQReturnObj = qHandler.constructQuestionByID(partCond, nextQObj.qId, partLang);
-            if(nextQReturnObj.returnCode === DevConfig.FAILURE_CODE){
-                throw "ERROR: " + nextQReturnObj.data;
-            }
-            let nextQuestion = nextQReturnObj.data;
-
-            // Send a message about when the question will appear
-            let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
-
             // Show the next question only if it passes the required condition
             let evaluation = true;
             if(nextQObj.if){
@@ -265,20 +255,50 @@ bot.command('next', async ctx => {
                 if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
                     evaluation = evaluationObj.data.value;
                 } else {
-                    console.log(evaluationObj.data);
+                    // console.log(evaluationObj.data);
                     evaluation = false;
                 }
             }
+            if(!evaluation) continue;
 
-            // Send the message and the question, if the question is meant to be sent at that time
-            if(evaluation){
+            if(!!nextQObj["qId"]) {
+
+                // Construct the question based on the ID and participant condition
+                let qHandler = new QuestionHandler(config);
+                let nextQReturnObj = qHandler.constructQuestionByID(partCond, nextQObj.qId, partLang);
+                if (nextQReturnObj.returnCode === DevConfig.FAILURE_CODE) {
+                    throw "ERROR: " + nextQReturnObj.data;
+                }
+                let nextQuestion = nextQReturnObj.data;
+
+                // Send a message about when the question will appear
+                let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
+
+                // Send the message and the question, if the question is meant to be sent at that time
                 await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
                 let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, !config.debug.messageDelay);
-                if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
+                    throw returnObj.data;
+                }
+                nextQuestionFound = true;
+            } else {
+                // Send a message about when the action will appear
+                let nextQMsg = `(Debug) This action will occur at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
+
+                // Process the action
+                // Send the message and the question, if the question is meant to be sent at that time
+                await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
+                let actionObj = {
+                    aType : nextQObj.aType,
+                    args : nextQObj.args
+                }
+                let returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
                     throw returnObj.data;
                 }
                 nextQuestionFound = true;
             }
+
         }
 
     } catch(err){

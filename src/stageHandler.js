@@ -325,7 +325,7 @@ module.exports.startStage = async (participant, nextStageName) => {
             when : now.format()
         })
         await participants.updateStageParameter(participant.uniqueId, "stageName", nextStageName);
-        await participants.updateStageParameter(participant.uniqueId, "stageDay", 0);
+        await participants.updateStageParameter(participant.uniqueId, "stageDay", 1);
     } catch(err){
         return ReturnMethods.returnFailure("StageHandler: Unable to update participant parameters to start stage")
     }
@@ -381,6 +381,7 @@ module.exports.endExperiment = async (uniqueId) => {
  */
 module.exports.createOnDaysObj = (stageList) => {
     let onDaysObj = {};
+    let origOrdering = DevConfig.DAY_INDEX_ORDERING.slice();
     try{
         stageList.forEach(stage => {
             let keyString;
@@ -388,7 +389,7 @@ module.exports.createOnDaysObj = (stageList) => {
             if(stage.onDays && stage.onDays.length > 0){
                 keyString = stage.onDays.sort().join();
             } else {
-                keyString = DevConfig.DAY_INDEX_ORDERING.sort().join();
+                keyString = origOrdering.sort().join();
             }
             // Add key if necessary and then stage name to object
             if(!(keyString in onDaysObj)) onDaysObj[keyString] = [];
@@ -464,9 +465,12 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
                 return conditionBuildObj
             }
             condition = conditionBuildObj.data;
+        } else {
+            condition = "${STAGE_DAY} >= $N{0}"
         }
         let actionObj = {
             aType : "incrementStageDay",
+            args : [],
             onDays : onDaysList,
             atTime : DevConfig.STAGE_UPDATE_TIME,
             if: condition

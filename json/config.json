@@ -9,7 +9,8 @@
     "Control" : [
       {
         "name": "Pre-Test",
-        "lengthDays": 2
+        "lengthDays": 2,
+        "onDays" : ["Mon", "Tue", "Wed"]
       },
       {
         "name": "Test",
@@ -23,11 +24,12 @@
     "Experimental" : [
       {
         "name": "Pre-Test",
-        "lengthDays": 2
+        "lengthDays": 2,
+        "onDays" : ["Mon", "Tue", "Wed"]
       },
       {
         "name": "Test",
-        "lengthDays": 7
+        "lengthDays": 2
       },
       {
         "name" : "Post-Test",
@@ -527,7 +529,11 @@
             },
             "qType" : "freeform",
             "nextQuestion" :"morningQuestions.askAddGoal",
-            "minLengthChars" : 10
+            "minLengthChars" : 10,
+            "nextActions" : [{
+              "aType" : "startStage",
+              "args" : ["Pre-Test"]
+            }]
           },
           {
             "qId" : "askAddGoal",
@@ -877,7 +883,8 @@
         {
           "qId" : "eveningQuestions.numGoals",
           "atTime" : "18:00",
-          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          "if" : "${STAGE_DAY} >= $N{0}"
         },
         {
           "qId" : "eveningQuestions.satisfactionSurvey",

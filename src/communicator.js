@@ -183,8 +183,10 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
  * each message
  *
  * @param bot current telegram bot instance
+ * @param participant
  * @param chatId chatId of user to send message to
  * @param replyMessages array of reply messages
+ * @param noDelay
  * @returns {Promise<*>}
  */
 module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noDelay = false) => {
@@ -223,11 +225,14 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
  * Sends simple message
  *
  * @param bot current telegram bot instance
+ * @param participant
  * @param chatId chatId of user to send message to
  * @param message message to be sent
+ * @param noDelay
+ * @param noVarSub
  * @returns {Promise<*>}
  */
-module.exports.sendMessage = async (bot, participant, chatId, message, noDelay = false) => {
+module.exports.sendMessage = async (bot, participant, chatId, message, noDelay = false, noVarSub = false) => {
 
     if(!("firstName" in participant) || !participant["firstName"]){
         let userInfo = await bot.telegram.getChat(chatId);
@@ -243,7 +248,8 @@ module.exports.sendMessage = async (bot, participant, chatId, message, noDelay =
             setTimeout(res, delayMs)
         });
     }
-    await bot.telegram.sendMessage(chatId, substituteVariables(participant, message, true), {
+    let finalMessage = noVarSub ? message : substituteVariables(participant, message, true)
+    await bot.telegram.sendMessage(chatId, finalMessage, {
         parse_mode: "HTML",
         reply_markup: InputOptions.removeKeyboard().reply_markup
     });

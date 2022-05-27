@@ -54,9 +54,6 @@ let processAction = async(bot, config, participant, actionObj) => {
     if(!participant){
         return ReturnMethods.returnFailure("ActHandler: Participant not received")
     }
-    if(participant.currentState !== "answerReceived"){
-        return ReturnMethods.returnFailure("ActHandler: Can process next steps only after answer received")
-    }
     if(!validateActionObject(actionObj)) {
         return ReturnMethods.returnFailure("ActHandler: Action is not valid")
     }
@@ -89,8 +86,12 @@ let processAction = async(bot, config, participant, actionObj) => {
               ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
             }
 
-            // Schedule all questions
-            let returnObj = await ScheduleHandler.scheduleAllQuestions(bot, participant.uniqueId, config, config.debug.experimenter);
+            // Schedule all questions and actions
+            let actionsObj = StageHandler.createStageUpdateActionList(config, participant.conditionName);
+            if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
+                return actionObj;
+            }
+            let returnObj = await ScheduleHandler.scheduleAllOperations(bot, participant.uniqueId, config, actionsObj.data, config.debug.experimenter);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 return returnObj;
             } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
@@ -423,7 +424,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             if(config.debug.actionMessages){
                 let message;
                 if(typeof incStageObj.data === "string"){
-                    message = "New stage " + incStageObj.data+ " has been started at day 0"
+                    message = "New stage " + incStageObj.data+ " has been started at day 1"
                 } else if(incStageObj.data === -1){
                     message = "Final stage terminated, experiment has been ended";
                 } else {
@@ -431,6 +432,11 @@ let processAction = async(bot, config, participant, actionObj) => {
                 }
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
                     + message, true);
+                // Send the participant a message that the experiment has ended.
+                if(incStageObj.data === -1){
+                    await Communicator.sendMessage(bot, participant, secretMap.chatId,
+                        config.phrases.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+                }
             }
             return incStageObj;
         // End the experiment simply by updating the state and cancelling all operations

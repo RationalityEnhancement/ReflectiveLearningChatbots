@@ -290,7 +290,6 @@ bot.command('next', async ctx => {
                 if(config.debug.actionMessages){
                     // Send the message and the question, if the question is meant to be sent at that time
                     await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
-                    nextQuestionFound = true;
                 }
 
                 let actionObj = {
@@ -301,6 +300,12 @@ bot.command('next', async ctx => {
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
                     throw returnObj.data;
                 }
+                if(config.debug.actionMessages){
+                    nextQuestionFound = true;
+                } else {
+                    participant = await getParticipant(uniqueId);
+                }
+
 
             }
 

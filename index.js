@@ -287,8 +287,12 @@ bot.command('next', async ctx => {
                 let nextQMsg = `(Debug) This action will occur at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
 
                 // Process the action
-                // Send the message and the question, if the question is meant to be sent at that time
-                await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
+                if(config.debug.actionMessages){
+                    // Send the message and the question, if the question is meant to be sent at that time
+                    await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
+                    nextQuestionFound = true;
+                }
+
                 let actionObj = {
                     aType : nextQObj.aType,
                     args : nextQObj.args
@@ -297,7 +301,7 @@ bot.command('next', async ctx => {
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
                     throw returnObj.data;
                 }
-                nextQuestionFound = true;
+
             }
 
         }

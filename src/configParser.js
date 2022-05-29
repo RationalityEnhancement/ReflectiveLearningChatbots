@@ -173,6 +173,13 @@ class ConfigParser{
                 break;
             case DevConfig.VAR_STRINGS.CURRENT_ANSWER :
                 varVal = participant["currentAnswer"];
+                try{
+                    if(participant.currentQuestion.qType === "number") {
+                        varVal = parseInt(varVal[0]);
+                    }
+                } catch(err){
+                    // Do nothing
+                }
                 foundReserved = true;
                 break;
             case DevConfig.VAR_STRINGS.UNIQUE_ID:
@@ -858,8 +865,8 @@ class ConfigParser{
                         currentState = "inExpression";
                         returnObj.operator = currentText.trim();
                         currentText = "";
-                    } else if(')/.,:;!@#%^&*'.split('').includes(char)){
-                        return  ReturnMethods.returnFailure("CParser: Invalid character in operator")
+                    } else if(')/.,:;@#%^&*'.split('').includes(char)){
+                        return  ReturnMethods.returnFailure("CParser: Invalid character in operator: " + char)
                     } else {
                         currentText += char;
                     }

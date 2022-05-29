@@ -810,6 +810,7 @@ describe('Scheduling all', () => {
         it('Should return success', async () => {
             scheduleAllReturnObj = await ScheduleHandler.scheduleAllOperations(
                 testBot, testId, testConfig, actionList,false);
+            console.log(scheduleAllReturnObj);
             expect(scheduleAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of scheduled jobs', () => {

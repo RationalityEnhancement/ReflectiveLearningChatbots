@@ -110,12 +110,18 @@ function QuestionHandler(config){
             "qId" : qId,
             "qType" : selectedQuestion.qType,
         }
-        // If it is a dummy question, use the default text
-        if(constructedQuestion.qType !== "dummy"){
-           constructedQuestion["text"] = selectedQuestion.text[language];
-        } else {
-            constructedQuestion["text"] = DevConfig.DUMMY_QUESTION_TEXT;
+        try{
+            // If it is a dummy question, use the default text
+            if(constructedQuestion.qType !== "dummy"){
+                constructedQuestion["text"] = selectedQuestion.text[language];
+            } else {
+                constructedQuestion["text"] = DevConfig.DUMMY_QUESTION_TEXT;
+            }
+        } catch(err){
+            return ReturnMethods.returnFailure("QHandler: question " + qId + " does not have text for " +
+                "language " + language + " available.")
         }
+
 
         // Process qualtrics question, add the link with query strings to question object
         if(selectedQuestion.qType === "qualtrics"){

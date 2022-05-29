@@ -9,6 +9,7 @@ dataTypeMap[DevConfig.OPERAND_TYPES.BOOLEAN] = Boolean;
 dataTypeMap[DevConfig.OPERAND_TYPES.STRING_ARRAY] = [String];
 dataTypeMap[DevConfig.OPERAND_TYPES.NUMBER_ARRAY] = [Number];
 
+
 let schemaObject = {
   experimentId: String,
   uniqueId: String,
@@ -23,8 +24,14 @@ let schemaObject = {
         when: String
       }
     ],
-    stageDay : Number,
-    stageName : String
+    stageDay : {
+      type : Number,
+      default : 0
+    },
+    stageName : {
+      type: String,
+      default: ""
+    }
   },
   parameterTypes : {},
   currentAnswer: [String],
@@ -110,13 +117,18 @@ let schemaObject = {
 
 for(const[key, value] of Object.entries(config.customParameters)){
   if(value in dataTypeMap){
-    schemaObject["parameters"][key] = dataTypeMap[value];
+    schemaObject["parameters"][key] = {
+      type: dataTypeMap[value],
+      default: DevConfig.DEFAULT_DTYPE_VALUES[value]
+    };
   }
-
 }
 for(const[key, value] of Object.entries(config.mandatoryParameters)){
   if(value in dataTypeMap){
-    schemaObject["parameters"][key] = dataTypeMap[value];
+    schemaObject["parameters"][key] = {
+      type: dataTypeMap[value],
+      default: DevConfig.DEFAULT_DTYPE_VALUES[value]
+    };
   }
 }
 

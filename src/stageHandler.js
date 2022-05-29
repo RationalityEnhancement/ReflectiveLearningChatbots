@@ -186,8 +186,8 @@ module.exports.updateStageDay = async (config, uniqueId) => {
         return ReturnMethods.returnFailure("StageHandler: Stages object not found in participant");
     }
 
-    if(typeof currentStage === "undefined" || typeof stageDay === "undefined"){
-        return ReturnMethods.returnFailure("StageHandler: no stage currently underway!");
+    if(typeof currentStage === "undefined" || typeof stageDay === "undefined" || currentStage === ""){
+        return ReturnMethods.returnFailure("StageHandler (update): no stage currently underway!");
     }
 
     // Check if current stage has a specific length
@@ -262,7 +262,11 @@ module.exports.endCurrentStage = async (participant) => {
 
     // If there is no current stage, then it cannot be ended
     if(typeof currentStage === "undefined" || typeof stageDay === "undefined"){
-        return ReturnMethods.returnFailure("StageHandler: no stage currently underway!");
+        return ReturnMethods.returnFailure("StageHandler (end): no stage currently underway!");
+    }
+
+    if(currentStage === ""){
+        return ReturnMethods.returnFailure("StageHandler (end): no stage currently underway!");
     }
 
     // Update the activity and the parameters
@@ -309,7 +313,7 @@ module.exports.startStage = async (participant, nextStageName) => {
     }
 
     // If a stage is already running, end it
-    if(typeof currentStage !== "undefined" || typeof stageDay !== "undefined"){
+    if(currentStage !== ""){
         let endStageObj = await this.endCurrentStage(participant);
         if(endStageObj.returnCode === DevConfig.FAILURE_CODE){
             return endStageObj;

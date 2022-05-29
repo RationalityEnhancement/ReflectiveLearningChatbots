@@ -169,7 +169,6 @@ describe('Processing actions', ()=>{
             let outString = 3;
             it('Should return success', async () => {
                 let participant = await participants.get(testPartId);
-                expect(participant.parameters.testNum).to.be.undefined;
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -758,10 +757,10 @@ describe('Processing actions', ()=>{
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.eql([])
             })
-            it('Should have cleared the num in the participant', async ()=>{
+            it('Should have cleared the num to default in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
                 assert(actionObj.args[0] in participant.parameters);
-                expect(participant.parameters[actionObj.args[0]]).to.be.undefined;
+                expect(participant.parameters[actionObj.args[0]]).to.equal(0);
             })
         })
         describe('String', () => {
@@ -778,10 +777,10 @@ describe('Processing actions', ()=>{
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.eql([])
             })
-            it('Should have cleared the num in the participant', async ()=>{
+            it('Should have cleared the string to default in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
                 assert(actionObj.args[0] in participant.parameters);
-                expect(participant.parameters[actionObj.args[0]]).to.be.undefined;
+                expect(participant.parameters[actionObj.args[0]]).to.equal("");
             })
         })
         describe('Boolean', () => {
@@ -798,10 +797,10 @@ describe('Processing actions', ()=>{
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.eql([])
             })
-            it('Should have cleared the num in the participant', async ()=>{
+            it('Should have cleared the boolean to default in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
                 assert(actionObj.args[0] in participant.parameters);
-                expect(participant.parameters[actionObj.args[0]]).to.be.undefined;
+                expect(participant.parameters[actionObj.args[0]]).to.equal(false);
             })
         })
         describe('Fails', () => {

@@ -252,6 +252,7 @@ describe('End/Begin Stage', () => {
         it('Should return success', async () => {
             let participant = await participants.get(testPartId);
             returnObj = await StageHandler.startStage(participant, stageName);
+            console.log(returnObj);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         })
         it('Should have added start to stage activity', async () => {
@@ -285,8 +286,8 @@ describe('End/Begin Stage', () => {
             expect(typeof newActivity.when).to.equal("string");
         })
         it('Should have erased stage day and stage name', async () => {
-            expect(newPart.stages.stageDay).to.be.undefined;
-            expect(newPart.stages.stageName).to.be.undefined;
+            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageName).to.equal("");
         })
     })
 
@@ -435,8 +436,8 @@ describe('Update Stage Day', () => {
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(-1);
-            expect(newPart.stages.stageDay).to.be.undefined;
-            expect(newPart.stages.stageName).to.be.undefined;
+            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageName).to.equal("");
             expect(newPart.currentState).to.equal("experimentEnd")
         })
         it('Should have added new activity', async () => {

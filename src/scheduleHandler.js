@@ -638,7 +638,9 @@ class ScheduleHandler{
                 }
             }
         } catch(err){
-            let errorMsg = "Scheduler: Unable to schedule with given params"
+            let errorMsg = "Scheduler: Unable to schedule with given param: " + jobId;
+            console.log("\n" + err + "\n");
+
             return ReturnMethods.returnFailure(errorMsg);
         }
         return ReturnMethods.returnSuccess({
@@ -728,7 +730,9 @@ class ScheduleHandler{
                 }
             }
         } catch(err){
-            let errorMsg = "Scheduler: Unable to schedule with given params"
+            let errorMsg = "Scheduler: Unable to schedule with given params: " + jobId
+            console.log(recRule);
+            console.log("\n" + err + "\n")
             return ReturnMethods.returnFailure(errorMsg);
         }
         return ReturnMethods.returnSuccess({

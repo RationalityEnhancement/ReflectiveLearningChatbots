@@ -155,13 +155,22 @@ describe('Participant Controller API: ', () =>{
 		expect(part.stages[paramField]).to.equal(paramValue);
 
 	});
-	it('Should clear stage parameter', async () => {
+	it('Should clear stage parameter (num)', async () => {
 
 		const paramField = 'stageDay';
 
 		await participants.clearStageParam(testId, paramField);
 		let part = await participants.get(testId);
-		expect(part.stages[paramField]).to.be.undefined;
+		expect(part.stages[paramField]).to.equal(0);
+
+	});
+	it('Should clear stage parameter (str)', async () => {
+
+		const paramField = 'stageName';
+
+		await participants.clearStageParam(testId, paramField);
+		let part = await participants.get(testId);
+		expect(part.stages[paramField]).to.equal("");
 
 	});
 
@@ -194,13 +203,22 @@ describe('Participant Controller API: ', () =>{
 		expect(part.parameters[paramField]).to.eql([]);
 
 	});
-	it('Should clear non array param', async () => {
+	it('Should clear non array param (str)', async () => {
 
 		const paramField = 'timezone';
 
 		await participants.clearParamValue(testId, paramField);
 		let part = await participants.get(testId);
-		expect(part.parameters[paramField]).to.be.undefined;
+		expect(part.parameters[paramField]).to.equal("");
+
+	});
+	it('Should clear non array param (num)', async () => {
+
+		const paramField = 'testNum';
+
+		await participants.clearParamValue(testId, paramField);
+		let part = await participants.get(testId);
+		expect(part.parameters[paramField]).to.equal(0);
 
 	});
 

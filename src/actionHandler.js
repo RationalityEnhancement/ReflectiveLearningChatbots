@@ -15,6 +15,7 @@ const StageHandler = require('./stageHandler')
  *
  */
 
+// TODO: More informative validation error
 let validateActionObject = (actionObj) => {
     let aType = actionObj.aType;
     let args = actionObj.args;
@@ -75,13 +76,12 @@ let processAction = async(bot, config, participant, actionObj) => {
             // Debug to schedule all sets of scheduled questions in X minute intervals from now
             if(config.debug.developer){
               let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-
               let qHandler = new QuestionHandler(config);
               let schQObj = qHandler.getScheduledQuestions(participant.conditionName);
               if(schQObj.returnCode === DevConfig.FAILURE_CODE){
                 return schQObj;
               }
-              ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj.data, 1);
+              ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj, 1);
             }
 
             // Schedule all questions and actions

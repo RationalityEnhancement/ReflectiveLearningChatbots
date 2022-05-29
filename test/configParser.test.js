@@ -109,6 +109,9 @@ describe('Replacing variables', () => {
             activity : [],
             stageName : "Test",
             stageDay : 0
+        },
+        currentQuestion : {
+            qType : "freeform",
         }
     }
 
@@ -125,6 +128,17 @@ describe('Replacing variables', () => {
             let returnObj = ConfigParser.getVariable(participant, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(participant.currentAnswer);
+        })
+        it('Should fetch current answer as number', () => {
+            let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
+
+            let copyPart = JSON.parse(JSON.stringify(participant));
+            copyPart.currentAnswer = ["34"];
+            copyPart.currentQuestion.qType = "number";
+
+            let returnObj = ConfigParser.getVariable(copyPart, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(34);
         })
         it('Should fetch if variable name is param', () => {
             let testString = "PID";

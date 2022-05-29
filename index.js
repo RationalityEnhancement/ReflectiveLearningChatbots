@@ -255,7 +255,7 @@ bot.command('next', async ctx => {
                 if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
                     evaluation = evaluationObj.data.value;
                 } else {
-                    // console.log(evaluationObj.data);
+                    console.log(evaluationObj.data);
                     evaluation = false;
                 }
             }
@@ -274,6 +274,7 @@ bot.command('next', async ctx => {
                 // Send a message about when the question will appear
                 let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
 
+                // TODO: How to send next message if it is a dummy?
                 // Send the message and the question, if the question is meant to be sent at that time
                 await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
                 let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, !config.debug.messageDelay);
@@ -441,10 +442,10 @@ bot.on('text', async ctx => {
       if(answerHandlerObj.data === DevConfig.NEXT_ACTION_STRING){
         // Move on to the next actions
         // Send this message only if participant has finished choosing from multi-choice
-        if(participant.currentQuestion.qType === "multiChoice"){
-          await Communicator.sendMessage(bot, participant, ctx.from.id,
-              config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], !config.debug.messageDelay);
-        }
+        // if(participant.currentQuestion.qType === "multiChoice"){
+        //   await Communicator.sendMessage(bot, participant, ctx.from.id,
+        //       config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], !config.debug.messageDelay);
+        // }
         // Process the next steps
         let nextStepsObj = await LogicHandler.processNextSteps(bot, uniqueId);
         if(nextStepsObj.returnCode === DevConfig.FAILURE_CODE){

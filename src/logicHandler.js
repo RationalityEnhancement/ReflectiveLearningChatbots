@@ -1,5 +1,4 @@
 const participants = require("./apiControllers/participantApiController");
-const experiments = require("./apiControllers/experimentApiController");
 const config = require("../json/config.json");
 const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
@@ -8,9 +7,6 @@ const ConfigParser = require('./configParser')
 const Communicator = require('./communicator')
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ActionHandler = require("./actionHandler")
-const ExperimentUtils = require("./experimentUtils");
-const PIDtoConditionMap = require("../json/PIDCondMap.json");
-const {next} = require("lodash/seq");
 
 /**
  * Logic handler deals with the logic of what is to occur at each step
@@ -48,7 +44,7 @@ let processNextSteps = async(bot, uniqueId) => {
     // Get chat ID
     let secretMap = await getByUniqueId(config.experimentId, uniqueId);
     if(!secretMap){
-        return ReturnMethods.returnFailure("LHandler: Unable to find participant chat ID while processing next");
+        return ReturnMethods.returnFailure("LHandler: Unable to find participant chat ID while processing next: " + uniqueId);
     }
 
     let userInfo = await bot.telegram.getChat(secretMap.chatId);
@@ -204,7 +200,7 @@ let getNextActions = (participant, currentQuestion) => {
         // Evaluate the condition
         let nextActionsObj = ConfigParser.evaluateAnswerConditions(participant, currentQuestion.cNextActions)
         if(nextActionsObj.returnCode === DevConfig.FAILURE_CODE){
-            return ReturnMethods.returnFailure( "LHandler: Could not process cond next actions: " + nextActionsObj.data);
+            return ReturnMethods.returnFailure( "LHandler: Could not process cond next actions:\n" + nextActionsObj.data);
         } else if (nextActionsObj.returnCode === DevConfig.SUCCESS_CODE) {
             // Found matching condition.
             nextActions = nextActionsObj.data;
@@ -241,7 +237,7 @@ let getNextQuestion = (participant, currentQuestion) => {
         let nextQuestionsObj = ConfigParser.evaluateAnswerConditions(participant, currentQuestion.cNextQuestions);
         if(nextQuestionsObj.returnCode === DevConfig.FAILURE_CODE){
             // Error while processing
-            return ReturnMethods.returnFailure("LHandler: Unable to process cond next question: " + nextQuestionsObj.data);
+            return ReturnMethods.returnFailure("LHandler: Unable to process cond next question:\n" + nextQuestionsObj.data);
         } else if(nextQuestionsObj.returnCode === DevConfig.SUCCESS_CODE){
             // Found a conditional next question
             nextQuestion = nextQuestionsObj.data;
@@ -280,7 +276,7 @@ let getNextReplies = (participant, currentQuestion) => {
         let replyMessagesObj = ConfigParser.evaluateAnswerConditions(participant, rules);
         if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
             // Error while evaluating
-            return ReturnMethods.returnFailure("LHandler: Could not process conditional replies" + replyMessagesObj.data);
+            return ReturnMethods.returnFailure("LHandler: Could not process conditional replies\n" + replyMessagesObj.data);
         } else if(replyMessagesObj.returnCode === DevConfig.SUCCESS_CODE){
             // Condition match found
             return ReturnMethods.returnSuccess(replyMessagesObj.data);

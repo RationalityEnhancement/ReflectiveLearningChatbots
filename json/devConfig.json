@@ -34,6 +34,13 @@
     "VARIABLE" : "var",
     "UNDEFINED" : "undefined"
   },
+  "DEFAULT_DTYPE_VALUES" : {
+    "number" :  0,
+    "numArr" : [],
+    "string" :  "",
+    "strArr": [],
+    "boolean" : false
+  },
   "VALID_ACTIONS_ARGS" : {
     "saveAnswerTo" : 1,
     "setBooleanVar" : 2,

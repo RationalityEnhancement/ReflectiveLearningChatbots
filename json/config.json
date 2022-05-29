@@ -63,7 +63,7 @@
     "experimenter" : true,
     "actionMessages" : false,
     "enableNext" : true,
-    "messageDelay" : true,
+    "messageDelay" : false,
     "developer" : false
   },
   "languages" : ["English", "Deutsch"],
@@ -747,8 +747,8 @@
             "qId" : "survey",
             "qType" : "qualtrics",
             "text" : {
-              "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly",
-              "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
+              "English" : "Good morning, ${FIRST_NAME}! Please take the time to fill out the following survey thoughtfully and thoroughly",
+              "Deutsch" : "Guten Morgen, ${FIRST_NAME}! Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
             "qualtricsLink" : "www.google.com/12345",
             "qualtricsFields" : [
@@ -1751,8 +1751,8 @@
             "qId" : "survey",
             "qType" : "qualtrics",
             "text" : {
-              "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly",
-              "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
+              "English" : "Good morning, ${FIRST_NAME}! Please take the time to fill out the following survey thoughtfully and thoroughly",
+              "Deutsch" : "Guten Morgen, ${FIRST_NAME}! Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
             "qualtricsLink" : "www.google.com/12345",
             "qualtricsFields" : [

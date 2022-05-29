@@ -1431,7 +1431,7 @@
           {
             "qId" : "decisionSatisfaction",
             "text" : {
-              "English" : "Now, setting aside how you pursued your goals and what the outcomes were, how satisfied are you with your <b>decision about which goals to work on<b> today?",
+              "English" : "Now, setting aside how you pursued your goals and what the outcomes were, how satisfied are you with your <b>decision about which goals to work on</b> today?",
               "Deutsch" : "Also, abgesehen davon, wie Sie Ihren Zielen nachgegangen sind, wie zufrieden sind Sie mit <b>der Entscheidung dazu, an welchen Zielen Sie heute arbeiten</b>?"
             },
             "qType" : "singleChoice",

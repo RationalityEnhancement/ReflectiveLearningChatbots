@@ -303,9 +303,10 @@ bot.command('next', async ctx => {
                 if(config.debug.actionMessages){
                     nextQuestionFound = true;
                 } else {
+                    let firstName = participant.firstName;
                     participant = await getParticipant(uniqueId);
+                    participant.firstName = firstName;
                 }
-
 
             }
 

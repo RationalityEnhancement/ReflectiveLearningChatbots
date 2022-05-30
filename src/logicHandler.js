@@ -34,9 +34,9 @@ let processNextSteps = async(bot, uniqueId) => {
     } catch(err){
         return ReturnMethods.returnFailure("LHandler: Could not fetch participant " + uniqueId)
     }
-    if(participant.currentState !== "answerReceived"){
-        return ReturnMethods.returnFailure("LHandler: Can process next steps only after answer received")
-    }
+    // if(participant.currentState !== "answerReceived"){
+    //     return ReturnMethods.returnFailure("LHandler: Can process next steps only after answer received")
+    // }
     let partLang = participant.parameters.language;
     let partCond = participant.conditionName;
     let currentQuestion = participant.currentQuestion;
@@ -164,7 +164,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
     // Dummies are used to either just send messages or to conditionally
     //  select next questions/actions which are not preceded by another question already
     if(question.qType === "dummy"){
-        await participants.updateField(participant.uniqueId, "currentState", "answerReceived");
+        // await participants.updateField(participant.uniqueId, "currentState", "answerReceived");
         await participants.updateField(participant.uniqueId, "currentQuestion", question);
         return this.processNextSteps(bot, participant.uniqueId);
     }

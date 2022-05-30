@@ -1751,8 +1751,8 @@
             "qId" : "survey",
             "qType" : "qualtrics",
             "text" : {
-              "English" : "Good morning, ${FIRST_NAME}! Please take the time to fill out the following survey thoughtfully and thoroughly",
-              "Deutsch" : "Guten Morgen, ${FIRST_NAME}! Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
+              "English" : "Good morning, ${FIRST_NAME}!\nWe have come to the last phase of the study. Please take the time to fill out the following survey thoughtfully and thoroughly",
+              "Deutsch" : "Guten Morgen, ${FIRST_NAME}!\nWir haben die letzte Phase der Studie erreicht. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
             "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [

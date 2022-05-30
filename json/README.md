@@ -4,6 +4,10 @@ _(up to date for third prototype)_
 
 This pages contains all of the instructions and documentation on how to define an experiment for the Reflective Learning Chatbot in _config.json_.
 
+Sections 1-3 give you a quick overview of the structure of the experiment configuration file, as well as a short example to get started quickly.
+
+Sections 4 onwards contain detailed documentation of each part of the experiment, and show how to build an experiment configuration file from start to finish.
+
 ### Contents
 <ol>
   <li><a href="#Overview">Overview</a></li>
@@ -159,7 +163,9 @@ It is also important to pay attention to the data type of a given field. If it i
 ## <span id="GettingStarted"> Start With an Example </span>
 <hr>
 
-The best way is probably to start with a simple example! [Here](others/exampleConfig.json) is a pre-built example for you with some of the basic functionalities of an experiment. You can try running this experiment yourself. This section will then describe to you what occurs in the experiment and which sections you can locate the definition for these in the config file.
+A good way is probably to start with a simple example! [Here](others/exampleConfig.json) is a pre-built example for you with some of the basic functionalities of an experiment. You can try running this experiment yourself. This section will then describe to you what occurs in the experiment and which sections you can locate the definition for these in the config file. 
+
+Reading the <a href="#Overview">Overview</a> section first may be useful before following through with this.
 
 How to run this example (assuming you have completed set-up as described [here](../README.md)): 
 * Step 1: open the example file in an IDE or text editor and copy all the text
@@ -167,10 +173,32 @@ How to run this example (assuming you have completed set-up as described [here](
 * Step 3: navigate to the main folder (where you see the file `index.js`)
 * Step 4: run the command `npm run start-local`
 * Step 5: open Telegram and start chatting with your bot!
+* Step 6: if you would like to start over to try to be assigned to a different condition, type `/delete_me`, and then type `/start` again.
 
-The following lines will describe what you should expect from your interaction with the bot along with links to the lines in the example file where this is defined.
-* [Link](others/exampleConfig.json#L48-L78) You are welcomed and are given options to choose your language
-* [Link](others/exampleConfig.json#L48-L78) You are welcomed and are given options to choose your language
+The following lines will describe what you should expect from your interaction with the bot along with links to the lines in the example file where these functionalities can be defined.
+* [Link](others/exampleConfig.json#L3-L5) - The experiment has two possible conditions, C1 and C2, of equal sizes.
+* [Link](others/exampleConfig.json#L14-L34) - Both conditions are 4 days long. C1 has two stages, and C2 has just one.
+* [Link](others/exampleConfig.json#L47-L78) - On first interaction, you are welcomed and are given options to choose your language
+* [Link](others/exampleConfig.json#L67-L5) - Your answer is saved and you are then assigned to a condition 
+  * ([Link](others/exampleConfig.json#L124-L260) - we will assume you are assigned to C1, so you get these questions)
+  * ([Link](others/exampleConfig.json#L261-L354) - if you weren't, you would have got these questions)
+  * you can start over (Step 6 above) if you weren't assigned to C1 and you would like to be
+* [Link](others/exampleConfig.json#L66) - The next question for your timezone is selected.
+* [Link](others/exampleConfig.json#L79-121) - You are asked for your timezone.
+* [Link](others/exampleConfig.json#L117-L119) - All of the questions for your condition are scheduled.
+  * ([Link](others/exampleConfig.json#L246-L259) - C1 scheduled questions defined here.)
+  * ([Link](others/exampleConfig.json#L346-L352) - C2 scheduled questions defined here.)
+* [Link](others/exampleConfig.json#L132-L139) - You type `/next` and the stage First-Half begins.
+* [Link](others/exampleConfig.json#L148-L154) - The question is selected based on whether it's an odd day or even day of the stage
+* [Link](others/exampleConfig.json#L172-L186) - On the first day, you can enter an answer over multiple lines
+  * [Link](others/exampleConfig.json#L179-L184) - Once you answer, a variable is incremented
+  * [Link](others/exampleConfig.json#L185) - The next question is automatically selected
+  * [Link](others/exampleConfig.json#L157-L171) - You receive a question which you answer in only one message.
+  * [Link](others/exampleConfig.json#L161-L162) - The question text contains the value of the variable that is being incremented
+* [Link](others/exampleConfig.json#L188-L245) - After typing `/next` until the stage Second-Half starts, you get the choice questions of the next stage.
+* [Link](others/exampleConfig.json#L148-L154) - Finally, you type next until you reach the end of the experiment.
+
+Hopefully this, along with the overview of the file structure, helps you make some connections between what the file looks like and what you see in the experiment. The remaining sections will explain in detail the evolution of an experiment file from start to finish!
 
 ## <span id="ExptInfo"> Experiment Information </span>
 <hr>

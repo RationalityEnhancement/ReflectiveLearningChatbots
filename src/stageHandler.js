@@ -169,6 +169,7 @@ module.exports.getNextStageName = (config, conditionName, stageName) => {
  * @param uniqueId
  * @returns {Promise<{returnCode: *, data: *}|*>}
  */
+// TODO: Figure out how to handle stage updating on the evening but next day should be 1st day.
 module.exports.updateStageDay = async (config, uniqueId) => {
     let newStageDay, participant, returnVal;
     try{
@@ -471,7 +472,7 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
             }
             condition = conditionBuildObj.data;
         } else {
-            condition = "${STAGE_DAY} >= $N{0}"
+            condition = "${STAGE_NAME} != $S{}"
         }
         let actionObj = {
             aType : "incrementStageDay",

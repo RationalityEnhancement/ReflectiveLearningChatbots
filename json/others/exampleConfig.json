@@ -1,12 +1,44 @@
 {
   "experimentName" : "ExampleExperiment",
   "experimentId" : "experiment123",
+  "experimentConditions" : ["C1", "C2"],
+  "conditionAssignments" : [1,1],
+  "assignmentScheme" : "balanced",
+  "debug" : {
+    "experimenter" : true,
+    "actionMessages" : true,
+    "enableNext" : true,
+    "messageDelay" : false,
+    "developer" : false
+  },
+  "experimentStages" : {
+    "C1" : [
+      {
+        "name" : "First-Half",
+        "lengthDays" : 2,
+        "onDays" : ["Mon","Tue","Wed","Thu","Fri"]
+      },
+      {
+        "name" : "Second-Half",
+        "lengthDays" : 2,
+        "onDays" : ["Mon","Tue","Wed","Thu","Fri"]
+      }
+    ],
+    "C2" : [
+      {
+        "name" : "Main",
+        "lengthDays" : 4,
+        "onDays" : ["Mon","Tue","Wed","Thu","Fri"]
+      }
+    ]
+  },
   "mandatoryParameters" : {
     "language" : "string",
     "timezone" : "string"
   },
   "customParameters" : {
-    "pId" : "string"
+    "numAnsweredToday" : "number",
+    "satisfactionAnswer" : "string"
   },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
@@ -15,8 +47,8 @@
       {
         "qId": "lang",
         "text": {
-          "English": "Language?",
-          "Deutsch": "Sprache?"
+          "English": "What is your language?\n\nWie ist deine Sprache?",
+          "Deutsch": "What is your language?\n\nWie ist deine Sprache?"
         },
         "qType": "singleChoice",
         "options": {
@@ -29,99 +61,419 @@
             "Deutsch"
           ]
         },
-        "saveAnswerTo": "language",
         "start": true,
-        "nextQuestion": "setupQuestions.pId",
+        "selectQFirst": true,
+        "nextQuestion": "setupQuestions.timezone",
+        "nextActions": [
+          {
+            "aType": "saveAnswerTo",
+            "args": [
+              "language"
+            ]
+          },
+          {
+            "aType": "assignToCondition"
+          }
+        ]
+      },
       {
-        "qId": "pId",
+        "qId": "timezone",
         "text": {
-          "English": "Enter PID",
-          "Deutsch": "Gib PID ein"
+          "English": "Which time zone are you currently in?",
+          "Deutsch": "In welcher Zeitzone befindest Du dich jetzt?"
         },
-        "qType": "freeform",
-        "saveAnswerTo": "pid",
-        "replyMessages": {
-          "English": [
-            "Received",
-            "Thanks"
-          ],
-          "Deutsch": [
-            "Erhalten",
-            "Danke"
-          ]
-        },
-        "nextActions": ["scheduleQuestions"]
-      }
-    ],
-    "morningQuestions": [
-      {
-        "qId": "feelings",
-        "text": {
-          "English": "Which feelings today?",
-          "Deutsch": "Welche Gefühle heute?"
-        },
-        "qType": "multiChoice",
+        "qType": "singleChoice",
         "options": {
           "English": [
-            "sad",
-            "happy",
-            "bored"
+            "Europe/Berlin",
+            "US/Pacific",
+            "US/Mountain",
+            "US/Central",
+            "US/Eastern"
           ],
           "Deutsch": [
-            "traurig",
-            "froh",
-            "gelangweilt"
+            "Europe/Berlin",
+            "US/Pacific",
+            "US/Mountain",
+            "US/Central",
+            "US/Eastern"
           ]
         },
-        "start": true
+        "replyMessages": {
+          "English": [
+            "Thank you, time zone has been registered."
+          ],
+          "Deutsch": [
+            "Danke, Zeitzone ist erfasst worden"
+          ]
+        },
+        "nextActions": [
+          {
+            "aType": "saveAnswerTo",
+            "args": [
+              "timezone"
+            ]
+          },
+          {
+            "aType": "scheduleQuestions"
+          }
+        ]
       }
     ]
   },
-  "scheduledQuestions" : [
-    {
-      "qId" : "morningQuestions.feelings",
-      "atTime" : "10:00",
-      "onDays" : ["Mon", "Tue", "Wed"]
+  "conditionQuestions" : {
+    "C1" : {
+      "questionCategories" : {
+        "firstHalf" : [
+          {
+            "qId" : "selectQuestion",
+            "qType" : "dummy",
+            "cNextActions" : [
+              {
+                "if": "${STAGE_NAME} == $S{}",
+                "then" : [
+                  {
+                    "aType" : "startStage",
+                    "args" : ["First-Half"]
+                  }
+                ],
+                "else" : [
+                  {
+                    "aType" : "clearVar",
+                    "args" : ["numAnsweredToday"]
+                  }
+                ]
+              }
+            ],
+            "cNextQuestions" : [
+              {
+                "if": "${STAGE_DAY} MULTIPLE_OF $N{2}",
+                "then" : "firstHalf.singleMessage",
+                "else" : "firstHalf.multipleMessage"
+              }
+            ]
+
+          },
+          {
+            "qId" : "singleMessage",
+            "qType" : "freeform",
+            "text" : {
+              "English" : "With this question type, you can type your answer in only a single message. You have answered ${numAnsweredToday}.",
+              "Deutsch" : "Mit diesem Fragentypen, kannst du deine Antwort in nur einer Nachricht eingeben. Heute hast du ${numAnsweredToday} beantwortet."
+            },
+            "nextActions" : [
+              {
+                "aType" : "addValueTo",
+                "args" : ["numAnsweredToday", "$N{1}"]
+              }
+            ],
+            "nextQuestion" : "firstHalf.multipleMessage"
+          },
+          {
+            "qId" : "multipleMessage",
+            "qType" : "freeformMulti",
+            "text" : {
+              "English" : "With this question type, you can type your answer over many messages. You have answered ${numAnsweredToday}",
+              "Deutsch" : "Mit diesem Fragentypen, kannst du deine Antwort über mehrere Nachrichten eingeben. Heute hast du ${numAnsweredToday} beantwortet."
+            },
+            "nextActions" : [
+              {
+                "aType" : "addValueTo",
+                "args" : ["numAnsweredToday", "$N{1}"]
+              }
+            ],
+            "nextQuestion" : "firstHalf.singleMessage"
+          }
+        ],
+        "secondHalf" : [
+          {
+            "qId" : "selectQuestion",
+            "qType" : "dummy",
+            "cNextQuestions" : [
+              {
+                "if": "${STAGE_DAY} MULTIPLE_OF $N{2}",
+                "then" : "secondHalf.chooseOne",
+                "else" : "secondHalf.chooseMultiple"
+              }
+            ],
+            "nextActions" : [
+              {
+                "aType" : "clearVar",
+                "args" : ["numAnsweredToday"]
+              }
+            ]
+          },
+          {
+            "qId" : "chooseOne",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "With this question type, you can select one answer.",
+              "Deutsch" : "Mit diesem Fragentypen kannst du eine Antwort auswählen."
+            },
+            "options" : {
+              "English" : ["Choice 1", "Choice 2", "Choice 3"],
+              "Deutsch" : ["Wahl 1", "Wahl 2", "Wahl 3"]
+            },
+            "nextActions" : [
+              {
+                "aType" : "addValueTo",
+                "args" : ["numAnsweredToday", "$N{1}"]
+              }
+            ],
+            "nextQuestion" : "secondHalf.chooseMultiple"
+          },
+          {
+            "qId" : "chooseMultiple",
+            "qType" : "multiChoice",
+            "text" : {
+              "English" : "With this question type, you can select multiple answers.",
+              "Deutsch" : "Mit diesem Fragentypen kannst du mehrere Antworten auswählen."
+            },
+            "options" : {
+              "English" : ["Choice 1", "Choice 2", "Choice 3"],
+              "Deutsch" : ["Wahl 1", "Wahl 2", "Wahl 3"]
+            },
+            "nextActions" : [
+              {
+                "aType" : "addValueTo",
+                "args" : ["numAnsweredToday", "$N{1}"]
+              }
+            ],
+            "nextQuestion" : "secondHalf.chooseOne"
+          }
+        ]
+      },
+      "scheduledQuestions" : [
+        {
+          "qId" : "firstHalf.selectQuestion",
+          "atTime" : "10:00",
+          "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+          "if" : "(${STAGE_NAME} == $S{First-Half}) OR (${STAGE_NAME} == $S{})"
+        },
+        {
+          "qId" : "secondHalf.selectQuestion",
+          "atTime" : "10:00",
+          "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+          "if" : "${STAGE_NAME} == $S{Second-Half}"
+        }
+      ]
+    },
+    "C2" : {
+      "questionCategories" : {
+        "main": [
+          {
+            "qId": "selectQuestion",
+            "qType": "dummy",
+            "cNextActions" : [
+              {
+                "if": "${STAGE_NAME} == $S{}",
+                "then" : [
+                  {
+                    "aType" : "startStage",
+                    "args" : ["Main"]
+                  }
+                ]
+              }
+            ],
+            "cNextQuestions": [
+              {
+                "if": "${STAGE_DAY} MULTIPLE_OF $N{2}",
+                "then": "main.likert5",
+                "else": "main.likert7"
+              }
+            ]
+          },
+          {
+            "qId": "likert5",
+            "qType": "likert5",
+            "text": {
+              "English": "This is the only question you get today. Do you agree with the statement: \"I am satisfied with that\"?",
+              "Deutsch": "Heute ist das die einzige Frage, die du bekommst. Stimmst du der Aussage zu: \"Ich bin damit zufrieden\"?"
+            },
+            "nextActions": [
+              {
+                "aType": "saveAnswerTo",
+                "args": [
+                  "satisfactionAnswer"
+                ]
+              }
+            ],
+            "cReplyMessages": [
+              {
+                "if": "${satisfactionAnswer} != $S{}",
+                "then": {
+                  "English": [
+                    "Yesterday, you said ${satisfactionAnswer}"
+                  ],
+                  "Deutsch": [
+                    "Gestern hast du ${satisfactionAnswer} gesagt"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "qId": "likert7",
+            "qType": "likert7",
+            "text": {
+              "English": "This is the only question you get today. Do you agree with the statement: \"I am satisfied with that\"?",
+              "Deutsch": "Heute ist das die einzige Frage, die du bekommst. Stimmst du der Aussage zu: \"Ich bin damit zufrieden\"?"
+            },
+            "nextActions": [
+              {
+                "aType": "saveAnswerTo",
+                "args": [
+                  "satisfactionAnswer"
+                ]
+              }
+            ],
+            "cReplyMessages": [
+              {
+                "if": "${satisfactionAnswer} != $S{}",
+                "then": {
+                  "English": [
+                    "Yesterday, you said ${satisfactionAnswer}"
+                  ],
+                  "Deutsch": [
+                    "Gestern hast du ${satisfactionAnswer}"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scheduledQuestions" : [
+        {
+          "qId" : "main.selectQuestion",
+          "atTime" : "10:00",
+          "onDays" : ["Mon","Tue","Wed","Thu","Fri"]
+        }
+      ]
     }
-  ],
+  },
   "phrases" : {
-    "answerValidation" : {
-      "option" : {
-        "English" : "Choose only from the options",
-        "Deutsch" : "Nur aus den Optionen wählen"
+    "answerValidation": {
+      "invalidOption": {
+        "English": "Please pick <b>only from the given options</b>",
+        "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      },
+      "noOptions": {
+        "English": "Please select <b>at least one option</b>",
+        "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>"
+      },
+      "notANumber": {
+        "English": "Please enter a number",
+        "Deutsch": "Geben Sie eine Zahl ein"
+      },
+      "numberTooHigh": {
+        "English": "Please enter a number below ${UpperBound}",
+        "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
+      },
+      "numberTooLow": {
+        "English": "Please enter a number above ${LowerBound}",
+        "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+      },
+      "notLongEnoughChars" : {
+        "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} characters.",
+        "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Charaktere betragen."
+      },
+      "notLongEnoughWords" : {
+        "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
+        "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
+      },
+      "terminateAnswerProperly" : {
+        "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
+        "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
       }
     },
-    "keyboards" : {
-      "singleChoice" : {
-        "English" : "Choose one option",
-        "Deutsch" : "Eine Option wählen"
+    "keyboards": {
+      "singleChoice": {
+        "English": "Please pick one from the given options. You may need to scroll down to see all options.",
+        "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
       },
-      "multiChoice" : {
-        "English" : "Choose many options",
-        "Deutsch" : "Mehrere Optionen wählen"
+      "multiChoice": {
+        "English": "Choose as many options as you like. Click Done to finish choosing. You may need to scroll down to see all options.",
+        "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
       },
-      "terminateAnswer" : {
-        "English" : "Done",
-        "Deutsch" : "Fertig"
+      "terminateAnswer": {
+        "English": "Done",
+        "Deutsch": "Fertig"
       },
-      "finishedChoosingReply" : {
-        "English" : "Choices registered",
-        "Deutsch" : "Wahlen erfasst"
+      "finishedChoosingReply": {
+        "English": "I have noted down your choices",
+        "Deutsch": "Ich habe Ihre Wahlen notiert"
       },
-      "likert5Options" : {
-        "English" : ["SD", "D", "N", "A", "SA"],
-        "Deutsch" : ["SD", "D", "N", "A", "SA"]
+      "qualtricsFillPrompt" : {
+        "English" : "Please follow the link below to the survey",
+        "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage"
       },
-      "likert7Options" : {
-        "English" : ["SD","D", "SomeD", "N","SomeA", "A", "SA"],
-        "Deutsch" : ["SD","D", "SomeD", "N","SomeA", "A", "SA"]
+      "qualtricsDonePrompt" : {
+        "English" : "Send <i>Done</i> when you are finished with the survey.",
+        "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
+      },
+      "freeformSinglePrompt" : {
+        "English" : "Type in your answer in a <b>single</b> message and send.",
+        "Deutsch" : "Geben Sie Ihre Antwort in nur <b>einer</b> Nachricht ein."
+      },
+      "freeformMultiPrompt" : {
+        "English" : "Type in your answer over one or multiple messages. Send the message <i>Done</i> when complete.",
+        "Deutsch" : "Geben Sie Ihre Antwort über eine oder mehrere Nachrichten ein. Senden Sie <i>Fertig</i>, wenn fertig"
+      },
+      "linkToSurvey" : {
+        "English" : "Link to Survey (opens in browser)",
+        "Deutsch" : "Link zur Umfrage (wird im Browser geöffnet)"
+      },
+      "likert5Options": {
+        "English": [
+          "Strongly Disagree",
+          "Disagree",
+          "Neither",
+          "Agree",
+          "Strongly Agree"
+        ],
+        "Deutsch": [
+          "Stimme vollständig nicht zu",
+          "Stimme nicht zu",
+          "Weder noch",
+          "Stimme zu",
+          "Stimme vollständig zu"
+        ]
+      },
+      "likert7Options": {
+        "English": [
+          "Strongly Disagree",
+          "Disagree",
+          "Somewhat Disagree",
+          "Neither",
+          "Somewhat Agree",
+          "Agree",
+          "Strongly Agree"
+        ],
+        "Deutsch": [
+          "Stimme vollständig nicht zu",
+          "Stimme nicht zu",
+          "Stimme eher nicht zu",
+          "Weder noch",
+          "Stimme eher zu",
+          "Stimme zu",
+          "Stimme vollständig zu"
+        ]
       }
     },
     "schedule" : {
-      "scheduleNotif" : {
-        "English" : "Question scheduled",
-        "Deutsch" : "Frage geplant"
+      "scheduleQNotif" : {
+        "English" : "Question scheduled for the following time:",
+        "Deutsch" : "Frage geplant zur folgenden Zeit:"
+      },
+      "scheduleANotif" : {
+        "English" : "Action scheduled for the following time:",
+        "Deutsch" : "Handlung geplant zur folgenden Zeit:"
       }
+    },
+    "endExperiment" : {
+      "English" : "You have successfully completed the experiment! You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
+      "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
     }
   }
 }

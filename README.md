@@ -8,6 +8,14 @@ Once downloaded and set up, the infrastructure can be used by simply designing t
 
 Setting up this repository assumes basic knowledge and installation of [Git](https://git-scm.com/), basic experience interacting with [Command Line Interfaces](https://en.wikipedia.org/wiki/Command-line_interface), and some familiarity with the [JSON](https://www.json.org/json-en.html) file format.
 
+To completely set up a Reflective Learning Chatbot that you can interact with, you will need the following things: 
+* A MongoDB Cloud account with a cluster set up in MongoDB Atlas
+* A Telegram bot
+* The software in this repository
+* The bot server running, either on a local system or on Heroku
+
+The rest of the instructions will walk you through each of these steps.
+
 ### Database
 
 * Create an account on [MongoDB Cloud](https://www.mongodb.com/cloud), if you don't have one already. 
@@ -56,16 +64,37 @@ Starting the bot server on your own computer is easy. In the terminal, run the c
 * Open Telegram and start a chat with the bot username defined by you when you set up the bot.
 * Type `/start` to start chatting!
 * Type `/repeat` to have the bot repeat the last question, as long as an answer has not yet been provided.
+* Type `/next` to have the bot display the next question that is scheduled to appear.
+  * If nothing appears, it is likely that the debug settings for this are turned off. (see instructions to define experiments)
 * Type `/delete_me` to erase your data from the database
   * For the experimenter/developer: use this command to start interaction with the bot afresh.
-* Type `/log_part` to log the user information that is stored in the database
+* Type `/log_part` to display the information that is stored in the database for the user from which this command is sent
+  * This is the current information about the participant's stage, answers to questions, etc.
   * This will output to the terminal, where you have run the start command
+* Type `/log_exp` to display the information about the current experiment that is stored in the database
+  * This is the current information about the number of participants currently assigned to each condition, etc.
+  * This will also output to the terminal where the start command was run
+* This will output to the terminal, where you have run the start command
 More commands coming soon!
 
 ### Defining your Own Experiment
 
 Head on over to [this page](/json/README.md) and take note of the instructions there!
 
-### Deploying the Server to Heroku
+### Downloading Data 
+
+After the experiment is complete, you can download the data collected by the chatbot for all of the participants that interacted with the bot. This does not include any information that may identify the user, either directly or indirectly.
+
+Simply run the command `npm run download-data`. This will save your data to the folder `results/<experimentID>` based on the experiment ID that is specified in the config file (`json/config.json`).
+
+Data is saved in the formats JSON and CSV. 
+
+### Deleting Sensitive Data
+
+In order for the chatbot to interact with the user, it requires information about the user's Telegram account, namely, an integer ID. Although this doesn't contain any direct information that can identify the owner of the Telegram account, it is unique to the user, so responses from the same user can be connected between different Telegram bots.
+
+This information is temporarily stored in the database, and is required for the duration of the experiment. **After the experiment,** in order to remove user-identifying information from the database, you can run the command `npm run delete-sensitive` in the terminal. Running this command will give you a disclaimer that the sensitive information is required for the continued functioning of the chatbot, and will require you to type in the disclaimer before continuing, so that you don't accidentally delete the essential data.
+
+### Deploying the Bot Server to Heroku
 
 Instructions coming soon, when I myself figure out how to do this.

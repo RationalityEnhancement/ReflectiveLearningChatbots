@@ -34,6 +34,8 @@ class AnswerHandler{
             return ReturnMethods.returnFailure("AHandler: could not get participant");
         }
 
+        // TODO: Don't handle dummy questions? No, figure out how to get the actual unanswered question
+        //      if a dummy question is in between, therefore overwriting currentquestion
         // If answer is outstanding
         if(!["answerReceived", "starting"].includes(participant.currentState)){
             let currentAnswer = participant.currentAnswer;

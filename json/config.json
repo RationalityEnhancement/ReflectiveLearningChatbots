@@ -188,8 +188,8 @@
       }
     },
     "endExperiment" : {
-      "English" : "You have successfully completed the experiment! Thank you for participating.",
-      "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Danke für Ihre Teilnahme."
+      "English" : "You have successfully completed the experiment! You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
+      "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
     }
   },
   "questionCategories": {
@@ -747,8 +747,8 @@
             "qId" : "survey",
             "qType" : "qualtrics",
             "text" : {
-              "English" : "Good morning, ${FIRST_NAME}! Please take the time to fill out the following survey thoughtfully and thoroughly",
-              "Deutsch" : "Guten Morgen, ${FIRST_NAME}! Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
+              "English" : "Good morning, ${FIRST_NAME}!\nWe have come to the last phase of the study. Please take the time to fill out the following survey thoughtfully and thoroughly",
+              "Deutsch" : "Guten Morgen, ${FIRST_NAME}!\nWir haben die letzte Phase der Studie erreicht. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
             "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
@@ -775,8 +775,8 @@
               }
             ],
             "replyMessages" : {
-              "English" : ["Thank you for that!", "You have now completed all of the requirements for the experiment."],
-              "Deutsch" : ["Danke dafür!", "Sie haben jetzt alle Aufgaben für das Experiment abgeschlossen."]
+              "English" : ["Thank you for that!", "You have now completed all of the requirements for the study."],
+              "Deutsch" : ["Danke dafür!", "Sie haben jetzt alle Aufgaben für die Studie abgeschlossen."]
             }
           }
         ]
@@ -1779,8 +1779,8 @@
               }
             ],
             "replyMessages" : {
-              "English" : ["Thank you for that!", "You have now completed all of the requirements for the experiment."],
-              "Deutsch" : ["Danke dafür!", "Sie haben jetzt alle Aufgaben für das Experiment abgeschlossen."]
+              "English" : ["Thank you for that!", "You have now completed all of the requirements for the study."],
+              "Deutsch" : ["Danke dafür!", "Sie haben jetzt alle Aufgaben für die Studie abgeschlossen."]
             }
           }
         ]

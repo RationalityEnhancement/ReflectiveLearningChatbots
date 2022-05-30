@@ -121,8 +121,8 @@
         "Deutsch": "Ich habe Ihre Wahlen notiert"
       },
       "qualtricsFillPrompt" : {
-        "English" : "Please fill out the following survey",
-        "Deutsch" : "Füllen Sie die folgende Umfrage aus"
+        "English" : "Please follow the link below to the survey",
+        "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage"
       },
       "qualtricsDonePrompt" : {
         "English" : "Send <i>Done</i> when you are finished with the survey.",
@@ -296,7 +296,7 @@
               "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly",
               "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
-            "qualtricsLink" : "www.google.com/12345",
+            "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
               {
                 "field" : "uniqueId",
@@ -750,7 +750,7 @@
               "English" : "Good morning, ${FIRST_NAME}! Please take the time to fill out the following survey thoughtfully and thoroughly",
               "Deutsch" : "Guten Morgen, ${FIRST_NAME}! Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
-            "qualtricsLink" : "www.google.com/12345",
+            "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
               {
                 "field" : "uniqueId",
@@ -824,7 +824,7 @@
               "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly",
               "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
-            "qualtricsLink" : "www.google.com/12345",
+            "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
               {
                 "field" : "uniqueId",
@@ -1754,7 +1754,7 @@
               "English" : "Good morning, ${FIRST_NAME}! Please take the time to fill out the following survey thoughtfully and thoroughly",
               "Deutsch" : "Guten Morgen, ${FIRST_NAME}! Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
-            "qualtricsLink" : "www.google.com/12345",
+            "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
               {
                 "field" : "uniqueId",

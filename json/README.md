@@ -148,7 +148,7 @@ The experiment config is essentially one monolithic JSON object. Most of the pro
 
 Other parts of the experiment definition, such as stages, question categories, and phrases are themselves objects with more properties, despite being properties of the main experiment object.
 
-Templates such as [this](json/others/exampleConfig.json) provide the structure already, whose properties only need to be replaced/filled in by the experimenter (see also: next section).
+Templates such as [this](others/exampleConfig.json) provide the structure already, whose properties only need to be replaced/filled in by the experimenter (see also: next section).
 
 <b><i> ! WARNING - Valid JSON Syntax does NOT mean valid experiment file ! </i></b>
 
@@ -159,9 +159,9 @@ It is also important to pay attention to the data type of a given field. If it i
 ## <span id="GettingStarted"> Start With an Example </span>
 <hr>
 
-The best way is probably to start with a simple example! [Here](json/others/exampleConfig.json) is a pre-built example for you with some of the basic functionalities of an experiment. You can try running this experiment yourself. This section will then describe to you what occurs in the experiment and which sections you can locate the definition for these in the config file.
+The best way is probably to start with a simple example! [Here](others/exampleConfig.json) is a pre-built example for you with some of the basic functionalities of an experiment. You can try running this experiment yourself. This section will then describe to you what occurs in the experiment and which sections you can locate the definition for these in the config file.
 
-How to run this example (assuming you have completed set-up as described [here](/README.md)): 
+How to run this example (assuming you have completed set-up as described [here](../README.md)): 
 * Step 1: open the example file in an IDE or text editor and copy all the text
 * Step 2: replace all the text in `json/config.json` with the copied text
 * Step 3: navigate to the main folder (where you see the file `index.js`)
@@ -169,8 +169,8 @@ How to run this example (assuming you have completed set-up as described [here](
 * Step 5: open Telegram and start chatting with your bot!
 
 The following lines will describe what you should expect from your interaction with the bot along with links to the lines in the example file where this is defined.
-* [Link](json/others/exampleConfig.json#L48-L78) You are welcomed and are given options to choose your language
-* [Link](json/others/exampleConfig.json#L48-L78) You are welcomed and are given options to choose your language
+* [Link](others/exampleConfig.json#L48-L78) You are welcomed and are given options to choose your language
+* [Link](others/exampleConfig.json#L48-L78) You are welcomed and are given options to choose your language
 
 ## <span id="ExptInfo"> Experiment Information </span>
 <hr>
@@ -319,7 +319,7 @@ The following is an example of `json/PIDCondMap.json`. In this example, `experim
 
 The remainder of this description will show you the mandatory and optional features an experiment requires to run.
 
-Follow this documentation along with an [example experiment configuration](json/others/exampleConfig.json) to see how the following example would translate into an actual document. 
+Follow this documentation along with an [example experiment configuration](others/exampleConfig.json) to see how the following example would translate into an actual document. 
 
 ```
 experimentName : "ExampleExperiment"                    // Mandatory: name of your experiment 

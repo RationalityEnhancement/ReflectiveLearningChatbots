@@ -34,7 +34,8 @@
   },
   "mandatoryParameters" : {
     "language" : "string",
-    "timezone" : "string"
+    "timezone" : "string",
+    "PID" : "string"
   },
   "customParameters" : {
     "numAnsweredToday" : "number",

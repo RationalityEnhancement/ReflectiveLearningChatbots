@@ -2239,11 +2239,11 @@ The following is a description of which cases which phrases occur, along with so
   * `freeformSinglePrompt` - telling the user to type out their answer only in a single message in `freeform` type questions
   * `freeformMultiPrompt` - telling the user to type out their answer over how many ever messages they want, and how to finish answering in `freeformMulti` type questions.
   * `linkToSurvey` - refer the user to the link to the survey in `qualtrics` type questions.
-  * `likert5Options` - options for a five point likert scale in `likert5` type question
-  * `likert7Options` - options for a five point likert scale in `likert7` type question
-  
+  * `likert5Options` - options for a five point likert scale in `likert5` type question. Must be a list of length 5.
+  * `likert7Options` - options for a five point likert scale in `likert7` type question. Must be a list of length 7.
+* `endExperiment` - message sent automatically when the experiment has been ended.
 
-Below is the object with all of the above phrases. You can consider this as a template to copy and paste, instead of as an example. You may change phrases to adjust the tone of the chatbot, or add a language as you see fit. Just make sure that the language is spelled correctly, just as it is in the field `languages` of the experimenter JSON object.
+Below is the object with all of the above phrases. You can consider this as a template to copy and paste, instead of as an example. You may change phrases to adjust the tone of the chatbot, or add a language as you see fit. Just make sure that the language is spelled correctly, just as it is in the field `languages` of the experimenter JSON object. Also make sure, if you are adding a language, that you enter the language for ALL of the phrases.
 
 After this template, you will see how this is added to the experimenter JSON object.
 
@@ -2353,20 +2353,46 @@ After this template, you will see how this is added to the experimenter JSON obj
       ]
     }
   },
-  "schedule" : {
-    "scheduleQNotif" : {
-      "English" : "Question scheduled for the following time:",
-      "Deutsch" : "Frage geplant zur folgenden Zeit:"
-    },
-    "scheduleANotif" : {
-      "English" : "Action scheduled for the following time:",
-      "Deutsch" : "Handlung geplant zur folgenden Zeit:"
-    }
-  },
   "endExperiment" : {
     "English" : "You have successfully completed the experiment! You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
     "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
   }
-},
+}
 ```
+
+That's a big object! Another reason why the experimenter configuration file tends to get long. 
+
+To include this in the experimenter configuration file, all you need to do is add this object to the `phrases` field at the first level of the experimenter JSON object, like so:
+
+```
+In config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentConditions" : ["Condition1", "Condition2"],
+  "conditionAssignments" : [1,1],
+  "assignmentScheme" : "balanced"
+  "experimentStages" : {...},
+  "mandatoryParameters" : {...},
+  "customParameters" : {...}
+  "questionCategories" : {...}
+  "conditionQuestions" : {
+    "Condition1" : {...},
+    "Condition2" : {...},
+  },
+  "phrases" : {
+    "answerValidation" : {...},
+    "keyboards : {...},
+    "endExperiment : {...}
+  }
+}
+```
+
+<hr> 
+
+... and that is what a complete experimenter configuration file essentially looks like! Congratulations on getting through all of this.
 

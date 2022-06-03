@@ -91,6 +91,19 @@ You can run this command any number of times you want, even during the experimen
 
 Data is saved in the formats JSON and CSV.
 
+#### What Data is Saved to the Database?
+
+Information about the experiment:
+* Experiment information - name, ID
+* All conditions and number of participants currently assigned to them
+
+Information about the participant:
+* All participant parameters and their current values
+* Current stage and current stage day
+* Time stamps of start and beginning of each stage
+* Assigned condition 
+* All questions asked, answer(s) given (or lack thereof), timestamp of answer in participant timezone
+
 ### Deleting Sensitive Data
 
 In order for the chatbot to interact with the user, it requires information about the user's Telegram account, namely, an integer ID. Although this doesn't contain any direct information that can identify the owner of the Telegram account, it is unique to the user, so responses from the same user can be connected between different Telegram bots.

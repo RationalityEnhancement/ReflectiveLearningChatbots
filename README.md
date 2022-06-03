@@ -87,7 +87,9 @@ After the experiment is complete, you can download the data collected by the cha
 
 Simply run the command `npm run download-data`. This will save your data to the folder `results/<experimentID>` based on the experiment ID that is specified in the config file (`json/config.json`).
 
-Data is saved in the formats JSON and CSV. 
+You can run this command any number of times you want, even during the experiment. Each time, the old data downloaded from the last time the command was run will be overwritten.
+
+Data is saved in the formats JSON and CSV.
 
 ### Deleting Sensitive Data
 

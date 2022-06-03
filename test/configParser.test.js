@@ -112,7 +112,8 @@ describe('Replacing variables', () => {
         },
         currentQuestion : {
             qType : "freeform",
-        }
+        },
+        conditionName : "Test"
     }
 
     describe('Get Variables', () => {
@@ -200,6 +201,20 @@ describe('Replacing variables', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(0);
         })
+        it('Should fetch CONDITION', () => {
+            let testString = DevConfig.VAR_STRINGS.CONDITION;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(participant.conditionName);
+        })
+        it('Should fetch CONDITION if it is undefined', () => {
+            let copyPart = JSON.parse(JSON.stringify(participant));
+            copyPart["conditionName"] = undefined;
+            let testString = DevConfig.VAR_STRINGS.CONDITION;
+            let returnObj = ConfigParser.getVariable(copyPart, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("");
+        })
         it('Should fail if participant undefined', () => {
             let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
             let returnObj = ConfigParser.getVariable(undefined, testString);
@@ -238,6 +253,14 @@ describe('Replacing variables', () => {
             let testString = DevConfig.VAR_STRINGS.STAGE_NAME;
             let copyPart = JSON.parse(JSON.stringify(participant));
             delete copyPart["stages"];
+            let returnObj = ConfigParser.getVariable(copyPart, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail if participant dont have conditionName', () => {
+            let testString = DevConfig.VAR_STRINGS.STAGE_NAME;
+            let copyPart = JSON.parse(JSON.stringify(participant));
+            delete copyPart["conditionName"];
             let returnObj = ConfigParser.getVariable(copyPart, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
 
@@ -559,7 +582,8 @@ describe('Evaluating conditions', () => {
             activity : [],
             stageName : "Test",
             stageDay : 0
-        }
+        },
+        conditionName : "Test"
     }
     describe('If-else', () => {
         const replyRules = [
@@ -1251,7 +1275,8 @@ describe('Construct expression object', () => {
             activity : [],
             stageDay : 0,
             stageName : "Test"
-        }
+        },
+        conditionName : "Test"
     }
     it('Should parse parameter and number operands normally', () => {
         let expression = "${UNIQUE_ID} >= $N{34565}"

@@ -141,6 +141,7 @@ class ConfigParser{
      *                      firstName
      *                      uniqueId
      *                      stages
+     *                      conditionName
      *
      * @param varName the name of the variable to be returned
      * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
@@ -155,7 +156,7 @@ class ConfigParser{
         if(!participant || typeof participant !== 'object') {
             return ReturnMethods.returnFailure("CParser: Participant object required to replace variables")
         }
-        let requiredParams = ["firstName", "currentAnswer", "uniqueId", "stages"];
+        let requiredParams = ["firstName", "currentAnswer", "uniqueId", "stages", "conditionName"];
         for(let i = 0; i < requiredParams.length; i++){
             let param = requiredParams[i];
             if(!(param in participant)){
@@ -209,6 +210,11 @@ class ConfigParser{
             case DevConfig.VAR_STRINGS.TODAY:
                 let dateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
                 varVal = DevConfig.DAY_INDEX_ORDERING[dateObj.dayOfWeek];
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CONDITION:
+                varVal = participant["conditionName"];
+                if(!varVal) varVal = "";
                 foundReserved = true;
                 break;
 

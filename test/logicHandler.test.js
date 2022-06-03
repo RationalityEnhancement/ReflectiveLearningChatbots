@@ -22,7 +22,8 @@ describe('Get Next Action', () => {
                 currentQuestion : question,
                 stages : {
                     activity :[]
-                }
+                },
+                conditionName : "Test"
             }
             let returnObj = LogicHandler.getNextActions(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -45,7 +46,8 @@ describe('Get Next Action', () => {
                 currentQuestion : question,
                 stages : {
                     activity :[]
-                }
+                },
+                conditionName : "Test"
             }
             let returnObj = LogicHandler.getNextActions(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -67,7 +69,8 @@ describe('Get Next Action', () => {
                 currentQuestion : question,
                 stages : {
                     activity :[]
-                }
+                },
+                conditionName : "Test"
             }
             let returnObj = LogicHandler.getNextActions(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -98,7 +101,8 @@ describe('Get Next Action', () => {
             currentQuestion : question,
             stages : {
                 activity :[]
-            }
+            },
+            conditionName : "Test"
         }
         it('Should get unconditional actions when only that present', () => {
             let copyQuestion = JSON.parse(JSON.stringify(question));
@@ -158,7 +162,8 @@ describe('Get Next Replies', () => {
                 currentQuestion : question,
                 stages : {
                     activity :[]
-                }
+                },
+                conditionName : "Test"
             }
             let returnObj = LogicHandler.getNextReplies(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -178,7 +183,8 @@ describe('Get Next Replies', () => {
                 firstName : "John",
                 uniqueId : testId,
                 currentAnswer : ["yes"],
-                currentQuestion : question
+                currentQuestion : question,
+                conditionName : "Test"
             }
             let returnObj = LogicHandler.getNextReplies(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -200,7 +206,8 @@ describe('Get Next Replies', () => {
                 currentQuestion : question,
                 stages : {
                     activity :[]
-                }
+                },
+                conditionName : "Test"
             }
             let returnObj = LogicHandler.getNextReplies(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -231,7 +238,8 @@ describe('Get Next Replies', () => {
             currentQuestion : question,
             stages : {
                 activity :[]
-            }
+            },
+            conditionName : "Test"
         }
         it('Should get unconditional replies when only that present', () => {
             let copyQuestion = JSON.parse(JSON.stringify(question));
@@ -291,7 +299,8 @@ describe('Get Next Question', () => {
                 currentQuestion : question,
                 stages : {
                     activity :[]
-                }
+                },
+                conditionName : "Test"
             }
             let returnObj = LogicHandler.getNextQuestion(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -314,7 +323,8 @@ describe('Get Next Question', () => {
                 currentQuestion : question,
                 stages : {
                     activity :[]
-                }
+                },
+                conditionName : "Test"
             }
             let returnObj = LogicHandler.getNextQuestion(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -336,7 +346,8 @@ describe('Get Next Question', () => {
                 currentQuestion : question,
                 stages : {
                     activity :[]
-                }
+                },
+                conditionName : "Test"
             }
             let returnObj = LogicHandler.getNextQuestion(part, question);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
@@ -367,7 +378,8 @@ describe('Get Next Question', () => {
             currentQuestion : question,
             stages : {
                 activity :[]
-            }
+            },
+            conditionName : "Test"
         }
         it('Should get unconditional question when only that present', () => {
             let copyQuestion = JSON.parse(JSON.stringify(question));

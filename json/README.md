@@ -6,7 +6,7 @@ This pages contains all of the instructions and documentation on how to define a
 
 Sections 1-3 give you a quick overview of the structure of the experiment configuration file, as well as a short example to get started quickly.
 
-Sections 4 onwards contain detailed documentation of each part of the experiment, and show how to build a different example experiment configuration file from start to finish.
+Sections 4 onwards contain detailed documentation of each part of the experiment, and show how to build a different example experiment configuration file from start to finish. (However, the example shown will not be complete, and will only contain a few examples of the essential portions of the configuration file, the rest of which have to be filled out by the experimenter.)
 
 ### Contents
 <ol>
@@ -26,8 +26,8 @@ Sections 4 onwards contain detailed documentation of each part of the experiment
   <li> 
     <a href="#QCats">Question Categories</a>
     <ol>
-      <li> <a href="#DefaultCat">Default Category</a> </li>
-      <li> <a href="#CQCats">Condition Questions</a> </li>
+      <li> <a href="#DefaultCat">Default/Conditionless Categories</a> </li>
+      <li> <a href="#CQCats">Condition Question Categories</a> </li>
     </ol>
   </li>
   <li> 
@@ -64,11 +64,12 @@ Sections 4 onwards contain detailed documentation of each part of the experiment
   </li>
   <li><a href="#Conditions">Conditional Expressions</a></li>
   <li><a href="#Scheduled">Scheduling Questions</a></li>
+  <li><a href="#Setup">Setup Questions and Starting the Experiment</a></li>
   <li><a href="#Phrases">Mandatory Phrases</a></li>
 </ol>
 
 ## <span id="Overview"> Overview </span>
-<hr>
+
 An experiment is completely defined by a JSON file. This will have to be named "_config.json_" without quotes, and present in this directory. This file _must_ contain the following information that has to be provided by the experimenter: 
 
 * Experiment information:
@@ -89,7 +90,6 @@ It is useful to edit the JSON file in an IDE, such as [IntelliJ Idea](https://ww
 
 
 ## <span id="Structure">JSON Structure</span>
-<hr>
 
 In order to create a JSON object properly, it is important to follow the correct syntax. While the syntax is simple, it is still possible to make mistakes when defining large JSON objects such as an experiment, especially when a lot of copying and pasting is occurring. This section will begin with a short overview of JSON objects and lists in general, and will then move on to the description of the structure of the experiment JSON file in particular.
 
@@ -181,7 +181,6 @@ It is important to pay attention to the case of the property names. Use capital 
 It is also important to pay attention to the data type of a given field. If it is mentioned that a field must contain a string value, it cannot contain any other value. E.g., `defaultLanguage` must be a string, and cannot be `4` or `false` or `["English", "German"]`.
 
 ## <span id="GettingStarted"> Start With an Example </span>
-<hr>
 
 Before moving on to designing an entire experiment, it is probably a good idea to start with a simple example! [Here](others/exampleConfig.json) is a pre-built example for you with some of the basic functionalities of an experiment. You can try running this experiment yourself. This section will then describe to you what occurs in the experiment and which sections you can locate the definition for these in the config file. 
 
@@ -223,7 +222,6 @@ Hopefully this, along with the overview of the file structure, helps you make so
 The remaining sections will explain in detail the evolution of an experiment file from start to finish!
 
 ## <span id="ExptInfo"> Experiment Information </span>
-<hr>
 
 This is the basic defining information of the experiment. These exist at the first level of the experiment JSON object.
 
@@ -448,7 +446,6 @@ In noCondsConfig.json
 
 
 ## <span id="Parameters"> Participant Parameters </span>
-<hr>
 
 Now, experimenters can define parameters, which are essentially variable values that are stored for each participant, and that can be manipulated in certain ways throughout the course of the experiment (see section <a href="#Actions">Actions</a>). These do not only store information about the participant (e.g., `participantIsSmoker`), but also can be used to set variables that control the behaviour of the chatbot (e.g., `setGoalsToday`).
 
@@ -478,7 +475,11 @@ In config.json
   "conditionAssignments" : [1,1],
   "assignmentScheme" : "balanced"
   "experimentStages" : {...},
-  "mandatoryParameters" : {...},
+  "mandatoryParameters" : {
+    "language" : "string",
+    "PID" : "string",
+    "timezone" : "string"
+  },
   "customParameters" : {
     "numGoalsSet" : "number",
     "goalsSet" : "strArr",
@@ -490,7 +491,6 @@ In config.json
 ```
 
 ## <span id="QCats"> Question Categories </span>
-<hr>
 
 Now, we come to the most important part of the question - what the users actually receive. That's right, those are the questions. However, before we start delving into how the questions are defined, we will talk about how they are organized within the experiment JSON object.
 
@@ -512,7 +512,7 @@ The default categories are present in an object, `questionCategories`, that occu
 
 Since our example experiment has two different conditions, the only questions we would want to have in the default categories are questions that collect basic information from the participant before assigning them to a condition. Otherwise, any other questions here will no longer be accessible to us once the participant is assigned to a condition. 
 
-Let us create a question category called `"setupQuestions"` as the only category in our conditionless categories. Since we have not yet seen what question objects look like, we will make placeholders for them and revisit them when we discuss question objects.
+Let us create a question category called `"setupQuestions"` as the only category in our conditionless categories. Since we have not yet seen what question objects look like, we will make placeholders for them and revisit them in the section <a href="#Setup">Setup Questions</a> after we have discussed question objects at length.
 
 ```
 In questionCategories of config.json
@@ -521,6 +521,7 @@ In questionCategories of config.json
   "setupQuestions" : [
     {
       "qId" : "language",
+      "start" : true,
       ...
     },
     {
@@ -558,11 +559,28 @@ In config.json
 }
 ```
 
-In case your experiment does not have any conditions, you can (and have to) define all your question categories in this default object.
+In case your experiment does not have any conditions, you can (and have to) define all your question categories in this default object. We will add this field to our example with no conditions, along with the same setup questions.
+
+```
+In noCondsConfig.json
+
+{
+  "experimentName" : "NoConditions",
+  "experimentId" : "RL-NoCond-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentStages" : [...],
+  "questionCategories" : {
+    "setupQuestions" : [...]
+  }
+  ...
+}
+```
 
 ### <span id="CQCats"> Condition Question Categories </span>
 
-NOTE: These are optional! As long as your experiment doesn't have any conditions, you can leave these out completely. But if your experiment does have conditions, you must create a set of question categories for each condition. 
+NOTE: These are theoretically optional, but will likely be necessary in most cases. As long as your experiment doesn't have any conditions, you can leave these out completely. But if your experiment does have conditions, you must create a set of question categories for each condition. 
 
 After creating our conditionless question categories, we now want to create sets of question categories for each condition. The condition question categories are, syntactically, the exact same as the conditionless question categories. The only difference is where they are placed in the experiment JSON object!
 
@@ -661,7 +679,6 @@ In config.json
 
 
 ## <span id="Question"> Question Object </span>
-<hr>
 
 After much anticipation, we finally come to the most important part of the experiment - the actual questions! And we're not making any digressions this time.
 
@@ -732,7 +749,7 @@ Example question object 1
 
 The question type of the question, a string occupying the field `qType` of the question object, defines the type of response that a user is supposed to give to the question. Each question type has some additional associated parameters, either optional or mandatory, that are added directly to the question object.
 
-Before continuing on with our example question object, let us take a look at all of the possible question types and the additional parameters. You can <a href="qtskip">skip ahead</a> if you simply want to continue with the example.
+Before continuing on with our example question object, let us take a look at all of the possible question types and the additional parameters. You can <a href="#qtskip">skip ahead</a> if you simply want to continue with the example.
 
 <hr> 
 
@@ -1385,7 +1402,7 @@ Example question object 2
 }
 ```
 
-And that's it! We can now add this to our experimenter configuration file like before:
+And that's it! We can now add this to our experimenter configuration file like before. In the section <a href="#Scheduled">Scheduled Questions</a>, we will schedule this dummy question so that every day, the first question is selected based on which day that is!
 
 ```
 In config.json
@@ -1426,7 +1443,6 @@ In config.json
 ```
 
 ## <span id="Variables">Variables and Constants</span>
-<hr>
 
 In order to enable better interactions with the user, it is possible to save certain responses and use them to define the behaviour of the chatbot. This is done using variables. Variables are essentially named parameters that store a value of a certain data type, and whose value can change throughout the course of the experiment.
 
@@ -1444,15 +1460,16 @@ Furthermore, some information that reserved variables provide access to might be
 
 The following is a list of all the reserved variables, their data types, and their descriptions.
 
-| Var Name           | Data Type     | Description                                                                                                          | Sensitive? |
-|--------------------|---------------|----------------------------------------------------------------------------------------------------------------------|------------|
-| `FIRST_NAME`       | `string`        | First name of the participant taken from Telegram                                                                    | Yes        |
-| `UNIQUE_ID`        | `string`        | Unique ID of the participant, generated by the chatbot                                                               | No         |
-| `TODAY`            | `string`        | Abbreviated name of the current day (e.g., "Mon", "Wed", "Fri")                                                      | No         |
-| `STAGE_NAME`       | `string`        | Name of the currently running experiment stage. Is empty string if no stage running.                                 | No         |
-| `STAGE_DAY`        | `number`        | Number of the day of the current experiment stage. Is 1 on first day of stage.                                       | No         |
-| `ANSWER_LEN_CHARS` | `number`        | Length in characters of the user's current answer                                                                    | No         |
-| `ANSWER_LEN_WORDS` | `number`        | Length in words of the user's current answer                                                                         | No         |
+| Var Name           | Data Type     | Description                                                                                                             | Sensitive? |
+|--------------------|---------------|-------------------------------------------------------------------------------------------------------------------------|------------|
+| `FIRST_NAME`       | `string`        | First name of the participant taken from Telegram                                                                       | Yes        |
+| `UNIQUE_ID`        | `string`        | Unique ID of the participant, generated by the chatbot                                                                  | No         |
+| `TODAY`            | `string`        | Abbreviated name of the current day (e.g., "Mon", "Wed", "Fri")                                                         | No         |
+| `CONDITION`        | `string`        | Name of the participant's condition. Is empty string if participant not assigned                                     | No         |
+| `STAGE_NAME`       | `string`        | Name of the currently running experiment stage. Is empty string if no stage running.                                    | No         |
+| `STAGE_DAY`        | `number`        | Number of the day of the current experiment stage. Is 1 on first day of stage.                                          | No         |
+| `ANSWER_LEN_CHARS` | `number`        | Length in characters of the user's current answer                                                                       | No         |
+| `ANSWER_LEN_WORDS` | `number`        | Length in words of the user's current answer                                                                            | No         |
 | `CURRENT_ANSWER`   | `number`/`strArr` | The current valid answer that the user submitted. Is type `number` only when `qType` of the current question is `number` | No         |
 
 Reserved variables are accessed by simply taking the name of any of the above reserved variables and enclosing it in `${...}`.
@@ -1465,7 +1482,7 @@ If the variable does not exist - i.e., is neither the name of a reserved variabl
 
 Then, the text, `"Welcome to the experiment, ${FIRST_NAME} ${LAST_NAME}"`, defined by the experimenter, would be seen by the user as `"Welcome to the experiment, Bonnie ${LAST_NAME}"`, since there is no reserved variable called `LAST_NAME`.
 
-Another example of accessing reserved variables is specifying conditional expressions, which is covered in depth with many examples in the section <a href="#Conditions>Conditional Expressions</a>
+Another example of accessing reserved variables is specifying conditional expressions, which is covered in depth with many examples in the section <a href="#Conditions">Conditional Expressions</a>
 
 ### <span id="CustomVars"> Custom Variables </span>
 
@@ -1491,8 +1508,110 @@ If the variable does not exist - i.e., is neither the name of a reserved variabl
 
 ### <span id="Constants"> Using Constants </span>
 
+Constants are used to represent a value of a particular data type. It is important to represent the value in the correct way so that the chatbot software understands exactly what it is you want to achieve. Unfortunately, it is not very flexible in its interpretations of certain symbols, particularly when processing <a href="#Conditions">conditional expressions</a>. Therefore, it is important that you specify exactly what data it is that you are trying to represent, and that is done using constants.
+
+Constants find their biggest use in conditional expressions, when evaluating the value of a variable with respect to a certain value that is not present in another variable. This certain value is represented by a constant of the desired data type. However, there is currently one other use of boolean constants, namely in the <a href="#Actions">action</a> `setBooleanVar`.
+
+Corresponding to the <a href="#Parameters">five possible data types</a> that variables can take, there are five possible constants that you can represent. Representing a constant involves a particular syntax, namely enclosing the desired values in particular characters.
+
+The following subsections will cover each of the five data types.
+
+#### Boolean Constants
+
+Boolean constants represent a value of the data type `boolean`, either `true` or `false`.
+
+They are represented by enclosing either the word "true" or "false" (without quotes) within the braces of: `$B{...}`. This constant is not case sensitive, that means it does not matter what case the words "true" and "false" are written within the braces, as long as it contains those letters in that order.
+
+Examples: 
+
+`$B{true}` represents the boolean value `true`
+
+`$B{TrUe}` represents the boolean value `true`
+
+`$B{false}` represents the boolean value `false`
+
+`$B{FaLse}` represents the boolean value `false`
+
+`$B{hello}` is an invalid boolean constant.
+
+#### Number Constants
+
+Number constants represent a value of the type `number`, either a real number or an integer, such as `-123.45` or `419`.
+
+They are represented by enclosing either the number within the braces of: `$N{...}`.
+
+Examples:
+
+`$N{5}` represents the number value `5`
+
+`$N{-14.5}` represents the number value `-14.5`
+
+`$N{0}` represents the number value `0`
+
+`$N{}` is an invalid number constant.
+
+#### Number Array Constants
+
+Number array constants represent a value of the type `numArr`, a list of real numbers or integers, such as `[-123.45, 419]`.
+
+They are represented by enclosing either the number within the braces of: `$N*{...}`, and separating the numbers by commas within the braces. Note that **no square brackets**, which are involved in normal representations of arrays/lists, are needed to define a number array constant.
+
+Note that in some cases, like with operator `HAS_CHOICE_IDX` of <a href="#Conditions">Conditional Expressions</a>, it is important to use the number array constant, even if you are representing only a single value!s
+
+Examples:
+
+`$N*{5}` represents the number array value `[5]`, a list with a single element.
+
+`$N*{-14.5, 5}` represents the number array value `[-14.5, 5]`, a list with two elements
+
+`$N{}` represents the number array value `[]`, an empty list
+
+`$N{hello, 3}` is an invalid number array constant.
+
+`$N{4, ,3}` is an invalid number array constant.
+
+#### String Constants
+
+String constants represent a value of the type `string`, any string of characters, such as `"2fnn&"` or `"spoon and fork"`.
+
+They are represented by enclosing either the string of characters within the braces of: `$S{...}`, **without** any quotes, unless you want the quotes themselves to be a part of the string. In that case, you must use `\"` to represent a quote `"`.
+
+Examples:
+
+`$S{5}` represents the string value `"5"`
+
+`$S{hello}` represents the string value `"hello"`
+
+`$S{\"In quotes\"}` represents the string value `""In quotes""`
+
+`$S{$yM80L5}` represents the string value `"$yM80L5"`
+
+`$S{}` represents the string value `""`, an empty string
+
+#### String Array Constants
+
+String array constants represent a value of the type `strArr`, a list of strings, such as `["2fnn&", "spoon and fork"]`.
+
+They are represented by enclosing either the string within the braces of: `$S*{...}`, and separating the strings by commas within the braces. Note that **no square brackets**, which are involved in normal representations of arrays/lists, are needed to define a string array constant.
+
+Also note that it is not possible for a string constant within your string array to contain commas, as commas are used to separate the string constants in the array.
+
+Examples:
+
+`$S*{5}` represents the string array value `["5"]`, a list with a single string element.
+
+`$S*{2fnn&, spoon and fork}` represents the string array value `["2fnn&", "spoon and fork"]`, a list with two string elements
+
+`$S*{Hello, my name is Paul. Nice to meet you.}` represents the string array value `["Hello", "my name is Paul. Nice to meet you."]`, a list with two string elements
+
+`$S*{}` represents the string array value `[]`, an empty list
+
+`$S{hello, ,3}` represents the string array value `["hello", "", "3"]`, a list with 3 string elements, the second being an empty string
+
+
+And that is all you need to know about constants to proceed!
+
 ## <span id="Conditions"> Conditional Expressions </span>
-<hr>
 
 Note: This section requires familiarity using variables and constants. Review the previous sections if you are not familiar with these already.
 
@@ -1502,25 +1621,25 @@ These conditional expressions are used in the `if` fields of <a href="#CondNextS
 
 Conditional expressions are therefore helpful in checking whether the experiment is in a certain state or the participant's parameters have certain properties, based on which decisions can be made. For example, if you want the next question to appear only if the participant has answered "Yes" to the current question, you would use a conditional expression to evaluate whether the current answer is equal to "Yes".
 
-As mentioned before, conditional expressions have 2 operands and 1 operator. The operator must always occur in between the operands, separated by at least one space on either side. The operands can be variables, constants, or expressions themselves enclosed in parentheses (see Nested Expressions below). The type of operand that you can evaluate depends on the operator you are trying to use. 
+As mentioned before, conditional expressions have 2 operands and 1 operator. The operator must always occur in between the operands, separated by at least one space on either side. The operands can be **variables, constants, or expressions themselves** enclosed in parentheses (see Nested Expressions below). The type of operand that you can evaluate depends on the operator you are trying to use. 
 
 Following is a table of all available operators as well as the operands on which they can operate. 
 
 Keep in mind that the operators are **NOT commutative**. This means that `"A op B"` is not the same as `"B op A"`, therefore making the order of operands in the expression important!
 
-| operator          | description                                                   | operand 1 type      | operand 2 type | example                                         | example outcome                                                                                   | notes                                                                                                           |
-|-------------------|---------------------------------------------------------------|---------------------|----------------|-------------------------------------------------|---------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `==`              | Checks equality between two values of the same data type      | any                 | any            | `"${STAGE_NAME} == $S{Test}"`                   | `true` when var `STAGE_NAME` has value `"Test"`                                                   | operands must be of same data type                                                                              |
-| `!=`              | Checks inequality between two values of the same data type    | any                 | any            | `"${STAGE_NAME} != $S{Test}"`                   | `true` when var `STAGE_NAME` does not have value `"Test"`                                         | operands must be of same data type                                                                              |
-| `>=`              | Checks whether op1 greater than or equal to op2               | number              | number         | `"${STAGE_DAY} >= $N{3}"`                       | `true` when var `STAGE_DAY` has value `>= 3`                                                      |                                                                                                                 |
-| `>=`              | Checks whether op1 strictly greater than op2                  | number              | number         | `"${STAGE_DAY} > $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                       |                                                                                                                 |
-| `<=`              | Checks whether op1 lesser than or equal to op2                | number              | number         | `"${STAGE_DAY} <= $N{3}"`                       | `true` when var `STAGE_DAY` has value `>= 3`                                                      |                                                                                                                 |
-| `<`               | Checks whether op1 strictly lesser than op2                   | number              | number         | `"${STAGE_DAY} < $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                       |                                                                                                                 |
-| `CONTAINS_STRING` | Checks whether op1 contains the string op2                    | string              | string         | `"${STAGE_NAME} CONTAINS_STRING $S{"Pre"}"`     | `true` when var `STAGE_NAME` has `Pre` anywhere as a substring                                    |                                                                                                                 |
-| `IN_ARRAY`        | Checks whether op1 is an element in the array op2             | string, number      | strArr, numArr | `"${progress} IN_ARRAY $N*{10,20,30}"`          | `true` when var `progress` has value `10`, `20`, or `30`                                          |                                                                                                                 |
-| `MULTIPLE_OF`     | Checks whether op1 is a multiple of op2                       | number              | number         | `"${STAGE_DAY} MULTIPLE_OF $N{2}"`              | `true` when var `STAGE_DAY` is an even number                                                     |                                                                                                                 |
+| operator          | description                                                   | operand 1 type      | operand 2 type | example                                         | example outcome                                                                                     | notes                                                                                                           |
+|-------------------|---------------------------------------------------------------|---------------------|----------------|-------------------------------------------------|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| `==`              | Checks equality between two values of the same data type      | any                 | any            | `"${STAGE_NAME} == $S{Test}"`                   | `true` when var `STAGE_NAME` has value `"Test"`                                                     | operands must be of same data type                                                                              |
+| `!=`              | Checks inequality between two values of the same data type    | any                 | any            | `"${STAGE_NAME} != $S{Test}"`                   | `true` when var `STAGE_NAME` does not have value `"Test"`                                           | operands must be of same data type                                                                              |
+| `>=`              | Checks whether op1 greater than or equal to op2               | number              | number         | `"${STAGE_DAY} >= $N{3}"`                       | `true` when var `STAGE_DAY` has value `>= 3`                                                        |                                                                                                                 |
+| `>=`              | Checks whether op1 strictly greater than op2                  | number              | number         | `"${STAGE_DAY} > $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                         |                                                                                                                 |
+| `<=`              | Checks whether op1 lesser than or equal to op2                | number              | number         | `"${STAGE_DAY} <= $N{3}"`                       | `true` when var `STAGE_DAY` has value `>= 3`                                                        |                                                                                                                 |
+| `<`               | Checks whether op1 strictly lesser than op2                   | number              | number         | `"${STAGE_DAY} < $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                         |                                                                                                                 |
+| `CONTAINS_STRING` | Checks whether op1 contains the string op2                    | string              | string         | `"${STAGE_NAME} CONTAINS_STRING $S{"Pre"}"`     | `true` when var `STAGE_NAME` has `"Pre"` anywhere as a substring (e.g., `"Pre-Test"`, `"rePresent"`)      |                                                                                                                 |
+| `IN_ARRAY`        | Checks whether op1 is an element in the array op2             | string, number      | strArr, numArr | `"${progress} IN_ARRAY $N*{10,20,30}"`          | `true` when var `progress` has value `10`, `20`, or `30`                                            |                                                                                                                 |
+| `MULTIPLE_OF`     | Checks whether op1 is a multiple of op2                       | number              | number         | `"${STAGE_DAY} MULTIPLE_OF $N{2}"`              | `true` when var `STAGE_DAY` is an even number                                                       |                                                                                                                 |
 | `HAS_CHOICE_IDX`  | Checks whether certain option(s) were chosen on a choice question | `${CURRENT_ANSWER}` | numArr         | `"${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,3}"` | `true` when the index of the chosen answer in the `options` list is either `0`, `1`, or `3`         | can only be used exclusively for this purpose and in this manner with `singleChoice` or `multiChoice` questions |
-| `AND`             | Logical AND checks whether op1 and op2 are both true          | boolean             | boolean        | `"${setGoalsToday} AND ${wantsToReflect}"`      | `true` when the both variables `setGoalsToday` and `wantsToReflect` are `true`                    | |
+| `AND`             | Logical AND checks whether op1 and op2 are both true          | boolean             | boolean        | `"${setGoalsToday} AND ${wantsToReflect}"`      | `true` when the both variables `setGoalsToday` and `wantsToReflect` are `true`                      | |
 | `OR`               | Logical OR checks whether op1 or op2 are true               | boolean             | boolean        | `"${setGoalsToday} OR ${wantsToReflect}"`       | `true` when either variables `setGoalsToday` or `wantsToReflect` is `true`, or when both are `true` | |
 
 See section <a href="CondNextSteps">Conditional Next Steps</a> for an example of `HAS_CHOICE_IDX`.
@@ -1561,14 +1680,636 @@ In case you want to add another condition to this expression, you can simply enc
 
 In sum, you can create nested expressions of an arbitrary depth, as long as you ensure that every expression (main one and parenthetical nested ones) always have two operands and one operator, where operands can be variables, constants, or parenthetical expressions.
 
-Now, you know everything you need to start conditionally defining the chatbot's behaviour!
+Note that, in the above examples, constants are used to compare the values of certain variables. It is mandatory to use constants to represent these values. The following statements, that do not use constants appropriately, would be **invalid**!
+
+`${STAGE_NAME} == 'Test'`
+
+`${STAGE_DAY} GREATER_THAN 2`
+
+Now, you know everything you need to start conditionally defining the chatbot's behaviour! 
 
 ## <span id="Scheduled"> Scheduling Questions </span>
-<hr>
+
+After you have defined all of your questions and the flow of conversation of your chatbot, you would probably want to schedule certain questions to appear at a certain time. Although scheduled questions are optional, users can interact with your chatbot only if they are asked a question. So if no questions are scheduled, then no interactions happen!
+
+The field to define this, `scheduledQuestions`, is a *list* of schedule objects. The field `scheduledQuestions` occurs at the same level of `questionCategories`, wherever that appears. This also means for every set of question categories (i.e., for every condition), you would have a list of `scheduledQuestions`. 
+
+In order for the questions in these lists to actually be scheduled, you **must** execute the <a href="#Actions">action</a> `scheduleQuestions`. Since the scheduling of the questions is dependent on the condition and the timezone of the participant, it is best to execute this action after both of these have been determined.
+
+In the remainder of the section, we will create a list of schedule objects for each condition, add them to our experimenter configuration file. In the next section, we will then ensure that these questions get scheduled by invoking the appropriate actions. 
+
+First, we will look at a single schedule object and consider its components:
+* `qId` - mandatory, string with the question category and question ID of the question to be scheduled
+* `atTime` - mandatory, string with the time in format `HH:MM` at which the scheduled question should occur
+* `onDays` - mandatory, the days on which the scheduled questions should occur at the above-mentioned time.
+  * must be an array of strings, containing any combination of the strings `["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]` in any order.
+  * the case and spelling of the abbreviated days is important!
+  * if a question is scheduled to appear only for a given stage, ensure that the days for which you schedule a question match up with the days on which the stage is supposed to be running.
+* `if` - optional, a normal conditional expression specifying under which circumstances a certain question should occur.
+  * **Note: scheduling different questions for different experiment stages is currently done through this field!**
+  * If this field is not specified, the question will be scheduled for all days in which any experimental stage is running.
+    * This means that no scheduled questions will appear if no experimental stage is running!
+
+For the condition `Condition1`, we will create a schedule object for 9 am on the weekdays only during the experiment stage `"Test"`.
+
+```
+Example schedule object 1
+
+{
+  "qId" : "testMorningQs.selectFirstQuestion",
+  "atTime" : "09:00",
+  "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+  "if" : "${STAGE_NAME} == $S{Test}"
+}
+```
+
+Now, we will create a reflection question to occur in the evening, if the user indicated that they want to reflect on their goals in the evening (assume all `qId`s already exist). Both schedule objects will be combined into a list that we will assign to `scheduledQuestions` of `Condition1`.
+
+```
+In configQuestions > Condition1 > scheduledQuestions of config.json
+
+[
+  {
+    "qId" : "testMorningQs.selectFirstQuestion",
+    "atTime" : "09:00",
+    "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+    "if" : "${STAGE_NAME} == $S{Test}"
+  },
+  {
+    "qId" : "testEveningQs.reflection",
+    "atTime" : "18:00",
+    "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+    "if" : "(${STAGE_NAME} == $S{Test}) AND (${wantsToReflect} == $B{true})"
+  }
+]
+  
+```
+
+Now, we will assign this list to the field `scheduledQuestions` of `Condition1` in the experimenter configuration file.
+
+```
+In config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentConditions" : ["Condition1", "Condition2"],
+  "conditionAssignments" : [1,1],
+  "assignmentScheme" : "balanced"
+  "experimentStages" : {...},
+  "mandatoryParameters" : {...},
+  "customParameters" : {...}
+  "questionCategories" : {...}
+  "conditionQuestions" : {
+    "Condition1" : {
+      "questionCategories" : {...},
+      "scheduledQuestions" : [
+        { "qId" : "testMorningQs.selectFirstQuestion" ... },
+        { "qId" : "testEveningQs.reflection" ... }
+      ]
+    },
+    "Condition2" : {
+      "questionCategories" : {...}
+    }
+  }
+  ...
+}
+```
+
+Similarly, we may want to create a list containing a single scheduled question for `Condition2`. Since `Condition2` has only one experimental stage, we can leave out the field if this time, and the question will be scheduled to occur on every day that the stage is running.
+ 
+This time, we will skip a step and directly added it to the configuration file under `Condition2` of `conditionQuestions`.
+
+```
+In config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentConditions" : ["Condition1", "Condition2"],
+  "conditionAssignments" : [1,1],
+  "assignmentScheme" : "balanced"
+  "experimentStages" : {...},
+  "mandatoryParameters" : {...},
+  "customParameters" : {...}
+  "questionCategories" : {...}
+  "conditionQuestions" : {
+    "Condition1" : {
+      "questionCategories" : {...},
+      "scheduledQuestions" : [...]
+    },
+    "Condition2" : {
+      "questionCategories" : {...},
+      "scheduledQuestions" : [
+        {
+          "qId" : "morningQs.selectFirstQuestion",
+          "atTime" : "08:00",
+          "onDays" : ["Mon","Tue","Wed","Thu","Fri"]
+        }
+      ]
+    }
+  }
+  ...
+}
+```
+
+We are done with defining some questions to be scheduled. The section <a href="#Setup">Setup Questions</a> will then ensure that some important parameters are set correctly and that these questions are actually scheduled to appear once the parameters are set.
+
+Feel free to skip over the following subsection on conditionless scheduled questions if your experiment has conditions, as it may not pertain to you.
+
+### Detour: Conditionless Scheduled Questions
+
+The last time we saw our example configuration file for a conditionless experiment was in section <a href="#DefaultCat">Default Question Categories</a>.
+
+We will now briefly revisit that example to see how scheduled questions would be added in such a case.
+
+Just like when there are conditions, `scheduledQuestions` are added on the same level as `questionCategories`. So, when there are no conditions, since `questionCategories` exists on the first level of the experiment JSON object, so will the list `scheduledQuestions`, like so:
+
+```
+In noCondsConfig.json
+
+{
+  "experimentName" : "NoConditions",
+  "experimentId" : "RL-NoCond-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentStages" : [...],
+  "questionCategories" : {
+    "setupQuestions" : [...]
+  },
+  "scheduledQuestions" : [...]
+  ...
+}
+```
+
+In this case too, the `scheduledQuestions` list is constructed in the same way as before.
+
+## <span id="Setup"> Setup Questions and Starting the Experiment</span>
+
+After learning all the components of question objects, we can now come back to looking at our setup questions in detail. While the experimenter has more freedom with defining the questions in the rest of the experiment, that is not quite the case with `setupQuestions`. Setup questions ensure that the correct information is collected from the participant to ensure smooth functioning of the chatbot, such as user language, participant ID, and timezone.
+
+Firstly, it is important that the default `questionCategories` object exists and has a question category called exactly `setupQuestions`. Secondly, it is essential to obtain the minimum of language and timezone information (and PID if you want to assign to condition based on that) from the participant. Thirdly, it is essential that this information is stored in the appropriate format in the appropriately named variables. Finally, appropriate actions are required to be taken, such as assigning to condition as well as scheduling questions.
+
+For these reasons, it is better to not make significant changes to the setup questions (except for adding/removing text and reply messages, which can be done freely.) If you would like to collect more information from the user before assigning to a condition, you may add some questions, but ensure the essential components still remain.
+
+Let us see what the setup looks like.
+
+### Language
+
+The first thing that you would likely want to get from your participant is their preferred language. Since they have not interacted with the chatbot yet, you would likely want to ask your question in all available languages within the same question text. This would also mean that your question text for all languages would be the same, and so would the options.
+
+Here, we have an example language question:
+
+```
+In first question of questionCategories > setupQuestions of config.json
+
+{
+  "qId" : "language",
+  "start" : true, 
+  "text" : {
+    "English" : "Hello! I am <chatbotName>. Please select your language.\n\nHallo! Ich bin <chatbotName>. Bitte wähle eine Sprache aus.",
+    "Deutsch" : "Hello! I am <chatbotName>. Please select your language.\n\nHallo! Ich bin <chatbotName>. Bitte wähle eine Sprache aus."
+  },
+  "qType" : "singleChoice",
+  "options" : {
+    "English" : ["English", "Deutsch"],
+    "Deutsch" : ["English", "Deutsch"]
+  },
+  "nextActions" : [
+    {
+      "aType" : "saveAnswerTo",
+      "args" : ["language"]
+    }
+  ],
+  "nextQuestion" : "setupQuestions.PID"
+}
+```
+
+A few things to notice about this:
+* This question object has the field `"start" : true`. Although we didn't cover this, and it doesn't apply to any other questions present elsewhere, it is important to have this.
+* The options provided have to essentially be the exact same list of strings as the `languages` field of the experimenter JSON object, with correct spelling and case.
+* When no language has been chosen yet (in this case), the default language is applied. Here, it is English. But it's better to have all the text and options in all languages for this question.
+* It is important to have the correct spelling `"language"` in the action, which is the same as defined in the field `mandatoryParameters`.
+* If you wanted to skip collection of `"PID"` because condition assignment is not based on it, you can set `nextQuestion` to `setupQuestions.timezone`.
+* You may add `replyMessages`, but they would also have to be in all languages, since replies are sent before the parameter is saved to the parameter `language`.
+  * Or, you could use `cReplyMessages` to give different language reply messages based on the answer. In this case, the messages should be the same for all languages within the `if` or `else` outcome.
+
+This will now be added to our list of setupQuestions:
+
+```
+In questionCategories > setupQuestions of config.json
+[
+  {
+    "qId" : "language",
+    "start" : true, 
+    "text" : {
+      "English" : "Hello! I am <chatbotName>. Please select your language.\n\nHallo! Ich bin <chatbotName>. Bitte wähle eine Sprache aus.",
+      "Deutsch" : "Hello! I am <chatbotName>. Please select your language.\n\nHallo! Ich bin <chatbotName>. Bitte wähle eine Sprache aus."
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["English", "Deutsch"],
+      "Deutsch" : ["English", "Deutsch"]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["language"]
+      }
+    ],
+    "nextQuestion" : "setupQuestions.PID"
+  }
+]
+```
+
+### PID 
+
+It is possible to skip this field if your `assignmentScheme` is not `"pid"`. However, if your assignmentScheme is "pid", then it is essential that you have this question and save the answer to the correct variable.
+
+Now that the user has selected a language, we can start having separate texts for different languages. So we will build up our PID question in the following way:
+
+```
+In second question of questionCategories > setupQuestions of config.json
+
+{
+  "qId" : "PID",
+  "qType" : "freeform",
+  "text" : {
+    "English" : "Type in the participant ID that was given to you.",
+    "Deutsch" : "Gib die Teilnehmer-ID ein, die dir vergeben wurde."
+  },
+  "nextActions" : [
+    {
+      "aType" : "saveAnswerTo",
+      "args" : ["PID"]
+    }
+  ]
+  "nextQuestion" : "setupQuestions.timezone"
+}
+```
+
+A few things to note here:
+* It is not important that the `qType` is `freeform`. You could also have the user choose options from a list, as long as these options correspond to the participant IDs in `json/PIDCondMap.json` (see <a href="#Conds">Conditions</a>)
+* We don't yet execute the action `"assignToCondition"`, because once this happens, the chatbot attempts to draw the next questions from the question categories of the assigned condition. Since we still want to ask some setup questions from the default conditionless (categories), it is better to save assigning to condition for the last setup question.
+* It is important that the variable saved to is spelled `"PID"`, just as in the field `mandatoryParameters`
+* Here as well, it is possible to add `replyMessages` or `cReplyMessages`.
+
+Now, we can add this as well to the list of setup questions
+
+```
+In questionCategories > setupQuestions of config.json
+[
+  { "qId" : "language", ... },
+  {
+    "qId" : "PID",
+    "qType" : "freeform",
+    "text" : {
+      "English" : "Type in the participant ID that was given to you.",
+      "Deutsch" : "Gib die Teilnehmer-ID ein, die dir vergeben wurde."
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["PID"]
+      }
+    ]
+    "nextQuestion" : "setupQuestions.timezone"
+  }
+]
+```
+
+### Timezone
+
+Now, we come to the last essential setup question. Here, we want to ask the user for their timezone, specifically in the format specified under "TZ database name" in this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). Therefore, when providing options to the user to select from, make sure that your options match the spelling/case of these timezones exactly (with no spaces before, in between, or after the timezone name).
+
+Since this is our last setup question, we will also assign the participant to their condition and schedule the questions for that particular condition. If you have more setup questions that are independent of condition and that you would like to ask before assigning a participant to a condition, then perform these two actions after the last setup question has been answered.
+
+For the following question, we will use some fairly common timezones as options, but this list can and should be expanded.
+
+
+```
+In third question of questionCategories > setupQuestions of config.json
+
+{
+  "qId" : "timezone",
+  "text" : {
+    "English" : "Please select your timezone",
+    "Deutsch" : "Bitte wähle deine Zeitzone aus"
+  },
+  "qType" : "singleChoice",
+  "options" : {
+    "English" : ["Europe/Berlin", "US/Eastern","US/Pacific"],
+    "Deutsch" : ["Europe/Berlin", "US/Eastern","US/Pacific"]
+  },
+  "nextActions" : [
+    {
+      "aType" : "saveAnswerTo",
+      "args" : ["timezone"]
+    },
+    {
+      "aType" : "assignToCondition"
+    },
+    {
+      "aType" : "scheduleQuestions"
+    }
+  ]
+}
+```
+Notes about this question:
+* It is important that you invoke `assignToCondition` before `scheduleQuestions`, since the latter depends on which condition the user is in.
+
+Now, we will add this question as well to the setup questions, and then add the setup questions back into the experimenter configuration.
+
+```
+In config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentConditions" : ["Condition1", "Condition2"],
+  "conditionAssignments" : [1,1],
+  "assignmentScheme" : "balanced"
+  "experimentStages" : {...},
+  "mandatoryParameters" : {...},
+  "customParameters" : {...}
+  "questionCategories" : {
+    "setupQuestions" : [
+      { "qId" : "language", "start" : true, ... },
+      { "qId" : "PID", ... },
+      { "qId" : "timezone", ... }
+    ]
+  }
+  "conditionQuestions" : {...}
+  ...
+}
+```
+
+Finally, the participant has been set up and assigned to a condition. The questions that they are to expect are also scheduled for them. 
+
+However, as you may remember from before, scheduled questions only appear when a stage is running. But scheduling the questions does not guarantee that a stage has begun. Why is that? How do I start the first stage? The next subsection will answer these questions.
+
+### Starting the First Stage
+
+The first stage is not necessarily started automatically after the setup is complete. This is because it may not be the case that the first day of the stage should occur on the same day that the setup questions were asked. For example, if the first question of a stage is to occur in the morning, but the participant started the interaction with the bot and finished the setup in the afternoon, we wouldn't want Day 1 of the first stage to start until the next day. Moreover, the name of the first stage may vary depending on the condition. 
+
+On the other hand, if the first stage of both the conditions have the same name, and the question of the first stage is not time-sensitive, then we can start the first stage and ask the first question as soon as the setup questions are complete.
+
+With different possibilities, it is then left up to the experimenter to decide when the first stage should start. This involves answering a couple of questions.
+
+Firstly, you might ask, how do you start a stage?
+
+All you have to do is have the following action executed after a question has been answered (or after a `dummy` type question).
+
+```
+{
+  "aType" : "startStage",
+  "args" : ["<stageName>"]
+}
+```
+
+Secondly, with all the different possibilities, how is it recommended to start the first stage then?
+
+* If you want to start the first stage on the day after setting up, before the first question of that stage is asked:
+  * Conditionally schedule a dummy question for the morning which executes the necessary `"startStage"` action, with the condition being that no stage is running yet (`"${STAGE_NAME} == $S{}"`).
+* If you want to start the first stage on the same day as the setup questions
+  * Create a dummy question within `setupQuestions`, and make that the `nextQuestion` of the last setup question. Ensure to set field `selectQFirst` of the last setup question object to `true`, so that this question can be read from the default categories before the participant is assigned to the condition.
+  * Give the dummy question a `cNextActions` field
+  * Create rules conditioned on the possible conditions participant could be assigned to (`"${CONDITION} == $S{<condition>}"`)
+  * Execute the `startStage` action for the first stage of that condition.
+  * You can then already ask the first question of the stage by using `cNextQuestions` in the same manner and selecting the first question of the first stage appropriate to the assigned condition.  
+  
+In our example configuration file, we would want the first day of the stage to start on the next day, regardless of the condition. So we'll follow the first scenario and create a dummy question called `startStage` and save it under category `"preTestQs"`. This will then be scheduled in the morning to occur if no stage has been started.
+
+We'll first create the question...
+
+```
+First question of conditionQuestions > Condition1 > questionCategories > preTestQs of config.json
+
+{
+  "qId" : "startStage",
+  "qType" : "dummy",
+  "nextActions" : [
+    {
+      "aType" : "startStage",
+      "args" : ["Pre-Test"]
+    }
+  ]
+}
+```
+
+... then we'll create the schedule object ...
+
+```
+New schedule object for conditionQuestions > Condition1 > scheduledQuestions of config.json
+
+{
+  "qId" : "preTestQs.startStage",
+  "atTime" : "06:00",
+  "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+  "if" : "${STAGE_DAY} == $S{}"
+}
+
+```
+
+... and then we'll add them both to the experimenter JSON object under `questionCategories` and `scheduledQuestions` respectively of `Condition1`!
+
+```
+In config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentConditions" : ["Condition1", "Condition2"],
+  "conditionAssignments" : [1,1],
+  "assignmentScheme" : "balanced"
+  "experimentStages" : {...},
+  "mandatoryParameters" : {...},
+  "customParameters" : {...}
+  "questionCategories" : {...}
+  "conditionQuestions" : {
+    "Condition1" : {
+      "questionCategories" : {
+        "preTestQs" : [
+          { "qId" : "
+        ],
+        "testMorningQs" : [...],
+        "testEveningQs" : [...],
+        "postTestMorningQs" : [...],
+        "postTestEveningQs" : [...]
+      },
+      "scheduledQuestions" : [
+        { "qId" : "preTestQs.startStage" ...}, 
+        { "qId" : "testMorningQs.selectFirstQuestion" ... },
+        { "qId" : "testEveningQs.reflection" ... }
+      ]
+    },
+    "Condition2" : {
+      "questionCategories" : {...},
+      "scheduledQuestions" : [...]
+    },
+  }
+  ...
+}
+```
+
+The same can be repeated for `Condition2`, except with the first stage to start being `"Test"`.
 
 ## <span id="Phrases"> Mandatory Phrases </span>
-<hr>
 
+We are finally at the very last part of the experimenter configuration file! Whew.
+
+Here, the experimenter does not have much freedom, and hence does not need to think too hard about what to do here.
+
+These mandatory phrases are simply phrases that would be displayed by the chatbot when certain events occur.
+
+The following is a description of which cases which phrases occur, along with some notes about them.
+
+* `answerValidation` - phrases related to telling the user when an answer is invalid
+  * `invalidOption` - when a user types in an option that is not present in the `options` field of `singleChoice` or `multiChoice` questions
+
+Here is the object with all of the above phrases. Instead of an example, you can consider this as a template to copy and paste. You may change a phrase or add a language as you see fit. Just make sure that the language is spelled correctly, just as it is in the field `languages` of the experimenter JSON object.
+
+After this template, you will see how this is added to the experimenter JSON object.
+
+```
+"phrases" : {
+  "answerValidation": {
+  "invalidOption": {
+  "English": "Please pick <b>only from the given options</b>",
+  "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+  },
+  "noOptions": {
+  "English": "Please select <b>at least one option</b>",
+  "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>"
+  },
+  "notANumber": {
+  "English": "Please enter a number",
+  "Deutsch": "Geben Sie eine Zahl ein"
+  },
+  "numberTooHigh": {
+  "English": "Please enter a number below ${UpperBound}",
+  "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
+  },
+  "numberTooLow": {
+  "English": "Please enter a number above ${LowerBound}",
+  "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+  },
+  "notLongEnoughChars" : {
+  "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} characters.",
+  "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Charaktere betragen."
+  },
+  "notLongEnoughWords" : {
+  "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
+  "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
+  },
+  "terminateAnswerProperly" : {
+  "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
+  "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
+  }
+  },
+  "keyboards": {
+  "singleChoice": {
+  "English": "Please pick one from the given options. You may need to scroll down to see all options.",
+  "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
+  },
+  "multiChoice": {
+  "English": "Choose as many options as you like. Click Done to finish choosing. You may need to scroll down to see all options.",
+  "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
+  },
+  "terminateAnswer": {
+  "English": "Done",
+  "Deutsch": "Fertig"
+  },
+  "finishedChoosingReply": {
+  "English": "I have noted down your choices",
+  "Deutsch": "Ich habe Ihre Wahlen notiert"
+  },
+  "qualtricsFillPrompt" : {
+  "English" : "Please follow the link below to the survey",
+  "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage"
+  },
+  "qualtricsDonePrompt" : {
+  "English" : "Send <i>Done</i> when you are finished with the survey.",
+  "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
+  },
+  "freeformSinglePrompt" : {
+  "English" : "Type in your answer in a <b>single</b> message and send.",
+  "Deutsch" : "Geben Sie Ihre Antwort in nur <b>einer</b> Nachricht ein."
+  },
+  "freeformMultiPrompt" : {
+  "English" : "Type in your answer over one or multiple messages. Send the message <i>Done</i> when complete.",
+  "Deutsch" : "Geben Sie Ihre Antwort über eine oder mehrere Nachrichten ein. Senden Sie <i>Fertig</i>, wenn fertig"
+  },
+  "linkToSurvey" : {
+  "English" : "Link to Survey (opens in browser)",
+  "Deutsch" : "Link zur Umfrage (wird im Browser geöffnet)"
+  },
+  "likert5Options": {
+  "English": [
+  "Strongly Disagree",
+  "Disagree",
+  "Neither",
+  "Agree",
+  "Strongly Agree"
+  ],
+  "Deutsch": [
+  "Stimme vollständig nicht zu",
+  "Stimme nicht zu",
+  "Weder noch",
+  "Stimme zu",
+  "Stimme vollständig zu"
+  ]
+  },
+  "likert7Options": {
+  "English": [
+  "Strongly Disagree",
+  "Disagree",
+  "Somewhat Disagree",
+  "Neither",
+  "Somewhat Agree",
+  "Agree",
+  "Strongly Agree"
+  ],
+  "Deutsch": [
+  "Stimme vollständig nicht zu",
+  "Stimme nicht zu",
+  "Stimme eher nicht zu",
+  "Weder noch",
+  "Stimme eher zu",
+  "Stimme zu",
+  "Stimme vollständig zu"
+  ]
+  }
+  },
+  "schedule" : {
+  "scheduleQNotif" : {
+  "English" : "Question scheduled for the following time:",
+  "Deutsch" : "Frage geplant zur folgenden Zeit:"
+  },
+  "scheduleANotif" : {
+  "English" : "Action scheduled for the following time:",
+  "Deutsch" : "Handlung geplant zur folgenden Zeit:"
+  }
+  },
+  "endExperiment" : {
+  "English" : "You have successfully completed the experiment! You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
+  "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
+  }
+},
+```
 The remainder of this description will show you the mandatory and optional features an experiment requires to run.
 
 Follow this documentation along with an [example experiment configuration](others/exampleConfig.json) to see how the following example would translate into an actual document. 

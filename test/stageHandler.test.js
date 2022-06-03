@@ -596,7 +596,7 @@ describe('Creating action list', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data.length).to.equal(1);
             expect(returnObj.data[0].onDays.sort()).to.eql(dayList.sort());
-            expect(returnObj.data[0].if).to.equal("${STAGE_DAY} >= $N{0}");
+            expect(returnObj.data[0].if).to.equal("${STAGE_NAME} != $S{}");
             expect(returnObj.data[0].aType).to.equal("incrementStageDay");
             expect(returnObj.data[0].atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
         })

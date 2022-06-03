@@ -862,6 +862,46 @@ Example question object multiChoice
 }
 ```
 
+#### Likert 5 - "likert5"
+
+Requires the user to select one choice from a list of choices (essentially a `singleChoice` question), with the options being 5 points on a Likert scale.
+
+The choices of the likert scale are defined in `keyboards.likert5Options` of `phrases` (see section <a href="#Phrases">Mandatory Phrases</a>), and can be adjusted there.
+
+The user need not enter any options for this one, as the options for every `likert5` type question will be the same.
+
+Example question that prompts selecting from the likert scale with 5 points:
+
+```
+Example question object likert5
+
+{
+  "qId" : "exLikert5",
+  "text" : {...},
+  "qType" : "likert5"
+}
+```
+
+#### Likert 7 - "likert7"
+
+Requires the user to select one choice from a list of choices (essentially a `singleChoice` question), with the options being 7 points on a Likert scale.
+
+The choices of the likert scale are defined in `keyboards.likert7Options` of `phrases` (see section <a href="#Phrases">Mandatory Phrases</a>), and can be adjusted there.
+
+The user need not enter any options for this one, as the options for every `likert7` type question will be the same.
+
+Example question that prompts selecting from the likert scale with 7 points:
+
+```
+Example question object likert7
+
+{
+  "qId" : "exLikert7",
+  "text" : {...},
+  "qType" : "likert7"
+}
+```
+
 #### Number - "number"
 
 Requires the user to enter a number into the text field to continue, with the option of ensuring that the number is within a certain range.
@@ -2179,296 +2219,154 @@ The following is a description of which cases which phrases occur, along with so
 
 * `answerValidation` - phrases related to telling the user when an answer is invalid
   * `invalidOption` - when a user types in an option that is not present in the `options` field of `singleChoice` or `multiChoice` questions
+  * `noOptions` - when a user selects the 'terminate choosing' answer without selecting any options in `multiChoice` questions
+  * `notANumber` - when a user enters something that is not a number in response to a `number` type question
+  * `numberTooHigh` - when a user enters a number above the upper bound of the `range` in a `number` type question
+    * The variable `${UpperBound}` in this phrase will be replaced by the actual upper bound specified in the question object
+  * `numberTooLow` - when a user enters a number below the lower bound of the `range` in a `number` type question
+    * The variable `${LowerBound}` in this phrase will be replaced by the actual lower bound specified in the question object
+  * `notLongEnoughChars` - when a user's `freeform` or `freeformMulti` answer does not contain enough characters as specified in `minLengthChars`
+    * The variable `${MinLength}` in this phrase will be replaced by the actual `minLengthChars` specified in the question object
+  * `notLongEnoughWords` - when a user's `freeform` or `freeformMulti` answer does not contain enough words as specified in `minLengthWords`
+    * The variable `${MinLength}` in this phrase will be replaced by the actual `minLengthWords` specified in the question object
+  * `terminateAnswerProperly` - when a user does not send the appropriate message to signify having finished a survey during a `qualtrics` type question
+* `keyboards` - phrases sent to the user when prompting certain types of questions
+  * `singleChoice` - telling the user to select a single choice in `singleChoice` type questions
+  * `multiChoice` - telling the user to select multiple choices and how to terminate choosing in `multiChoice` type questions
+  * `terminateAnswer` - single word that user types (`freeformMulti`, `qualtrics`) or selects (`multiChoice`) to finish answering and move on
+  * `qualtricsFillPrompt` - telling the user to fill out a survey in `qualtrics` type questions
+  * `qualtricsDonePrompt` - telling the user what to send to proceed after filling out the `qualtrics` survey
+  * `freeformSinglePrompt` - telling the user to type out their answer only in a single message in `freeform` type questions
+  * `freeformMultiPrompt` - telling the user to type out their answer over how many ever messages they want, and how to finish answering in `freeformMulti` type questions.
+  * `linkToSurvey` - refer the user to the link to the survey in `qualtrics` type questions.
+  * `likert5Options` - options for a five point likert scale in `likert5` type question
+  * `likert7Options` - options for a five point likert scale in `likert7` type question
+  
 
-Here is the object with all of the above phrases. Instead of an example, you can consider this as a template to copy and paste. You may change a phrase or add a language as you see fit. Just make sure that the language is spelled correctly, just as it is in the field `languages` of the experimenter JSON object.
+Below is the object with all of the above phrases. You can consider this as a template to copy and paste, instead of as an example. You may change phrases to adjust the tone of the chatbot, or add a language as you see fit. Just make sure that the language is spelled correctly, just as it is in the field `languages` of the experimenter JSON object.
 
 After this template, you will see how this is added to the experimenter JSON object.
 
 ```
 "phrases" : {
   "answerValidation": {
-  "invalidOption": {
-  "English": "Please pick <b>only from the given options</b>",
-  "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
-  },
-  "noOptions": {
-  "English": "Please select <b>at least one option</b>",
-  "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>"
-  },
-  "notANumber": {
-  "English": "Please enter a number",
-  "Deutsch": "Geben Sie eine Zahl ein"
-  },
-  "numberTooHigh": {
-  "English": "Please enter a number below ${UpperBound}",
-  "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
-  },
-  "numberTooLow": {
-  "English": "Please enter a number above ${LowerBound}",
-  "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
-  },
-  "notLongEnoughChars" : {
-  "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} characters.",
-  "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Charaktere betragen."
-  },
-  "notLongEnoughWords" : {
-  "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
-  "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
-  },
-  "terminateAnswerProperly" : {
-  "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
-  "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
-  }
+    "invalidOption": {
+      "English": "Please pick <b>only from the given options</b>",
+      "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+    },
+    "noOptions": {
+      "English": "Please select <b>at least one option</b>",
+      "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>"
+    },
+    "notANumber": {
+      "English": "Please enter a number",
+      "Deutsch": "Geben Sie eine Zahl ein"
+    },
+    "numberTooHigh": {
+      "English": "Please enter a number below ${UpperBound}",
+      "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
+    },
+    "numberTooLow": {
+      "English": "Please enter a number above ${LowerBound}",
+      "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+    },
+    "notLongEnoughChars" : {
+      "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} characters.",
+      "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Charaktere betragen."
+    },
+    "notLongEnoughWords" : {
+      "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
+      "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
+    },
+    "terminateAnswerProperly" : {
+      "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
+      "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
+    }
   },
   "keyboards": {
-  "singleChoice": {
-  "English": "Please pick one from the given options. You may need to scroll down to see all options.",
-  "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
-  },
-  "multiChoice": {
-  "English": "Choose as many options as you like. Click Done to finish choosing. You may need to scroll down to see all options.",
-  "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
-  },
-  "terminateAnswer": {
-  "English": "Done",
-  "Deutsch": "Fertig"
-  },
-  "finishedChoosingReply": {
-  "English": "I have noted down your choices",
-  "Deutsch": "Ich habe Ihre Wahlen notiert"
-  },
-  "qualtricsFillPrompt" : {
-  "English" : "Please follow the link below to the survey",
-  "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage"
-  },
-  "qualtricsDonePrompt" : {
-  "English" : "Send <i>Done</i> when you are finished with the survey.",
-  "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
-  },
-  "freeformSinglePrompt" : {
-  "English" : "Type in your answer in a <b>single</b> message and send.",
-  "Deutsch" : "Geben Sie Ihre Antwort in nur <b>einer</b> Nachricht ein."
-  },
-  "freeformMultiPrompt" : {
-  "English" : "Type in your answer over one or multiple messages. Send the message <i>Done</i> when complete.",
-  "Deutsch" : "Geben Sie Ihre Antwort über eine oder mehrere Nachrichten ein. Senden Sie <i>Fertig</i>, wenn fertig"
-  },
-  "linkToSurvey" : {
-  "English" : "Link to Survey (opens in browser)",
-  "Deutsch" : "Link zur Umfrage (wird im Browser geöffnet)"
-  },
-  "likert5Options": {
-  "English": [
-  "Strongly Disagree",
-  "Disagree",
-  "Neither",
-  "Agree",
-  "Strongly Agree"
-  ],
-  "Deutsch": [
-  "Stimme vollständig nicht zu",
-  "Stimme nicht zu",
-  "Weder noch",
-  "Stimme zu",
-  "Stimme vollständig zu"
-  ]
-  },
-  "likert7Options": {
-  "English": [
-  "Strongly Disagree",
-  "Disagree",
-  "Somewhat Disagree",
-  "Neither",
-  "Somewhat Agree",
-  "Agree",
-  "Strongly Agree"
-  ],
-  "Deutsch": [
-  "Stimme vollständig nicht zu",
-  "Stimme nicht zu",
-  "Stimme eher nicht zu",
-  "Weder noch",
-  "Stimme eher zu",
-  "Stimme zu",
-  "Stimme vollständig zu"
-  ]
-  }
+    "singleChoice": {
+      "English": "Please pick one from the given options. You may need to scroll down to see all options.",
+      "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
+    },
+    "multiChoice": {
+      "English": "Choose as many options as you like. Click Done to finish choosing. You may need to scroll down to see all options.",
+      "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
+    },
+    "terminateAnswer": {
+      "English": "Done",
+      "Deutsch": "Fertig"
+    },
+    "qualtricsFillPrompt" : {
+      "English" : "Please follow the link below to the survey",
+      "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage"
+    },
+    "qualtricsDonePrompt" : {
+      "English" : "Send <i>Done</i> when you are finished with the survey.",
+      "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
+    },
+    "freeformSinglePrompt" : {
+      "English" : "Type in your answer in a <b>single</b> message and send.",
+      "Deutsch" : "Geben Sie Ihre Antwort in nur <b>einer</b> Nachricht ein."
+    },
+    "freeformMultiPrompt" : {
+      "English" : "Type in your answer over one or multiple messages. Send the message <i>Done</i> when complete.",
+      "Deutsch" : "Geben Sie Ihre Antwort über eine oder mehrere Nachrichten ein. Senden Sie <i>Fertig</i>, wenn fertig"
+    },
+    "linkToSurvey" : {
+      "English" : "Link to Survey (opens in browser)",
+      "Deutsch" : "Link zur Umfrage (wird im Browser geöffnet)"
+    },
+    "likert5Options": {
+      "English": [
+        "Strongly Disagree",
+        "Disagree",
+        "Neither",
+        "Agree",
+        "Strongly Agree"
+      ],
+      "Deutsch": [
+        "Stimme vollständig nicht zu",
+        "Stimme nicht zu",
+        "Weder noch",
+        "Stimme zu",
+        "Stimme vollständig zu"
+      ]
+    },
+    "likert7Options": {
+      "English": [
+        "Strongly Disagree",
+        "Disagree",
+        "Somewhat Disagree",
+        "Neither",
+        "Somewhat Agree",
+        "Agree",
+        "Strongly Agree"
+      ],
+      "Deutsch": [
+        "Stimme vollständig nicht zu",
+        "Stimme nicht zu",
+        "Stimme eher nicht zu",
+        "Weder noch",
+        "Stimme eher zu",
+        "Stimme zu",
+        "Stimme vollständig zu"
+      ]
+    }
   },
   "schedule" : {
-  "scheduleQNotif" : {
-  "English" : "Question scheduled for the following time:",
-  "Deutsch" : "Frage geplant zur folgenden Zeit:"
-  },
-  "scheduleANotif" : {
-  "English" : "Action scheduled for the following time:",
-  "Deutsch" : "Handlung geplant zur folgenden Zeit:"
-  }
+    "scheduleQNotif" : {
+      "English" : "Question scheduled for the following time:",
+      "Deutsch" : "Frage geplant zur folgenden Zeit:"
+    },
+    "scheduleANotif" : {
+      "English" : "Action scheduled for the following time:",
+      "Deutsch" : "Handlung geplant zur folgenden Zeit:"
+    }
   },
   "endExperiment" : {
-  "English" : "You have successfully completed the experiment! You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
-  "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
+    "English" : "You have successfully completed the experiment! You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
+    "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
   }
 },
 ```
-The remainder of this description will show you the mandatory and optional features an experiment requires to run.
 
-Follow this documentation along with an [example experiment configuration](others/exampleConfig.json) to see how the following example would translate into an actual document. 
-
-```
-experimentName : "ExampleExperiment"                    // Mandatory: name of your experiment 
-                                                        //    - can be any string of characters
-experimentId : "experiment123"                          // Mandatory: unique identifier for your experiment
-                                                        //    - can be any string of characters
-                                          
-participantParameters :                                 // Custom parameters that can be defined by the experimenter
-|- pid : "string"                                       // Each participant will have one set of these parameters                                   
-|- language : "string"                                  //   "language" is mandatory if multiple options are possible
-  
-languages : ["English", "Deutsch"]                      // List of strings specifying the possible languages
-
-defaultLanguage : "English"                             // Mandatory, even if the experiment has only one language
-
-questionCategories :                                    // Categories under which questions can fall
-|                                                       // Contains objects whose names are the names of the categories
-|
-|- setupQuestions :                                     // First question category. This category is mandatory to set 
-|  |                                                    // the values of some important parameters.
-|  |                                                    // Category is a list of question objects
-|  |                                                    // Setup questions are asked at the very beginning by default
-|  | 
-|  |- [0]                                               // This denotes the first (index 0) question object in list
-|  |  |- qId: "lang"                                    // Mandatory: unique identifier of question
-|  |  |- text:                                          // Mandatory: display text of question
-|  |  |  |- English: "Language?"                        // must be specified in all available languages
-|  |  |  |- Deutsch: "Sprache?"   
-|  |  |             
-|  |  |- qType : "singleChoice"                         // Mandatory: specifies input format
-|  |  |                                                 // one of ["singleChoice", "freeform", "multiChoice"]
-|  |  |- options :                                      // Mandatory if qType is "singleChoice" or "multiChoice"
-|  |  |  |- English : ["EN","DE"]                       // options must be specified in all available languages
-|  |  |  |- Deutsch : ["EN","DE"]                       // (although it is redundant for this question)
-|  |  |                                    
-|  |  |- saveAnswerTo : "language"                      // Optional: save the answer to one of the custom parameters
-|  |  |
-|  |  |- start : true                                   // First question in category. Exactly one question in category
-|  |  |                                                 //  must have this
-|  |  |- nextAction :                                   // Optional: next action to execute after question has
-|  |  |  |                                              //   been answered
-|  |  |  |- aType : "sendQuestion"                      // Mandatory: can be "sendQuestion" or "scheduleQuestions"
-|  |  |  |                                              // 
-|  |  |  |- data : "setupQuestions.pId"                 // If aType = "sendQuestion", data must be valid 
-|  |  |                                                 //    "<questionCategory>.<qId>"
-|  |  |           
-|  |  [1]
-|  |  |- qId: "pId"                                     // Defining another set-up question to collect Participant ID
-|  |  |- text:                                          // Mandatory: display text of question
-|  |  |  |- English: "Enter PID"                        // must be specified in all available languages
-|  |  |  |- Deutsch: "Gib PID ein"   
-|  |  |             
-|  |  |- qType : "freeform"                             // Specifying freeform text input
-|  |  |                                    
-|  |  |- saveAnswerTo : "pid"                           // Optional: save the answer to one of the custom parameters
-|  |  |
-|  |  |
-|  |  |- nextAction :                                   // Optional: next action to execute after question has 
-|  |  |  |- aType : "scheduleQuestions"                 // been answered. This schedules all of the questions 
-|  |  |                                                 // listed in "scheduledQuestions"
-|  |  |
-|  |  |- replyMessages :                                // Optional: Messages to send when answer is received
-|  |  |  |                                              // List of messages to be specified in all languages
-|  |  |  |- English : ["Received","Thanks"]
-|  |  |  |- Deutsch : ["Erhalten","Danke"]
-|                                                   
-|- morningQuestions :                                   // Creating another question category 
-|  |                                                    
-|  | 
-|  |- [0]                                               // This denotes the first (index 0) question object 
-|  |  |                                                 //  in category list
-|  |  |- qId: "feelings"                                   
-|  |  |- text:                                          // Mandatory: display text of question
-|  |  |  |- English: "Which feelings today?"            // must be specified in all available languages
-|  |  |  |- Deutsch: "Welche Gefühle heute?"   
-|  |  |             
-|  |  |- qType : "multiChoice"                          // Specifying question where multiple options can be selected
-|  |  |                                                 
-|  |  |- options :                                      // Mandatory if qType is "singleChoice" or "multiChoice"
-|  |  |  |- English : ["sad","happy","bored"]           
-|  |  |  |- Deutsch : ["traurig","froh","gelangweilt"]  
-|  |  |                                    
-|  |  |- start : true                 
-
-scheduledQuestions :                                    // List of questions that are to be scheduled every day
-|                                                       //    details about time/days to schedule
-|- [0]                                                  // First question to be scheduled in list
-|  |- qId : "morningQuestions.feelings"                 // Mandatory: Valid <questionCategory>.<qId>
-|  |
-|  |- atTime : "10:00"                                  // Mandatory: time in 24-hr format - "HH:MM"
-|  |                                                    //   Question specified in PID asked at this time
-|  |- onDays : ["Mon","Tue","Wed"]                      // Mandatory: Days on which question should be asked
-                                                        //   [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-                                                        
-phrases                                                 // Mandatory phrases to be translated into every language      
-|                                                       //  !! Only translations for these given phrases into each 
-|                                                       //    language must be added here. Nothing else to be changed !! 
-|                             
-|- answerValidation :                                   // Phrases related to telling the user about wrong answer format
-|  |                                                    
-|  |- option                                            // Phrase displayed when user is prompted to select options, but
-|  |  |                                                 //  types in another answer that is not in the options.
-|  |  |- English: "Choose only from options"            // Must be specified in all available languages
-|  |  |- Deutsch: "Nur aus den Optionen wählen"   
-|
-|- keyboards :                                          // Phrases related to prompting the user to input/select
-|  |                                                    
-|  |- singleChoice                                      // Phrase displayed when user must select only one option
-|  |  |                                                 
-|  |  |- English: "Choose one option"          
-|  |  |- Deutsch: "Eine Option wählen"  
-|  |
-|  |- multiChoice                                       // Phrase displayed when user must select multiple options
-|  |  |                                                 
-|  |  |- English: "Choose many options"          
-|  |  |- Deutsch: "Mehrere Optionen wählen"
-|  |
-|  |- terminateMultipleChoice                           // Text displayed on button that signifies that the user is 
-|  |  |                                                 //   done choosing (for multiChoice questions)
-|  |  |- English: "Done"          
-|  |  |- Deutsch: "Fertig"
-|  |
-|  |- finishedChoosingReply                             // Message sent to confirm that the user's options have been 
-|  |  |                                                 //   registered (for multiChoice questions)
-|  |  |- English: "Choices registered"          
-|  |  |- Deutsch: "Wahlen erfasst"
-|
-|- schedule :                                           // Phrases related to telling the user about scheduled questions
-|  |                                                    
-|  |- scheduleNotif                                     // Message to user about a question being scheduled, and on which
-|  |  |                                                 //  times and days
-|  |  |- English: "Questions scheduled"            
-|  |  |- Deutsch: "Frage geplant"   
-                                                                                  
-```
-
-This experiment config file will result in a chatbot that has the following functionality:
-
-* When user sends `/start`, begin by asking the setup questions:
-  * First ask to choose one language which user prefers (`setupQuestions.lang`)
-    * This will be stored to the `language` variable of participant parameters
-  * Then ask immediately after to type in PID (`setupQuestions.pid`)
-    * This will be stored to the `pid` variable of participant parameters
-* After setup questions are complete, questions specified in `scheduledQuestions` are scheduled for the given times.
-  * On Monday, Tuesday, and Wednesday at 10:00, the chatbot will ask the user to select multiple emotions they are feeling.
-
-![git1](https://user-images.githubusercontent.com/42759570/164409102-dc514ae1-9681-4f9c-a668-42b120cf5e13.png)
-![git2](https://user-images.githubusercontent.com/42759570/164409111-4a689baf-b3cd-4699-b567-83477c5e6c82.png)
-![git3](https://user-images.githubusercontent.com/42759570/164409113-369199d6-078e-42c6-8510-8cbfeaf0b757.png)
-![git4](https://user-images.githubusercontent.com/42759570/164409116-888f0e66-2e25-407c-9eb6-abd6628fd133.png)
-![git5](https://user-images.githubusercontent.com/42759570/164409117-2428a859-ff99-4cf4-b66e-bb249255887b.png)
-
-Relevant data that is saved in the database:
-* All custom participant parameters and values
-* List of answer received with the following information:
-  * ID of question asked
-  * Text of question asked
-  * Timestamp of answer
-  * Content(s) of answer

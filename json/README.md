@@ -2119,8 +2119,8 @@ All you have to do is have the following action executed after a question has be
 
 Secondly, with all the different possibilities, how is it recommended to start the first stage then?
 
-* If you want to start the first stage on the day after setting up, before the first question of that stage is asked:
-  * Conditionally schedule a dummy question for the morning which executes the necessary `"startStage"` action, with the condition being that no stage is running yet (`"${STAGE_NAME} == $S{}"`).
+* If you want to start the first stage on the day AFTER setting up, before the first question of that stage is asked:
+  * Conditionally schedule a dummy question for the morning, which executes the necessary `"startStage"` action, with the condition being that no stage is running yet (`"${STAGE_NAME} == $S{}"`).
 * If you want to start the first stage on the same day as the setup questions
   * Create a dummy question within `setupQuestions`, and make that the `nextQuestion` of the last setup question. Ensure to set field `selectQFirst` of the last setup question object to `true`, so that this question can be read from the default categories before the participant is assigned to the condition.
   * Give the dummy question a `cNextActions` field
@@ -2128,7 +2128,7 @@ Secondly, with all the different possibilities, how is it recommended to start t
   * Execute the `startStage` action for the first stage of that condition.
   * You can then already ask the first question of the stage by using `cNextQuestions` in the same manner and selecting the first question of the first stage appropriate to the assigned condition.  
   
-In our example configuration file, we would want the first day of the stage to start on the next day, regardless of the condition. So we'll follow the first scenario and create a dummy question called `startStage` and save it under category `"preTestQs"`. This will then be scheduled in the morning to occur if no stage has been started.
+In our example configuration file, we would want the first day of the first stage to start on the next day, regardless of the condition. So we'll follow the first scenario and create a dummy question called `startStage` and save it under category `"preTestQs"`. This will then be scheduled in the morning to occur if no stage has been started.
 
 We'll first create the question...
 
@@ -2183,7 +2183,7 @@ In config.json
     "Condition1" : {
       "questionCategories" : {
         "preTestQs" : [
-          { "qId" : "
+          { "qId" : "startStage" ... }
         ],
         "testMorningQs" : [...],
         "testEveningQs" : [...],
@@ -2206,6 +2206,8 @@ In config.json
 ```
 
 The same can be repeated for `Condition2`, except with the first stage to start being `"Test"`.
+
+There may be more scenarios related to when the stage should start and how to start it at that time. Hopefully every functionality that was described by now, particularly scheduled questions, dummy questions, and conditional next steps, will help you start your first stage at the appropriate time.
 
 ## <span id="Phrases"> Mandatory Phrases </span>
 

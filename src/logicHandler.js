@@ -76,13 +76,14 @@ let processNextSteps = async(bot, uniqueId) => {
     }
     let nextActions = actionsObj.data;
 
+    let failedActions = [];
+
     // Process all next actions, if any
     for(let i = 0; i < nextActions.length; i++){
         let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i]);
 
-        // TODO: continue with other actions if a single action fails?
         if(pActionObj.returnCode === DevConfig.FAILURE_CODE){
-            return pActionObj;
+            failedActions.push(pActionObj.data);
         }
         // Get updated participant for next action:
         try{
@@ -110,7 +111,12 @@ let processNextSteps = async(bot, uniqueId) => {
             return returnObj;
         }
     }
-    return ReturnMethods.returnSuccess("");
+    if(failedActions.length === 0){
+        return ReturnMethods.returnSuccess("");
+    } else {
+        return ReturnMethods.returnFailure("LHandler: Following actions failed: \n"+failedActions.join("\n"));
+    }
+
 
 }
 module.exports.processNextSteps = processNextSteps;

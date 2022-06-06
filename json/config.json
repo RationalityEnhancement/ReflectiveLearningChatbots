@@ -63,7 +63,7 @@
     "experimenter" : true,
     "actionMessages" : false,
     "enableNext" : true,
-    "messageDelay" : true,
+    "messageDelay" : false,
     "developer" : false
   },
   "languages" : ["English", "Deutsch"],

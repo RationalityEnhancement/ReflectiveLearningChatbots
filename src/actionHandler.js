@@ -15,23 +15,30 @@ const StageHandler = require('./stageHandler')
  *
  */
 
-// TODO: More informative validation error
 let validateActionObject = (actionObj) => {
     let aType = actionObj.aType;
     let args = actionObj.args;
 
     let validActions = DevConfig.VALID_ACTIONS_ARGS;
 
-    if(!(aType in validActions)) return false;
+    if(!(aType in validActions)) {
+        return ReturnMethods.returnFailure("ActHandler: Invalid action type: " + aType);
+    }
 
-    if(!Array.isArray(args)) return false;
+    if(!Array.isArray(args)) {
+        return ReturnMethods.returnFailure("ActHandler: args must be array");
+    }
 
     let requiredArgs = validActions[aType];
-    if(args.length !== requiredArgs) return false;
+    if(args.length !== requiredArgs) {
+        return ReturnMethods.returnFailure(`ActHandler: aType ${aType} requires ${requiredArgs} args`);
+    }
 
-    if(args.some(e => typeof e === "undefined")) return false;
+    if(args.some(e => typeof e === "undefined")) {
+        return ReturnMethods.returnFailure("ActHandler: args cannot be undefined");
+    }
 
-    return true;
+    return ReturnMethods.returnSuccess(true);
 
 }
 module.exports.validateActionObject = validateActionObject;
@@ -45,6 +52,7 @@ module.exports.validateActionObject = validateActionObject;
  * }
  *
  * @param bot Telegram bot instance
+ * @param config
  * @param participant updated participant object
  * @param actionObj action that is to be sent
  * @returns {Promise<{returnCode: *, data: *}>}
@@ -55,8 +63,9 @@ let processAction = async(bot, config, participant, actionObj) => {
     if(!participant){
         return ReturnMethods.returnFailure("ActHandler: Participant not received")
     }
-    if(!validateActionObject(actionObj)) {
-        return ReturnMethods.returnFailure("ActHandler: Action is not valid")
+    let validateActionObj = validateActionObject(actionObj);
+    if(validateActionObj.returnCode === DevConfig.FAILURE_CODE) {
+        return validateActionObj;
     }
 
     // Get chat ID

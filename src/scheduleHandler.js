@@ -487,7 +487,7 @@ class ScheduleHandler{
         rule.dayOfWeek = scheduleDayIndices;
         rule.hour = scheduleHours;
         rule.minute = scheduleMins;
-        rule.tz = questionInfo.tz;
+        if(questionInfo.tz) rule.tz = questionInfo.tz;
 
         return ReturnMethods.returnSuccess(rule)
     }

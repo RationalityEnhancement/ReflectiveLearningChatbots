@@ -464,6 +464,53 @@ describe('Update Stage Day', () => {
 
 })
 
+describe('End experiment', () => {
+
+    describe('End experiment when no current stage', () => {
+        let returnObj, newPart, stageLen;
+        it('Should end experiment', async () => {
+            await participants.updateStageParameter(testPartId, "stageName", "");
+            await participants.updateField(testPartId, "currentState", "answerReceived");
+            let participant = await participants.get(testPartId);
+            stageLen = participant.stages.activity.length;
+            expect(participant.stages.stageName).to.equal("");
+            returnObj = await StageHandler.endExperiment(testPartId);
+            newPart = await participants.get(testPartId);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(-1);
+            expect(newPart.stages.stageName).to.equal("");
+            expect(newPart.currentState).to.equal("experimentEnd")
+        })
+        it('Should have not added activity', () => {
+            expect(newPart.stages.activity.length).to.equal(stageLen);
+        })
+    })
+    describe('End experiment when yes current stage', () => {
+        let returnObj, newPart, stageLen;
+        it('Should end experiment', async () => {
+            await participants.updateStageParameter(testPartId, "stageName", "stageName");
+            await participants.updateField(testPartId, "currentState", "answerReceived");
+            let participant = await participants.get(testPartId);
+            stageLen = participant.stages.activity.length;
+            expect(participant.stages.stageName).to.equal("stageName");
+            returnObj = await StageHandler.endExperiment(testPartId);
+            newPart = await participants.get(testPartId);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(-1);
+            expect(newPart.stages.stageDay).to.equal(0);
+            expect(newPart.stages.stageName).to.equal("");
+            expect(newPart.currentState).to.equal("experimentEnd")
+        })
+        it('Should have added activity', () => {
+            expect(newPart.stages.activity.length).to.equal(stageLen+1);
+            let newActivity = newPart.stages.activity[newPart.stages.activity.length-1];
+            expect(newActivity.name).to.equal("stageName");
+            expect(newActivity.what).to.equal(DevConfig.END_STAGE_STRING);
+            expect(typeof newActivity.when).to.equal("string");
+        })
+    })
+})
+
 describe('Creating action list', () => {
     describe('Getting on days object', () => {
         let allDaysKey = DevConfig.DAY_INDEX_ORDERING.slice().sort().join();

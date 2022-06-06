@@ -344,7 +344,6 @@ module.exports.startStage = async (participant, nextStageName) => {
  * @param uniqueId
  * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}|{returnCode: *, data: *}>}
  */
-// TODO: End current stage if there is still an outstanding stage
 module.exports.endExperiment = async (uniqueId) => {
     // Put require here because of dependency issues or sth, I guess.
     const ScheduleHandler = require('./scheduleHandler');

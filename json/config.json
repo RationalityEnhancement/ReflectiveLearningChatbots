@@ -61,7 +61,7 @@
   },
   "debug" : {
     "experimenter" : true,
-    "actionMessages" : false,
+    "actionMessages" : true,
     "enableNext" : true,
     "messageDelay" : false,
     "developer" : false

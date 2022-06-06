@@ -271,11 +271,14 @@ bot.command('next', async ctx => {
 
                 // If the question is a dummy that performs only an action, then don't inform the experimenter
                 //  and go to the next question
+                let onlyAction = false;
                 if(nextQuestion.qType === "dummy"){
                     if(nextQuestion.cNextQuestions || nextQuestion.nextQuestion){
                         let nextQMsg = `(Debug) If there is a question at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}, it will appear in the following message(s)`;
                         await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
                         nextQuestionFound = true;
+                    } else {
+                        onlyAction = true;
                     }
                 } else {
                     let nextQMsg = `(Debug) The following question will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
@@ -286,6 +289,11 @@ bot.command('next', async ctx => {
                 let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, !config.debug.messageDelay);
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
                     throw returnObj.data;
+                }
+                if(onlyAction){
+                    let firstName = participant.firstName;
+                    participant = await getParticipant(uniqueId);
+                    participant.firstName = firstName;
                 }
             } else {
                 // Send a message about when the action will appear

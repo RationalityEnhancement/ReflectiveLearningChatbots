@@ -187,6 +187,10 @@
       "scheduleANotif" : {
         "English" : "Action scheduled for the following time:",
         "Deutsch" : "Handlung geplant zur folgenden Zeit:"
+      },
+      "dayNames" : {
+        "English" : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "Deutsch" : ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
       }
     },
     "endExperiment" : {
@@ -404,8 +408,8 @@
           {
             "qId" : "firstGoal",
             "text" : {
-              "English" : "${FIRST_NAME}, what is the main task-oriented thing you want to do to advance your project(s) today? Tip: Make it SMART.",
-              "Deutsch" : "${FIRST_NAME} was ist die wichtigste aufgabenbezogene Sache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen? Tipp: Formulieren Sie ein SMART-Ziel."
+              "English" : "${FIRST_NAME}, what is the main task-oriented thing you want to do to advance your project(s) today (${TODAY_NAME})? Tip: Make it SMART.",
+              "Deutsch" : "${FIRST_NAME} was ist die wichtigste aufgabenbezogene Sache, die Sie heute (${TODAY_NAME}) erledigen wollen, um Ihre(e) Projekt(e) voranzubringen? Tipp: Formulieren Sie ein SMART-Ziel."
             },
             "qType" : "freeform",
             "nextQuestion" :"goalSettingOdd.askAddTaskGoal",

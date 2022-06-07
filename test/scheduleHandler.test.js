@@ -811,7 +811,17 @@ describe('Scheduling one Operation', () => {
         return foundJob;
     }
 
-
+let testPart = {
+    uniqueId : testId,
+    firstName : "Caleb",
+    parameters : {
+        language : "English",
+        timezone : "Europe/Berlin"
+    },
+    stages : {
+    },
+    currentAnswer : ["beans"],
+}
 describe('Scheduling all', () => {
     describe('Scheduling all questions normally', () => {
         let actionList = [
@@ -828,7 +838,7 @@ describe('Scheduling all', () => {
             }];
         it('Should return success', async () => {
             scheduleAllReturnObj = await ScheduleHandler.scheduleAllOperations(
-                testBot, testId, testConfig, actionList,false);
+                testBot, testPart, testConfig, actionList,false);
             expect(scheduleAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of scheduled jobs', () => {
@@ -1298,7 +1308,7 @@ describe('Scheduling all 2', () => {
     describe('Scheduling all questions but with fails', () => {
 
         it('Should return partial failure', async () => {
-            scheduleAllReturnObj = await ScheduleHandler.scheduleAllOperations(testBot, testId, failConfig,[],false);
+            scheduleAllReturnObj = await ScheduleHandler.scheduleAllOperations(testBot, testPart, failConfig,[],false);
             expect(scheduleAllReturnObj.returnCode).to.equal(0);
             console.log(scheduleAllReturnObj.failData)
         });

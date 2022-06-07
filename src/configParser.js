@@ -244,6 +244,9 @@ class ConfigParser{
      * @param participant participant object data. Must contain the following fields:
      *                      currentAnswer
      *                      firstName
+     *                      uniqueId
+     *                      stages
+     *                      conditionName
      * @param targetString string in which variables are to be substituted
      * @param sensitiveDataAlso boolean flag for whether variables containing sensitive data
      *                          should also be substituted

@@ -1,7 +1,7 @@
 {
   "experimentName" : "QHandler",
   "experimentId" : "12345",
-  "experimentConditions" : ["Cond1", "Cond2"],
+  "experimentConditions" : ["Cond1", "Cond2", "VarCond", "FailCond"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
   "debug" : {
@@ -86,7 +86,112 @@
           }
         ]
       }
+    },
+    "VarCond" : {
+      "questionCategories": {
+        "chain3" : [
+          {
+            "qId": "q1",
+            "text": {
+              "English": "EnglishQ3",
+              "Deutsch": "DeutschQ3"
+            },
+            "qType": "freeform",
+            "saveAnswerTo": "pid",
+            "replyMessages": {
+              "English": [
+                "EnglishReply3"
+              ],
+              "Deutsch": [
+                "DeutschReply3"
+              ]
+            }
+          }
+        ]
+      },
+      "scheduledQuestions" : [
+        {
+          "qId" : "chain3.q1",
+          "atTime" : "${goalSetTime}",
+          "onDays" : ["Mon"]
+        },
+        {
+          "qId" : "chain3.q2",
+          "atTime" : "10:00",
+          "onDays" : ["Mon"]
+        }
+      ]
+    },
+    "FailCond1" : {
+      "questionCategories": {
+        "chain4" : [
+          {
+            "qId": "q1",
+            "text": {
+              "English": "EnglishQ3",
+              "Deutsch": "DeutschQ3"
+            },
+            "qType": "freeform",
+            "saveAnswerTo": "pid",
+            "replyMessages": {
+              "English": [
+                "EnglishReply3"
+              ],
+              "Deutsch": [
+                "DeutschReply3"
+              ]
+            }
+          }
+        ]
+      },
+      "scheduledQuestions" : [
+        {
+          "qId" : "chain4.q1",
+          "atTime" : "${failVariable}",
+          "onDays" : ["Mon"]
+        },
+        {
+          "qId" : "chain4.q2",
+          "atTime" : "10:00",
+          "onDays" : ["Mon"]
+        }
+      ]
+    },
+    "FailCond2" : {
+      "questionCategories": {
+        "chain4" : [
+          {
+            "qId": "q1",
+            "text": {
+              "English": "EnglishQ3",
+              "Deutsch": "DeutschQ3"
+            },
+            "qType": "freeform",
+            "saveAnswerTo": "pid",
+            "replyMessages": {
+              "English": [
+                "EnglishReply3"
+              ],
+              "Deutsch": [
+                "DeutschReply3"
+              ]
+            }
+          }
+        ]
+      },
+      "scheduledQuestions" : [
+        {
+          "qId" : "chain4.q1",
+          "onDays" : ["Mon"]
+        },
+        {
+          "qId" : "chain4.q2",
+          "atTime" : "10:00",
+          "onDays" : ["Mon"]
+        }
+      ]
     }
+
   },
   "phrases" : {
     "answerValidation": {

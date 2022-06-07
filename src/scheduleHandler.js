@@ -295,22 +295,22 @@ class ScheduleHandler{
      * config file, based on the condition participant is assigned to
      *
      * @param bot Telegram bot instance
-     * @param uniqueId uniqueId of the participant for whom questions are to be scheduled
+     * @param participant
      * @param config loaded config file of experiment
      * @param actionList A list of actions to be scheduled, if any
      * @param debug flag whether in debug mode or not
      * @returns {Promise<{returnCode: number, data}|{returnCode: *, data: *}|{returnCode: *, successData: *, failData: *}>}
      */
-    static async scheduleAllOperations(bot, uniqueId, config, actionList, debug = false){
+    static async scheduleAllOperations(bot, participant, config, actionList, debug = false){
         const qHandler = new QuestionHandler(config);
-        const participant = await participants.get(uniqueId);
+        let uniqueId = participant.uniqueId;
 
         // Get the assigned condition and preferred language of the participant
         let partCond = participant["conditionName"];
         let partLang = participant.parameters.language;
 
         // Fetch all the scheduled questions for the particular condition
-        let schQObj = qHandler.getScheduledQuestions(partCond);
+        let schQObj = qHandler.getScheduledQuestions(partCond, participant);
         if(schQObj.returnCode === DevConfig.FAILURE_CODE){
             return schQObj;
         }

@@ -86,7 +86,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             if(config.debug.developer){
               let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
               let qHandler = new QuestionHandler(config);
-              let schQObj = qHandler.getScheduledQuestions(participant.conditionName);
+              let schQObj = qHandler.getScheduledQuestions(participant.conditionName, participant);
               if(schQObj.returnCode === DevConfig.FAILURE_CODE){
                 return schQObj;
               }
@@ -98,7 +98,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
                 return actionObj;
             }
-            let returnObj = await ScheduleHandler.scheduleAllOperations(bot, participant.uniqueId, config, actionsObj.data, config.debug.experimenter);
+            let returnObj = await ScheduleHandler.scheduleAllOperations(bot, participant, config, actionsObj.data, config.debug.experimenter);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 return returnObj;
             } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){

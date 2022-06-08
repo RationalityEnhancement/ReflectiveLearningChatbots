@@ -80,14 +80,14 @@ describe('Validate action object', () => {
             "args" : ["1", "2"]
         }
         let ret = ActionHandler.validateActionObject(actionObj);
-        assert(!ret);
+        expect(ret.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
     it('Should fail when action type undefined', () => {
         let actionObj = {
             "args" : ["1", "2"]
         }
         let ret = ActionHandler.validateActionObject(actionObj);
-        assert(!ret);
+        expect(ret.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
     it('Should fail when args not array', () => {
         let actionObj = {
@@ -95,7 +95,7 @@ describe('Validate action object', () => {
             "args" : "test"
         }
         let ret = ActionHandler.validateActionObject(actionObj);
-        assert(!ret);
+        expect(ret.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
     it('Should fail when number of args doesnt match atype', () => {
         let actionObj = {
@@ -103,7 +103,7 @@ describe('Validate action object', () => {
             "args" : ["1"]
         }
         let ret = ActionHandler.validateActionObject(actionObj);
-        assert(!ret);
+        expect(ret.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
     it('Should fail when one arg is undefined', () => {
         let actionObj = {
@@ -111,7 +111,7 @@ describe('Validate action object', () => {
             "args" : ["1", undefined]
         }
         let ret = ActionHandler.validateActionObject(actionObj);
-        assert(!ret);
+        expect(ret.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
     it('Should succeed when all is correct', () => {
         let actionObj = {
@@ -119,7 +119,7 @@ describe('Validate action object', () => {
             "args" : ["1", "2"]
         }
         let ret = ActionHandler.validateActionObject(actionObj);
-        assert(ret);
+        expect(ret.returnCode).to.equal(DevConfig.SUCCESS_CODE);
     })
 })
 

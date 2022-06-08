@@ -299,20 +299,26 @@ describe('Scheduling one Operation', () => {
 
             await participants.add(testId);
             await participants.updateParameter(testId, "language", "English")
+            await participants.updateParameter(testId, "timezone", "Europe/Berlin")
             var participant = await participants.get(testId);
             expect(participant).to.not.be.null;
             expect(participant.uniqueId).to.equal(testId);
             expect(participant.parameters.language).to.equal("English");
+            expect(participant.parameters.timezone).to.equal("Europe/Berlin");
+
 
         });
         it('Should add and update participant parameter 2', async () => {
 
             await participants.add(testId2);
             await participants.updateParameter(testId2, "language", "English")
+            await participants.updateParameter(testId2, "timezone", "Europe/Berlin")
             var participant = await participants.get(testId2);
             expect(participant).to.not.be.null;
             expect(participant.uniqueId).to.equal(testId2);
             expect(participant.parameters.language).to.equal("English");
+            expect(participant.parameters.timezone).to.equal("Europe/Berlin");
+
 
         });
     })
@@ -324,7 +330,8 @@ describe('Scheduling one Operation', () => {
         const questionInfo = {
             qId: 'morningQuestions.addGoal',
             atTime: '17:00',
-            onDays: ["Mon", "Tue"]
+            onDays: ["Mon", "Tue"],
+            tz : "Europe/Berlin"
         };
 
         let returnObj, returnJob;
@@ -344,6 +351,7 @@ describe('Scheduling one Operation', () => {
             expect(recObj.dayOfWeek).to.eql(days);
             expect(recObj.hour).to.equal(hours);
             expect(recObj.minute).to.equal(mins);
+            expect(recObj.tz).to.equal(questionInfo.tz);
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
@@ -386,6 +394,7 @@ describe('Scheduling one Operation', () => {
             expect(recObj.dayOfWeek).to.eql(days);
             expect(recObj.hour).to.equal(hours);
             expect(recObj.minute).to.equal(mins);
+            expect(recObj.tz).to.be.undefined;
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
@@ -408,7 +417,8 @@ describe('Scheduling one Operation', () => {
         const questionInfo = {
             qId: 'eveningQuestions.focus',
             atTime: '17:00',
-            onDays: ["Mon", "Tue"]
+            onDays: ["Mon", "Tue"],
+            tz : "US/Pacific"
         };
 
         let returnObj, returnJob;
@@ -428,6 +438,7 @@ describe('Scheduling one Operation', () => {
             expect(recObj.dayOfWeek).to.eql(days);
             expect(recObj.hour).to.equal(hours);
             expect(recObj.minute).to.equal(mins);
+            expect(recObj.tz).to.equal(questionInfo.tz);
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
@@ -449,7 +460,8 @@ describe('Scheduling one Operation', () => {
             aType: 'clearVar',
             args: ["testStr"],
             atTime: '17:00',
-            onDays: ["Mon", "Tue"]
+            onDays: ["Mon", "Tue"],
+            tz : "Europe/Berlin"
         };
 
         let returnObj, returnJob;
@@ -469,6 +481,7 @@ describe('Scheduling one Operation', () => {
             expect(recObj.dayOfWeek).to.eql(days);
             expect(recObj.hour).to.equal(hours);
             expect(recObj.minute).to.equal(mins);
+            expect(recObj.tz).to.equal(actionInfo.tz);
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
@@ -513,6 +526,8 @@ describe('Scheduling one Operation', () => {
             expect(recObj.dayOfWeek).to.eql(days);
             expect(recObj.hour).to.equal(hours);
             expect(recObj.minute).to.equal(mins);
+            expect(recObj.tz).to.be.undefined;
+
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
@@ -558,6 +573,8 @@ describe('Scheduling one Operation', () => {
             expect(recObj.dayOfWeek).to.eql(days);
             expect(recObj.hour).to.equal(hours);
             expect(recObj.minute).to.equal(mins);
+            expect(recObj.tz).to.be.undefined;
+
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
@@ -794,8 +811,17 @@ describe('Scheduling one Operation', () => {
         return foundJob;
     }
 
-
-// TODO: See why these are failing???
+let testPart = {
+    uniqueId : testId,
+    firstName : "Caleb",
+    parameters : {
+        language : "English",
+        timezone : "Europe/Berlin"
+    },
+    stages : {
+    },
+    currentAnswer : ["beans"],
+}
 describe('Scheduling all', () => {
     describe('Scheduling all questions normally', () => {
         let actionList = [
@@ -812,8 +838,7 @@ describe('Scheduling all', () => {
             }];
         it('Should return success', async () => {
             scheduleAllReturnObj = await ScheduleHandler.scheduleAllOperations(
-                testBot, testId, testConfig, actionList,false);
-            console.log(scheduleAllReturnObj);
+                testBot, testPart, testConfig, actionList,false);
             expect(scheduleAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of scheduled jobs', () => {
@@ -1283,7 +1308,7 @@ describe('Scheduling all 2', () => {
     describe('Scheduling all questions but with fails', () => {
 
         it('Should return partial failure', async () => {
-            scheduleAllReturnObj = await ScheduleHandler.scheduleAllOperations(testBot, testId, failConfig,[],false);
+            scheduleAllReturnObj = await ScheduleHandler.scheduleAllOperations(testBot, testPart, failConfig,[],false);
             expect(scheduleAllReturnObj.returnCode).to.equal(0);
             console.log(scheduleAllReturnObj.failData)
         });

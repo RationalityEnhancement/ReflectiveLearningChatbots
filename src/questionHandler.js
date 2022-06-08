@@ -1,6 +1,7 @@
 const ReturnMethods = require('./returnMethods');
 const DevConfig = require('../json/devConfig.json');
 const lodash = require('lodash');
+const ConfigParser = require('./configParser')
 
 /**
  * Question handler class that takes in a config as a parameter
@@ -264,9 +265,10 @@ function QuestionHandler(config){
      * for a given condition.
      *
      * @param conditionName name of the condition
+     * @param participant
      * @returns {{returnCode: *, data: *}}
      */
-    this.getScheduledQuestions = (conditionName) => {
+    this.getScheduledQuestions = (conditionName, participant) => {
         let condition;
         if(!conditionName){
             condition = config;
@@ -281,6 +283,16 @@ function QuestionHandler(config){
             return ReturnMethods.returnSuccess([]);
         }
         let schQList = condition["scheduledQuestions"];
+
+        // Replace all variable timing values with values.
+        for(let i = 0; i < schQList.length; i++){
+            let curQ = schQList[i];
+            let replaceObj = ConfigParser.replaceVariablesInString(participant, curQ["atTime"], true);
+            if(replaceObj.returnCode === DevConfig.FAILURE_CODE){
+                return replaceObj
+            }
+            curQ["atTime"] = replaceObj.data;
+        }
 
         return ReturnMethods.returnSuccess(schQList);
     }

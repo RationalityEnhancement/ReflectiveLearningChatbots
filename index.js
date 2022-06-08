@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
 const ConfigParser = require('./src/configParser')
 const moment = require('moment-timezone')
+const lodash = require('lodash');
 const ActionHandler = require('./src/actionHandler');
 const LogicHandler = require('./src/logicHandler')
 
@@ -172,9 +173,6 @@ bot.command('delete_me', async ctx => {
 
 // Delete the experiment
 bot.command('delete_exp', async ctx => {
-  // TODO: Delete all participants when experiment is deleted?
-  // TODO: OR add up all participants when experiment is created again?
-  // TODO: OR perhaps recount each time the experiment starts up for a sanity check?
     if(!config.debug.experimenter) return;
   try{
       // Check if experiment exists
@@ -271,17 +269,32 @@ bot.command('next', async ctx => {
                 }
                 let nextQuestion = nextQReturnObj.data;
 
-                // Send a message about when the question will appear
-                let nextQMsg = `(Debug) This message will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
+                // If the question is a dummy that performs only an action, then don't inform the experimenter
+                //  and go to the next question
+                let onlyAction = false;
+                if(nextQuestion.qType === "dummy"){
+                    if(nextQuestion.cNextQuestions || nextQuestion.nextQuestion){
+                        let nextQMsg = `(Debug) If there is a question at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}, it will appear in the following message(s)`;
+                        await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
+                        nextQuestionFound = true;
+                    } else {
+                        onlyAction = true;
+                    }
+                } else {
+                    let nextQMsg = `(Debug) The following question will appear at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
+                    await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
+                    nextQuestionFound = true;
+                }
 
-                // TODO: How to send next message if it is a dummy?
-                // Send the message and the question, if the question is meant to be sent at that time
-                await Communicator.sendMessage(bot, participant, ctx.from.id, nextQMsg, true);
                 let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, !config.debug.messageDelay);
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
                     throw returnObj.data;
                 }
-                nextQuestionFound = true;
+                if(onlyAction){
+                    let firstName = participant.firstName;
+                    participant = await getParticipant(uniqueId);
+                    participant.firstName = firstName;
+                }
             } else {
                 // Send a message about when the action will appear
                 let nextQMsg = `(Debug) This action will occur at ${nextQObj.atTime} on ${nextQObj.onDays.join('')}`;
@@ -358,6 +371,20 @@ bot.start(async ctx => {
       console.log('Failed to initialize new experiment');
       console.error(err);
     } 
+  } else {
+      // Recount number of participants assigned to each condition
+      let allParticipants = await participants.getAll();
+      let condCounts = Array(experiment.currentlyAssignedToCondition.length).fill(0);
+      for(let i = 0; i < allParticipants.length; i++){
+          let curExperiment = allParticipants[i].experimentId;
+          let curCondIdx = allParticipants[i].conditionIdx;
+          if(typeof curCondIdx !== "undefined" && curExperiment === config.experimentId){
+              condCounts[curCondIdx] += 1;
+          }
+      }
+      if(!lodash.isEqual(condCounts, experiment.currentlyAssignedToCondition)){
+          await experiments.updateField(config.experimentId, "currentlyAssignedToCondition",condCounts);
+      }
   }
 
   //Check if ID Mapping exists for experiment already
@@ -403,6 +430,11 @@ bot.start(async ctx => {
       console.log('Failed to initialize new participant');
       console.error(err);
     }
+  }
+
+  if(participant.currentState !== "starting"){
+      console.log('Participant ' + uniqueId + ' has already started!');
+      return;
   }
 
   // Start the setup question chain

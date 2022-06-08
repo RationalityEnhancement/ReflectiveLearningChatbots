@@ -156,7 +156,7 @@ class ConfigParser{
         if(!participant || typeof participant !== 'object') {
             return ReturnMethods.returnFailure("CParser: Participant object required to replace variables")
         }
-        let requiredParams = ["firstName", "currentAnswer", "uniqueId", "stages", "conditionName"];
+        let requiredParams = ["firstName", "currentAnswer", "uniqueId", "stages", "conditionName", "parameters"];
         for(let i = 0; i < requiredParams.length; i++){
             let param = requiredParams[i];
             if(!(param in participant)){
@@ -212,6 +212,11 @@ class ConfigParser{
                 varVal = DevConfig.DAY_INDEX_ORDERING[dateObj.dayOfWeek];
                 foundReserved = true;
                 break;
+            case DevConfig.VAR_STRINGS.TODAY_NAME:
+                let tDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
+                varVal = config.phrases.schedule.dayNames[participant.parameters.language][tDateObj.dayOfWeek];
+                foundReserved = true;
+                break;
             case DevConfig.VAR_STRINGS.CONDITION:
                 varVal = participant["conditionName"];
                 if(!varVal) varVal = "";
@@ -244,6 +249,9 @@ class ConfigParser{
      * @param participant participant object data. Must contain the following fields:
      *                      currentAnswer
      *                      firstName
+     *                      uniqueId
+     *                      stages
+     *                      conditionName
      * @param targetString string in which variables are to be substituted
      * @param sensitiveDataAlso boolean flag for whether variables containing sensitive data
      *                          should also be substituted

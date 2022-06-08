@@ -7,6 +7,7 @@ const ConfigParser = require('./configParser')
 const Communicator = require('./communicator')
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ActionHandler = require("./actionHandler")
+const AnswerHandler = require("./answerHandler");
 
 /**
  * Logic handler deals with the logic of what is to occur at each step
@@ -76,13 +77,14 @@ let processNextSteps = async(bot, uniqueId) => {
     }
     let nextActions = actionsObj.data;
 
+    let failedActions = [];
+
     // Process all next actions, if any
     for(let i = 0; i < nextActions.length; i++){
         let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i]);
 
-        // TODO: continue with other actions if a single action fails?
         if(pActionObj.returnCode === DevConfig.FAILURE_CODE){
-            return pActionObj;
+            failedActions.push(pActionObj.data);
         }
         // Get updated participant for next action:
         try{
@@ -110,7 +112,12 @@ let processNextSteps = async(bot, uniqueId) => {
             return returnObj;
         }
     }
-    return ReturnMethods.returnSuccess("");
+    if(failedActions.length === 0){
+        return ReturnMethods.returnSuccess("");
+    } else {
+        return ReturnMethods.returnFailure("LHandler: Following actions failed: \n"+failedActions.join("\n"));
+    }
+
 
 }
 module.exports.processNextSteps = processNextSteps;
@@ -164,10 +171,19 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
     // Dummies are used to either just send messages or to conditionally
     //  select next questions/actions which are not preceded by another question already
     if(question.qType === "dummy"){
-        // await participants.updateField(participant.uniqueId, "currentState", "answerReceived");
-        await participants.updateField(participant.uniqueId, "currentQuestion", question);
+
+        // Replace dummy question text and qId with that of previous question
+        //  in case previous question has not been answered and needs to be saved
+        let copyQuestion = JSON.parse(JSON.stringify(question));
+        copyQuestion.text = participant.currentQuestion.text;
+        copyQuestion.qId = participant.currentQuestion.qId;
+
+        await participants.updateField(participant.uniqueId, "currentQuestion", copyQuestion);
         return this.processNextSteps(bot, participant.uniqueId);
     }
+    // Handle any outstanding questions before sending next question.
+    await AnswerHandler.handleNoResponse(participant.uniqueId);
+
     await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
     return ReturnMethods.returnSuccess("");
 }

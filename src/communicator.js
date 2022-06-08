@@ -54,8 +54,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
 
     question.text = substituteVariables(participant, question.text, false);
 
-    // Handle any outstanding questions before sending next question.
-    await AnswerHandler.handleNoResponse(participant.uniqueId);
 
     let qLength = question.text.length;
     let qDelayMs = qLength * msPerCharacter;

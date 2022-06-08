@@ -8,35 +8,34 @@
   "experimentStages" : {
     "Control" : [
       {
-        "name": "Pre-Test",
-        "lengthDays": 2,
-        "onDays" : ["Mon", "Tue", "Wed"]
+        "name": "Pre-Intervention",
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
       },
       {
-        "name": "Test",
-        "lengthDays": 7
+        "name": "Intervention",
+        "lengthDays": 3,
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
       },
       {
-        "name" : "Post-Test",
-        "lengthDays": 2
+        "name" : "Post-Intervention",
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
       }
     ],
     "Experimental" : [
       {
-        "name": "Pre-Test",
-        "lengthDays": 2,
-        "onDays" : ["Mon", "Tue", "Wed"]
+        "name": "Pre-Intervention",
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
       },
       {
-        "name": "Test",
-        "lengthDays": 2
+        "name": "Intervention",
+        "lengthDays": 3,
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
       },
       {
-        "name" : "Post-Test",
-        "lengthDays": 2
+        "name" : "Post-Intervention",
+        "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
       }
     ]
-
   },
   "mandatoryParameters" : {
     "language" : "string",
@@ -44,6 +43,17 @@
     "PID" : "string"
   },
   "customParameters" : {
+    "preInterventionComplete" : "boolean",
+    "postInterventionComplete" : "boolean",
+    "remindIntention" : "boolean",
+    "intentionReminded" : "boolean",
+    "intention" : "string",
+    "taskGoals" : "strArr",
+    "relGoals" : "strArr",
+    "taskGoalsSetToday" : "boolean",
+    "relGoalsSetToday" : "boolean",
+    "lastReportedTaskProgress" : "number",
+    "taskProgressReportedOnce" : "boolean",
     "testStrArr" : "strArr",
     "testBool" : "boolean",
     "testNum" : "number",
@@ -95,12 +105,12 @@
     },
     "keyboards": {
       "singleChoice": {
-        "English": "Please pick one from the given options",
-        "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen"
+        "English": "Please pick one from the given options. You may need to scroll down to see all options.",
+        "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
       },
       "multiChoice": {
-        "English": "Choose as many options as you like. Click Done to finish choosing.",
-        "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig."
+        "English": "Choose as many options as you like. Click Done to finish choosing. You may need to scroll down to see all options.",
+        "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
       },
       "terminateAnswer": {
         "English": "Done",
@@ -111,8 +121,8 @@
         "Deutsch": "Ich habe Ihre Wahlen notiert"
       },
       "qualtricsFillPrompt" : {
-        "English" : "Please fill out the following survey",
-        "Deutsch" : "Füllen Sie die folgende Umfrage aus"
+        "English" : "Please follow the link below to the survey",
+        "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage"
       },
       "qualtricsDonePrompt" : {
         "English" : "Send <i>Done</i> when you are finished with the survey.",
@@ -178,8 +188,8 @@
       }
     },
     "endExperiment" : {
-      "English" : "You have successfully completed the experiment! Thank you for participating.",
-      "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Danke für Ihre Teilnahme."
+      "English" : "You have successfully completed the experiment! You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
+      "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
     }
   },
   "questionCategories": {
@@ -255,10 +265,10 @@
         },
         "replyMessages": {
           "English": [
-            "Thank you, time zone has been registered."
+            "Thank you, time zone has been registered.", "Let us begin with the preliminary tasks already!"
           ],
           "Deutsch": [
-            "Danke, Zeitzone ist erfasst worden"
+            "Danke, Zeitzone ist erfasst worden", "Fangen wir schon mit den ersten Aufgaben an!"
           ]
         },
         "nextActions" : [
@@ -268,52 +278,25 @@
           },
           { "aType" : "scheduleQuestions" },
           {
-            "aType" : "setBooleanVar",
-            "args" : ["testBool", "$B{true}"]
-          }]
+            "aType" : "startStage",
+            "args" : ["Pre-Intervention"]
+          }],
+        "nextQuestion" : "preIntervention.survey"
       }
     ]
   },
   "conditionQuestions": {
-    "Control": {
+    "Control" : {
       "questionCategories" : {
-        "morningQuestions" : [
+        "preIntervention" : [
           {
-            "qId" : "testDummy",
-            "qType" : "dummy",
-            "nextQuestion" : "morningQuestions.mainGoal",
-            "replyMessages" : {
-              "English" : ["Dummy question processed"],
-              "Deutsch" : ["Platzhalter-Frage verarbeitet"]
-            }
-          },
-          {
-            "qId" : "mainGoal",
-            "text" : {
-              "English" : "What is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
-              "Deutsch" : "Was ist die Hauptsache, die Sie heute erledigen wollen, um Ihr Projekt(e) voranzubringen?"
-            },
-            "qType" : "freeform",
-            "nextQuestion" :"morningQuestions.addGoal"
-
-          },
-          {
-            "qId" : "addGoal",
-            "text" : {
-              "English" : "What else would you like to accomplish today?",
-              "Deutsch" : "Was sonst möchten Sie heute erledigen?"
-            },
-            "qType" : "freeform",
-            "replyMessages" : {
-              "English" : ["Got it! Good luck completing your goals today!"],
-              "Deutsch" : ["Alles klar! Viel Erfolg bei Ihren Zielen heute."]
-            },
-            "nextQuestion" : "morningQuestions.satisfactionSurvey"
-          },
-          {
-            "qId" : "satisfactionSurvey",
+            "qId" : "survey",
             "qType" : "qualtrics",
-            "qualtricsLink" : "www.google.com/12345",
+            "text" : {
+              "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly",
+              "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
+            },
+            "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
               {
                 "field" : "uniqueId",
@@ -321,226 +304,82 @@
               },
               {
                 "field" : "condition",
-                "value" : "Control"
+                "value" : "Experimental"
+              },
+              {
+                "field" : "stage",
+                "value": "preintervention"
               }
             ],
-            "text" : {
-              "English" : "We have a few questions about how you are feeling this morning",
-              "Deutsch" : "Wir haben ein Paar Fragen dazu, wie Sie sich heute fühlen"
-            },
+            "nextActions" : [
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["preInterventionComplete", "$B{true}"]
+              }
+            ],
             "replyMessages" : {
-              "English" : ["Thanks for doing that!"],
-              "Deutsch" : ["Danke dafür!"]
+              "English" : ["Thank you for that!", "We will now start with regular daily reflections. On every weekday starting from today, you will receive a prompt to set goals in the morning, and in the evening another prompt to reflect on your progress on those goals.", "See you later!"],
+              "Deutsch" : ["Danke dafür!", "Jetzt fangen wir mit regelmäßigen täglichen Reflektionen an. An jedem Werktag ab heute erhalten Sie morgens eine Aufforderung, sich Ziele zu setzen, und abends noch eine, über die gesetzten Ziele zu reflektieren.", "Bis später!"]
+            }
+          },
+          {
+            "qId" : "checkPreIntComplete",
+            "qType" : "dummy",
+            "cNextActions" : [
+              {
+                "if": "${preInterventionComplete} == $B{true}",
+                "then" : [{
+                  "aType" : "startStage",
+                  "args" : ["Intervention"]
+                }]
+              }
+            ]
+          }
+        ],
+        "interventionMorning" : [
+          {
+            "qId" : "selectMorningQ",
+            "qType" : "dummy",
+            "cNextQuestions" : [
+              {
+                "if": "${STAGE_DAY} MULTIPLE_OF $N{2}",
+                "then" : "goalSettingEven.firstGoal",
+                "else" : "goalSettingOdd.firstGoal"
+              }
+            ],
+            "replyMessages" : {
+              "English" : ["Good morning, ${FIRST_NAME}!"],
+              "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
             }
           }
         ],
-        "eveningQuestions" : [
+        "goalSettingOdd" : [
           {
-            "qId" : "numGoals",
+            "qId" : "firstGoal",
             "text" : {
-              "English" : "How many goals did you set today?",
-              "Deutsch" : "Wie viele Ziele haben Sie sich heute gesetzt?"
+              "English" : "${FIRST_NAME}, what is the main task-oriented thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "Deutsch" : "${FIRST_NAME} was ist die wichtigste aufgabenbezogene Sache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen? Tipp: Formulieren Sie ein SMART-Ziel."
             },
-            "qType" : "number",
-            "range" : {
-              "lower" : 0
-            },
-            "nextQuestion" : "eveningQuestions.focus",
-            "start" : true
-          },
-          {
-            "qId" : "focus",
-            "text" : {
-              "English" : "How did you decide which things to focus on today?",
-              "Deutsch" : "Wie haben Sie entschieden, worauf Sie sich heute fokussieren wollten?"
-            },
-            "qType" : "freeformMulti",
-            "nextQuestion" : "eveningQuestions.relevance"
-          },
-          {
-            "qId" : "relevance",
-            "text" : {
-              "English" : "How relevant were the goals you pursued today to the long-term goals of your project(s), your team, and your organization?",
-              "Deutsch" : "Wie relevant waren Ihre heutigen Ziele für die Langzeitziel von Ihrem Projekt, Team, und Ihrer Organisation?"
-            },
-            "qType" : "singleChoice",
-            "options" : {
-              "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
-              "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
-            },
-            "nextQuestion" : "eveningQuestions.emotions"
-          },
-          {
-            "qId" : "emotions",
-            "text" : {
-              "English" : "How do you feel about that? Please select any or all of the emotions you are experiencing at least a little bit.",
-              "Deutsch" : "Wie fühlen Sie sich darüber? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
-            },
-            "qType" : "multiChoice",
-            "options" : {
-              "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited", "None"],
-              "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert", "Keine"]
-            },
-            "nextQuestion" : "eveningQuestions.emotionsReflection",
-            "cReplyMessages" : [
+            "qType" : "freeform",
+            "nextQuestion" :"goalSettingOdd.askAddTaskGoal",
+            "minLengthWords" : 5,
+            "nextActions" : [
               {
-                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
-                "then" : {
-                  "English" : ["Sorry to hear."],
-                  "Deutsch" : ["Das tut mir leid."]
-                },
-                "else" : {
-                  "English" : ["That's great to hear!"],
-                  "Deutsch" : ["Das ist gut zu hören!"]
-                }
-              }
-            ]
-          },
-          {
-            "qId" : "emotionsReflection",
-            "text" : {
-              "English" : "Why did you feel that way?",
-              "Deutsch" : "Warum haben Sie sich so gefühlt?"
-            },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.advice"
-          },
-          {
-            "qId" : "advice",
-            "text" : {
-              "English" : "Based on your recent experience with goal setting, which advice would you give to a new colleague who is just starting to work in a similar role?",
-              "Deutsch" : "Basierend auf Ihrer neuen Erfahrung mit Zielsetzung, welchen Ratschlag würden Sie einem neuen Kollegen geben, der neulich in einer ähnlichen Rolle anfängt?"
-            },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.planWhat"
-          },
-          {
-            "qId" : "planWhat",
-            "text" : {
-              "English" : "What concretely will you do differently tomorrow?",
-              "Deutsch" : "Was konkretes werden Sie morgen anders tun?"
-            },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.planWhen"
-          },
-          {
-            "qId" : "planWhen",
-            "text" : {
-              "English" : "When will you do it?",
-              "Deutsch" : "Wann werden Sie es tun?"
-            },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.planRemember"
-          },
-          {
-            "qId" : "planRemember",
-            "text" : {
-              "English" : "How will you remember this plan when the time comes to execute it?",
-              "Deutsch" : "Wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
-            },
-            "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.surveyAsk",
-            "replyMessages" : {
-              "English": ["Well reflected!"],
-              "Deutsch" : ["Gut reflektiert!"]
-            }
-          },
-          {
-            "qId" : "surveyAsk",
-            "text" : {
-              "English" : "Would you complete a short survey?",
-              "Deutsch" : "Würden Sie eine kurze Umfrage beantworten?"
-            },
-            "qType": "singleChoice",
-            "options": {
-              "English" : ["Yes", "No"],
-              "Deutsch" : ["Ja", "Nein"]
-            },
-            "cReplyMessages" : [
-              {
-                "if": "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-                "then": {
-                  "English" : ["Very well. See you tomorrow!"],
-                  "Deutsch" : ["Alles klar. Bis morgen!"]
-                }
-              }
-            ],
-            "cNextQuestions" : [
-              {
-                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-                "then" : "eveningQuestions.evaluateReflection"
-              }
-            ]
-          },
-          {
-            "qId" : "evaluateReflection",
-            "text" : {
-              "English" : "How much do you agree with this statement? <i>The chatbot helped me be more reflective today</i>",
-              "Deutsch" : "Wie weit stimmen Sie dieser Aussage zu? <i>Der Chatbot hat mir heute beim Nachdenken geholfen</i>"
-            },
-            "qType" : "likert7",
-            "cReplyMessages" : [
-              {
-                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2}",
-                "then" : {
-                  "English" : ["Sorry to hear, I'll try to do better next time.", "See you tomorrow!"],
-                  "Deutsch" : ["Tut mir leid, ich versuche das nächste Mal, Ihnen besser zu helfen.", "Bis morgen!"]
-                }
+                "aType" : "addAnswerTo",
+                "args" : ["taskGoals"]
               },
               {
-                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3}",
-                "then" : {
-                  "English" : ["Thanks for your feedback.", "See you tomorrow!"],
-                  "Deutsch" : ["Danke fürs Feedback.", "Bis morgen!"]
-                }
-              },
-              {
-                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6}",
-                "then" : {
-                  "English" : ["Glad I could help!", "See you tomorrow!"],
-                  "Deutsch" : ["Es freut mich, dass ich aushelfen könnte!", "Bis morgen!"]
-                }
+                "aType" : "setBooleanVar",
+                "args" : ["taskGoalsSetToday", "$B{true}"]
               }
             ]
-          }
-        ]
-      },
-      "scheduledQuestions" : [
-        {
-          "qId" : "morningQuestions.testDummy",
-          "atTime" : "09:00",
-          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        },
-        {
-          "qId" : "eveningQuestions.numGoals",
-          "atTime" : "18:00",
-          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        }
-      ]
-    },
-    "Experimental" : {
-      "questionCategories" : {
-        "morningQuestions" : [
-          {
-            "qId" : "mainGoal",
-            "text" : {
-              "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today (${TODAY})? Tip: Make it SMART.",
-              "Deutsch" : "${FIRST_NAME} was ist die Hauptsache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen?"
-            },
-            "qType" : "freeform",
-            "nextQuestion" :"morningQuestions.askAddGoal",
-            "minLengthChars" : 10,
-            "nextActions" : [{
-              "aType" : "startStage",
-              "args" : ["Pre-Test"]
-            }]
           },
           {
-            "qId" : "askAddGoal",
+            "qId" : "askAddTaskGoal",
             "qType" : "singleChoice",
             "text" : {
-              "English" : "Would you like to set additional goals for today?",
-              "Deutsch" : "Möchten Sie sich heute noch zusätzliche Ziele setzen?"
+              "English" : "Would you like to set additional task-oriented goals for today?",
+              "Deutsch" : "Möchten Sie sich heute noch zusätzliche aufgabenbezogene Ziele setzen?"
             },
             "options" : {
               "English" : ["Yes", "No"],
@@ -549,60 +388,902 @@
             "cNextQuestions" : [
               {
                 "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-                "then" : "morningQuestions.addOneGoal"
+                "then" : "goalSettingOdd.addOneTaskGoal",
+                "else" : "goalSettingOdd.wantRelationshipGoal"
               }
             ],
             "cReplyMessages" : [
               {
                 "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
                 "then" : {
-                  "English" : ["Got it. Good luck on your goals today, ${FIRST_NAME}!"],
-                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute, ${FIRST_NAME}!"]
+                  "English" : ["Alright."],
+                  "Deutsch" : ["Alles klar."]
                 }
-              }
-            ],
-            "cNextActions" : [
-              {
-                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
-                "then" : [{
-                  "aType" : "endExperiment"
-                }]
               }
             ]
           },
           {
-            "qId" : "addOneGoal",
+            "qId" : "addOneTaskGoal",
             "text" : {
               "English" : "What else would you like to accomplish today?",
               "Deutsch" : "Was sonst möchten Sie heute erledigen?"
             },
+            "minLengthWords" : 5,
             "qType" : "freeform",
-            "nextQuestion" : "morningQuestions.askAddGoal"
+            "nextActions" : [{
+              "aType" : "addAnswerTo",
+              "args" : ["taskGoals"]
+            }],
+            "nextQuestion" : "goalSettingOdd.askAddTaskGoal"
+          },
+          {
+            "qId" : "wantRelationshipGoal",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "${FIRST_NAME}, would you like to set a goal related to your work climate or relationships today?",
+              "Deutsch" : "${FIRST_NAME}, möchten Sie sich heute noch Ziele setzen, die sich auf Ihre Arbeitsatmosphäre oder -beziehungen beziehen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "goalSettingOdd.addFirstRelGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
+                  "English" : ["Got it. Good luck completing your goals today!"],
+                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addFirstRelGoal",
+            "text" : {
+              "English" : "What is the main thing you want to do to improve your relationships with your colleagues or the atmosphere in your team today? Tip: make it SMART",
+              "Deutsch" : "Was ist die wichtigste Sache, die Sie heute erledigen wollen, um Ihre(e) Arbeitsatmosphäre oder Beziehungen zu Ihren Kolleg*innen verbessern? Tipp: Formulieren Sie ein SMART-Ziel."
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextActions" : [
+              {
+                "aType" : "addAnswerTo",
+                "args" : ["relGoals"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["relGoalsSetToday", "$B{true}"]
+              }
+            ],
+            "nextQuestion" : "goalSettingOdd.askAddRelGoal"
+          },
+          {
+            "qId" : "askAddRelGoal",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "Would you like to set additional relationship-oriented goals for today?",
+              "Deutsch" : "Möchten Sie sich heute noch zusätzliche beziehungsorienterte Ziele setzen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "goalSettingOdd.addOneRelGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
+                  "English" : ["Got it. Good luck completing your goals today!"],
+                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addOneRelGoal",
+            "text" : {
+              "English" : "What else would you like to accomplish today?",
+              "Deutsch" : "Was sonst möchten Sie heute erledigen?"
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextActions" : [{
+              "aType" : "addAnswerTo",
+              "args" : ["relGoals"]
+            }],
+            "nextQuestion" : "goalSettingOdd.askAddRelGoal"
           }
         ],
-        "eveningQuestions" : [
+        "goalSettingEven" : [
           {
-            "qId" : "numGoals",
+            "qId" : "firstGoal",
             "text" : {
-              "English" : "Good evening, ${FIRST_NAME}!\n\nHow much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
-              "Deutsch" : "Guten Abend, ${FIRST_NAME}!\n\nWie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
+              "English" : "${FIRST_NAME}, what is the main thing you want to do to improve your relationships with your colleagues or the atmosphere in your team today? Tip: Make it SMART.",
+              "Deutsch" : "${FIRST_NAME}, was ist die wichtigste Sache, die Sie heute erledigen wollen, um Ihre(e) Arbeitsatmosphäre oder Beziehungen zu Ihren Kolleg*innen verbessern? Tipp: Formulieren Sie ein SMART-Ziel."
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextQuestion" :"goalSettingEven.askAddRelGoal",
+            "minLengthChars" : 10,
+            "nextActions" : [
+              {
+                "aType" : "addAnswerTo",
+                "args" : ["relGoals"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["relGoalsSetToday", "$B{true}"]
+              }
+            ]
+          },
+          {
+            "qId" : "askAddRelGoal",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "Would you like to set additional relationship-oriented goals for today?",
+              "Deutsch" : "Möchten Sie sich heute noch zusätzliche beziehungsorienterte Ziele setzen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "goalSettingEven.addOneRelGoal",
+                "else" : "goalSettingEven.addFirstTaskGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
+                  "English" : ["Alright."],
+                  "Deutsch" : ["Alles klar."]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addOneRelGoal",
+            "text" : {
+              "English" : "What else would you like to accomplish today with regards to your work climate/relationships?",
+              "Deutsch" : "Was sonst möchten Sie heute bezüglich Ihrer Arbeitsatmosphäre/-beziehungen erledigen?"
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextActions" : [
+              {
+                "aType" : "addAnswerTo",
+                "args" : ["relGoals"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["relGoalsSetToday", "$B{true}"]
+              }
+            ],
+            "nextQuestion" : "goalSettingEven.askAddRelGoal"
+          },
+          {
+            "qId" : "addFirstTaskGoal",
+            "qType" : "freeform",
+            "text" : {
+              "English" : "Now, tell me the main task-oriented thing you want to do to advance your project(s) today. Tip: Make it SMART.",
+              "Deutsch" : "Nennen Sie mir jetzt die wichtigste aufgabenbezogene Sache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen. Tipp: Formulieren Sie ein SMART-Ziel."
+            },
+            "minLengthWords" : 5,
+            "nextQuestion" : "goalSettingEven.askAddTaskGoal",
+            "nextActions" : [
+              {
+                "aType" : "addAnswerTo",
+                "args" : ["taskGoals"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["taskGoalsSetToday", "$B{true}"]
+              }
+            ]
+          },
+          {
+            "qId" : "askAddTaskGoal",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "Would you like to set additional task-oriented goals for today?",
+              "Deutsch" : "Möchten Sie sich heute noch zusätzliche aufgabenbezogene Ziele setzen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "goalSettingEven.addOneTaskGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
+                  "English" : ["Got it. Good luck completing your goals today!"],
+                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addOneTaskGoal",
+            "text" : {
+              "English" : "What else would you like to accomplish today?",
+              "Deutsch" : "Was sonst möchten Sie heute erledigen?"
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextActions" : [{
+              "aType" : "addAnswerTo",
+              "args" : ["taskGoals"]
+            }],
+            "nextQuestion" : "goalSettingEven.askAddTaskGoal"
+          }
+        ],
+        "interventionEvening" : [
+          {
+            "qId" : "selectReflection",
+            "qType" : "dummy",
+            "cNextQuestions" : [
+              {
+                "if" : "${taskGoalsSetToday} == $B{true}",
+                "then" : "goalProgress.taskGoalsRemind"
+              },
+              {
+                "if" : "${relGoalsSetToday} == $B{true}",
+                "then" : "goalProgress.relGoalsRemind"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "(${taskGoalsSetToday} == $B{true}) OR (${relGoalsSetToday} == $B{true})",
+                "then" : {
+                  "English" : ["Good evening, ${FIRST_NAME}!"],
+                  "Deutsch" : ["Guten Abend, ${FIRST_NAME}!"]
+                }
+              }
+            ]
+          }
+        ],
+        "goalProgress" : [
+          {
+            "qId": "taskGoalsRemind",
+            "qType" : "dummy",
+            "replyMessages" : {
+              "English" : ["Today, you set the following task-related goals: ", "${taskGoals}"],
+              "Deutsch" : ["Heute haben Sie sich die folgenden aufgabenbezogenen Ziele gesetzt: ", "${taskGoals}"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${relGoalsSetToday} == $B{true}",
+                "then" : "goalProgress.relGoalsRemind",
+                "else" : "goalProgress.goalsProgress"
+              }
+            ],
+            "nextActions" : [
+              {
+                "aType" : "clearVar",
+                "args" : ["taskGoals"]
+              },
+              {
+                "aType" : "clearVar",
+                "args" : ["taskGoalsSetToday"]
+              }
+            ]
+          },
+          {
+            "qId": "relGoalsRemind",
+            "qType" : "dummy",
+            "replyMessages" : {
+              "English" : ["Today, you also set the following relationship-oriented goals: ", "${relGoals}"],
+              "Deutsch" : ["Heute haben Sie sich auch die folgenden beziehungsorientierten Ziele gesetzt: ", "${relGoals}"]
+            },
+            "nextQuestion" :  "goalProgress.goalsProgress",
+            "nextActions" : [
+              {
+                "aType" : "clearVar",
+                "args" : ["relGoals"]
+              },
+              {
+                "aType" : "clearVar",
+                "args" : ["relGoalsSetToday"]
+              }
+            ]
+          },
+          {
+            "qId" : "goalsProgress",
+            "text" : {
+              "English" : "How much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
+              "Deutsch" : "Wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
             },
             "qType" : "number",
             "range" : {
               "lower" : 0
             },
+            "cReplyMessages" : [
+              {
+                "if" : "(${CURRENT_ANSWER} > ${lastReportedTaskProgress}) AND (${taskProgressReportedOnce} == $B{true})",
+                "then" : {
+                  "English" : ["Congratulations on having improved your progress from the last time!", "Thank you for sharing.", "See you tomorrow!"],
+                  "Deutsch": ["Gratulation dazu, dass Sie heute mehr Fortschritt gemacht haben als beim letzten Mal!", "Danke fürs Mitteilen", "Bis morgen!"]
+                },
+                "else" : {
+                  "English" : ["Thank you for sharing.", "See you tomorrow!"],
+                  "Deutsch" : ["Danke fürs Mitteilen", "Bis morgen!"]
+                }
+              }
+            ],
+            "nextActions" : [
+              {
+                "aType" : "saveAnswerTo",
+                "args" : ["lastReportedTaskProgress"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["taskProgressReportedOnce", "$B{true}"]
+              }
+            ]
+          }
+        ],
+        "postIntervention" : [
+          {
+            "qId" : "survey",
+            "qType" : "qualtrics",
+            "text" : {
+              "English" : "Good morning, ${FIRST_NAME}!\nWe have come to the last phase of the study. Please take the time to fill out the following survey thoughtfully and thoroughly",
+              "Deutsch" : "Guten Morgen, ${FIRST_NAME}!\nWir haben die letzte Phase der Studie erreicht. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
+            },
+            "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
+            "qualtricsFields" : [
+              {
+                "field" : "uniqueId",
+                "value" : "${UNIQUE_ID}"
+              },
+              {
+                "field" : "condition",
+                "value" : "Experimental"
+              },
+              {
+                "field" : "stage",
+                "value": "postIntervention"
+              }
+            ],
+            "nextActions" : [
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["postInterventionComplete", "$B{true}"]
+              },
+              {
+                "aType" : "endExperiment"
+              }
+            ],
+            "replyMessages" : {
+              "English" : ["Thank you for that!", "You have now completed all of the requirements for the study."],
+              "Deutsch" : ["Danke dafür!", "Sie haben jetzt alle Aufgaben für die Studie abgeschlossen."]
+            }
+          }
+        ]
+      },
+      "scheduledQuestions" : [
+        {
+          "qId" : "preIntervention.survey",
+          "atTime" : "09:00",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "${preInterventionComplete} != $B{true}"
+        },
+        {
+          "qId" : "preIntervention.checkPreIntComplete",
+          "atTime" : "06:00",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "${STAGE_NAME} == $S{Pre-Intervention}"
+        },
+        {
+          "qId" : "interventionMorning.selectMorningQ",
+          "atTime" : "09:00",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "${STAGE_NAME} == $S{Intervention}"
+        },
+        {
+          "qId" : "interventionEvening.selectReflection",
+          "atTime" : "18:00",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "(${STAGE_NAME} == $S{Intervention}) AND ((${relGoalsSetToday} == $B{true}) OR (${taskGoalsSetToday} == $B{true}))"
+        },
+        {
+          "qId" : "postIntervention.survey",
+          "atTime" : "09:00",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "(${postInterventionComplete} != $B{true}) AND (${STAGE_NAME} == $S{Post-Intervention})"
+        }
+      ]
+    },
+    "Experimental" : {
+      "questionCategories" : {
+        "preIntervention" : [
+          {
+            "qId" : "survey",
+            "qType" : "qualtrics",
+            "text" : {
+              "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly",
+              "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
+            },
+            "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
+            "qualtricsFields" : [
+              {
+                "field" : "uniqueId",
+                "value" : "${UNIQUE_ID}"
+              },
+              {
+                "field" : "condition",
+                "value" : "Experimental"
+              },
+              {
+                "field" : "stage",
+                "value": "preintervention"
+              }
+            ],
+            "nextActions" : [
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["preInterventionComplete", "$B{true}"]
+              }
+            ],
+            "replyMessages" : {
+              "English" : ["Thank you for that!", "We will now start with regular daily reflections. On every weekday starting from today, you will receive a prompt to set goals in the morning, and in the evening another prompt to reflect on your progress on those goals.", "See you later!"],
+              "Deutsch" : ["Danke dafür!", "Jetzt fangen wir mit regelmäßigen täglichen Reflektionen an. An jedem Werktag ab heute erhalten Sie morgens eine Aufforderung, sich Ziele zu setzen, und abends noch eine, über die gesetzten Ziele zu reflektieren.", "Bis später!"]
+            }
+          },
+          {
+            "qId" : "checkPreIntComplete",
+            "qType" : "dummy",
+            "cNextActions" : [
+              {
+                "if": "${preInterventionComplete} == $B{true}",
+                "then" : [{
+                  "aType" : "startStage",
+                  "args" : ["Intervention"]
+                }]
+              }
+            ]
+          }
+        ],
+        "interventionMorning" : [
+          {
+            "qId" : "remindIntentions",
+            "qType" : "dummy",
+            "cReplyMessages" : [
+              {
+                "if": "${remindIntention} == $B{true}",
+                "then" : {
+                  "English" : ["Good morning, ${FIRST_NAME}!","The last time, you wanted me to remind you of the following intention today:", "${intention}"],
+                  "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!","Das letzte Mal haben Sie mir gesagt, Sie am nächsten Tag an dieses Vorhaben zu erinnern:", "${intention}"]
+                }
+              }
+            ],
+            "cNextActions" : [
+              {
+                "if": "${remindIntention} == $B{true}",
+                "then" : [
+                  {
+                    "aType" : "setBooleanVar",
+                    "args" : ["remindIntention", "$B{false}"]
+                  },
+                  {
+                    "aType" : "clearVar",
+                    "args" : ["intention"]
+                  },
+                  {
+                    "aType" : "setBooleanVar",
+                    "args" : ["intentionReminded", "$B{true}"]
+                  }
+                ]
+              }
+            ],
+            "nextQuestion" : "interventionMorning.selectMorningQ"
+          },
+          {
+            "qId" : "selectMorningQ",
+            "qType" : "dummy",
+            "cNextQuestions" : [
+              {
+                "if": "${STAGE_DAY} MULTIPLE_OF $N{2}",
+                "then" : "goalSettingEven.firstGoal",
+                "else" : "goalSettingOdd.firstGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${intentionReminded} != $B{true}",
+                "then" : {
+                  "English" : ["Good morning, ${FIRST_NAME}!"],
+                  "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
+                }
+              }
+            ],
+            "nextActions" : [
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["intentionReminded", "$B{false}"]
+              }
+            ]
+          }
+        ],
+        "goalSettingOdd" : [
+          {
+            "qId" : "firstGoal",
+            "text" : {
+              "English" : "${FIRST_NAME}, what is the main task-oriented thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+              "Deutsch" : "${FIRST_NAME} was ist die wichtigste aufgabenbezogene Sache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen? Tipp: Formulieren Sie ein SMART-Ziel."
+            },
+            "qType" : "freeform",
+            "nextQuestion" :"goalSettingOdd.askAddTaskGoal",
+            "minLengthWords" : 5,
             "nextActions" : [
               {
                 "aType" : "addAnswerTo",
-                "args" : ["testNumArr"]
+                "args" : ["taskGoals"]
               },
               {
-                "aType" : "saveAnswerTo",
-                "args" : ["testNum"]
+                "aType" : "setBooleanVar",
+                "args" : ["taskGoalsSetToday", "$B{true}"]
+              }
+            ]
+          },
+          {
+            "qId" : "askAddTaskGoal",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "Would you like to set additional task-oriented goals for today?",
+              "Deutsch" : "Möchten Sie sich heute noch zusätzliche aufgabenbezogene Ziele setzen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "goalSettingOdd.addOneTaskGoal",
+                "else" : "goalSettingOdd.wantRelationshipGoal"
               }
             ],
-            "nextQuestion" : "eveningQuestions.anythingElse",
-            "start" : true
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
+                  "English" : ["Alright."],
+                  "Deutsch" : ["Alles klar."]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addOneTaskGoal",
+            "text" : {
+              "English" : "What else would you like to accomplish today?",
+              "Deutsch" : "Was sonst möchten Sie heute erledigen?"
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextActions" : [{
+              "aType" : "addAnswerTo",
+              "args" : ["taskGoals"]
+            }],
+            "nextQuestion" : "goalSettingOdd.askAddTaskGoal"
+          },
+          {
+            "qId" : "wantRelationshipGoal",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "${FIRST_NAME}, would you like to set a goal related to your work climate or relationships today?",
+              "Deutsch" : "${FIRST_NAME}, möchten Sie sich heute noch Ziele setzen, die sich auf Ihre Arbeitsatmosphäre oder -beziehungen beziehen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "goalSettingOdd.addFirstRelGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
+                  "English" : ["Got it. Good luck completing your goals today!"],
+                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addFirstRelGoal",
+            "text" : {
+              "English" : "What is the main thing you want to do to improve your relationships with your colleagues or the atmosphere in your team today? Tip: make it SMART",
+              "Deutsch" : "Was ist die wichtigste Sache, die Sie heute erledigen wollen, um Ihre(e) Arbeitsatmosphäre oder Beziehungen zu Ihren Kolleg*innen verbessern? Tipp: Formulieren Sie ein SMART-Ziel."
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextActions" : [
+              {
+                "aType" : "addAnswerTo",
+                "args" : ["relGoals"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["relGoalsSetToday", "$B{true}"]
+              }
+            ],
+            "nextQuestion" : "goalSettingOdd.askAddRelGoal"
+          },
+          {
+            "qId" : "askAddRelGoal",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "Would you like to set additional relationship-oriented goals for today?",
+              "Deutsch" : "Möchten Sie sich heute noch zusätzliche beziehungsorienterte Ziele setzen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "goalSettingOdd.addOneRelGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
+                  "English" : ["Got it. Good luck completing your goals today!"],
+                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addOneRelGoal",
+            "text" : {
+              "English" : "What else would you like to accomplish today?",
+              "Deutsch" : "Was sonst möchten Sie heute erledigen?"
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextActions" : [{
+              "aType" : "addAnswerTo",
+              "args" : ["relGoals"]
+            }],
+            "nextQuestion" : "goalSettingOdd.askAddRelGoal"
+          }
+        ],
+        "goalSettingEven" : [
+          {
+            "qId" : "firstGoal",
+            "text" : {
+              "English" : "${FIRST_NAME}, what is the main thing you want to do to improve your relationships with your colleagues or the atmosphere in your team today? Tip: Make it SMART.",
+              "Deutsch" : "${FIRST_NAME}, was ist die wichtigste Sache, die Sie heute erledigen wollen, um Ihre(e) Arbeitsatmosphäre oder Beziehungen zu Ihren Kolleg*innen verbessern? Tipp: Formulieren Sie ein SMART-Ziel."
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextQuestion" :"goalSettingEven.askAddRelGoal",
+            "minLengthChars" : 10,
+            "nextActions" : [
+              {
+                "aType" : "addAnswerTo",
+                "args" : ["relGoals"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["relGoalsSetToday", "$B{true}"]
+              }
+            ]
+          },
+          {
+            "qId" : "askAddRelGoal",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "Would you like to set additional relationship-oriented goals for today?",
+              "Deutsch" : "Möchten Sie sich heute noch zusätzliche beziehungsorienterte Ziele setzen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "goalSettingEven.addOneRelGoal",
+                "else" : "goalSettingEven.addFirstTaskGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
+                  "English" : ["Alright."],
+                  "Deutsch" : ["Alles klar."]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addOneRelGoal",
+            "text" : {
+              "English" : "What else would you like to accomplish today with regards to your work climate/relationships?",
+              "Deutsch" : "Was sonst möchten Sie heute bezüglich Ihrer Arbeitsatmosphäre/-beziehungen erledigen?"
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextActions" : [
+              {
+                "aType" : "addAnswerTo",
+                "args" : ["relGoals"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["relGoalsSetToday", "$B{true}"]
+              }
+            ],
+            "nextQuestion" : "goalSettingEven.askAddRelGoal"
+          },
+          {
+            "qId" : "addFirstTaskGoal",
+            "qType" : "freeform",
+            "text" : {
+              "English" : "Now, tell me the main task-oriented thing you want to do to advance your project(s) today. Tip: Make it SMART.",
+              "Deutsch" : "Nennen Sie mir jetzt die wichtigste aufgabenbezogene Sache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen. Tipp: Formulieren Sie ein SMART-Ziel."
+            },
+            "minLengthWords" : 5,
+            "nextQuestion" : "goalSettingEven.askAddTaskGoal",
+            "nextActions" : [
+              {
+                "aType" : "addAnswerTo",
+                "args" : ["taskGoals"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["taskGoalsSetToday", "$B{true}"]
+              }
+            ]
+          },
+          {
+            "qId" : "askAddTaskGoal",
+            "qType" : "singleChoice",
+            "text" : {
+              "English" : "Would you like to set additional task-oriented goals for today?",
+              "Deutsch" : "Möchten Sie sich heute noch zusätzliche aufgabenbezogene Ziele setzen?"
+            },
+            "options" : {
+              "English" : ["Yes", "No"],
+              "Deutsch": ["Ja", "Nein"]
+            },
+            "cNextQuestions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : "goalSettingEven.addOneTaskGoal"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+                "then" : {
+                  "English" : ["Got it. Good luck completing your goals today!"],
+                  "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
+                }
+              }
+            ]
+          },
+          {
+            "qId" : "addOneTaskGoal",
+            "text" : {
+              "English" : "What else would you like to accomplish today?",
+              "Deutsch" : "Was sonst möchten Sie heute erledigen?"
+            },
+            "minLengthWords" : 5,
+            "qType" : "freeform",
+            "nextActions" : [{
+              "aType" : "addAnswerTo",
+              "args" : ["taskGoals"]
+            }],
+            "nextQuestion" : "goalSettingEven.askAddTaskGoal"
+          }
+        ],
+        "interventionEvening" : [
+          {
+            "qId" : "selectReflection",
+            "qType" : "dummy",
+            "cNextQuestions" : [
+              {
+                "if" : "${taskGoalsSetToday} == $B{true}",
+                "then" : "taskGoalReflection.goalsRemind"
+              },
+              {
+                "if" : "${relGoalsSetToday} == $B{true}",
+                "then" : "relGoalReflection.goalsRemind"
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "(${taskGoalsSetToday} == $B{true}) OR (${relGoalsSetToday} == $B{true})",
+                "then" : {
+                  "English" : ["Good evening, ${FIRST_NAME}!"],
+                  "Deutsch" : ["Guten Abend, ${FIRST_NAME}!"]
+                }
+              }
+            ]
+          }
+        ],
+        "taskGoalReflection" : [
+          {
+            "qId": "goalsRemind",
+            "qType" : "dummy",
+            "replyMessages" : {
+              "English" : ["Today, you set the following task-related goals: ", "${taskGoals}"],
+              "Deutsch" : ["Heute haben Sie sich die folgenden aufgabenbezogenen Ziele gesetzt: ", "${taskGoals}"]
+            },
+            "nextQuestion" : "taskGoalReflection.goalsProgress",
+            "nextActions" : [
+              {
+                "aType" : "clearVar",
+                "args" : ["taskGoals"]
+              },
+              {
+                "aType" : "clearVar",
+                "args" : ["taskGoalsSetToday"]
+              }
+            ]
+          },
+          {
+            "qId" : "goalsProgress",
+            "text" : {
+              "English" : "How much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
+              "Deutsch" : "Wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
+            },
+            "qType" : "number",
+            "range" : {
+              "lower" : 0
+            },
+            "cReplyMessages" : [
+              {
+                "if" : "(${CURRENT_ANSWER} > ${lastReportedTaskProgress}) AND (${taskProgressReportedOnce} == $B{true})",
+                "then" : {
+                  "English" : ["Congratulations on having improved your progress from the last time!"],
+                  "Deutsch": ["Gratulation dazu, dass Sie heute mehr Fortschritt gemacht haben als beim letzten Mal!"]
+                }
+              }
+            ],
+            "nextActions" : [
+              {
+                "aType" : "saveAnswerTo",
+                "args" : ["lastReportedTaskProgress"]
+              },
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["taskProgressReportedOnce", "$B{true}"]
+              }
+            ],
+            "nextQuestion" : "taskGoalReflection.anythingElse"
           },
           {
             "qId" : "anythingElse",
@@ -618,8 +1299,8 @@
             "cNextQuestions" : [
               {
                 "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-                "then" : "eveningQuestions.moreWork",
-                "else" : "eveningQuestions.satisfaction"
+                "then" : "taskGoalReflection.moreWork",
+                "else" : "taskGoalReflection.satisfaction"
               }
             ],
             "cReplyMessages" : [
@@ -643,7 +1324,7 @@
               "Deutsch" : ["Gut zu wissen!"]
             },
             "qType" : "freeformMulti",
-            "nextQuestion" : "eveningQuestions.satisfaction",
+            "nextQuestion" : "taskGoalReflection.satisfaction",
             "minLengthWords" : 5
           },
           {
@@ -657,10 +1338,6 @@
               "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
               "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
             },
-            "nextActions" : [{
-              "aType" : "addAnswerTo",
-              "args" : ["testStrArr"]
-            }],
             "cReplyMessages":  [
               {
                 "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
@@ -684,7 +1361,7 @@
                 }
               }
             ],
-            "nextQuestion" : "eveningQuestions.emotions"
+            "nextQuestion" : "taskGoalReflection.emotions"
           },
           {
             "qId" : "emotions",
@@ -713,41 +1390,79 @@
                 }
               }
             ],
-            "nextQuestion" : "eveningQuestions.pursuitSatisfaction"
+            "nextQuestion" : "taskGoalReflection.pursuitSatisfaction"
           },
           {
             "qId" : "pursuitSatisfaction",
             "text" : {
-              "English" : "Setting aside the outcomes and the content of your goals for a moment, how satisfied are you with the way in which you pursued the goals you worked towards today?",
-              "Deutsch" : "Abgesehen von den Ergebnissen und dem Inhalt Ihrer Ziele, wie zufrieden sind Sie mit der Arbeitsweise, mit der Sie heute auf Ihre Ziele hingearbeitet haben?"
+              "English" : "Setting aside the outcomes and the content of your goals for a moment, how satisfied are you with <b>the way in which you pursued the goals</b> you worked towards today?",
+              "Deutsch" : "Abgesehen von den Ergebnissen und dem Inhalt Ihrer Ziele, wie zufrieden sind Sie mit <b>der Arbeitsweise, mit der Sie heute auf Ihre Ziele hingearbeitet haben</b>?"
             },
             "qType" : "singleChoice",
             "options" : {
               "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
               "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
             },
-            "nextQuestion" : "eveningQuestions.decisionSatisfaction"
+            "nextQuestion" : "taskGoalReflection.decisionSatisfaction",
+            "cReplyMessages":  [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+                "then" : {
+                  "English" : ["That's too bad."],
+                  "Deutsch" : ["Das tut mir leid."]
+                }
+              },
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+                "then" : {
+                  "English" : ["Great news!"],
+                  "Deutsch" : ["Gut zu hören!"]
+                }
+              },
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+                "then" : {
+                  "English" : ["I see."],
+                  "Deutsch" : ["Ich verstehe."]
+                }
+              }
+            ]
           },
           {
             "qId" : "decisionSatisfaction",
             "text" : {
-              "English" : "Now, setting aside how you pursued your goals and what the outcomes were, how satisfied are you with your decision about which goals to work on today?",
-              "Deutsch" : "Also, abgesehen davon, wie Sie Ihren Zielen nachgegangen sind, wie zufrieden sind Sie mit der Entscheidung dazu, an welchen Zielen Sie heute arbeiten?"
+              "English" : "Now, setting aside how you pursued your goals and what the outcomes were, how satisfied are you with your <b>decision about which goals to work on</b> today?",
+              "Deutsch" : "Also, abgesehen davon, wie Sie Ihren Zielen nachgegangen sind, wie zufrieden sind Sie mit <b>der Entscheidung dazu, an welchen Zielen Sie heute arbeiten</b>?"
             },
             "qType" : "singleChoice",
             "options" : {
               "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
               "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
             },
-            "nextQuestion" : "eveningQuestions.goalsImportance",
-            "nextActions" : [{
-              "aType" : "clearArrVar",
-              "args" : ["testStrArr"]
-            },
+            "nextQuestion" : "taskGoalReflection.goalsImportance",
+            "cReplyMessages":  [
               {
-                "aType" : "clearArrVar",
-                "args" : ["testNumArr"]
-              }]
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+                "then" : {
+                  "English" : ["Sorry to hear."],
+                  "Deutsch" : ["Das tut mir leid."]
+                }
+              },
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+                "then" : {
+                  "English" : ["Good to hear!"],
+                  "Deutsch" : ["Gut zu hören!"]
+                }
+              },
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+                "then" : {
+                  "English" : ["I see."],
+                  "Deutsch" : ["Ich verstehe."]
+                }
+              }
+            ]
           },
           {
             "qId" : "goalsImportance",
@@ -760,10 +1475,10 @@
               "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
               "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
             },
-            "nextQuestion" : "eveningQuestions.metaDescription",
+            "nextQuestion" : "taskGoalReflection.metaDescription",
             "replyMessages" : {
               "English" : ["Good job so far!","Let's now take a step back and think about where those goals came from. "],
-              "Deutsch" : ["Bisher gut gemacht!","Lass uns jetzt einen Schritt zurücknehmen und darüber nachdenken, woher diese Ziele hergekommen sind."]
+              "Deutsch" : ["Bisher gut gemacht!","Jetzt nehmen wir einen Schritt zurück und denken wir darüber nach, woher diese Ziele hergekommen sind."]
             }
           },
           {
@@ -772,12 +1487,13 @@
               "English" : "Please describe the thought process that led you to select the goals that you set for today.",
               "Deutsch" : "Beschreiben Sie die Denkweise, die Sie dazu geführt haben, sich die Ziele zu setzen, die Sie heute gewählt haben."
             },
-            "qType" : "freeform",
+            "qType" : "freeformMulti",
+            "minLengthWords" : 10,
             "replyMessages" : {
               "English" : ["Thanks for sharing."],
               "Deutsch" : ["Danke, dass Sie das mit mir mitteilen."]
             },
-            "nextQuestion" : "eveningQuestions.metaJudgement"
+            "nextQuestion" : "taskGoalReflection.metaJudgement"
           },
           {
             "qId" : "metaJudgement",
@@ -790,7 +1506,23 @@
               "English" : ["Rather ineffective", "Mediocre", "Somewhat effective", "Effective", "Very effective", "Perfect"],
               "Deutsch" : ["Eher ineffektiv", "Mittelmäßig", "Etwas effektiv", "Effektiv", "Sehr effektiv", "Perfekt"]
             },
-            "nextQuestion" : "eveningQuestions.improveGoalSetting"
+            "nextQuestion" : "taskGoalReflection.improveGoalSetting",
+            "cReplyMessages":  [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+                "then" : {
+                  "English" : ["That's unfortunate. Good that you can acknowledge the shortcomings."],
+                  "Deutsch" : ["Schade. Gut, dass Sie die Fehler zugestehen können."]
+                }
+              },
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2,3,4}",
+                "then" : {
+                  "English" : ["Great job!"],
+                  "Deutsch" : ["Gut zu hören!"]
+                }
+              }
+            ]
           },
           {
             "qId" : "improveGoalSetting",
@@ -806,8 +1538,8 @@
             "cNextQuestions" : [
               {
                 "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-                "then" : "eveningQuestions.howImprove",
-                "else" : "eveningQuestions.plan"
+                "then" : "taskGoalReflection.howImprove",
+                "else" : "taskGoalReflection.plan"
               }
             ]
           },
@@ -822,7 +1554,7 @@
               "English" : ["Good thinking!"],
               "Deutsch" : ["Gut mitgedacht!"]
             },
-            "nextQuestion" : "eveningQuestions.plan"
+            "nextQuestion" : "taskGoalReflection.plan"
           },
           {
             "qId" : "plan",
@@ -831,7 +1563,13 @@
               "Deutsch" : "Nennen Sie eine konkrete Änderung, die Ihre Zielsetzung morgen verbessern könnte."
             },
             "qType" : "freeform",
-            "nextQuestion" : "eveningQuestions.planRemember"
+            "nextQuestion" : "taskGoalReflection.planRemember",
+            "nextActions" : [
+              {
+                "aType" : "saveAnswerTo",
+                "args" : ["intention"]
+              }
+            ]
           },
           {
             "qId" : "planRemember",
@@ -844,15 +1582,179 @@
               "English" : ["Yes", "No"],
               "Deutsch" : ["Ja", "Nein"]
             },
+            "cNextActions" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+                "then" : [
+                  {
+                    "aType" : "setBooleanVar",
+                    "args" : ["remindIntention", "$B{true}"]
+                  }
+                ],
+                "else" : [
+                  {
+                    "aType" : "setBooleanVar",
+                    "args" : ["remindIntention", "$B{false}"]
+                  }
+                ]
+              }
+            ],
+            "cReplyMessages" : [
+              {
+                "if" : "${relGoalsSetToday} == $B{true}",
+                "then" : {
+                  "English" : ["Good job with reflecting on the task-oriented goals. Let us now move on to the relationship-oriented goals."],
+                  "Deutsch" : ["Sie haben über die aufgabenbezogenen Ziele gut reflektiert. Jetzt schreiten wir zu den beziehungsorienterten Zielen."]
+                },
+                "else" : {
+                  "English" : ["Very well. Good job reflecting today. See you tomorrow!"],
+                  "Deutsch" : ["Alles klar. Sie haben heute gut reflektiert. Bis morgen!"]
+                }
+              }
+            ],
+            "cNextQuestions" : [
+              {
+                "if" : "${relGoalsSetToday} == $B{true}",
+                "then" : "relGoalReflection.goalsRemind"
+              }
+            ]
+          }
+        ],
+        "relGoalReflection" : [
+          {
+            "qId": "goalsRemind",
+            "qType" : "dummy",
             "replyMessages" : {
-              "English" : ["Very well. Good job reflecting today. See you tomorrow!"],
-              "Deutsch" : ["Alles klar. Sie haben heute gut reflektiert. Bis morgen!"]
+              "English" : ["Today, you set the following relationship-oriented goals: ", "${relGoals}"],
+              "Deutsch" : ["Heute haben Sie sich die folgenden beziehungsorienterten Ziele gesetzt: ", "${relGoals}"]
+            },
+            "nextQuestion" : "relGoalReflection.goalsDescription",
+            "nextActions" : [
+              {
+                "aType" : "clearVar",
+                "args" : ["relGoals"]
+              },
+              {
+                "aType" : "clearVar",
+                "args" : ["relGoalsSetToday"]
+              }
+            ]
+          },
+          {
+            "qId" : "goalsDescription",
+            "text" : {
+              "English" : "How did you arrive at your goal for how to improve your relationships with your colleagues this morning?",
+              "Deutsch" : "Wie sind Sie auf Ihr Ziel bezüglich der Verbesserung der Beziehungen zu Ihren Kolleg*innen gekommen?"
+            },
+            "qType" : "freeformMulti",
+            "minLengthWords" : 5,
+            "replyMessages" : {
+              "English" : ["Thank you for sharing."],
+              "Deutsch" : ["Danke fürs Mitteilen."]
+            },
+            "nextQuestion" : "relGoalReflection.goalsJudgement"
+          },
+          {
+            "qId" : "goalsJudgement",
+            "qType" : "freeformMulti",
+            "text" : {
+              "English" : "How did the resulting goals affect your interactions and/or relationships with your colleagues, and/or the social climate of your team?",
+              "Deutsch": "Wie haben Ihre Ziele Ihre Interaktionen mit und/oder Beziehungen zu Ihren Kolleg*innen, und/oder Ihre Arbeitsatmosphäre beeinflusst?"
+            },
+            "minLengthWords" : 5,
+            "nextQuestion" : "relGoalReflection.emotions",
+            "replyMessages" : {
+              "English" : ["That's insightful!"],
+              "Deutsch" : ["Das ist ja aufschlussreich!"]
             }
           },
           {
-            "qId" : "satisfactionSurvey",
+            "qId" : "emotions",
+            "text" : {
+              "English" : "How do you feel about that, ${FIRST_NAME}? Please select any or all of the emotions you are experiencing at least a little bit.",
+              "Deutsch" : "Wie fühlen Sie sich darüber, ${FIRST_NAME}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
+            },
+            "qType" : "multiChoice",
+            "options" : {
+              "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
+              "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
+            },
+            "cReplyMessages" : [
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
+                "then" : {
+                  "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
+                  "Deutsch" : ["Das tut mir leid.", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
+                }
+              },
+              {
+                "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6,7}",
+                "then" : {
+                  "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
+                  "Deutsch" : ["Das ist gut zu hören!", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
+                }
+              }
+            ],
+            "nextQuestion" : "relGoalReflection.emotionsReflection"
+          },
+          {
+            "qId" : "emotionsReflection",
+            "text" : {
+              "English" : "Why did you feel that way?",
+              "Deutsch" : "Warum haben Sie sich so gefühlt?"
+            },
+            "qType" : "freeformMulti",
+            "nextQuestion" : "relGoalReflection.advice"
+          },
+          {
+            "qId" : "advice",
+            "text" : {
+              "English" : "Based on your recent experience with goal setting, which advice would you give to a new colleague who is just starting to work in a similar role?",
+              "Deutsch" : "Basierend auf Ihrer neuen Erfahrung mit Zielsetzung, welchen Ratschlag würden Sie einem neuen Kollegen geben, der neulich in einer ähnlichen Rolle anfängt?"
+            },
+            "qType" : "freeformMulti",
+            "nextQuestion" : "relGoalReflection.planWhat"
+          },
+          {
+            "qId" : "planWhat",
+            "text" : {
+              "English" : "What concretely will you do differently tomorrow?",
+              "Deutsch" : "Was konkretes werden Sie morgen anders tun?"
+            },
+            "qType" : "freeformMulti",
+            "nextQuestion" : "relGoalReflection.planWhen"
+          },
+          {
+            "qId" : "planWhen",
+            "text" : {
+              "English" : "When will you do it?",
+              "Deutsch" : "Wann werden Sie es tun?"
+            },
+            "qType" : "freeform",
+            "nextQuestion" : "relGoalReflection.planRemember"
+          },
+          {
+            "qId" : "planRemember",
+            "text" : {
+              "English" : "How will you remember this plan when the time comes to execute it?",
+              "Deutsch" : "Wie werden Sie sich an diesen Plan erinnern, wenn es an der Zeit ist, ihn umzusetzen?"
+            },
+            "qType" : "freeformMulti",
+            "replyMessages" : {
+              "English": ["Great job reflecting today! Thank you for your insightful answers. See you tomorrow!"],
+              "Deutsch" : ["Sie haben heute gut reflektiert! Danke für Ihre einsichtsvollen Antworten. Bis morgen!"]
+            }
+          }
+        ],
+        "postIntervention" : [
+          {
+            "qId" : "survey",
             "qType" : "qualtrics",
-            "qualtricsLink" : "www.google.com/12345",
+            "text" : {
+              "English" : "Good morning, ${FIRST_NAME}!\nWe have come to the last phase of the study. Please take the time to fill out the following survey thoughtfully and thoroughly",
+              "Deutsch" : "Guten Morgen, ${FIRST_NAME}!\nWir haben die letzte Phase der Studie erreicht. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
+            },
+            "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
               {
                 "field" : "uniqueId",
@@ -860,37 +1762,59 @@
               },
               {
                 "field" : "condition",
-                "value" : "Control"
+                "value" : "Experimental"
+              },
+              {
+                "field" : "stage",
+                "value": "postIntervention"
               }
             ],
-            "text" : {
-              "English" : "We have a few questions about how you are feeling this morning",
-              "Deutsch" : "Wir haben ein Paar Fragen dazu, wie Sie sich heute fühlen"
-            },
+            "nextActions" : [
+              {
+                "aType" : "setBooleanVar",
+                "args" : ["postInterventionComplete", "$B{true}"]
+              },
+              {
+                "aType" : "endExperiment"
+              }
+            ],
             "replyMessages" : {
-              "English" : ["Thanks for doing that!"],
-              "Deutsch" : ["Danke dafür!"]
+              "English" : ["Thank you for that!", "You have now completed all of the requirements for the study."],
+              "Deutsch" : ["Danke dafür!", "Sie haben jetzt alle Aufgaben für die Studie abgeschlossen."]
             }
           }
         ]
       },
       "scheduledQuestions" : [
         {
-          "qId" : "morningQuestions.mainGoal",
+          "qId" : "preIntervention.survey",
           "atTime" : "09:00",
-          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "${preInterventionComplete} != $B{true}"
         },
         {
-          "qId" : "eveningQuestions.numGoals",
+          "qId" : "preIntervention.checkPreIntComplete",
+          "atTime" : "06:00",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "${STAGE_NAME} == $S{Pre-Intervention}"
+        },
+        {
+          "qId" : "interventionMorning.remindIntentions",
+          "atTime" : "09:00",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "${STAGE_NAME} == $S{Intervention}"
+        },
+        {
+          "qId" : "interventionEvening.selectReflection",
           "atTime" : "18:00",
-          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-          "if" : "${STAGE_DAY} >= $N{0}"
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "(${STAGE_NAME} == $S{Intervention}) AND ((${relGoalsSetToday} == $B{true}) OR (${taskGoalsSetToday} == $B{true}))"
         },
         {
-          "qId" : "eveningQuestions.satisfactionSurvey",
-          "atTime" : "18:05",
-          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-          "if" : "${testNum} == $N{100}"
+          "qId" : "postIntervention.survey",
+          "atTime" : "09:00",
+          "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "if" : "(${postInterventionComplete} != $B{true}) AND (${STAGE_NAME} == $S{Post-Intervention})"
         }
       ]
     }

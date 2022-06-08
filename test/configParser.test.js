@@ -289,6 +289,13 @@ describe('Replacing variables', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(expectedString)
         })
+        it('Should replace single string with variable', () => {
+            let testString = "${" + DevConfig.VAR_STRINGS.FIRST_NAME + "}";
+            let expectedString = "John"
+            let returnObj = ConfigParser.replaceVariablesInString(participant, testString, true);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(expectedString)
+        })
         it('Should replace variable at end of string', () => {
             let testString = "My name is ${" + DevConfig.VAR_STRINGS.FIRST_NAME + "}";
             let expectedString = "My name is " + participant.firstName;

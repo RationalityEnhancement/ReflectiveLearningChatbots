@@ -169,7 +169,7 @@ module.exports.getNextStageName = (config, conditionName, stageName) => {
  * @param uniqueId
  * @returns {Promise<{returnCode: *, data: *}|*>}
  */
-// TODO: Figure out how to handle stage updating on the evening but next day should be 1st day.
+
 module.exports.updateStageDay = async (config, uniqueId) => {
     let newStageDay, participant, returnVal;
     try{
@@ -344,16 +344,38 @@ module.exports.startStage = async (participant, nextStageName) => {
  * @param uniqueId
  * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}|{returnCode: *, data: *}>}
  */
-// TODO: End current stage if there is still an outstanding stage
 module.exports.endExperiment = async (uniqueId) => {
     // Put require here because of dependency issues or sth, I guess.
     const ScheduleHandler = require('./scheduleHandler');
     let removeReturnObj = await ScheduleHandler.removeAllJobsForParticipant(uniqueId);
 
+    // Remove all jobs for participant
     if(removeReturnObj.returnCode === DevConfig.FAILURE_CODE){
         return removeReturnObj;
     } else if(removeReturnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
         return ReturnMethods.returnFailure(removeReturnObj.failData);
+    }
+
+    let participant;
+    try{
+        participant = await participants.get(uniqueId);
+    } catch(err){
+        return ReturnMethods.returnFailure("StageHandler: Unable to fetch participant to update stage day")
+    }
+
+    // Get the current stage and day
+    let currentStage;
+    try{
+        currentStage = participant.stages.stageName;
+    } catch(err){
+        return ReturnMethods.returnFailure("StageHandler: Stages object not found in participant");
+    }
+    // If a stage is already running, end it
+    if(currentStage !== ""){
+        let endStageObj = await this.endCurrentStage(participant);
+        if(endStageObj.returnCode === DevConfig.FAILURE_CODE){
+            return endStageObj;
+        }
     }
 
     try{

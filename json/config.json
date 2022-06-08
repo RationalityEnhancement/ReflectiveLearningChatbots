@@ -191,6 +191,10 @@
       "dayNames" : {
         "English" : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         "Deutsch" : ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+      },
+      "reminderText" : {
+        "English" : "Here's a reminder that you have an outstanding question. Provide an answer as instructed, or type <i>/repeat</i> to repeat the question.",
+        "Deutsch" : "Hier ist eine Erinnerung, dass Sie eine ausstehende Frage noch haben. Geben Sie Ihre Antwort nach Anweisungen ein, oder senden Sie <i>/repeat</i>, um die Frage zu wiederholen"
       }
     },
     "endExperiment" : {
@@ -301,7 +305,11 @@
             "args" : ["goalSetTime"]
           }
         ],
-        "nextQuestion" : "setupQuestions.reflectionTime"
+        "nextQuestion" : "setupQuestions.reflectionTime",
+        "reminder" : {
+          "freqMins" : 1,
+          "numRepeats" : 2
+        }
       },
       {
         "qId" : "reflectionTime",
@@ -423,7 +431,11 @@
                 "aType" : "setBooleanVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
-            ]
+            ],
+            "reminder" : {
+              "freqMins" : 1,
+              "numRepeats" : 2
+            }
           },
           {
             "qId" : "askAddTaskGoal",
@@ -995,7 +1007,11 @@
                 "aType" : "setBooleanVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
-            ]
+            ],
+            "reminder" : {
+              "freqMins" : 1,
+              "numRepeats" : 2
+            }
           },
           {
             "qId" : "askAddTaskGoal",

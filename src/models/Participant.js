@@ -80,7 +80,11 @@ let schemaObject = {
       upper: Number
     },
     minLengthChars : Number,
-    minLengthWords : Number
+    minLengthWords : Number,
+    reminder : {
+      freqMins : Number,
+      numRepeats : Number
+    }
   },
   currentState: String,
   answers:
@@ -110,6 +114,13 @@ let schemaObject = {
         onDays : [String],
         if : String,
         tz : String
+      }
+    ],
+    reminders : [
+      {
+        jobId : String,
+        minutes : Number,
+        hours : Number
       }
     ]
   }

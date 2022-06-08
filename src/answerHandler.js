@@ -4,6 +4,7 @@ const DevConfig = require('../json/devConfig.json');
 const ReturnMethods = require('./returnMethods');
 const moment = require('moment-timezone');
 const ConfigParser = require('./configParser')
+const ReminderHandler = require('./reminderHandler')
 
 /**
  * Answer handler class that takes in a config as a parameter
@@ -30,6 +31,7 @@ class AnswerHandler{
         let participant;
         try{
             participant = await participants.get(uniqueId);
+            if(!participant) throw "Participant not found"
         } catch(error){
             return ReturnMethods.returnFailure("AHandler: could not get participant");
         }
@@ -82,8 +84,16 @@ class AnswerHandler{
      *          if failure, return error message
      */
     static async finishAnswering(uniqueId, currentQuestion, fullAnswer){
+
+        let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(uniqueId);
+        if(cancelReminderObj.returnCode === DevConfig.FAILURE_CODE){
+            return cancelReminderObj;
+        }
+
         try{
             let participant = await participants.get(uniqueId);
+            if(!participant) throw "Participant not found"
+
             let tz = participant.parameters.timezone;
             // Add the answer to the list of answers in the database
             // If the answer is a string, convert to array
@@ -165,7 +175,6 @@ class AnswerHandler{
                             return finishObj;
                         } else {
                             await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
-                            let newPart = await participants.get(participant.uniqueId);
 
                             let errorMsg = config.phrases.answerValidation.invalidOption[participant.parameters.language]
                             return ReturnMethods.returnPartialFailure(errorMsg, DevConfig.REPEAT_QUESTION_STRING)

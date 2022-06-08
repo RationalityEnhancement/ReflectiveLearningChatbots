@@ -271,6 +271,7 @@ class ScheduleHandler{
             }
         }
 
+        // TODO : reschedule reminders
         if(failedOperations.length > 0) {
             if(succeededOperations.length === 0){
                 return ReturnMethods.returnFailure("Scheduler: failed to reschedule the following questions:\n"+

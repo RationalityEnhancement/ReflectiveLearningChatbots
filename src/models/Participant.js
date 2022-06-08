@@ -111,6 +111,13 @@ let schemaObject = {
         if : String,
         tz : String
       }
+    ],
+    reminders : [
+      {
+        jobId : String,
+        minutes : Number,
+        hours : Number
+      }
     ]
   }
 }

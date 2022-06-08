@@ -184,6 +184,8 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
     // Handle any outstanding questions before sending next question.
     await AnswerHandler.handleNoResponse(participant.uniqueId);
 
+    // TODO: Cancel old reminder
+    // TODO: Set reminder if present
     await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
     return ReturnMethods.returnSuccess("");
 }

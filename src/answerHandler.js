@@ -83,6 +83,7 @@ class AnswerHandler{
      */
     static async finishAnswering(uniqueId, currentQuestion, fullAnswer){
         try{
+            // TODO: Cancel reminder
             let participant = await participants.get(uniqueId);
             let tz = participant.parameters.timezone;
             // Add the answer to the list of answers in the database

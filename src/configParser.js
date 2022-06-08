@@ -177,6 +177,8 @@ class ConfigParser{
                 try{
                     if(participant.currentQuestion.qType === "number") {
                         varVal = parseInt(varVal[0]);
+                    } else if(participant.currentQuestion.qType === "freeform"){
+                        varVal = varVal[0];
                     }
                 } catch(err){
                     // Do nothing
@@ -548,6 +550,7 @@ class ConfigParser{
         }
         let evaluation = false;
 
+        // TODO: Alter in_array and contains_string to account for string arrays
         // Evaluate based on operator
         switch(expObjCopy.operator){
             case "==":

@@ -661,12 +661,17 @@ class ConfigParser{
                 break;
             case "CONTAINS_STRING":
                 // Check if operand1 contains operand 2 as substring
-                // Both must be string
-                if(expObjCopy.operand1.type !== DevConfig.OPERAND_TYPES.STRING
+                // op1 can be string or string array
+                if(!(expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.STRING
+                    || expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.STRING_ARRAY)
                     || expObjCopy.operand2.type !== DevConfig.OPERAND_TYPES.STRING){
                     return ReturnMethods.returnFailure("CParser: Data types must be string to use CONTAINS_STRING")
                 }
-                evaluation = expObjCopy.operand1.value.includes(expObjCopy.operand2.value);
+                let operand1Val = expObjCopy.operand1.value
+                if(expObjCopy.operand1.type === DevConfig.OPERAND_TYPES.STRING_ARRAY){
+                    operand1Val = operand1Val.join(". ");
+                }
+                evaluation = operand1Val.includes(expObjCopy.operand2.value);
                 break;
             case "HAS_CHOICE_IDX":
                 // Check if the current answer (stored in operand1) of a choice question corresponds to the

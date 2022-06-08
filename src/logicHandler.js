@@ -8,6 +8,7 @@ const Communicator = require('./communicator')
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ActionHandler = require("./actionHandler")
 const AnswerHandler = require("./answerHandler");
+const ReminderHandler = require("./reminderHandler");
 
 /**
  * Logic handler deals with the logic of what is to occur at each step
@@ -32,6 +33,7 @@ let processNextSteps = async(bot, uniqueId) => {
     let participant;
     try{
         participant = await participants.get(uniqueId)
+        if(!participant) throw "Participant not found"
     } catch(err){
         return ReturnMethods.returnFailure("LHandler: Could not fetch participant " + uniqueId)
     }
@@ -89,6 +91,7 @@ let processNextSteps = async(bot, uniqueId) => {
         // Get updated participant for next action:
         try{
             participant = await participants.get(uniqueId)
+            if(!participant) throw "Participant not found"
         } catch(err){
             return ReturnMethods.returnFailure("LHandler: Could not fetch participant again: " + uniqueId)
         }
@@ -167,6 +170,13 @@ module.exports.getAndConstructNextQuestion = (participant, currentQuestion) => {
  * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
  */
 module.exports.sendQuestion = async (bot, participant, chatId, question, debugExp) => {
+
+    // Cancel any outstanding reminder messages
+    let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant.uniqueId);
+    if(cancelReminderObj.returnCode === DevConfig.FAILURE_CODE){
+        return cancelReminderObj;
+    }
+
     // Don't send the question if it is a dummy
     // Dummies are used to either just send messages or to conditionally
     //  select next questions/actions which are not preceded by another question already
@@ -184,9 +194,18 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
     // Handle any outstanding questions before sending next question.
     await AnswerHandler.handleNoResponse(participant.uniqueId);
 
-    // TODO: Cancel old reminder
-    // TODO: Set reminder if present
+
     await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
+
+    if(question.reminder){
+        let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,
+            question.reminder.freqMins, question.reminder.numRepeats);
+        if(reminderObj.returnCode === DevConfig.FAILURE_CODE){
+            // Don't crash if unable to set reminders for whatever reason
+            console.log(reminderObj.data);
+        }
+    }
+
     return ReturnMethods.returnSuccess("");
 }
 

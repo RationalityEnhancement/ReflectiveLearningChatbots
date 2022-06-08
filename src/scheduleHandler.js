@@ -10,6 +10,7 @@ const sendQuestion = require('./logicHandler').sendQuestion;
 const ConfigParser = require('./configParser');
 const ExperimentUtils = require('./experimentUtils')
 const moment = require('moment-timezone');
+const ReminderHandler = require('./reminderHandler')
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -226,7 +227,14 @@ class ScheduleHandler{
     static async rescheduleAllOperationsForID(bot, uniqueId, config){
 
         // Get the participant from DB and read all scheduled operations
-        let participant = await participants.get(uniqueId);
+        let participant;
+        try{
+            participant = await participants.get(uniqueId);
+            if(!participant) throw "Participant not found"
+        } catch(e){
+            return ReturnMethods.returnFailure("Scheduler: Cannot fetch participant for rescheduling");
+        }
+
         let scheduledOperations = participant.scheduledOperations;
         let scheduledQuestions = scheduledOperations["questions"];
         let scheduledActions = scheduledOperations["actions"];
@@ -271,7 +279,23 @@ class ScheduleHandler{
             }
         }
 
-        // TODO : reschedule reminders
+
+        // Get telegram chatId
+        let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
+        if(!secretMap){
+            return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+        }
+        let chatId = secretMap.chatId;
+
+        let reminderObj = await ReminderHandler.rescheduleReminders(config, bot, participant, chatId);
+        if(reminderObj.returnCode === DevConfig.FAILURE_CODE){
+            failedOperations.push(reminderObj.data);
+        } else if(reminderObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
+            failedOperations.push(reminderObj.failData);
+        } else {
+            succeededOperations = succeededOperations.concat(reminderObj.data);
+        }
+
         if(failedOperations.length > 0) {
             if(succeededOperations.length === 0){
                 return ReturnMethods.returnFailure("Scheduler: failed to reschedule the following questions:\n"+
@@ -578,6 +602,7 @@ class ScheduleHandler{
         let participant;
         try{
             participant = await participants.get(uniqueId);
+            if(!participant) throw "Participant not found"
         } catch(err){
             return ReturnMethods.returnFailure("Scheduler: Unable to fetch participant " + uniqueId + "\n"+err)
         }
@@ -608,6 +633,7 @@ class ScheduleHandler{
                 let newParticipant;
                 try {
                     newParticipant = await participants.get(uniqueId);
+                    if(!newParticipant) throw "Participant not found"
                 } catch(err){
                     console.log(err);
                 }
@@ -700,6 +726,7 @@ class ScheduleHandler{
                 let newParticipant;
                 try {
                     newParticipant = await participants.get(uniqueId);
+                    if(!newParticipant) throw "Participant not found"
                 } catch(err){
                     console.log(err);
                 }

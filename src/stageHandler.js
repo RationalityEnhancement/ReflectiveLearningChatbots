@@ -174,6 +174,7 @@ module.exports.updateStageDay = async (config, uniqueId) => {
     let newStageDay, participant, returnVal;
     try{
         participant = await participants.get(uniqueId);
+        if(!participant) throw "Participant not found"
     } catch(err){
         return ReturnMethods.returnFailure("StageHandler: Unable to fetch participant to update stage day")
     }
@@ -359,6 +360,7 @@ module.exports.endExperiment = async (uniqueId) => {
     let participant;
     try{
         participant = await participants.get(uniqueId);
+        if(!participant) throw "Participant not found"
     } catch(err){
         return ReturnMethods.returnFailure("StageHandler: Unable to fetch participant to update stage day")
     }

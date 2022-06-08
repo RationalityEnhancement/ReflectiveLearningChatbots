@@ -475,6 +475,14 @@ describe('Removing reminders', () => {
             expect(newPart2.scheduledOperations["reminders"].length).to.equal(3);
         })
     })
+    describe('Fails', () => {
+        let participant, newPart, returnObj;
+        it('Should fail when participant is invalid', async () => {
+            returnObj = await ReminderHandler.removeJobsForId("abcd");
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
 })
 
 describe('Severing DB connection', () => {

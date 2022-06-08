@@ -333,6 +333,7 @@ class ReminderHandler{
         let participant;
         try{
             participant = await participants.get(uniqueId);
+            if(!participant) throw "Participant not found";
         } catch(err){
             return ReturnMethods.returnFailure("RHandler: Unable to fetch participant");
         }

@@ -80,7 +80,11 @@ let schemaObject = {
       upper: Number
     },
     minLengthChars : Number,
-    minLengthWords : Number
+    minLengthWords : Number,
+    reminder : {
+      freqMins : Number,
+      numRepeats : Number
+    }
   },
   currentState: String,
   answers:

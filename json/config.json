@@ -305,7 +305,11 @@
             "args" : ["goalSetTime"]
           }
         ],
-        "nextQuestion" : "setupQuestions.reflectionTime"
+        "nextQuestion" : "setupQuestions.reflectionTime",
+        "reminder" : {
+          "freqMins" : 1,
+          "numRepeats" : 2
+        }
       },
       {
         "qId" : "reflectionTime",
@@ -427,7 +431,11 @@
                 "aType" : "setBooleanVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
-            ]
+            ],
+            "reminder" : {
+              "freqMins" : 1,
+              "numRepeats" : 2
+            }
           },
           {
             "qId" : "askAddTaskGoal",
@@ -999,7 +1007,11 @@
                 "aType" : "setBooleanVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
-            ]
+            ],
+            "reminder" : {
+              "freqMins" : 1,
+              "numRepeats" : 2
+            }
           },
           {
             "qId" : "askAddTaskGoal",

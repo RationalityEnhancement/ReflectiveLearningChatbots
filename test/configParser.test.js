@@ -111,7 +111,7 @@ describe('Replacing variables', () => {
             stageDay : 0
         },
         currentQuestion : {
-            qType : "freeform",
+            qType : "freeformMulti",
         },
         conditionName : "Test"
     }
@@ -140,6 +140,17 @@ describe('Replacing variables', () => {
             let returnObj = ConfigParser.getVariable(copyPart, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(34);
+        })
+        it('Should fetch current answer as string', () => {
+            let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
+
+            let copyPart = JSON.parse(JSON.stringify(participant));
+            copyPart.currentAnswer = ["34"];
+            copyPart.currentQuestion.qType = "freeform";
+
+            let returnObj = ConfigParser.getVariable(copyPart, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("34");
         })
         it('Should fetch if variable name is param', () => {
             let testString = "PID";
@@ -2578,7 +2589,7 @@ describe("Evaluate expression object", () => {
         });
     })
     describe('CONTAINS_STRING', () => {
-        it('Should return true when true', () => {
+        it('Should return true when true - string', () => {
             let expressionObj = {
                 operand1 : {
                     value : "[3,4,5]",
@@ -2596,11 +2607,47 @@ describe("Evaluate expression object", () => {
             expect(returnObj.data.value).to.equal(expectedAnswer);
             expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
         });
-        it('Should return false when false', () => {
+        it('Should return false when false - string', () => {
             let expressionObj = {
                 operand1 : {
                     value : "[3,4,5]",
                     type : DevConfig.OPERAND_TYPES.STRING
+                },
+                operator : "CONTAINS_STRING",
+                operand2 : {
+                    value : "6,",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                }
+            };
+            let expectedAnswer = false;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return true when true - string arr', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : ["[3,", " 4, 5]"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
+                },
+                operator : "CONTAINS_STRING",
+                operand2 : {
+                    value : "3,",
+                    type : DevConfig.OPERAND_TYPES.STRING
+                }
+            };
+            let expectedAnswer = true;
+            let returnObj = ConfigParser.evaluateExpressionObject(part, expressionObj);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.value).to.equal(expectedAnswer);
+            expect(returnObj.data.type).to.equal(DevConfig.OPERAND_TYPES.BOOLEAN);
+        });
+        it('Should return false when false - string arr', () => {
+            let expressionObj = {
+                operand1 : {
+                    value : ["[3,", " 4, 5]"],
+                    type : DevConfig.OPERAND_TYPES.STRING_ARRAY
                 },
                 operator : "CONTAINS_STRING",
                 operand2 : {

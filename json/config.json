@@ -101,8 +101,8 @@
         "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
       },
       "terminateAnswerProperly" : {
-        "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
-        "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
+        "English" : "Please type the correct response to continue after the survey",
+        "Deutsch" : "Bitte geben Sie die richtige Antwort ein, um nach der Umfrage fortzufahren"
       }
     },
     "keyboards": {

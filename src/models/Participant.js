@@ -84,7 +84,8 @@ let schemaObject = {
     reminder : {
       freqMins : Number,
       numRepeats : Number
-    }
+    },
+    inputPrompt : String
   },
   currentState: String,
   answers:

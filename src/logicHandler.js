@@ -197,7 +197,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
 
     await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
 
-    if(question.reminder){
+    if(question.reminder && question.reminder["freqMins"]){
         let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,
             question.reminder.freqMins, question.reminder.numRepeats);
         if(reminderObj.returnCode === DevConfig.FAILURE_CODE){

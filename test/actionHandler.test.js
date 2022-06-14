@@ -533,7 +533,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(outString)
+                expect(returnObj.data).to.eql([outString])
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -555,13 +555,35 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(outString)
+                expect(returnObj.data).to.eql([outString])
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
                 assert(Array.isArray(participant.parameters[actionObj.args[0]]));
                 expect(participant.parameters[actionObj.args[0]].length).to.equal(2);
                 expect(participant.parameters[actionObj.args[0]]).to.eql(["ans1", outString]);
+            })
+        })
+        describe('String array answer', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "addAnswerTo",
+                args : ["testStrArr"]
+            }
+            let outString = ["ans3", "ans4"];
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = outString;
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.eql(outString)
+            })
+            it('Should have saved the parameter as string in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(participant.parameters[actionObj.args[0]].length).to.equal(4);
+                expect(participant.parameters[actionObj.args[0]]).to.eql(["ans1", "ans2"].concat(outString));
             })
         })
         describe('Number answer', () => {

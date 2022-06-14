@@ -283,7 +283,7 @@ In config.json
 
 Here you can define the different possible experimental conditions for the Reflective Learning Chatbot experiment. You can define completely different behaviour of the chatbot for each condition. There is theoretically no limit to the number of conditions there can be, but it would be better limited to 2 or 3 for the sake of having a manageable configuration file.
 
-Experiment conditions are optional! However, if you want to use experiment conditions, all of the following fields MUST be specified. Furthermore, the action `"assignToCondition"` must be invoked at some point during the experiment (see <a href="#DefaultCat">Default Category</a> or <a href="#Actions">Actions</a>).
+Experiment conditions are optional! However, if you want to use experiment conditions, all of the following fields MUST be specified. Furthermore, the action `"assignToCondition"` must be invoked at some point during the experiment (see <a href="#Setup">Setup Questions</a> or <a href="#Actions">Actions</a>).
 
 These are all fields at the first level of the experiment JSON object. 
 
@@ -1971,7 +1971,7 @@ In questionCategories > setupQuestions of config.json
 
 ### PID 
 
-It is possible to skip this field if your `assignmentScheme` is not `"pid"`. However, if your assignmentScheme is "pid", then it is essential that you have this question and save the answer to the correct variable.
+It is possible to skip this field if your `assignmentScheme` is not `"pid"`. However, if your `assignmentScheme` is "pid", then it is essential that you have this question and save the answer to the correct variable.
 
 Now that the user has selected a language, we can start having separate texts for different languages. So we will build up our PID question in the following way:
 
@@ -2156,7 +2156,7 @@ New schedule object for conditionQuestions > Condition1 > scheduledQuestions of 
   "qId" : "preTestQs.startStage",
   "atTime" : "06:00",
   "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
-  "if" : "${STAGE_DAY} == $S{}"
+  "if" : "${STAGE_NAME} == $S{}"
 }
 
 ```

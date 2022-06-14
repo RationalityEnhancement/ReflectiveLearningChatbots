@@ -258,11 +258,13 @@ let processAction = async(bot, config, participant, actionObj) => {
                 case DevConfig.OPERAND_TYPES.STRING_ARRAY:
                     // Update the array parameter
                     try{
-                        await participants.addToArrParameter(participant.uniqueId, aVarName, participant.currentAnswer[0]);
+                        for(const el of participant.currentAnswer) {
+                            await participants.addToArrParameter(participant.uniqueId, aVarName, el);
+                        }
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler: could not add to participant params");
                     }
-                    aReturnVal = participant.currentAnswer[0];
+                    aReturnVal = participant.currentAnswer;
                     break;
                 default:
                     return ReturnMethods.returnFailure("ActHandler: Cannot add to var of type " + aParamType);

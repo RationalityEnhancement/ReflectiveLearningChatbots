@@ -48,6 +48,7 @@ let schemaObject = {
     }],
     nextQuestion: String,
     qualtricsLink : String,
+    continueStrings : [String],
     cReplyMessages: [
       {
         if : String,

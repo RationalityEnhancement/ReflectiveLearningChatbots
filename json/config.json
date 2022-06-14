@@ -887,6 +887,7 @@
               "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly",
               "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
+            "continueStrings" : ["Let", "Me", "In"],
             "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
               {

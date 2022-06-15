@@ -27,8 +27,7 @@ module.exports.replaceFilenameDeeply = (targetObj) => {
                 case DevConfig.SUCCESS_CODE:
                     // String is a valid filename
                     let rootPath = path.resolve('.');
-                    let dataPath = path.join(rootPath, DevConfig.DATA_FOLDER_PATH);
-                    let targetFile = path.join(dataPath, fileNameParseObj.data);
+                    let targetFile = path.join(rootPath, fileNameParseObj.data);
                     if(fs.existsSync(targetFile)){
                         let JSONString = fs.readFileSync(targetFile,'utf8');
                         let JSONElement;

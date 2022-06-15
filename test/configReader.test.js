@@ -1,7 +1,7 @@
 const ConfigReader = require('../src/configReader');
 const { assert, expect } = require('chai');
 
-const testFile = require('../json/test/filenameTest.json');
+const testFile = require('../json/test/filename/filenameTest.json');
 
 describe('Replacing file name deeply', () =>{
     it('Replacing normally', ()=>{

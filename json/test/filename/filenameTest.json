@@ -2,10 +2,10 @@
   "normal" : {
     "input" : {
       "name": "John",
-      "friends": "$F{test/testArrStr.json}",
+      "friends": "$F{json/test/filename/testArrStr.json}",
       "nestedObj": {
-        "mixedArr": "$F{test/testArrMix.json}",
-        "object": "$F{test/testObj.json}"
+        "mixedArr": "$F{json/test/filename/testArrMix.json}",
+        "object": "$F{json/test/filename/testObj.json}"
       }
     },
     "target" : {
@@ -25,10 +25,10 @@
   "invalidJSON" : {
     "input" : {
       "name" : "John",
-      "friends" : "$F{test/testArrStr.json}",
+      "friends" : "$F{json/test/filename/testArrStr.json}",
       "nestedObj" : {
-        "mixedArr" : "$F{test/testArrMix.json}",
-        "object" : "$F{test/failJSON.json}"
+        "mixedArr" : "$F{json/test/filename/testArrMix.json}",
+        "object" : "$F{json/test/filename/failJSON.json}"
       }
     },
     "target" : {
@@ -45,10 +45,10 @@
   "missingExtension" : {
     "input" : {
       "name": "John",
-      "friends": "$F{test/testArrStr}",
+      "friends": "$F{json/test/filename/testArrStr}",
       "nestedObj": {
-        "mixedArr": "$F{test/testArrMix.json}",
-        "object": "$F{test/testObj.json}"
+        "mixedArr": "$F{json/test/filename/testArrMix.json}",
+        "object": "$F{json/test/filename/testObj.json}"
       }
     },
     "target" : {
@@ -68,10 +68,10 @@
   "fileNotExist" : {
     "input" : {
       "name": "John",
-      "friends": "$F{test/testArrStr.json}",
+      "friends": "$F{json/test/filename/testArrStr.json}",
       "nestedObj": {
-        "mixedArr": "$F{test/doesntExist.json}",
-        "object": "$F{test/testObj.json}"
+        "mixedArr": "$F{json/test/filename/doesntExist.json}",
+        "object": "$F{json/test/filename/testObj.json}"
       }
     },
     "target" : {

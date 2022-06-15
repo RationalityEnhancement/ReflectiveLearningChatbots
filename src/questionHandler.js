@@ -167,13 +167,13 @@ function QuestionHandler(config){
         "reminder", "inputPrompt", "continueStrings"]
         for(let i = 0; i < optionalParams.length; i++){
             let field = optionalParams[i];
-            let languageReplacedValue = this.replaceLanguageDeeply(selectedQuestion[field], config.languages, language)
-            if(field in selectedQuestion) constructedQuestion[field] = languageReplacedValue;
+            if(field in selectedQuestion) {
+                let languageReplacedValue = this.replaceLanguageDeeply(selectedQuestion[field], config.languages, language)
+                constructedQuestion[field] = languageReplacedValue;
+            }
         }
 
-
         return ReturnMethods.returnSuccess(constructedQuestion);
-
     }
 
     /**

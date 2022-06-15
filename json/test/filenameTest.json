@@ -1,0 +1,89 @@
+{
+  "normal" : {
+    "input" : {
+      "name": "John",
+      "friends": "$F{test/testArrStr.json}",
+      "nestedObj": {
+        "mixedArr": "$F{test/testArrMix.json}",
+        "object": "$F{test/testObj.json}"
+      }
+    },
+    "target" : {
+      "name" : "John",
+      "friends" : ["john", "bill", "tim"],
+      "nestedObj" : {
+        "mixedArr" : ["john", {
+          "property" : "sping"
+        }],
+        "object" : {
+          "property1" : "sping",
+          "property2" : ["multiple", "spings"]
+        }
+      }
+    }
+  },
+  "invalidJSON" : {
+    "input" : {
+      "name" : "John",
+      "friends" : "$F{test/testArrStr.json}",
+      "nestedObj" : {
+        "mixedArr" : "$F{test/testArrMix.json}",
+        "object" : "$F{test/failJSON.json}"
+      }
+    },
+    "target" : {
+      "name" : "John",
+      "friends" : ["john", "bill", "tim"],
+      "nestedObj" : {
+        "mixedArr" : ["john", {
+          "property" : "sping"
+        }],
+        "object" : []
+      }
+    }
+  },
+  "missingExtension" : {
+    "input" : {
+      "name": "John",
+      "friends": "$F{test/testArrStr}",
+      "nestedObj": {
+        "mixedArr": "$F{test/testArrMix.json}",
+        "object": "$F{test/testObj.json}"
+      }
+    },
+    "target" : {
+      "name" : "John",
+      "friends" : [],
+      "nestedObj" : {
+        "mixedArr" : ["john", {
+          "property" : "sping"
+        }],
+        "object" : {
+          "property1" : "sping",
+          "property2" : ["multiple", "spings"]
+        }
+      }
+    }
+  },
+  "fileNotExist" : {
+    "input" : {
+      "name": "John",
+      "friends": "$F{test/testArrStr.json}",
+      "nestedObj": {
+        "mixedArr": "$F{test/doesntExist.json}",
+        "object": "$F{test/testObj.json}"
+      }
+    },
+    "target" : {
+      "name" : "John",
+      "friends" : ["john", "bill", "tim"],
+      "nestedObj" : {
+        "mixedArr" : [],
+        "object" : {
+          "property1" : "sping",
+          "property2" : ["multiple", "spings"]
+        }
+      }
+    }
+  }
+}

@@ -77,17 +77,18 @@ const config = require('../json/config.json');
         throw "ERROR: Unable to write experiment to CSV file\n" + error;
     }
     try{
-        let participantHeaders = ["uniqueId", "experimentId", "conditionName"];
+        let participantHeaders = ["uniqueId", "experimentId", "conditionName", "currentState"];
         // for(const [key, value] of Object.entries(pList[0].parameters)){
         //     participantHeaders.push("parameters/"+key);
         // }
         participantHeaders.push("parameters");
+        participantHeaders.push("stages");
         participantHeaders.push("scheduledQuestions");
         participantHeaders.push("answers");
         let CSVString = participantHeaders.join(',');
         for(let i = 0; i < pList.length; i++){
             let curPart = pList[i];
-            let participantValues = [curPart.uniqueId, curPart.experimentId, curPart.conditionName];
+            let participantValues = [curPart.uniqueId, curPart.experimentId, curPart.conditionName, curPart.currentState];
             // for(const [key, value] of Object.entries(participant.parameters)){
             //     if(Array.isArray(value)){
             //         participantValues.push(value.join('|'))
@@ -96,6 +97,7 @@ const config = require('../json/config.json');
             //     }
             // }
             participantValues.push(JSON.stringify(curPart.parameters).replace(/,/g,"|"));
+            participantValues.push(JSON.stringify(curPart.stages).replace(/,/g,"|"));
             participantValues.push(JSON.stringify(curPart.scheduledOperations["questions"]).replace(/,/g,'|'))
             participantValues.push(JSON.stringify(curPart.answers).replace(/,/g,'|'))
             CSVString += '\n' + participantValues.join(',')

@@ -6,6 +6,7 @@
   "NEXT_ACTION_STRING" : "[Next Action]",
   "REPEAT_QUESTION_STRING" : "[Repeat Question]",
   "INVALID_ANSWER_STRING" : "[Invalid Answer]",
+  "INVALID_FILE_STRING" : "[Invalid File]",
   "qTypeAliases" : ["likert5", "likert7"],
   "validAssignmentSchemes" : ["pid", "balanced", "random"],
   "RESERVED_VARIABLES" : ["STAGE_NAME", "STAGE_DAY"],
@@ -62,5 +63,6 @@
     "LENGTH_DAYS" : "lengthDays",
     "ON_DAYS" : "onDays"
   },
-  "STAGE_UPDATE_TIME" : "21:00"
+  "STAGE_UPDATE_TIME" : "21:00",
+  "DATA_FOLDER_PATH" : "data/"
 }

@@ -5,6 +5,7 @@ const ReturnMethods = require('./returnMethods');
 const lodash = require('lodash');
 const moment = require('moment-timezone')
 const ExperimentUtils = require('./experimentUtils')
+const {relativeTimeRounding} = require("moment-timezone");
 
 /**
  *
@@ -1035,6 +1036,23 @@ class ConfigParser{
         }
         let trimmedExpression = expression.substring(3,expression.length-1);
         return this.getNumberFromString(trimmedExpression);
+    }
+    /**
+     *
+     * Parse a single filename token of the form $F{fileName}
+     *
+     * @param expression
+     */
+    static parseFilenameToken(expression){
+        if(typeof expression != "string"){
+            return ReturnMethods.returnFailure("CParser: File token must be string");
+        }
+        if(!expression.startsWith("$F{") || !expression.endsWith("}")){
+            return ReturnMethods.returnFailure("CParser: File token in incorrect format - must be $F{...}");
+        }
+        let trimmedExpression = expression.substring(3,expression.length-1);
+
+        return ReturnMethods.returnSuccess(trimmedExpression);
     }
     /**
      *

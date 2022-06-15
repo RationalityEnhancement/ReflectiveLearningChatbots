@@ -1,0 +1,68 @@
+{
+  "SUCCESS_CODE" : 1,
+  "PARTIAL_FAILURE_CODE" : 0,
+  "FAILURE_CODE" : -1,
+  "NO_RESPONSE_STRING" : "[No Response]",
+  "NEXT_ACTION_STRING" : "[Next Action]",
+  "REPEAT_QUESTION_STRING" : "[Repeat Question]",
+  "INVALID_ANSWER_STRING" : "[Invalid Answer]",
+  "INVALID_FILE_STRING" : "[Invalid File]",
+  "qTypeAliases" : ["likert5", "likert7"],
+  "validAssignmentSchemes" : ["pid", "balanced", "random"],
+  "RESERVED_VARIABLES" : ["STAGE_NAME", "STAGE_DAY"],
+  "VAR_STRINGS" : {
+    "FIRST_NAME" : "FIRST_NAME",
+    "CURRENT_ANSWER" : "CURRENT_ANSWER",
+    "UNIQUE_ID" : "UNIQUE_ID",
+    "STAGE_NAME" : "STAGE_NAME",
+    "STAGE_DAY" : "STAGE_DAY",
+    "ANSWER_LEN_CHARS" : "ANSWER_LEN_CHARS",
+    "ANSWER_LEN_WORDS" : "ANSWER_LEN_WORDS",
+    "TODAY" : "TODAY",
+    "TODAY_NAME" : "TODAY_NAME",
+    "CONDITION" : "CONDITION"
+  },
+  "SENSITIVE_DATA_VARS" : ["FIRST_NAME"],
+  "MS_PER_CHARACTER_DELAY" : 8,
+  "DUMMY_QUESTION_TEXT": "[Dummy Question]",
+  "VALID_CONDITIONAL_OPERATORS" : [">", ">=", "<", "<=", "==", "!=", "HAS_CHOICE_IDX", "IN_ARRAY", "MULTIPLE_OF", "AND", "OR", "CONTAINS_STRING"],
+  "VALID_BOOLEAN_CONSTANTS" : ["TRUE", "FALSE"],
+  "OPERAND_TYPES" : {
+    "EXPRESSION" : "exp",
+    "NUMBER": "number",
+    "NUMBER_ARRAY" : "numArr",
+    "STRING" : "string",
+    "STRING_ARRAY" : "strArr",
+    "BOOLEAN" : "boolean",
+    "VARIABLE" : "var",
+    "UNDEFINED" : "undefined"
+  },
+  "DEFAULT_DTYPE_VALUES" : {
+    "number" :  0,
+    "numArr" : [],
+    "string" :  "",
+    "strArr": [],
+    "boolean" : false
+  },
+  "VALID_ACTIONS_ARGS" : {
+    "saveAnswerTo" : 1,
+    "setBooleanVar" : 2,
+    "scheduleQuestions" : 0,
+    "assignToCondition" : 0,
+    "addAnswerTo" : 1,
+    "clearVar" : 1,
+    "addValueTo" : 2,
+    "startStage" : 1,
+    "incrementStageDay" : 0,
+    "endExperiment" : 0
+  },
+  "END_STAGE_STRING" : "end",
+  "BEGIN_STAGE_STRING": "begin",
+  "DAY_INDEX_ORDERING" : ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  "STAGE_PARAMS" : {
+    "LENGTH_DAYS" : "lengthDays",
+    "ON_DAYS" : "onDays"
+  },
+  "STAGE_UPDATE_TIME" : "21:00",
+  "DATA_FOLDER_PATH" : "data/"
+}

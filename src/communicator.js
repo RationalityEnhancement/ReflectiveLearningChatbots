@@ -1,6 +1,6 @@
 const ConfigReader = require('../src/configReader');
 const config = ConfigReader.getExpConfig();
-const DevConfig = require('../json/devConfig.json');
+const DevConfig = ConfigReader.getDevConfig();
 const participants = require('./apiControllers/participantApiController');
 const InputOptions = require('./inputOptions');
 const AnswerHandler = require('./answerHandler');
@@ -97,7 +97,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             });
 
             if(!inputPrompt) inputPrompt = config.phrases.keyboards.multiChoice[language];
-            keyboard = InputOptions.multiChoice(question.options).reply_markup;
+            keyboard = InputOptions.multiChoice(question.options, participant.parameters.language).reply_markup;
 
             break;
         case 'number':
@@ -120,15 +120,9 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
-            await new Promise(res => {
-                setTimeout(res, delayMs)
-            });
+
             if(!inputPrompt) inputPrompt = config.phrases.keyboards.freeformMultiPrompt[language];
 
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.freeformMultiPrompt[language], true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
             break;
         case 'qualtrics' :
             let link = question.qualtricsLink;

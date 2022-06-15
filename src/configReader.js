@@ -1,8 +1,33 @@
-const ConfigParser = require('./configParser');
 const DevConfig = require('../json/devConfig.json')
 const fs = require('fs');
 const path = require('node:path');
 
+/**
+ *
+ * Parse a single filename token of the form $F{fileName}
+ *
+ * @param expression
+ */
+module.exports.parseFilenameToken = (expression) => {
+    if(typeof expression != "string"){
+        return {
+            returnCode: DevConfig.FAILURE_CODE,
+            data: "CReader: File token must be string"
+        };
+    }
+    if(!expression.startsWith("$F{") || !expression.endsWith("}")){
+        return {
+            returnCode: DevConfig.FAILURE_CODE,
+            data: "CReader: File token in incorrect format - must be $F{...}"
+        };
+    }
+    let trimmedExpression = expression.substring(3,expression.length-1);
+
+    return {
+        returnCode: DevConfig.SUCCESS_CODE,
+        data: trimmedExpression
+    };
+}
 
 /**
  *
@@ -15,11 +40,10 @@ const path = require('node:path');
  * @returns {string|{}|*[]|*}
  */
 module.exports.replaceFilenameDeeply = (targetObj) => {
-
     switch(typeof targetObj){
         case "string" :
             // Check if it is a filename token
-            let fileNameParseObj = ConfigParser.parseFilenameToken(targetObj);
+            let fileNameParseObj = this.parseFilenameToken(targetObj);
             switch(fileNameParseObj.returnCode){
                 case DevConfig.FAILURE_CODE:
                     // String is not a file token

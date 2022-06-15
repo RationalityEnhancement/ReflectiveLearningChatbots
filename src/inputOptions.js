@@ -1,8 +1,7 @@
 const { Telegraf, Markup } = require('telegraf');
 
-const ConfigReader = require('../src/configReader');
+const ConfigReader = require('./configReader');
 const config = ConfigReader.getExpConfig();
-
 
 module.exports.singleChoice = (options) => {
 	return Markup.keyboard(options).oneTime().resize();

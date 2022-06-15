@@ -1,13 +1,14 @@
 const participants = require("./apiControllers/participantApiController");
 const experiments = require("./apiControllers/experimentApiController");
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 const ReturnMethods = require('./returnMethods');
 const ConfigParser = require('./configParser')
 const Communicator = require('./communicator')
 const QuestionHandler = require('./questionHandler');
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ExperimentUtils = require("./experimentUtils");
-const PIDtoConditionMap = require("../json/PIDCondMap.json");
+const PIDtoConditionMap = ConfigReader.getPIDCondMap();
 const StageHandler = require('./stageHandler')
 
 /**

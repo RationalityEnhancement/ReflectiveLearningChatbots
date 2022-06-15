@@ -8,9 +8,6 @@
 
 const { ParticipantSchemaObject, Participant } = require('../models/Participant');
 const lodash = require('lodash');
-const moment = require('moment-timezone');
-const config = require("../../json/config.json");
-const defaultTimezone = 'Europe/Berlin';
 
 // Get all documents
 exports.getAll = async () => {

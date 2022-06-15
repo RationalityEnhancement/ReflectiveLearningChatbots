@@ -5,9 +5,9 @@ const participants = require('../src/apiControllers/participantApiController');
 const mongo = require('mongoose');
 
 const { assert, expect } = require('chai');
-
-const DevConfig = require('../json/devConfig.json');
-const config = require('../json/config.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
+const config = ConfigReader.getExpConfig();
 
 const AnswerHandler = require('../src/answerHandler');
 

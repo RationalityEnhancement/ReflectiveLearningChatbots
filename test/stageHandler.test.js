@@ -1,7 +1,9 @@
 const { expect, assert } = require('chai');
 const testConfig = require('../json/test/stageHandlerTestConfig.json');
 const testConfigConds = require('../json/test/stageHandlerTestConfigConds.json');
-const DevConfig = require('../json/devConfig.json');
+
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 
 const StageHandler = require('../src/StageHandler');
 const {MongoMemoryServer} = require("mongodb-memory-server");

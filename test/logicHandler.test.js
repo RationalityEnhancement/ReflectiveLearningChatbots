@@ -1,6 +1,6 @@
 const { expect, assert } = require('chai');
-const config = require('../json/config.json');
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 
 const LogicHandler = require('../src/logicHandler');
 

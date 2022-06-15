@@ -2,7 +2,8 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const participants = require('../src/apiControllers/participantApiController');
 
-const config = require('../json/config.json')
+const ConfigReader = require('../src/configReader');
+const config = ConfigReader.getExpConfig()
 
 const mongo = require('mongoose');
 

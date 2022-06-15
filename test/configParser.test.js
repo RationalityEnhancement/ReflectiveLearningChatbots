@@ -1,6 +1,6 @@
 const { expect, assert } = require('chai');
-const config = require('../json/config.json');
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 
 const ConfigParser = require('../src/configParser');
 
@@ -1167,6 +1167,35 @@ describe('Getting values from strings', () => {
         it('Should fail when string doesnt end with } ', () => {
             let testStr = "$B{true";
             let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
+    describe('Parse Filename Token', () => {
+        it('Should return string', () => {
+            let testStr = "$F{asdklfasdfasdf.jpg}";
+            let expectedVal = "asdklfasdfasdf.jpg";
+            let returnObj = ConfigParser.parseFilenameToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt start with $F{ ', () => {
+            let testStr = "${23}";
+            let returnObj = ConfigParser.parseNumberToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt end with } ', () => {
+            let testStr = "$F{23";
+            let returnObj = ConfigParser.parseNumberToken(testStr);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
 
         })

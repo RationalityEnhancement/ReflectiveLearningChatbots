@@ -2,7 +2,8 @@ require('dotenv').config();
 const readline = require('readline');
 const mongo = require('mongoose');
 const idMaps = require('./apiControllers/idMapApiController');
-const config = require('../json/config.json');
+const ConfigReader = require('../src/configReader');
+const config = ConfigReader.getExpConfig();
 
 const DISCLAIMER_STRING = "I understand and I wish to continue";
 

@@ -1,5 +1,6 @@
 const ReturnMethods = require('./returnMethods');
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 const lodash = require('lodash');
 const ConfigParser = require('./configParser')
 
@@ -164,16 +165,16 @@ function QuestionHandler(config){
 
         const optionalParams = ["options", "replyMessages", "saveAnswerTo", "nextQuestion", "nextActions",
         "cReplyMessages", "cNextActions","cNextQuestions", "range", "selectQFirst", "minLengthChars", "minLengthWords",
-        "reminder"]
+        "reminder", "inputPrompt", "continueStrings"]
         for(let i = 0; i < optionalParams.length; i++){
             let field = optionalParams[i];
-            let languageReplacedValue = this.replaceLanguageDeeply(selectedQuestion[field], config.languages, language)
-            if(field in selectedQuestion) constructedQuestion[field] = languageReplacedValue;
+            if(field in selectedQuestion) {
+                let languageReplacedValue = this.replaceLanguageDeeply(selectedQuestion[field], config.languages, language)
+                constructedQuestion[field] = languageReplacedValue;
+            }
         }
 
-
         return ReturnMethods.returnSuccess(constructedQuestion);
-
     }
 
     /**

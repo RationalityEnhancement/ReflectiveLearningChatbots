@@ -48,6 +48,7 @@ let schemaObject = {
     }],
     nextQuestion: String,
     qualtricsLink : String,
+    continueStrings : [String],
     cReplyMessages: [
       {
         if : String,
@@ -84,7 +85,8 @@ let schemaObject = {
     reminder : {
       freqMins : Number,
       numRepeats : Number
-    }
+    },
+    inputPrompt : String
   },
   currentState: String,
   answers:

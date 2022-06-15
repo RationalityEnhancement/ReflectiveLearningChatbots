@@ -1,6 +1,7 @@
 const participants = require("./apiControllers/participantApiController");
-const config = require("../json/config.json");
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const config = ConfigReader.getExpConfig();
+const DevConfig = ConfigReader.getDevConfig();
 const ReturnMethods = require('./returnMethods');
 const moment = require('moment-timezone');
 const ConfigParser = require('./configParser')
@@ -313,17 +314,25 @@ class AnswerHandler{
                     let expectedAnswer = config.phrases.keyboards.terminateAnswer[participant.parameters.language];
                     let trimmedExpected;
                     let trimmedAnswer;
+
+                    let regex = /[.()!?;:_ ,'-]/g;
                     try{
-                        let regex = /[.()!?;:_ ,'-]/g;
                         trimmedExpected = expectedAnswer.replace(regex, "").toLowerCase();
                         trimmedAnswer = answerText.replace(regex, "").toLowerCase();
                     } catch(err){
                         return ReturnMethods.returnFailure("AHandler: Participant language or term answer phrase not found")
                     }
+                    let validAnswers;
+                    if(currentQuestion.continueStrings && currentQuestion.continueStrings.length > 0){
+                        validAnswers = currentQuestion.continueStrings;
+                        validAnswers = validAnswers.map(answerText => answerText.replace(regex, "").toLowerCase());
+                    } else {
+                        validAnswers = [trimmedExpected];
+                    }
 
-                    // Check if user has entered the termination answer
+                    // Check if user has entered a valid termination answer
                     // If not, then tell the user that the only way to continue is to send that phrase.
-                    if(trimmedAnswer !== trimmedExpected){
+                    if(!validAnswers.includes(trimmedAnswer)){
                         let errorString = config.phrases.answerValidation.terminateAnswerProperly[participant.parameters.language]
                         return ReturnMethods.returnPartialFailure(errorString, DevConfig.NO_RESPONSE_STRING);
                     } else {

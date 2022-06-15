@@ -1,0 +1,89 @@
+{
+  "normal" : {
+    "input" : {
+      "name": "John",
+      "friends": "$F{json/test/filename/testArrStr.json}",
+      "nestedObj": {
+        "mixedArr": "$F{json/test/filename/testArrMix.json}",
+        "object": "$F{json/test/filename/testObj.json}"
+      }
+    },
+    "target" : {
+      "name" : "John",
+      "friends" : ["john", "bill", "tim"],
+      "nestedObj" : {
+        "mixedArr" : ["john", {
+          "property" : "sping"
+        }],
+        "object" : {
+          "property1" : "sping",
+          "property2" : ["multiple", "spings"]
+        }
+      }
+    }
+  },
+  "invalidJSON" : {
+    "input" : {
+      "name" : "John",
+      "friends" : "$F{json/test/filename/testArrStr.json}",
+      "nestedObj" : {
+        "mixedArr" : "$F{json/test/filename/testArrMix.json}",
+        "object" : "$F{json/test/filename/failJSON.json}"
+      }
+    },
+    "target" : {
+      "name" : "John",
+      "friends" : ["john", "bill", "tim"],
+      "nestedObj" : {
+        "mixedArr" : ["john", {
+          "property" : "sping"
+        }],
+        "object" : []
+      }
+    }
+  },
+  "missingExtension" : {
+    "input" : {
+      "name": "John",
+      "friends": "$F{json/test/filename/testArrStr}",
+      "nestedObj": {
+        "mixedArr": "$F{json/test/filename/testArrMix.json}",
+        "object": "$F{json/test/filename/testObj.json}"
+      }
+    },
+    "target" : {
+      "name" : "John",
+      "friends" : [],
+      "nestedObj" : {
+        "mixedArr" : ["john", {
+          "property" : "sping"
+        }],
+        "object" : {
+          "property1" : "sping",
+          "property2" : ["multiple", "spings"]
+        }
+      }
+    }
+  },
+  "fileNotExist" : {
+    "input" : {
+      "name": "John",
+      "friends": "$F{json/test/filename/testArrStr.json}",
+      "nestedObj": {
+        "mixedArr": "$F{json/test/filename/doesntExist.json}",
+        "object": "$F{json/test/filename/testObj.json}"
+      }
+    },
+    "target" : {
+      "name" : "John",
+      "friends" : ["john", "bill", "tim"],
+      "nestedObj" : {
+        "mixedArr" : [],
+        "object" : {
+          "property1" : "sping",
+          "property2" : ["multiple", "spings"]
+        }
+      }
+    }
+  }
+}

@@ -887,7 +887,11 @@
               "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly",
               "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
-            "continueStrings" : ["Let", "Me", "In"],
+            "inputPrompt" : {
+              "English" : "Enter the survey code that you get at the end to continue (ABCDE, 12345)",
+              "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie nach Ausfüllung der Umfrage erhalten (ABCDE, 12345)"
+            },
+            "continueStrings" : "$F{data/surveyCodes.json}",
             "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
               {

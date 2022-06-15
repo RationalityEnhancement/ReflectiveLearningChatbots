@@ -1,6 +1,7 @@
 const participants = require("./apiControllers/participantApiController");
-const config = require("../json/config.json");
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const config = ConfigReader.getExpConfig();
+const DevConfig = ConfigReader.getDevConfig();
 const ReturnMethods = require('./returnMethods');
 const QuestionHandler = require('./questionHandler');
 const ConfigParser = require('./configParser')
@@ -197,7 +198,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
 
     await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
 
-    if(question.reminder){
+    if(question.reminder && question.reminder["freqMins"]){
         let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,
             question.reminder.freqMins, question.reminder.numRepeats);
         if(reminderObj.returnCode === DevConfig.FAILURE_CODE){

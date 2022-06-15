@@ -1,6 +1,7 @@
 const moment = require('moment-timezone')
 const ReturnMethods = require('./returnMethods')
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 
 /**
  * Selects the appropriate condition assignment depending on whether the

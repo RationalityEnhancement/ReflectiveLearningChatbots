@@ -9,7 +9,8 @@ const mongo = require('mongoose');
 const { assert, expect } = require('chai');
 
 const testConfig = require('../json/test/scheduleHandlerTestConfig.json');
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 const failConfig = require('../json/test/scheduleHandlerTestConfigFail.json');
 
 const QuestionHandler = require('../src/questionHandler');

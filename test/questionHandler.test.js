@@ -1,7 +1,8 @@
 const { expect, assert } = require('chai');
 const testConfig = require('../json/test/qHandlerTestConfig.json');
 const testConfigConds = require('../json/test/qHandlerTestConfigConds.json');
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 
 const QuestionHandler = require('../src/questionHandler');
 

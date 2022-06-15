@@ -7,9 +7,9 @@ const idMaps = require('../src/apiControllers/idMapApiController');
 const mongo = require('mongoose');
 
 const { assert, expect } = require('chai');
-
-const DevConfig = require('../json/devConfig.json');
-const config = require('../json/config.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
+const config = ConfigReader.getExpConfig();
 
 const bot = {
     telegram : {

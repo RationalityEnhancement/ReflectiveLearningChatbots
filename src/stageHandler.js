@@ -1,5 +1,6 @@
 const ReturnMethods = require('./returnMethods');
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 const participants = require('./apiControllers/participantApiController')
 const moment = require('moment-timezone')
 const ConfigParser = require('./configParser')

@@ -1,13 +1,13 @@
 require('dotenv').config();
 const mongo = require('mongoose');
 const { Telegraf } = require('telegraf');
-const config = require('./json/config.json');
-const DevConfig = require('./json/devConfig.json');
+const ConfigReader = require('./src/configReader');
+const config = ConfigReader.getExpConfig();
+const DevConfig = ConfigReader.getDevConfig()
 const participants = require('./src/apiControllers/participantApiController');
 const experiments = require('./src/apiControllers/experimentApiController');
 const idMaps = require('./src/apiControllers/idMapApiController');
 const { checkConfig } = require('./src/configChecker');
-const PIDtoConditionMap = require('./json/PIDCondMap.json')
 const Communicator = require('./src/communicator')
 const QuestionHandler = require('./src/questionHandler');
 const AnswerHandler = require('./src/answerHandler');

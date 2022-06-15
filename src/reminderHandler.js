@@ -2,7 +2,8 @@ const participants = require('./apiControllers/participantApiController')
 const Communicator = require('./communicator')
 const ReturnMethods = require('./returnMethods')
 const ExperimentUtils = require('./experimentUtils')
-const DevConfig = require('../json/devConfig.json')
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig()
 
 const scheduler = require('node-schedule')
 

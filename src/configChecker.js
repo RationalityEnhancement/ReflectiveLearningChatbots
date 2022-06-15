@@ -3,7 +3,8 @@
   to define an experiment
 **/
 
-const config = require('../json/config.json');
+const ConfigReader = require('../src/configReader');
+const config = ConfigReader.getExpConfig();
 
 
 let assert = (exp, errorMsg) => {

@@ -2,7 +2,9 @@ const experimentUtils = require('../src/experimentUtils');
 const expect = require('chai').expect
 const moment = require('moment-timezone');
 const {getNowDateObject} = require("../src/experimentUtils");
-const DevConfig = require('../json/devConfig.json')
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig()
+
 
 const map = {'1234': 0};
 const conditionAssignments = [0.5, 0.5]

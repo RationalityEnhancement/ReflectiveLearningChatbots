@@ -1,4 +1,5 @@
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 
 class ReturnMethods {
 

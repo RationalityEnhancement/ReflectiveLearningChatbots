@@ -1,10 +1,13 @@
 const participants = require("./apiControllers/participantApiController");
-const config = require("../json/config.json");
-const DevConfig = require('../json/devConfig.json');
+
+const ConfigReader = require('../src/configReader');
+const config = ConfigReader.getExpConfig();
+const DevConfig = ConfigReader.getDevConfig();
 const ReturnMethods = require('./returnMethods');
 const lodash = require('lodash');
 const moment = require('moment-timezone')
 const ExperimentUtils = require('./experimentUtils')
+const {relativeTimeRounding} = require("moment-timezone");
 
 /**
  *
@@ -1036,6 +1039,7 @@ class ConfigParser{
         let trimmedExpression = expression.substring(3,expression.length-1);
         return this.getNumberFromString(trimmedExpression);
     }
+
     /**
      *
      * Parse a single boolean token of the form $B{TRUE/FALSE}. Return the truth value

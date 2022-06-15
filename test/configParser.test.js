@@ -1,6 +1,6 @@
 const { expect, assert } = require('chai');
-const config = require('../json/config.json');
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const DevConfig = ConfigReader.getDevConfig();
 
 const ConfigParser = require('../src/configParser');
 
@@ -1171,6 +1171,7 @@ describe('Getting values from strings', () => {
 
         })
     })
+
     describe('Parse Number Token', () => {
         it('Should return integer', () => {
             let testStr = "$N{12}";

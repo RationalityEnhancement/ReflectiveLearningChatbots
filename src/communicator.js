@@ -1,5 +1,6 @@
-const config = require('../json/config.json');
-const DevConfig = require('../json/devConfig.json');
+const ConfigReader = require('../src/configReader');
+const config = ConfigReader.getExpConfig();
+const DevConfig = ConfigReader.getDevConfig();
 const participants = require('./apiControllers/participantApiController');
 const InputOptions = require('./inputOptions');
 const AnswerHandler = require('./answerHandler');
@@ -65,6 +66,16 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             setTimeout(res, qDelayMs)
         });
     }
+
+    let inputPrompt;
+
+    // Default keyboard
+    let keyboard = InputOptions.removeKeyboard().reply_markup;
+
+    // Overwrite input prompt
+    if(!!question.inputPrompt){
+        inputPrompt = question.inputPrompt;
+    }
     switch(question.qType){
         case 'singleChoice':
 
@@ -72,14 +83,10 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
-            await new Promise(res => {
-                setTimeout(res, delayMs)
-            });
 
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.singleChoice[language], true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.singleChoice(question.options).reply_markup
-            });
+            // Use default input prompt if no overwrite
+            if(!inputPrompt) inputPrompt = config.phrases.keyboards.singleChoice[language];
+            keyboard = InputOptions.singleChoice(question.options).reply_markup;
             break;
 
         case 'multiChoice':
@@ -88,13 +95,10 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
-            await new Promise(res => {
-                setTimeout(res, delayMs)
-            });
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.multiChoice[language], true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.multiChoice(question.options, language).reply_markup
-            });
+
+            if(!inputPrompt) inputPrompt = config.phrases.keyboards.multiChoice[language];
+            keyboard = InputOptions.multiChoice(question.options, participant.parameters.language).reply_markup;
+
             break;
         case 'number':
             await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
@@ -108,26 +112,17 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
-            await new Promise(res => {
-                setTimeout(res, delayMs)
-            });
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.freeformSinglePrompt[language], true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
+
+            if(!inputPrompt) inputPrompt = config.phrases.keyboards.freeformSinglePrompt[language];
             break;
         case 'freeformMulti':
             await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
-            await new Promise(res => {
-                setTimeout(res, delayMs)
-            });
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.freeformMultiPrompt[language], true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
+
+            if(!inputPrompt) inputPrompt = config.phrases.keyboards.freeformMultiPrompt[language];
+
             break;
         case 'qualtrics' :
             let link = question.qualtricsLink;
@@ -159,18 +154,27 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             });
 
             // Send the instruction on how to continue
-            await new Promise(res => {
-                setTimeout(res, delayMs * 2)
-            });
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, config.phrases.keyboards.qualtricsDonePrompt[language], true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
+            // Send default message of "Done" if not overwritten
+            if(!inputPrompt) inputPrompt = config.phrases.keyboards.qualtricsDonePrompt[language];
+
             break;
 
         default:
             throw "Message Sender: Question type not recognized"
     }
+
+    // Send the input prompt if it exists (i.e., for any type except number)
+    if(inputPrompt){
+        await new Promise(res => {
+            setTimeout(res, delayMs)
+        });
+
+        await bot.telegram.sendMessage(chatId, substituteVariables(participant, inputPrompt, true), {
+            parse_mode: "HTML",
+            reply_markup: keyboard
+        });
+    }
+
     await participants.updateField(participant.uniqueId, 'currentState', 'awaitingAnswer');
     await participants.eraseCurrentAnswer(participant.uniqueId)
     await participants.updateField(participant.uniqueId, 'currentQuestion', question);

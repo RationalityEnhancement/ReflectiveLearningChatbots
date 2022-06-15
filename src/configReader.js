@@ -124,5 +124,5 @@ module.exports.getDevConfig = () => {
  */
 module.exports.getPIDCondMap = () => {
     let PIDCondMap = require('../json/essential/PIDCondMap.json');
-    return DevConfig;
+    return PIDCondMap;
 }

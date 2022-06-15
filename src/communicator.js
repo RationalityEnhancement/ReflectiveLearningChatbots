@@ -1,4 +1,5 @@
-const config = require('../json/config.json');
+const ConfigReader = require('../src/configReader');
+const config = ConfigReader.getExpConfig();
 const DevConfig = require('../json/devConfig.json');
 const participants = require('./apiControllers/participantApiController');
 const InputOptions = require('./inputOptions');

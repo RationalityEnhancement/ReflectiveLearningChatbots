@@ -1,5 +1,7 @@
 const { Telegraf, Markup } = require('telegraf');
-const config = require('../json/config.json');
+
+const ConfigReader = require('../src/configReader');
+const config = ConfigReader.getExpConfig();
 
 
 module.exports.singleChoice = (options) => {

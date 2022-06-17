@@ -72,6 +72,10 @@
   "defaultLanguage" : "English",
   "phrases" : {
     "answerValidation": {
+      "defaultInvalid" : {
+        "English": "That is not a valid answer",
+        "Deutsch": "Das ist keine gültige Antwort"
+      },
       "invalidOption": {
         "English": "Please pick <b>only from the given options</b>",
         "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
@@ -99,6 +103,10 @@
       "notLongEnoughWords" : {
         "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
         "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
+      },
+      "answerNotConforming" : {
+        "English" : "That is not a valid answer. Did you mean one of the following?",
+        "Deutsch" : "Das ist keine gültige Antwort. Meinten Sie vielleicht eines der Folgenden?"
       },
       "terminateAnswerProperly" : {
         "English" : "Please type the correct response to continue after the survey",
@@ -237,6 +245,7 @@
             "Danke, Teilnehmer-ID ist erfasst worden"
           ]
         },
+        "answerShouldBe" : ["testExp", "testCont"],
         "nextActions" : [
           {
             "aType" : "saveAnswerTo",

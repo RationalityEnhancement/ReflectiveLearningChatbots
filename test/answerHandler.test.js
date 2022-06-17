@@ -655,6 +655,49 @@ describe('Process answer', () =>{
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
             });
         });
+        describe('Answer conforms to given list', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeform",
+                answerShouldBe : ["test1", "test2"]
+
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "test2")
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+            });
+        });
+        describe('Answer doesnt conform to given list', () => {
+            let returnObj;
+            const question = {
+                qId: "testF",
+                text: "questionText",
+                qType: "freeform",
+                answerShouldBe : ["test1", "test2"]
+
+            };
+            const part = {
+                parameters: {language: "English"},
+                uniqueId: testId,
+                currentState: "awaitingAnswer",
+                currentQuestion: question,
+            }
+            it('Should return partial failure and repeat question', async () => {
+                returnObj = await AnswerHandler.processAnswer(part, "tast2")
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+                expect(returnObj.successData).to.equal(DevConfig.REPEAT_QUESTION_STRING);
+                console.log(returnObj.failData)
+            });
+        });
     })
     describe('Free-form multiline', () => {
         let returnObj;

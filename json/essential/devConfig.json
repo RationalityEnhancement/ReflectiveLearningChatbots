@@ -69,5 +69,6 @@
   "NOUNS_PATH" : "json/static/nouns.json",
   "TEAM_NAMES_JSON_FILE" : "teamnames.json",
   "TEAM_NAMES_TXT_FILE" : "teamnames.txt",
-  "DEFAULT_NUM_TEAMS" : 10
+  "DEFAULT_NUM_TEAMS" : 10,
+  "DEFAULT_TOP_STRINGS_COUNT" : 3
 }

@@ -1,6 +1,7 @@
 const { Schema, model } = require('mongoose');
-const config = require('../../json/config.json');
-const DevConfig = require('../../json/devConfig.json');
+const ConfigReader = require('../configReader');
+const config = ConfigReader.getExpConfig();
+const DevConfig = ConfigReader.getDevConfig();
 
 const dataTypeMap = {};
 dataTypeMap[DevConfig.OPERAND_TYPES.STRING] = String;

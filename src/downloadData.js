@@ -58,7 +58,7 @@ const config = ConfigReader.getExpConfig();
         fs.writeFileSync(jsonFilePath, JSON.stringify(dataObj));
         console.log("Written to JSON!")
     } catch(err) {
-        throw "ERROR: Unable to write to JSON file\n" + error;
+        throw "ERROR: Unable to write to JSON file\n" + err;
     }
 
     // Write to CSV
@@ -76,7 +76,7 @@ const config = ConfigReader.getExpConfig();
         fs.writeFileSync(experimentCSVPath, CSVString);
         console.log("Written experiment to CSV!")
     } catch(err) {
-        throw "ERROR: Unable to write experiment to CSV file\n" + error;
+        throw "ERROR: Unable to write experiment to CSV file\n" + err;
     }
     try{
         let participantHeaders = ["uniqueId", "experimentId", "conditionName", "currentState"];

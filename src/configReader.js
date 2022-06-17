@@ -1,4 +1,4 @@
-const DevConfig = require('../json/devConfig.json')
+const DevConfig = require('../json/essential/devConfig.json')
 const fs = require('fs');
 const path = require('node:path');
 

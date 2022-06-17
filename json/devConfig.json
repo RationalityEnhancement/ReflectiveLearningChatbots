@@ -64,5 +64,9 @@
     "ON_DAYS" : "onDays"
   },
   "STAGE_UPDATE_TIME" : "21:00",
-  "DATA_FOLDER_PATH" : "data/"
+  "DATA_FOLDER_PATH" : "data/",
+  "ADJECTIVES_PATH" : "json/static/adjectives.json",
+  "NOUNS_PATH" : "json/static/nouns.json",
+  "TEAM_NAMES_FILE" : "teamnames.json",
+  "DEFAULT_NUM_TEAMS" : 10
 }

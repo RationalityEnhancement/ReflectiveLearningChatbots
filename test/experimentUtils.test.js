@@ -338,3 +338,99 @@ describe('Rotate left', () => {
 		})
 	})
 })
+
+describe("Edit distance", () => {
+	describe('Edit distance of two strings', () => {
+		it('Should be 0', () => {
+			let str1 = "test";
+			let str2 = "test";
+			let returnVal = experimentUtils.calcLevDistance(str1, str2);
+			expect(returnVal).to.equal(0);
+		})
+		it('Should be 1', () => {
+			let str1 = "test";
+			let str2 = "est";
+			let returnVal = experimentUtils.calcLevDistance(str1, str2);
+			expect(returnVal).to.equal(1);
+		})
+		it('Should be 3', () => {
+			let str1 = "saturday";
+			let str2 = "sunday";
+			let returnVal = experimentUtils.calcLevDistance(str1, str2);
+			expect(returnVal).to.equal(3);
+		})
+		it('Should be length of str1', () => {
+			let str1 = "saturday";
+			let str2 = "";
+			let returnVal = experimentUtils.calcLevDistance(str1, str2);
+			expect(returnVal).to.equal(str1.length);
+		})
+		it('Should be length of str2', () => {
+			let str1 = "";
+			let str2 = "saturday";
+			let returnVal = experimentUtils.calcLevDistance(str1, str2);
+			expect(returnVal).to.equal(str2.length);
+		})
+	})
+	describe('Find closest strings', () => {
+		it('Should find top N strings (n < arr.length) ', () => {
+			let str = "test";
+			let strArr = ["tasty", "testy", "sporty"];
+			let expectedArr = ["testy", "tasty"];
+			let returnObj = experimentUtils.getClosestStrings(str, strArr, 2);
+			expect(returnObj.returnCode).to.eql(DevConfig.SUCCESS_CODE);
+			expect(returnObj.data).to.eql(expectedArr);
+		})
+		it('Should return sorted strings (n > arr.length) ', () => {
+			let str = "test";
+			let strArr = ["tasty", "testy", "sporty"];
+			let expectedArr = ["testy", "tasty", "sporty"];
+			let returnObj = experimentUtils.getClosestStrings(str, strArr, 4);
+			expect(returnObj.returnCode).to.eql(DevConfig.SUCCESS_CODE);
+			expect(returnObj.data).to.eql(expectedArr);
+		})
+		it('Should work when arr.length === 1', () => {
+			let str = "test";
+			let strArr = ["tasty"];
+			let expectedArr = ["tasty"];
+			let returnObj = experimentUtils.getClosestStrings(str, strArr, 4);
+			expect(returnObj.returnCode).to.eql(DevConfig.SUCCESS_CODE);
+			expect(returnObj.data).to.eql(expectedArr);
+		})
+
+		it('Should return top string (n < 1) ', () => {
+			let str = "test";
+			let strArr = ["tasty", "testy", "sporty"];
+			let expectedArr = ["testy"];
+			let returnObj = experimentUtils.getClosestStrings(str, strArr, 0);
+			expect(returnObj.returnCode).to.eql(DevConfig.SUCCESS_CODE);
+			expect(returnObj.data).to.eql(expectedArr);
+		})
+
+		it('Should fail when input not string ', () => {
+			let str = 3;
+			let strArr = ["tasty", "testy", "sporty"];
+			let returnObj = experimentUtils.getClosestStrings(str, strArr, 2);
+			expect(returnObj.returnCode).to.eql(DevConfig.FAILURE_CODE);
+		})
+		it('Should fail when one el of array not string ', () => {
+			let str = "3";
+			let strArr = ["tasty", 3, "sporty"];
+			let returnObj = experimentUtils.getClosestStrings(str, strArr, 2);
+			expect(returnObj.returnCode).to.eql(DevConfig.FAILURE_CODE);
+		})
+		it('Should fail when array empty ', () => {
+			let str = "test";
+			let strArr = [];
+			let returnObj = experimentUtils.getClosestStrings(str, strArr, 2);
+			expect(returnObj.returnCode).to.eql(DevConfig.FAILURE_CODE);
+		})
+		it('Should fail when not array ', () => {
+			let str = "test";
+			let strArr = "test";
+			let returnObj = experimentUtils.getClosestStrings(str, strArr, 2);
+			expect(returnObj.returnCode).to.eql(DevConfig.FAILURE_CODE);
+		})
+
+	})
+})

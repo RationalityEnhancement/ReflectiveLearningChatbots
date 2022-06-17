@@ -87,7 +87,8 @@ let schemaObject = {
       freqMins : Number,
       numRepeats : Number
     },
-    inputPrompt : String
+    inputPrompt : String,
+    answerShouldBe : [String]
   },
   currentState: String,
   answers:

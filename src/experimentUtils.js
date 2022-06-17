@@ -216,3 +216,73 @@ module.exports.getMinutesDiff = (obj1, obj2) => {
   return totalMins2 - totalMins1;
 
 }
+
+/**
+ *
+ * Calculate the levenshtein (edit) distance between two strings using the
+ * naive recursive method
+ *
+ * @param str1
+ * @param str2
+ * @param depth
+ * @returns {number|*}
+ */
+module.exports.calcLevDistance = (str1, str2, depth=0) => {
+  // console.log('  '.repeat(depth) + 'Comparing:');
+  // console.log('  '.repeat(depth) +str1);
+  // console.log('  '.repeat(depth) + str2);
+  // console.log('\n')
+  if(str1.length === 0){
+    return str2.length;
+  }
+  if(str2.length === 0){
+    return str1.length;
+  }
+  if(str1.charAt(0) === str2.charAt(0)){
+    return this.calcLevDistance(str1.substring(1), str2.substring(1), depth+1);
+  }
+  return 1 + Math.min(
+      this.calcLevDistance(str1.substring(1), str2, depth+1),
+      this.calcLevDistance(str1, str2.substring(1), depth+1),
+      this.calcLevDistance(str1.substring(1), str2.substring(1), depth+1),
+  )
+}
+
+/**
+ *
+ * From a list of strings (strArr), find the 'num' closest strings (edit distance) to the
+ * input string (str)
+ *
+ * @param str input string
+ * @param strArr array of strings to compare
+ * @param num number of closest strings to fetch
+ * @returns {{returnCode: number, data: *}}
+ */
+module.exports.getClosestStrings = (str, strArr, num) => {
+
+  if(typeof str !== "string") return ReturnMethods.returnFailure("ExpUtils: must be string to calculate edit dist");
+  if(!Array.isArray(strArr) ||
+      strArr.length === 0 ||
+      !strArr.every(el => typeof el === "string")
+  ) {
+    return ReturnMethods.returnFailure("ExpUtils: must be non-empty array of strings to find closest strings");
+  }
+  if(typeof num !== "number") return ReturnMethods.returnFailure("ExpUtils: # of top strings must be number");
+  if(num < 1) num = 1
+  if(num > strArr.length) num = strArr.length
+  let newStrArr = strArr.slice();
+  str = str.toLowerCase();
+  let distArr = [];
+  newStrArr.forEach(el => {
+    el = el.toLowerCase();
+    distArr.push(this.calcLevDistance(str, el));
+  })
+
+  let indices = new Array(distArr.length);
+  for (let i = 0; i < distArr.length; ++i) indices[i] = i;
+  indices.sort(function (a, b) { return distArr[a] < distArr[b] ? -1 : distArr[a] > distArr[b] ? 1 : 0; });
+
+  let sortedByDist = indices.map(idx => newStrArr[idx]);
+  return ReturnMethods.returnSuccess(sortedByDist.splice(0, num));
+
+}

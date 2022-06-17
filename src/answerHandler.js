@@ -6,6 +6,7 @@ const ReturnMethods = require('./returnMethods');
 const moment = require('moment-timezone');
 const ConfigParser = require('./configParser')
 const ReminderHandler = require('./reminderHandler')
+const ExperimentUtils = require('./experimentUtils')
 
 /**
  * Answer handler class that takes in a config as a parameter
@@ -225,7 +226,7 @@ class AnswerHandler{
                     // Check minimum length requirement
 
                     let ansLenChars = answerText.length;
-                    let errorString, minLength;
+                    let errorString = "", minLength;
                     if(currentQuestion.minLengthChars && ansLenChars < currentQuestion.minLengthChars){
                         meetsMinLen = false;
                         errorString = config.phrases.answerValidation.notLongEnoughChars[participant.parameters.language]
@@ -239,17 +240,35 @@ class AnswerHandler{
                         minLength = currentQuestion.minLengthWords;
                     }
 
-                    if(meetsMinLen){
+                    let answerConforms = true;
+                    if(currentQuestion.answerShouldBe && currentQuestion.answerShouldBe.length > 0){
+                        answerConforms = currentQuestion.answerShouldBe.includes(answerText);
+                        if(!answerConforms) errorString = config.phrases.answerValidation.answerNotConforming[participant.parameters.language];
+                    }
+
+                    if(meetsMinLen && answerConforms){
                         // Complete answering
                         let finishObj = await this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
                         // Return failure or trigger the next action
                         return finishObj;
-                    } else {
-                        // Repeat the question
+                    } else if(!meetsMinLen) {
+                        // Repeat the question if not long enough
                         await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                         let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
                             {"MinLength" : minLength})
                         if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
+                        return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING)
+                    } else {
+                        // Suggest the top closest required answers if it is supposed to be one from a set of answers
+                        await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
+                        let closestStringsObj = ExperimentUtils.getClosestStrings(
+                            answerText, currentQuestion.answerShouldBe, DevConfig.DEFAULT_TOP_STRINGS_COUNT);
+                        if(closestStringsObj.returnCode === DevConfig.FAILURE_CODE){
+                            errorString = config.phrases.answerValidation.defaultInvalid[participant.parameters.language];
+                        } else {
+                            let formattedArray = closestStringsObj.data.map(e => "\n\n* " + e);
+                            errorString += formattedArray.join('');
+                        }
                         return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING)
                     }
                 // Question with free text input but over multiple messages

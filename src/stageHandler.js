@@ -490,7 +490,7 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
         //  which the update occurs on the days of the current grouping
         //  condition is based on the stage name
         if(multipleGroupings){
-            let conditionBuildObj = ConfigParser.buildMultipleANDCondition(
+            let conditionBuildObj = ConfigParser.buildMultipleORCondition(
                 "${STAGE_NAME}", "==", stageTokens);
             if(conditionBuildObj.returnCode === DevConfig.FAILURE_CODE){
                 return conditionBuildObj

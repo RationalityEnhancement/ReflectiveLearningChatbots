@@ -1,0 +1,57 @@
+[
+  {
+    "qId" : "survey",
+    "qType" : "qualtrics",
+    "text" : {
+      "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
+      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+    },
+    "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
+    "qualtricsFields" : [
+      {
+        "field" : "uniqueId",
+        "value" : "${UNIQUE_ID}"
+      },
+      {
+        "field" : "condition",
+        "value" : "${CONDITION}"
+      },
+      {
+        "field" : "stage",
+        "value": "Pre-Test"
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 60,
+      "numRepeats" : 4
+    },
+    "inputPrompt" : {
+      "English" : "Enter the survey code that you receive at the end of the survey to continue. (ABCDE, 12345)",
+      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren. (ABCDE, 12345)"
+    },
+    "continueStrings" : ["ABCDE", "12345"],
+    "nextActions" : [
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["preTestComplete", "$B{true}"]
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["Thank you for that!", "That’s all for today. On the next weekday, we will start our daily routine of setting goals in the morning and then reflecting about them in the evening.", "See you later!"],
+      "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
+    }
+  },
+  {
+    "qId" : "checkPreTestComplete",
+    "qType" : "dummy",
+    "cNextActions" : [
+      {
+        "if": "${preTestComplete} == $B{true}",
+        "then" : [{
+          "aType" : "startStage",
+          "args" : ["Goal-Setting"]
+        }]
+      }
+    ]
+  }
+]

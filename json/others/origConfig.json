@@ -54,6 +54,8 @@
     "relGoalsSetToday" : "boolean",
     "lastReportedTaskProgress" : "number",
     "taskProgressReportedOnce" : "boolean",
+    "goalSetTime" : "string",
+    "reflectionTime" : "string",
     "testStrArr" : "strArr",
     "testBool" : "boolean",
     "testNum" : "number",
@@ -70,6 +72,10 @@
   "defaultLanguage" : "English",
   "phrases" : {
     "answerValidation": {
+      "defaultInvalid" : {
+        "English": "That is not a valid answer",
+        "Deutsch": "Das ist keine gültige Antwort"
+      },
       "invalidOption": {
         "English": "Please pick <b>only from the given options</b>",
         "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
@@ -98,9 +104,13 @@
         "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
         "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
       },
+      "answerNotConforming" : {
+        "English" : "That is not a valid answer. Did you mean one of the following?",
+        "Deutsch" : "Das ist keine gültige Antwort. Meinten Sie vielleicht eines der Folgenden?"
+      },
       "terminateAnswerProperly" : {
-        "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
-        "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
+        "English" : "Please type the correct response to continue after the survey",
+        "Deutsch" : "Bitte geben Sie die richtige Antwort ein, um nach der Umfrage fortzufahren"
       }
     },
     "keyboards": {
@@ -185,6 +195,14 @@
       "scheduleANotif" : {
         "English" : "Action scheduled for the following time:",
         "Deutsch" : "Handlung geplant zur folgenden Zeit:"
+      },
+      "dayNames" : {
+        "English" : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "Deutsch" : ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+      },
+      "reminderText" : {
+        "English" : "Here's a reminder that you have an outstanding question. Provide an answer as instructed, or type <i>/repeat</i> to repeat the question.",
+        "Deutsch" : "Hier ist eine Erinnerung, dass Sie eine ausstehende Frage noch haben. Geben Sie Ihre Antwort nach Anweisungen ein, oder senden Sie <i>/repeat</i>, um die Frage zu wiederholen"
       }
     },
     "endExperiment" : {
@@ -227,17 +245,14 @@
             "Danke, Teilnehmer-ID ist erfasst worden"
           ]
         },
+        "answerShouldBe" : ["testExp", "testCont"],
         "nextActions" : [
           {
             "aType" : "saveAnswerTo",
             "args" : ["PID"]
-          },
-          {
-            "aType" : "assignToCondition"
           }
         ],
-        "nextQuestion": "setupQuestions.timezoneQuestion",
-        "selectQFirst" : true
+        "nextQuestion": "setupQuestions.timezoneQuestion"
 
       },
       {
@@ -265,22 +280,75 @@
         },
         "replyMessages": {
           "English": [
-            "Thank you, time zone has been registered.", "Let us begin with the preliminary tasks already!"
+            "Thank you, time zone has been registered."
           ],
           "Deutsch": [
-            "Danke, Zeitzone ist erfasst worden", "Fangen wir schon mit den ersten Aufgaben an!"
+            "Danke, Zeitzone ist erfasst worden"
           ]
         },
         "nextActions" : [
           {
             "aType" : "saveAnswerTo",
             "args" : ["timezone"]
+          }],
+        "nextQuestion" : "setupQuestions.goalSetTime"
+      },
+      {
+        "qId" : "goalSetTime",
+        "qType" : "singleChoice",
+        "text" : {
+          "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working. At which of the following times would you like to receive these questions? This cannot be changed at a later point.",
+          "Deutsch" : "In einigen Phasen des Experiments, werden Sie morgens vor der Arbeit danach gefragt, sich Ziele zu setzen. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
+        },
+        "options" : {
+          "English" : ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00"],
+          "Deutsch" : ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00"]
+        },
+        "replyMessages" : {
+          "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
+          "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]
+        },
+        "nextActions" : [
+          {
+            "aType" : "saveAnswerTo",
+            "args" : ["goalSetTime"]
+          }
+        ],
+        "nextQuestion" : "setupQuestions.reflectionTime",
+        "reminder" : {
+          "freqMins" : 1,
+          "numRepeats" : 2
+        }
+      },
+      {
+        "qId" : "reflectionTime",
+        "qType" : "singleChoice",
+        "text" : {
+          "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set the same morning. At which of the following times would you like to receive these questions? This cannot be changed at a later point.",
+          "Deutsch" : "In einigen Phasen des Experiments, werden Sie abends nach der Arbeit dazu aufgefordert, über Ihre Ziele zu reflektieren, die Sie sich am selben Morgen gesetzt haben. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
+        },
+        "options" : {
+          "English" : ["16:00", "17:00", "18:00", "19:00", "20:00", "21:00"],
+          "Deutsch" : ["16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
+        },
+        "replyMessages" : {
+          "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}." , "Let us begin with the preliminary tasks already!"],
+          "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten.", "Fangen wir schon mit den ersten Aufgaben an!"]
+        },
+        "nextActions" : [
+          {
+            "aType" : "saveAnswerTo",
+            "args" : ["reflectionTime"]
+          },
+          {
+            "aType" : "assignToCondition"
           },
           { "aType" : "scheduleQuestions" },
           {
             "aType" : "startStage",
             "args" : ["Pre-Intervention"]
-          }],
+          }
+        ],
         "nextQuestion" : "preIntervention.survey"
       }
     ]
@@ -357,8 +425,8 @@
           {
             "qId" : "firstGoal",
             "text" : {
-              "English" : "${FIRST_NAME}, what is the main task-oriented thing you want to do to advance your project(s) today? Tip: Make it SMART.",
-              "Deutsch" : "${FIRST_NAME} was ist die wichtigste aufgabenbezogene Sache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen? Tipp: Formulieren Sie ein SMART-Ziel."
+              "English" : "${FIRST_NAME}, what is the main task-oriented thing you want to do to advance your project(s) today (${TODAY_NAME})? Tip: Make it SMART.",
+              "Deutsch" : "${FIRST_NAME} was ist die wichtigste aufgabenbezogene Sache, die Sie heute (${TODAY_NAME}) erledigen wollen, um Ihre(e) Projekt(e) voranzubringen? Tipp: Formulieren Sie ein SMART-Ziel."
             },
             "qType" : "freeform",
             "nextQuestion" :"goalSettingOdd.askAddTaskGoal",
@@ -372,7 +440,11 @@
                 "aType" : "setBooleanVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
-            ]
+            ],
+            "reminder" : {
+              "freqMins" : 1,
+              "numRepeats" : 2
+            }
           },
           {
             "qId" : "askAddTaskGoal",
@@ -790,19 +862,19 @@
         },
         {
           "qId" : "preIntervention.checkPreIntComplete",
-          "atTime" : "06:00",
+          "atTime" : "05:00",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
           "if" : "${STAGE_NAME} == $S{Pre-Intervention}"
         },
         {
           "qId" : "interventionMorning.selectMorningQ",
-          "atTime" : "09:00",
+          "atTime" : "${goalSetTime}",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
           "if" : "${STAGE_NAME} == $S{Intervention}"
         },
         {
           "qId" : "interventionEvening.selectReflection",
-          "atTime" : "18:00",
+          "atTime" : "${reflectionTime}",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
           "if" : "(${STAGE_NAME} == $S{Intervention}) AND ((${relGoalsSetToday} == $B{true}) OR (${taskGoalsSetToday} == $B{true}))"
         },
@@ -824,6 +896,11 @@
               "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly",
               "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen"
             },
+            "inputPrompt" : {
+              "English" : "Enter the survey code that you get at the end to continue (ABCDE, 12345)",
+              "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie nach Ausfüllung der Umfrage erhalten (ABCDE, 12345)"
+            },
+            "continueStrings" : "$F{data/surveyCodes.json}",
             "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
             "qualtricsFields" : [
               {
@@ -944,7 +1021,11 @@
                 "aType" : "setBooleanVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
-            ]
+            ],
+            "reminder" : {
+              "freqMins" : 1,
+              "numRepeats" : 2
+            }
           },
           {
             "qId" : "askAddTaskGoal",
@@ -1794,19 +1875,19 @@
         },
         {
           "qId" : "preIntervention.checkPreIntComplete",
-          "atTime" : "06:00",
+          "atTime" : "05:00",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
           "if" : "${STAGE_NAME} == $S{Pre-Intervention}"
         },
         {
           "qId" : "interventionMorning.remindIntentions",
-          "atTime" : "09:00",
+          "atTime" : "${goalSetTime}",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
           "if" : "${STAGE_NAME} == $S{Intervention}"
         },
         {
           "qId" : "interventionEvening.selectReflection",
-          "atTime" : "18:00",
+          "atTime" : "${reflectionTime}",
           "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
           "if" : "(${STAGE_NAME} == $S{Intervention}) AND ((${relGoalsSetToday} == $B{true}) OR (${taskGoalsSetToday} == $B{true}))"
         },

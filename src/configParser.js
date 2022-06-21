@@ -409,7 +409,8 @@ class ConfigParser{
         if(typeof result === "undefined") return false;
         if(typeof result === "string" && result.length > 0) return true;
         if(Array.isArray(result)){
-            return result.length > 0;
+            // return result.length > 0;
+            return true;
         }
         return false;
     }
@@ -1260,17 +1261,17 @@ class ConfigParser{
 
     /**
      *
-     * Function to build a logical expression of multiple conjunctions,
+     * Function to build a logical expression of multiple disjunctions,
      * using the same operand1 and operator, but different operand2s
      *
-     * E.g., "((${STAGE_NAME} == $S{s1}) AND (${STAGE_NAME} == $S{s2})) AND (${STAGE_NAME} == $S{s3})
+     * E.g., "((${STAGE_NAME} == $S{s1}) OR (${STAGE_NAME} == $S{s2})) OR (${STAGE_NAME} == $S{s3})
      *
      * @param operand1
      * @param operator
      * @param operand2List
      * @returns {{returnCode: *, data: *}}
      */
-    static buildMultipleANDCondition(operand1, operator, operand2List){
+    static buildMultipleORCondition(operand1, operator, operand2List){
         if(!Array.isArray(operand2List)){
             return ReturnMethods.returnFailure("CParser: operand 2 must be list")
         }
@@ -1289,7 +1290,7 @@ class ConfigParser{
                 let newList = operand2List.slice();
                 newList[0] = operand1 + " " + operator + " " + operand2List[0];
                 expression = newList.reduce((prev, curr) => {
-                    let newExp = "(" + prev + ")" + " AND (" + operand1 + " " + operator + " " + curr + ")";
+                    let newExp = "(" + prev + ")" + " OR (" + operand1 + " " + operator + " " + curr + ")";
                     return newExp;
                 })
         }

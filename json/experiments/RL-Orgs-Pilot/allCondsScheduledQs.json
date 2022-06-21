@@ -1,0 +1,33 @@
+[
+  {
+    "qId" : "Onboarding.survey",
+    "atTime" : "${morningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Onboarding}"
+  },
+  {
+    "qId" : "Pre-Test.checkPreTestComplete",
+    "atTime" : "05:00",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Pre-Test}"
+  },
+  {
+    "qId" : "Pre-Test.survey",
+    "atTime" : "${morningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "(${STAGE_NAME} == $S{Pre-Test}) AND (${preTestComplete} == $B{false})"
+  },
+  {
+    "qId" : "Goal-Setting.selectMorningQ",
+    "atTime" : "${morningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Goal-Setting}"
+  },
+  {
+    "qId" : "Goal-Setting.selectReflection",
+    "atTime" : "${eveningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Goal-Setting}"
+  }
+
+]

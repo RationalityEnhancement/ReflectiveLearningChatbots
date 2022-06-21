@@ -160,7 +160,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             break;
 
         default:
-            throw "Message Sender: Question type not recognized"
+            throw "Communicator: Question type not recognized: " + question.qId
     }
 
     // Send the input prompt if it exists (i.e., for any type except number)

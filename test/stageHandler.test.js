@@ -665,8 +665,8 @@ describe('Creating action list', () => {
                 } catch(e){
                     try{
                         expect(actionObj.onDays.sort()).to.eql(dayList13.sort());
-                        let possConditions = ["(${STAGE_NAME} == $S{1}) AND (${STAGE_NAME} == $S{3})",
-                            "(${STAGE_NAME} == $S{3}) AND (${STAGE_NAME} == $S{1})"]
+                        let possConditions = ["(${STAGE_NAME} == $S{1}) OR (${STAGE_NAME} == $S{3})",
+                            "(${STAGE_NAME} == $S{3}) OR (${STAGE_NAME} == $S{1})"]
                         assert(possConditions.includes(actionObj.if));
                     } catch(err){
                         expect(actionObj.onDays.sort()).to.eql(dayList4.sort());

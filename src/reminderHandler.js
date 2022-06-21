@@ -146,7 +146,7 @@ class ReminderHandler{
     static async setReminder(config, bot, participant, chatId, freqMins, numRepeats){
 
         if((typeof freqMins !== "number") || (typeof numRepeats !== "number")){
-            return ReturnMethods.returnFailure("RHandler: frequency and numRepeats must be numbers");
+            return ReturnMethods.returnFailure("RHandler: frequency and numRepeats must be numbers\n" + freqMins +"\n"+numRepeats);
         }
 
         // Get the current time

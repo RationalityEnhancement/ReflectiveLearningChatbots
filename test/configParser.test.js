@@ -651,7 +651,7 @@ describe('Evaluating conditions', () => {
             let answer = ["Frustrated"];
             participant.currentAnswer = answer;
             let rulesCopy = JSON.parse(JSON.stringify(replyRules));
-            rulesCopy[0]["then"] = [];
+            rulesCopy[0]["then"] = undefined;
             let returnObj = ConfigParser.evaluateAnswerConditions(participant, rulesCopy);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[2].then);
@@ -660,7 +660,7 @@ describe('Evaluating conditions', () => {
             let answer = ["Happy"];
             participant.currentAnswer = answer;
             let rulesCopy = JSON.parse(JSON.stringify(replyRules));
-            rulesCopy[0]["else"] = [];
+            rulesCopy[0]["else"] = undefined;
             let returnObj = ConfigParser.evaluateAnswerConditions(participant, rulesCopy);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.eql(replyRules[1].then);
@@ -1528,39 +1528,39 @@ describe('Constructing expressions', () => {
         it('Should work for length 1', () => {
             let op2List = ["B"];
             let expResult = "A == B"
-            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            let returnObj = ConfigParser.buildMultipleORCondition(op1, operator, op2List);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(expResult);
         })
         it('Should work for length 2', () => {
             let op2List = ["B","C"];
-            let expResult = "(A == B) AND (A == C)"
-            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            let expResult = "(A == B) OR (A == C)"
+            let returnObj = ConfigParser.buildMultipleORCondition(op1, operator, op2List);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(expResult);
         })
         it('Should work for length 3', () => {
             let op2List = ["B","C","D"];
-            let expResult = "((A == B) AND (A == C)) AND (A == D)"
-            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            let expResult = "((A == B) OR (A == C)) OR (A == D)"
+            let returnObj = ConfigParser.buildMultipleORCondition(op1, operator, op2List);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(expResult);
         })
         it('Should fail when operator not valid', () => {
             let op2List = ["B","C","D"];
-            let returnObj = ConfigParser.buildMultipleANDCondition(op1, "NOT", op2List);
+            let returnObj = ConfigParser.buildMultipleORCondition(op1, "NOT", op2List);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         })
         it('Should fail when op2 list empty', () => {
             let op2List = [];
-            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            let returnObj = ConfigParser.buildMultipleORCondition(op1, operator, op2List);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         })
         it('Should fail when op2 list not list', () => {
             let op2List = "string";
-            let returnObj = ConfigParser.buildMultipleANDCondition(op1, operator, op2List);
+            let returnObj = ConfigParser.buildMultipleORCondition(op1, operator, op2List);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         })

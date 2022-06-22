@@ -110,3 +110,14 @@ exports.remove = async experimentId => {
     console.error(err);
   }
 }
+
+// Add an error object
+exports.addErrorObject = async (experimentId, errObj) => {
+  try{
+    let experiment = await Experiment.findOne( { experimentId });
+    experiment["errorMessages"].push(errObj);
+    return experiment.save();
+  } catch(err) {
+    console.error(err);
+  }
+}

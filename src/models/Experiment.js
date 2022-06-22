@@ -6,7 +6,11 @@ exports.ExperimentSchema = new Schema({
   experimentConditions: [String],
   conditionAssignments: [Number],
   currentlyAssignedToCondition: [Number],
-  lastAssignedCondition: Number
+  lastAssignedCondition: Number,
+  errorMessages : [{
+    message: String,
+    participantJSON: String
+  }]
 });
 
 exports.Experiment = model('Experiment', exports.ExperimentSchema, 'experiment3_experiment');

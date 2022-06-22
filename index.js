@@ -7,12 +7,11 @@ const DevConfig = ConfigReader.getDevConfig()
 const participants = require('./src/apiControllers/participantApiController');
 const experiments = require('./src/apiControllers/experimentApiController');
 const idMaps = require('./src/apiControllers/idMapApiController');
-const { checkConfig } = require('./src/configChecker');
 const Communicator = require('./src/communicator')
 const QuestionHandler = require('./src/questionHandler');
 const AnswerHandler = require('./src/answerHandler');
 const ScheduleHandler = require('./src/scheduleHandler');
-const BOT_TOKEN =  process.env.BOT_TOKEN;
+const BOT_TOKEN = process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
 const ConfigParser = require('./src/configParser')
@@ -88,13 +87,31 @@ let getByChatId = async (experimentId, chatId) => {
 
 }
 
+let handleError = async (participant, errorString) => {
+    let timeStamp = moment.tz(participant.parameters.timezone).format();
+    let message = timeStamp + "\n" + errorString;
+    delete participant["firstName"];
+    let participantJSON = JSON.stringify(participant);
+    try{
+        await experiments.addErrorObject(config.experimentId, {
+            message : message,
+            participantJSON : participantJSON
+        });
+    } catch(e){
+        console.log("Error while trying to process error lol");
+        console.log(e);
+    }
+
+
+}
+
 //-----------------
 //--- bot setup ---
 //-----------------
 
 // "handle" errors
 bot.catch((err, ctx) => {
-  console.error(`Encountered an error for ${ctx.updateType}.`, err);
+  console.error(`Encountered an error for ${ctx.updateType}\n.`, err);
 });
 
 // Log the current participant
@@ -125,6 +142,7 @@ bot.command('log_exp', async ctx => {
     try{
     console.log('Logging experiment.');
     let experiment = await experiments.get(config.experimentId);
+    experiment["errorMessages"] = undefined;
     console.log(experiment);
     let experimentIds = await idMaps.getExperiment(config.experimentId);
     console.log(experimentIds);
@@ -350,6 +368,7 @@ bot.command('repeat', async ctx => {
     let currentQuestion = participant.currentQuestion;
     let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, !config.debug.messageDelay);
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+          await handleError(participant, returnObj.data);
           throw returnObj.data;
       }
   }
@@ -442,6 +461,7 @@ bot.start(async ctx => {
             uniqueId = await idMaps.generateUniqueId(config.experimentId);
             await idMaps.addIDMapping(config.experimentId, ctx.from.id, uniqueId);
         } catch(err){
+            await handleError({}, 'Unable to generate a new ID for participant!\n' +err);
             console.log('Unable to generate a new ID for participant!');
             console.error(err);
         }
@@ -461,6 +481,7 @@ bot.start(async ctx => {
       // Use the new participant henceforth
       participant = await participants.get(uniqueId);
     } catch(err){
+        await handleError({}, 'Failed to initialize new participant\n'+err)
       console.log('Failed to initialize new participant');
       console.error(err);
     }
@@ -474,6 +495,7 @@ bot.start(async ctx => {
   // Start the setup question chain
   let curQuestionObj = qHandler.getFirstQuestionInCategory(undefined, "setupQuestions", config.defaultLanguage);
   if(curQuestionObj.returnCode === -1){
+      await handleError(participant, curQuestionObj.data);
     throw "ERROR: " + curQuestionObj.data;
   } else {
     let curQuestion = curQuestionObj.data;
@@ -483,6 +505,7 @@ bot.start(async ctx => {
           throw returnObj.data;
       }
     } catch(err){
+        await handleError(participant, "Failed to send language question\n" + err);
       console.log('Failed to send language question');
       console.error(err);
     }
@@ -549,6 +572,7 @@ bot.on('text', async ctx => {
         // Process the next steps
         let nextStepsObj = await LogicHandler.processNextSteps(bot, uniqueId);
         if(nextStepsObj.returnCode === DevConfig.FAILURE_CODE){
+            await handleError(participant, nextStepsObj.data);
             throw nextStepsObj.data;
         }
 
@@ -564,6 +588,7 @@ bot.on('text', async ctx => {
         let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
             participant.currentQuestion, !config.debug.messageDelay)
           if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+              await handleError(participant, returnObj.data);
               throw returnObj.data;
           }
       }
@@ -571,9 +596,11 @@ bot.on('text', async ctx => {
 
     // Failure occurred
     case DevConfig.FAILURE_CODE:
+        await handleError(participant, answerHandlerObj.data);
       throw "ERROR: " + answerHandlerObj.data;
 
     default:
+        await handleError(participant, "Answer Handler did not respond appropriately");
       throw "ERROR: Answer Handler did not respond appropriately"
   }
   

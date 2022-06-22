@@ -69,6 +69,7 @@ describe('Experiment Controller API: ', () =>{
 		expect(exp2["currentlyAssignedToCondition"]).to.eql([2,3]);
 	});
 
+
 	it('Should decrease assigned to condition', async () => {
 		const testCondIdx = 0;
 		await experiments.updateConditionAssignees(testId, testCondIdx, -1);
@@ -81,6 +82,42 @@ describe('Experiment Controller API: ', () =>{
 		let experiment = await experiments.get(testId)
 		expect(experiment["currentlyAssignedToCondition"]).to.eql([0,3]);
 	});
+	it('Should add an error', async () => {
+		let part = {
+			uniqueId : "12345",
+			stages : {
+				"stageName" : "lol"
+			}
+		}
+		let testErrObj = {
+			message : "testError",
+			participantJSON : JSON.stringify(part)
+		};
+		await experiments.addErrorObject(testId, testErrObj);
+		let experiment = await experiments.get(testId)
+		expect(experiment.errorMessages.length).to.equal(1)
+		let lastError = experiment.errorMessages[experiment.errorMessages.length-1];
+		expect(lastError.message).to.equal(testErrObj.message);
+		expect(lastError.participantJSON).to.equal(testErrObj.participantJSON);
+	})
+	it('Should add an error - 2', async () => {
+		let part = {
+			uniqueId : "12346",
+			stages : {
+				"stageName" : "lmao"
+			}
+		}
+		let testErrObj = {
+			message : "testErbor",
+			participantJSON : JSON.stringify(part)
+		};
+		await experiments.addErrorObject(testId, testErrObj);
+		let experiment = await experiments.get(testId)
+		expect(experiment.errorMessages.length).to.equal(2)
+		let lastError = experiment.errorMessages[experiment.errorMessages.length-1];
+		expect(lastError.message).to.equal(testErrObj.message);
+		expect(lastError.participantJSON).to.equal(testErrObj.participantJSON);
+	})
 
 	it('Should remove experiment', async () => {
 		await experiments.remove(testId);

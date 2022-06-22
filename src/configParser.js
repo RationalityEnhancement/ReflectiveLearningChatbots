@@ -409,8 +409,8 @@ class ConfigParser{
         if(typeof result === "undefined") return false;
         if(typeof result === "string" && result.length > 0) return true;
         if(Array.isArray(result)){
-            // return result.length > 0;
-            return true;
+            return result.length > 0;
+            // return true;
         }
         return false;
     }

@@ -88,7 +88,7 @@
     "qId" : "goalSetTime",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working. At which of the following times would you like to receive these questions? This cannot be changed at a later point.",
+      "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nAt which of the following times would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
       "Deutsch" : "In einigen Phasen des Experiments, werden Sie morgens vor der Arbeit danach gefragt, sich Ziele zu setzen. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
     },
     "options" : {
@@ -111,7 +111,7 @@
     "qId" : "reflectionTime",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set the same morning. At which of the following times would you like to receive these questions? This cannot be changed at a later point.",
+      "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set the same morning.\n\nAt which of the following times would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
       "Deutsch" : "In einigen Phasen des Experiments, werden Sie abends nach der Arbeit dazu aufgefordert, über Ihre Ziele zu reflektieren, die Sie sich am selben Morgen gesetzt haben. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
     },
     "options" : {

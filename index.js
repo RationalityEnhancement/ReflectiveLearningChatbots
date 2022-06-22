@@ -26,6 +26,8 @@ const {getByUniqueId} = require("./src/apiControllers/idMapApiController");
 
 const local = process.argv[2];
 
+const SKIP_TO_STAGE = {};
+
 
 // Validate the config file to ensure that it has all the necessary information
 // This throws an error and aborts execution if there is something missing/wrong
@@ -354,6 +356,13 @@ bot.command('repeat', async ctx => {
 
 })
 
+// Command to skip to a stage
+bot.command('skip_to', async ctx => {
+    if(!config.debug.experimenter) return;
+    SKIP_TO_STAGE[ctx.from.id] = true;
+    await ctx.replyWithHTML("Type in the name of the stage you want to skip to, and the desired stage day separated by a comma\n\nExample: <i>Intervention, 0</i>");
+})
+
 bot.start(async ctx => {
   console.log('Starting');
   // Check if experiment has already been initialized
@@ -461,6 +470,7 @@ bot.on('text', async ctx => {
   // Ignore commands
   if(messageText.charAt[0] === '/') return;
 
+
   // Get the participants unique ID
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
@@ -473,6 +483,29 @@ bot.on('text', async ctx => {
 
   // Participant has not started yet
   if(!participant) return;
+
+    // If the text is supposed to be a stage name to skip to
+    if(SKIP_TO_STAGE[ctx.from.id]){
+        let split = messageText.split(',');
+        let stageName = split[0].trim(), stageDay;
+        try{
+            stageDay = parseInt(split[1].trim());
+        } catch(e){
+            stageDay = 0;
+        }
+        let ActionHandler = require('./src/actionHandler')
+        let returnObj = await ActionHandler.processAction(bot, config, participant, {
+            "aType" : "startStage",
+            "args" : [stageName]
+        });
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            await ctx.replyWithHTML("Unable to start stage " + stageName +". See console for more information.");
+            console.log(returnObj.data);
+        }
+        await participants.updateStageParameter(uniqueId, "stageDay", stageDay);
+        SKIP_TO_STAGE[ctx.from.id] = false;
+        return;
+    }
 
   const answerText = ctx.message.text;
 

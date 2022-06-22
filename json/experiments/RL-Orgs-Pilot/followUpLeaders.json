@@ -1,3 +1,72 @@
 [
-
+  {
+    "qId" : "initiateContact",
+    "qType" : "dummy",
+    "nextQuestion" : "Follow-Up.survey",
+    "cReplyMessages" : [
+      {
+        "if" : "${pauseEnded} == $B{false}",
+        "then" : {
+          "English" : ["Hello again, ${FIRST_NAME}! I hope you had a good week.", "I am back to complete the final round of questionnaires for the experiment."],
+          "Deutsch" : ["Übersetzung nicht verfügbar"]
+        },
+        "else" : {
+          "English" : ["Good morning, ${FIRST_NAME}!"],
+          "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
+        }
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "${pauseEnded} == $B{false}",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["pauseEnded", "$B{true}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "qId" : "survey",
+    "qType" : "qualtrics",
+    "text" : {
+      "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
+      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+    },
+    "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
+    "qualtricsFields" : [
+      {
+        "field" : "uniqueId",
+        "value" : "${UNIQUE_ID}"
+      },
+      {
+        "field" : "condition",
+        "value" : "${CONDITION}"
+      },
+      {
+        "field" : "stage",
+        "value": "Post-Test"
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 60,
+      "numRepeats" : 4
+    },
+    "inputPrompt" : {
+      "English" : "Enter the survey code that you receive at the end of the survey to continue. (ABCDE, 12345)",
+      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren. (ABCDE, 12345)"
+    },
+    "continueStrings" : ["ABCDE", "12345"],
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["Thank you for that!", "And with that, we have finally come to the end of the experiment!", "It was great interacting with you, and I appreciate the effort you put into your responses."],
+      "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
+    }
+  }
 ]

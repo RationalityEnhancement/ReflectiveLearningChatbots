@@ -537,7 +537,11 @@
         "then" : "Goal-Setting.askReflectTaskGoals",
         "else" : "Goal-Setting.checkDone"
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "checkDone",
@@ -606,7 +610,11 @@
           }
         ]
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId": "taskGoalsRemind",
@@ -660,6 +668,10 @@
         "args" : ["taskProgressReportedOnce", "$B{true}"]
       }
     ],
-    "nextQuestion" : "Goal-Setting.checkDone"
+    "nextQuestion" : "Goal-Setting.checkDone",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   }
 ]

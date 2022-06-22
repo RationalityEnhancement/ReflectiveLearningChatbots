@@ -14,12 +14,38 @@
       "aType" : "saveAnswerTo",
       "args" : ["language"]
     }],
-    "nextQuestion" : "setupQuestions.pIdQuestion",
+    "nextQuestion" : "setupQuestions.interactionInstructions",
     "replyMessages" : {
       "English" : ["Thank you for choosing your language"],
       "Deutsch": ["Danke, dass Sie eine Sprache ausgewählt haben."]
     },
     "start" : true
+  },
+  {
+    "qId" : "interactionInstructions",
+    "qType" : "dummy",
+    "nextQuestion" : "setupQuestions.continueFromInstructions",
+    "replyMessages" : {
+      "English" : ["Before we move forward, I want to explain to you how you can interact with me!", "Typically, you can only talk to me when I ask you a question. The answers that I request from you can be of various types, including typing out messages, inputting numbers, and selecting from given choices, among others. To help you understand how to answer, I will send you a message after each question telling you how to respond - look out for these!\n\nIf you need me to repeat a question before you have had the chance to submit a complete answer, just send /repeat, and I will ask the question again!\n\nI will ask you questions either at different points during the day, or right after you have answered another question. So, please bear with me to answer all the questions until I tell you that we are finished!\n\nIf you don't answer certain questions, I will also send you periodic reminders for you to answer them, so that you can move on with the next steps."],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
+    }
+  },
+  {
+    "qId" : "continueFromInstructions",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Click <i>Continue</i> when you are ready to move on!",
+      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
+    },
+    "inputPrompt" : {
+      "English" : "(Hint: send /repeat if the <i>Continue</i> button is no longer visible.)",
+      "Deutsch" : "(Tipp: senden Sie /repeat, wenn die <i>Weiter</i>-Taste nicht mehr sichtbar ist.)"
+    },
+    "nextQuestion" : "setupQuestions.pIdQuestion",
+    "options": {
+      "English" : ["Continue"],
+      "Deutsch" : ["Weiter"]
+    }
   },
   {
     "qId": "pIdQuestion",

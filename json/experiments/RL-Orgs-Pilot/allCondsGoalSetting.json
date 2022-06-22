@@ -311,8 +311,12 @@
     "qId" : "continueFromInfo",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Click <i>Continue</i> when you are ready to go! (Hint: send <i>/repeat</i> if the <i>Continue</i> option is no longer visible.)",
-      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind! (Tipp: senden Sie <i>/repeat</i>, wenn die <i>Weiter</i>-Option nicht mehr sichtbar ist.)"
+      "English" : "Click <i>Continue</i> when you are ready to go!",
+      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
+    },
+    "inputPrompt" : {
+      "English" : "(Hint: send <i>/repeat</i> if the <i>Continue</i> option is no longer visible.)",
+      "Deutsch" : "(Tipp: senden Sie <i>/repeat</i>, wenn die <i>Weiter</i>-Option nicht mehr sichtbar ist.)"
     },
     "options" : {
       "English" : ["Continue"],
@@ -337,8 +341,12 @@
     "qId" : "continueFromExample",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Click <i>Continue</i> when you are ready to go! (Hint: send <i>/repeat</i> if the <i>Continue</i> option is no longer visible.",
-      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind! (Tipp: senden Sie <i>/repeat</i>, wenn die <i>Weiter</i>-Option nicht mehr sichtbar ist."
+      "English" : "Click <i>Continue</i> when you are ready to go!",
+      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
+    },
+    "inputPrompt" : {
+      "English" : "(Hint: send <i>/repeat</i> if the <i>Continue</i> option is no longer visible.)",
+      "Deutsch" : "(Tipp: senden Sie <i>/repeat</i>, wenn die <i>Weiter</i>-Option nicht mehr sichtbar ist.)"
     },
     "options" : {
       "English" : ["Continue"],

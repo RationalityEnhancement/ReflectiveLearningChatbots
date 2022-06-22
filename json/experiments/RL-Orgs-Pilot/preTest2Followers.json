@@ -67,7 +67,7 @@
           },
           {
             "aType" : "clearVar",
-            "args" : ["intention"]
+            "args" : ["intentions"]
           },
           {
             "aType" : "clearVar",

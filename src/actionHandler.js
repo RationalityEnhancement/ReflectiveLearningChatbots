@@ -340,7 +340,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             }
             // If type is unrecognized (mostly when varname doesnt exist)
             if(!Object.values(DevConfig.OPERAND_TYPES).includes(cParamType)){
-                return ReturnMethods.returnFailure("ActHandler: did not recognize variable type " + cParamType);
+                return ReturnMethods.returnFailure("ActHandler: did not recognize variable type " + cParamType + " of variable " + cVarName);
             }
 
             // Clear the parameter value

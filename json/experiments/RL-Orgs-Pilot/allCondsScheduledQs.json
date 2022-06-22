@@ -42,7 +42,7 @@
     "if" : "(${STAGE_NAME} == $S{Pre-Test-2}) AND (${preTest2Complete} == $B{false})"
   },
   {
-    "qId" : "Intervention.selectMorningQ",
+    "qId" : "Intervention.remindIntentions",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
     "if" : "${STAGE_NAME} == $S{Intervention}"

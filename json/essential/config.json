@@ -27,7 +27,6 @@
     "remindIntention" : "boolean",
     "intentionReminded" : "boolean",
     "intentions" : "strArr",
-    "inRelReflection" : "boolean",
     "taskGoals" : "strArr",
     "relGoals" : "strArr",
     "taskGoalsSetToday" : "boolean",

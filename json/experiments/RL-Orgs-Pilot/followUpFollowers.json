@@ -15,6 +15,17 @@
           "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
         }
       }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "${pauseEnded} == $B{false}",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["pauseEnded", "$B{true}"]
+          }
+        ]
+      }
     ]
   },
   {

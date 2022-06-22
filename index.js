@@ -359,8 +359,33 @@ bot.command('repeat', async ctx => {
 // Command to skip to a stage
 bot.command('skip_to', async ctx => {
     if(!config.debug.experimenter) return;
+    let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+    if(!secretMap) {
+        console.log("Participant not found!")
+        return;
+    }
+    let participant = await getParticipant(secretMap.uniqueId);
+    if(!participant){
+        console.log("Participant not found!")
+        return;
+    }
+    const StageHandler = require('./src/stageHandler');
+    let stageListObj = StageHandler.getStageList(config, participant.conditionName);
+    if(stageListObj.returnCode === DevConfig.FAILURE_CODE){
+        console.log(stageListObj.data);
+        return;
+    }
     SKIP_TO_STAGE[ctx.from.id] = true;
-    await ctx.replyWithHTML("Type in the name of the stage you want to skip to, and the desired stage day separated by a comma\n\nExample: <i>Intervention, 0</i>");
+    let stageListStrings = stageListObj.data.map(stage => {
+        let string = "* " + stage.name;
+        if(stage.lengthDays){
+            string += " (" + stage.lengthDays + " days)"
+        }
+        return string;
+    })
+
+    await ctx.replyWithHTML("Type in the name of the stage you want to skip to, and the desired stage day separated by a comma\n\nExample: <i>Intervention, 0</i>" +
+        "\n\nYour options are: \n\n" + stageListStrings.join('\n'));
 })
 
 bot.start(async ctx => {

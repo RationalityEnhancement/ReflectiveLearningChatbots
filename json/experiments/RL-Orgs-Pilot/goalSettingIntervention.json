@@ -1,5 +1,10 @@
 [
   {
+    "qId" : "remindIntentions",
+    "qType" : "dummy",
+    "nextQuestion" : "Intervention.selectMorningQ"
+  },
+  {
     "qId" : "selectMorningQ",
     "qType" : "dummy",
     "cNextQuestions" : [
@@ -17,8 +22,8 @@
   {
     "qId" : "firstTaskGoal",
     "text" : {
-      "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today (${TODAY_NAME})? Tip: Make it SMART.",
-      "Deutsch" : "${FIRST_NAME} was ist die wichtigste Sache, die Sie heute (${TODAY_NAME}) erledigen wollen, um Ihre(e) Projekt(e) voranzubringen? Tipp: Formulieren Sie ein SMART-Ziel."
+      "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
+      "Deutsch" : "${FIRST_NAME} was ist die wichtigste Sache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen? Tipp: Formulieren Sie ein SMART-Ziel."
     },
     "qType" : "freeform",
 
@@ -345,6 +350,10 @@
       "Deutsch" : ["Weiter"]
     },
     "nextQuestion" : "Intervention.addFirstRelGoal",
+    "replyMessages" : {
+      "English" : ["Great, let's get to it then!"],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
+    },
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -653,7 +662,7 @@
           "Deutsch": ["Gratulation dazu, dass Sie heute mehr Fortschritt gemacht haben als beim letzten Mal!"]
         },
         "else" : {
-          "English" : ["Thank you for sharing"],
+          "English" : ["That's good progress!"],
           "Deutsch": ["Danke fürs Mitteilen"]
         }
       }

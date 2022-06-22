@@ -338,7 +338,10 @@ class ScheduleHandler{
         // Fetch all the scheduled questions for the particular condition
         let schQObj = qHandler.getScheduledQuestions(partCond, participant);
         if(schQObj.returnCode === DevConfig.FAILURE_CODE){
-            return schQObj;
+            return ReturnMethods.returnFailure(
+                "Scheduler: Failure to get scheduled question in scheduleAll"
+                + "\n"+ schQObj.data
+            );
         }
         let scheduledQuestionsList = schQObj.data;
         let failedOperations = [];
@@ -594,7 +597,10 @@ class ScheduleHandler{
         // Build the recurrence rule
         let recurrenceRuleObj = this.buildRecurrenceRule(questionInfo);
         if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
-            return ReturnMethods.returnFailure(recurrenceRuleObj.data)
+            return ReturnMethods.returnFailure(
+                "Scheduler: Failure to build recurrence rule in scheduleOne"
+                + "\n"+ recurrenceRuleObj.data
+            );
         }
         let recRule = recurrenceRuleObj.data;
 
@@ -615,7 +621,10 @@ class ScheduleHandler{
         // Construct the question based on the assigned condition and preferred language
         let questionObj = qHandler.constructQuestionByID(partCond, questionInfo.qId, partLang);
         if(questionObj.returnCode === DevConfig.FAILURE_CODE) {
-            return ReturnMethods.returnFailure(questionObj.data);
+            return ReturnMethods.returnFailure(
+                "Scheduler: Failure to get construct question in scheduleOne"
+                + "\n"+ questionObj.data
+            );
         }
         let question = questionObj.data;
 
@@ -662,7 +671,10 @@ class ScheduleHandler{
             if(isNew) {
                 let writeReturn = await this.writeQuestionInfoToDB(uniqueId, jobId, questionInfo);
                 if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
-                    return writeReturn;
+                    return ReturnMethods.returnFailure(
+                        "Scheduler: Failure to write info to DB from scheduleOne"
+                        + "\n"+ writeReturn.data
+                    );
                 }
             }
         } catch(err){
@@ -697,7 +709,10 @@ class ScheduleHandler{
         // Build the recurrence rule
         let recurrenceRuleObj = this.buildRecurrenceRule(actionInfo);
         if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
-            return ReturnMethods.returnFailure(recurrenceRuleObj.data)
+            return ReturnMethods.returnFailure(
+                "Scheduler: Failure to build recurrence rule in scheduleAction"
+                + "\n"+ recurrenceRuleObj.data
+            );
         }
         let recRule = recurrenceRuleObj.data;
 
@@ -755,7 +770,10 @@ class ScheduleHandler{
             if(isNew) {
                 let writeReturn = await this.writeActionInfoToDB(uniqueId, jobId, actionInfo);
                 if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
-                    return writeReturn;
+                    return ReturnMethods.returnFailure(
+                        "Scheduler: Failure to write action info to DB"
+                        + "\n"+ writeReturn.data
+                    );
                 }
             }
         } catch(err){

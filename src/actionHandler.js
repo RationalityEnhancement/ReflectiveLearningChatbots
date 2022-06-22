@@ -66,7 +66,7 @@ let processAction = async(bot, config, participant, actionObj) => {
     }
     let validateActionObj = validateActionObject(actionObj);
     if(validateActionObj.returnCode === DevConfig.FAILURE_CODE) {
-        return validateActionObj;
+        return ReturnMethods.returnFailure("ActHandler: cannot validate action:\n"+validateActionObj.data);
     }
 
     // Get chat ID
@@ -89,7 +89,8 @@ let processAction = async(bot, config, participant, actionObj) => {
               let qHandler = new QuestionHandler(config);
               let schQObj = qHandler.getScheduledQuestions(participant.conditionName, participant);
               if(schQObj.returnCode === DevConfig.FAILURE_CODE){
-                return schQObj;
+                return ReturnMethods.returnFailure("ActHandler: Failure while getting scheduled questions:" +
+                    "\n"+ schQObj.data);
               }
               ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj, 1);
             }
@@ -97,13 +98,19 @@ let processAction = async(bot, config, participant, actionObj) => {
             // Schedule all questions and actions
             let actionsObj = StageHandler.createStageUpdateActionList(config, participant.conditionName);
             if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
-                return actionObj;
+                return ReturnMethods.returnFailure(
+                    "ActHandler: Unable to create stage update actions:\n" + actionsObj.data
+                );
             }
             let returnObj = await ScheduleHandler.scheduleAllOperations(bot, participant, config, actionsObj.data, config.debug.experimenter);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                return returnObj;
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to schedule all operations:\n"+returnObj.data
+                );
             } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
-                return ReturnMethods.returnFailure(returnObj.failData);
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to schedule all operations:\n"+returnObj.failData
+                );
             }
             return returnObj;
         // Assign participant to condition based on assignment scheme specified in config file
@@ -127,7 +134,9 @@ let processAction = async(bot, config, participant, actionObj) => {
             // Assign participant to condition
             let conditionObj = ExperimentUtils.assignToCondition(ID, PIDtoConditionMap, conditionRatios, currentAssignments, scheme);
             if(conditionObj.returnCode === DevConfig.FAILURE_CODE){
-                return conditionObj;
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to assignt to condition:\n"+ conditionObj.data
+                );
             }
 
             // Save assigned condition to participant
@@ -198,7 +207,9 @@ let processAction = async(bot, config, participant, actionObj) => {
                 case DevConfig.OPERAND_TYPES.NUMBER:
                     let conversionObj = ConfigParser.getNumberFromString(participant.currentAnswer[0]);
                     if(conversionObj.returnCode === DevConfig.FAILURE_CODE){
-                        return conversionObj;
+                        return ReturnMethods.returnFailure(
+                            "ActHandler:Unable to parse number for saveAnswerTo:\n"+ conversionObj.data
+                        );
                     }
                     try{
                         await participants.updateParameter(participant.uniqueId, varName, conversionObj.data);
@@ -246,7 +257,9 @@ let processAction = async(bot, config, participant, actionObj) => {
                     // Get answer parsed as number
                     let conversionObj = ConfigParser.getNumberFromString(participant.currentAnswer[0]);
                     if(conversionObj.returnCode === DevConfig.FAILURE_CODE){
-                        return conversionObj;
+                        return ReturnMethods.returnFailure(
+                            "ActHandler:Unable to parse number for addAnswerTo:\n"+ conversionObj.data
+                        );
                     }
                     // Update the array parameter
                     try{
@@ -417,7 +430,9 @@ let processAction = async(bot, config, participant, actionObj) => {
             // Start the given stage
             let startStageObj = await StageHandler.startStage(participant, startStage);
             if(startStageObj.returnCode === DevConfig.FAILURE_CODE){
-                return startStageObj;
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to start stage:\n"+ startStageObj.data
+                );
             }
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
@@ -429,7 +444,9 @@ let processAction = async(bot, config, participant, actionObj) => {
 
             let incStageObj = await StageHandler.updateStageDay(config, participant.uniqueId);
             if(incStageObj.returnCode === DevConfig.FAILURE_CODE){
-                return incStageObj;
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to update stage day:\n"+ incStageObj.data
+                );
             }
             if(config.debug.actionMessages){
                 let message;
@@ -453,7 +470,9 @@ let processAction = async(bot, config, participant, actionObj) => {
         case "endExperiment" :
             let endReturnObj = await StageHandler.endExperiment(participant.uniqueId);
             if(endReturnObj.returnCode === DevConfig.FAILURE_CODE){
-                return endReturnObj
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to end experiment:\n"+ endReturnObj.data
+                );
             }
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Experiment " +

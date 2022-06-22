@@ -266,7 +266,12 @@ class ConfigParser{
     static replaceVariablesInString(participant, targetString, sensitiveDataAlso = false){
         // Split the string up to isolate the variables
         let isolatedObj = this.isolateVariables(targetString);
-        if(isolatedObj.returnCode === DevConfig.FAILURE_CODE) return isolatedObj;
+        if(isolatedObj.returnCode === DevConfig.FAILURE_CODE) {
+            return ReturnMethods.returnFailure(
+                "CParser: (replace vars) Failure isolating variables in string\n "+ targetString
+                + "\n"+ isolatedObj.data
+            );
+        }
         let varSplit = isolatedObj.data.splitArr;
         let isVar = isolatedObj.data.isVarArr;
 
@@ -284,7 +289,12 @@ class ConfigParser{
                 // Get the value of the variable
                 let varVal = this.getVariable(participant, varName);
 
-                if(varVal.returnCode === DevConfig.FAILURE_CODE) return varVal;
+                if(varVal.returnCode === DevConfig.FAILURE_CODE) {
+                    return ReturnMethods.returnFailure(
+                        "CParser:Failure fetching variable with name "+ targetString
+                        + "\n"+ varVal.data
+                    );
+                }
 
                 // If it is an array, join it with commas
                 if(Array.isArray(varVal.data)) addString = varVal.data.join(', ');
@@ -325,7 +335,12 @@ class ConfigParser{
         }
         // Split the string up to isolate the variables
         let isolatedObj = this.isolateVariables(targetString);
-        if(isolatedObj.returnCode === DevConfig.FAILURE_CODE) return isolatedObj;
+        if(isolatedObj.returnCode === DevConfig.FAILURE_CODE) {
+            return ReturnMethods.returnFailure(
+                "CParser: (replace spec vars) Failure isolating variables in string\n "+ targetString
+                + "\n"+ isolatedObj.data
+            );
+        }
         let varSplit = isolatedObj.data.splitArr;
         let isVar = isolatedObj.data.isVarArr;
 
@@ -428,7 +443,10 @@ class ConfigParser{
     static evaluateConditionString(participant, condString){
         let constructConObj = this.constructExpressionObject(participant, condString);
         if(constructConObj.returnCode === DevConfig.FAILURE_CODE){
-            return constructConObj;
+            return ReturnMethods.returnFailure(
+                "CParser:Failure in constructing expression obj from condition string "+ condString
+                + ":\n"+ constructConObj.data
+            );
         }
         let evaluateConObj = this.evaluateExpressionObject(participant, constructConObj.data);
         return evaluateConObj;
@@ -467,7 +485,10 @@ class ConfigParser{
             let curConString = ruleList[i]['if'];
             let evaluateConObj = this.evaluateConditionString(participant, curConString);
             if(evaluateConObj.returnCode === DevConfig.FAILURE_CODE){
-                return evaluateConObj;
+                return ReturnMethods.returnFailure(
+                    "CParser:Failure in evaluating condition string "+ curConString
+                    + ":\n"+ evaluateConObj.data
+                );
             }
 
             // "If" is true, return when there is a valid "then" statement
@@ -1182,7 +1203,10 @@ class ConfigParser{
         // Parse into two operands and operator
         let parsedExpObj = this.parseSimpleExpression(expressionString);
         if(parsedExpObj.returnCode === DevConfig.FAILURE_CODE){
-            return parsedExpObj;
+            return ReturnMethods.returnFailure(
+                "CParser:Failure in parsing expression string "+ expressionString
+                + ":\n"+ parsedExpObj.data
+            );
         }
         let parsedExp = parsedExpObj.data;
         let operator = parsedExp.operator;
@@ -1210,7 +1234,10 @@ class ConfigParser{
                 case DevConfig.OPERAND_TYPES.NUMBER:
                     expReturnObj = this.getNumberFromString(operand.value);
                     if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
-                        return expReturnObj;
+                        return ReturnMethods.returnFailure(
+                            "CParser:Failure in getting number from string "+ operand.value
+                            + ":\n"+ expReturnObj.data
+                        );
                     }
                     operand.value = expReturnObj.data;
                     break;
@@ -1218,7 +1245,10 @@ class ConfigParser{
                 case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
                     expReturnObj = this.getNumberArrayFromString(operand.value);
                     if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
-                        return expReturnObj;
+                        return ReturnMethods.returnFailure(
+                            "CParser:Failure in getting number array from string "+ operand.value
+                            + ":\n"+ expReturnObj.data
+                        );
                     }
                     operand.value = expReturnObj.data;
                     break;
@@ -1237,7 +1267,10 @@ class ConfigParser{
                 case DevConfig.OPERAND_TYPES.BOOLEAN:
                     expReturnObj = this.getBooleanFromString(operand.value);
                     if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
-                        return expReturnObj;
+                        return ReturnMethods.returnFailure(
+                            "CParser:Failure in getting boolean from string "+ operand.value
+                            + ":\n"+ expReturnObj.data
+                        );
                     }
                     operand.value = expReturnObj.data;
                     break;
@@ -1247,7 +1280,10 @@ class ConfigParser{
                 case DevConfig.OPERAND_TYPES.VARIABLE:
                     expReturnObj = this.getVariable(participant, operand.value);
                     if(expReturnObj.returnCode === DevConfig.FAILURE_CODE){
-                        return expReturnObj;
+                        return ReturnMethods.returnFailure(
+                            "CParser:Failure in getting variable from string "+ operand.value
+                            + ":\n"+ expReturnObj.data
+                        );
                     }
                     operand.value = expReturnObj.data;
                     operand.type = this.getOperandType(expReturnObj.data);

@@ -57,7 +57,10 @@ let processNextSteps = async(bot, uniqueId) => {
     // Get all reply messages and send
     let replyMessagesObj = this.getNextReplies(participant, currentQuestion);
     if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
-        return replyMessagesObj;
+        return ReturnMethods.returnFailure(
+            "LHandler (PNS):Failure getting next replies:"
+            + "\n"+ replyMessagesObj.data
+        );
     }
     await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, !config.debug.messageDelay);
 
@@ -69,14 +72,20 @@ let processNextSteps = async(bot, uniqueId) => {
         // Get the next question
         nextQuestionObj = this.getAndConstructNextQuestion(participant, currentQuestion);
         if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
-            return nextQuestionObj;
+            return ReturnMethods.returnFailure(
+                "LHandler (PNS):Failure getting and constructing next question:"
+                + "\n"+ nextQuestionObj.data
+            );
         }
     }
 
     // Get all next actions
     let actionsObj = this.getNextActions(participant, currentQuestion);
     if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
-        return actionsObj;
+        return ReturnMethods.returnFailure(
+            "LHandler (PNS):Failure getting next actions:"
+            + "\n"+ actionsObj.data
+        );
     }
     let nextActions = actionsObj.data;
 
@@ -105,7 +114,10 @@ let processNextSteps = async(bot, uniqueId) => {
         // Get the next question
         nextQuestionObj = this.getAndConstructNextQuestion(participant, currentQuestion);
         if(nextQuestionObj.returnCode === DevConfig.FAILURE_CODE){
-            return nextQuestionObj;
+            return ReturnMethods.returnFailure(
+                "LHandler (PNS):Failure getting and constructing next question (2):"
+                + "\n"+ nextQuestionObj.data
+            );
         }
     }
 
@@ -113,7 +125,10 @@ let processNextSteps = async(bot, uniqueId) => {
     if(!!nextQuestionObj.data){
         let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data, !config.debug.messageDelay);
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-            return returnObj;
+            return ReturnMethods.returnFailure(
+                "LHandler (PNS):Failure sending question:"
+                + "\n"+ returnObj.data
+            );
         }
     }
     if(failedActions.length === 0){
@@ -146,7 +161,10 @@ module.exports.getAndConstructNextQuestion = (participant, currentQuestion) => {
     // Get the ID of the next question
     let returnObj = this.getNextQuestion(participant, currentQuestion);
     if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
-        return returnObj;
+        return ReturnMethods.returnFailure(
+            "LHandler (GCNS): Failure getting question:"
+            + "\n"+ returnObj.data
+        );
     }
 
     let nextQuestionObj;
@@ -175,7 +193,10 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
     // Cancel any outstanding reminder messages
     let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant.uniqueId);
     if(cancelReminderObj.returnCode === DevConfig.FAILURE_CODE){
-        return cancelReminderObj;
+        return ReturnMethods.returnFailure(
+            "LHandler (SQ):Failure cancelling reminder:"
+            + "\n"+ cancelReminderObj.data
+        );
     }
 
     // Don't send the question if it is a dummy

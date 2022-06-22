@@ -80,7 +80,10 @@ class ReminderHandler{
         // Build the recurrence rule
         let recRuleObj = this.buildReminderRule(participant.parameters.timezone, currentTime);
         if(recRuleObj.returnCode === DevConfig.FAILURE_CODE){
-            return recRuleObj;
+            return ReturnMethods.returnFailure(
+                "RHandler: Failure building reminder rule while creating job"
+                + "\n"+ recRuleObj.data
+            );
         }
         let job;
         // Get the reminder text from config and schedule the message

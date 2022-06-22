@@ -75,7 +75,10 @@ module.exports.getStageParam = (config, conditionName, stageName, param) => {
     }
     let stageListObj = this.getStageList(config, conditionName);
     if(stageListObj.returnCode === DevConfig.FAILURE_CODE){
-        return stageListObj;
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to get stage list while getting stage param:"
+            + "\n"+ stageListObj.data
+        );
     }
     let condition = stageListObj.data;
 
@@ -134,7 +137,10 @@ module.exports.getNextStageName = (config, conditionName, stageName) => {
 
     let stageListObj = this.getStageList(config, conditionName);
     if(stageListObj.returnCode === DevConfig.FAILURE_CODE){
-        return stageListObj;
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to get stage list while getting stage name after "+ stageName +" in condition "
+            + conditionName + "\n"+ stageListObj.data
+        );
     }
     let condition = stageListObj.data;
 
@@ -196,7 +202,10 @@ module.exports.updateStageDay = async (config, uniqueId) => {
     // Check if current stage has a specific length
     let stageLengthObj = this.getStageParam(config, participant.conditionName, currentStage, DevConfig.STAGE_PARAMS.LENGTH_DAYS);
     if(stageLengthObj.returnCode === DevConfig.FAILURE_CODE){
-        return stageLengthObj;
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to get stage length while updating stage day:"
+            + "\n"+ stageLengthObj.data
+        );
     }
 
     // Update the day
@@ -207,7 +216,10 @@ module.exports.updateStageDay = async (config, uniqueId) => {
     if(curStageLength !== -1 && newStageDay > curStageLength){
         let nextStageObj = this.getNextStageName(config, participant.conditionName, currentStage);
         if(nextStageObj.returnCode === DevConfig.FAILURE_CODE){
-            return nextStageObj;
+            return ReturnMethods.returnFailure(
+                "StageHandler: Failure to get next stage name while updating stage day:"
+                + "\n"+ nextStageObj.data
+            );
         } else if(nextStageObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
             // End of experiment reached when no next stage found
             newStageDay = -1;
@@ -216,7 +228,10 @@ module.exports.updateStageDay = async (config, uniqueId) => {
             // End the current stage
             let endObj = await this.endCurrentStage(participant);
             if(endObj.returnCode === DevConfig.FAILURE_CODE){
-                return endObj;
+                return ReturnMethods.returnFailure(
+                    "StageHandler: Failure to end current stage while updating stage day:"
+                    + "\n"+ endObj.data
+                );
             }
 
             // End experiment
@@ -227,7 +242,10 @@ module.exports.updateStageDay = async (config, uniqueId) => {
             // Start the next stage (which includes ending the current stage)
             let startObj = await this.startStage(participant, nextStageObj.data);
             if(startObj.returnCode === DevConfig.FAILURE_CODE){
-                return startObj;
+                return ReturnMethods.returnFailure(
+                    "StageHandler: Failure to start next stage after updating stage day:"
+                    + "\n"+ startObj.data
+                );
             }
             returnVal = startObj.data;
         }
@@ -319,7 +337,10 @@ module.exports.startStage = async (participant, nextStageName) => {
     if(currentStage !== ""){
         let endStageObj = await this.endCurrentStage(participant);
         if(endStageObj.returnCode === DevConfig.FAILURE_CODE){
-            return endStageObj;
+            return ReturnMethods.returnFailure(
+                "StageHandler: Failure to end current stage " + currentStage + " while starting new stage "
+                + nextStageName + "\n"+ endStageObj.data
+            );
         }
     }
 
@@ -353,9 +374,15 @@ module.exports.endExperiment = async (uniqueId) => {
 
     // Remove all jobs for participant
     if(removeReturnObj.returnCode === DevConfig.FAILURE_CODE){
-        return removeReturnObj;
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to remove jobs when ending experiment"
+            + "\n"+ removeReturnObj.data
+        );
     } else if(removeReturnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
-        return ReturnMethods.returnFailure(removeReturnObj.failData);
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to remove some jobs when ending experiment"
+            + "\n"+ removeReturnObj.failData
+        );
     }
 
     let participant;
@@ -377,7 +404,10 @@ module.exports.endExperiment = async (uniqueId) => {
     if(currentStage !== ""){
         let endStageObj = await this.endCurrentStage(participant);
         if(endStageObj.returnCode === DevConfig.FAILURE_CODE){
-            return endStageObj;
+            return ReturnMethods.returnFailure(
+                "StageHandler: Failure to end current stage when ending experiment"
+                + "\n"+ endStageObj.data
+            );
         }
     }
 
@@ -460,7 +490,10 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
     // Need all stage names
     let stageNameObj = this.getStageList(config, conditionName);
     if(stageNameObj.returnCode === DevConfig.FAILURE_CODE){
-        return stageNameObj;
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to get stage list when creating actions for condition " + conditionName
+            + "\n"+ stageNameObj.data
+        );
     }
     let stageList = stageNameObj.data;
 
@@ -473,7 +506,8 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
     // Get the groupings of stages based on days of presentation
     let onDaysObj = this.createOnDaysObj(stageList);
     if(onDaysObj.returnCode === DevConfig.FAILURE_CODE){
-        return ReturnMethods.returnFailure("StageHandler: Could not create onDays object");
+        return ReturnMethods.returnFailure("StageHandler: Could not create onDays object:\n" +
+            onDaysObj.data);
     }
 
     let actionList = [];
@@ -493,7 +527,10 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
             let conditionBuildObj = ConfigParser.buildMultipleORCondition(
                 "${STAGE_NAME}", "==", stageTokens);
             if(conditionBuildObj.returnCode === DevConfig.FAILURE_CODE){
-                return conditionBuildObj
+                return ReturnMethods.returnFailure(
+                    "StageHandler: Failure to build OR expression:"
+                    + "\n"+ conditionBuildObj.data
+                );
             }
             condition = conditionBuildObj.data;
         } else {

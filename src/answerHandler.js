@@ -89,7 +89,9 @@ class AnswerHandler{
 
         let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(uniqueId);
         if(cancelReminderObj.returnCode === DevConfig.FAILURE_CODE){
-            return cancelReminderObj;
+            return ReturnMethods.returnFailure(
+                "AHandler:Unable to cancel reminder:\n"+ cancelReminderObj.data
+            );
         }
 
         try{

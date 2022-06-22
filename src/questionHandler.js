@@ -104,7 +104,10 @@ function QuestionHandler(config){
         let selectedQuestionObj = getQuestionById(conditionName, qId);
 
         if(selectedQuestionObj.returnCode === DevConfig.FAILURE_CODE) {
-            return ReturnMethods.returnFailure(selectedQuestionObj.data);
+            return ReturnMethods.returnFailure(
+                "QHandler: Failure getting question by ID " + qId + " from condition " + conditionName
+                + "\n"+ selectedQuestionObj.data
+            );
         } else {
             selectedQuestion = selectedQuestionObj.data;
         }
@@ -291,7 +294,10 @@ function QuestionHandler(config){
             let curQ = schQList[i];
             let replaceObj = ConfigParser.replaceVariablesInString(participant, curQ["atTime"], true);
             if(replaceObj.returnCode === DevConfig.FAILURE_CODE){
-                return replaceObj
+                return ReturnMethods.returnFailure(
+                    "QHandler: Failure replacing variable in time string:"
+                    + "\n"+ replaceObj.data
+                );
             }
             curQ["atTime"] = replaceObj.data;
         }

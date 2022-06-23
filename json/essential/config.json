@@ -5,6 +5,7 @@
   "conditionAssignments" : [1, 1, 1, 1, 1, 1],
   "assignmentScheme" : "pid",
   "experimentLengthWeeks" : 4,
+  "msPerCharacterDelay" : 5,
   "experimentStages" : {
     "ControlLeader" : "$F{json/experiments/RL-Orgs-Pilot/allCondsStages.json}",
     "ShallowLeader" : "$F{json/experiments/RL-Orgs-Pilot/allCondsStages.json}",
@@ -46,9 +47,9 @@
   },
   "debug" : {
     "experimenter" : true,
-    "actionMessages" : false,
+    "actionMessages" : true,
     "enableNext" : true,
-    "messageDelay" : true,
+    "messageDelay" : false,
     "developer" : false
   },
   "languages" : ["English", "Deutsch"],

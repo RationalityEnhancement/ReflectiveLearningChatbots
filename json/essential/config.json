@@ -47,9 +47,9 @@
   },
   "debug" : {
     "experimenter" : true,
-    "actionMessages" : true,
+    "actionMessages" : false,
     "enableNext" : true,
-    "messageDelay" : false,
+    "messageDelay" : true,
     "developer" : false
   },
   "languages" : ["English", "Deutsch"],

@@ -518,8 +518,7 @@ bot.on('text', async ctx => {
   const messageText = ctx.message.text;
   // Ignore commands
   if(messageText.charAt[0] === '/') return;
-
-
+  
   // Get the participants unique ID
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
@@ -543,7 +542,9 @@ bot.on('text', async ctx => {
             stageDay = 0;
         }
         let ActionHandler = require('./src/actionHandler')
-        let returnObj = await ActionHandler.processAction(bot, config, participant, {
+        let copyConfig = JSON.parse(JSON.stringify(config));
+        copyConfig.debug.actionMessages = true;
+        let returnObj = await ActionHandler.processAction(bot, copyConfig, participant, {
             "aType" : "startStage",
             "args" : [stageName]
         });

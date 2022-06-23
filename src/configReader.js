@@ -1,6 +1,7 @@
 const DevConfig = require('../json/essential/devConfig.json')
 const fs = require('fs');
 const path = require('node:path');
+const config = require("../json/essential/config.json");
 
 /**
  *
@@ -59,6 +60,7 @@ module.exports.replaceFilenameDeeply = (targetObj, depth=0) => {
                         try{
                             JSONElement = JSON.parse(JSONString);
                             return this.replaceFilenameDeeply(JSONElement, depth + 1);
+                            // return JSONElement;
                         } catch(e){
                             // Not a valid JSON file
                             return [];
@@ -104,7 +106,8 @@ module.exports.replaceFilenameDeeply = (targetObj, depth=0) => {
  */
 module.exports.getExpConfig = () => {
     let config = require('../json/essential/config.json');
-    return this.replaceFilenameDeeply(config);
+    let replaced = this.replaceFilenameDeeply(config);
+    return replaced;
 }
 
 /**

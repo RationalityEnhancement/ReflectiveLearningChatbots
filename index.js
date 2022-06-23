@@ -39,6 +39,7 @@ const bot = new Telegraf(BOT_TOKEN);
 //----------------------
 //--- database setup ---
 //----------------------
+
 mongo.connect(process.env.DB_CONNECTION_STRING, { useNewUrlParser: true, useUnifiedTopology: true }, err => {
   if (err) {
     console.log(err);

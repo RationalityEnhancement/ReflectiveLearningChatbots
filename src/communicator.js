@@ -7,7 +7,7 @@ const AnswerHandler = require('./answerHandler');
 const idMaps = require('./apiControllers/idMapApiController')
 const ConfigParser = require('./configParser');
 
-const msPerCharacter = DevConfig.MS_PER_CHARACTER_DELAY;
+const msPerCharacter = config.msPerCharDelay || DevConfig.MS_PER_CHARACTER_DELAY;
 /**
  * This class deals with all of the direct communication with
  * the user. Mainly sends questions and messages.

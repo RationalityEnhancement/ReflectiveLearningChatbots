@@ -50,13 +50,13 @@
   {
     "qId": "pIdQuestion",
     "text": {
-      "English": "Please enter your Participant ID as provided to you.",
-      "Deutsch": "Bitte geben Sie Ihre Teilnehmer-ID ein, die Ihnen verteilt wurde."
+      "English": "Please enter your team's name as provided to you.",
+      "Deutsch": "Bitte geben Sie den Namen Ihres Teams ein, der Ihnen verteilt wurde."
     },
     "qType": "freeform",
     "replyMessages": {
       "English": [
-        "Thank you, participant ID has been registered"
+        "Thank you, team name has been registered"
       ],
       "Deutsch": [
         "Danke, Teilnehmer-ID ist erfasst worden"

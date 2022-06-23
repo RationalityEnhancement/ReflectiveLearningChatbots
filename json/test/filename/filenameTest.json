@@ -85,5 +85,33 @@
         }
       }
     }
+  },
+  "nested" : {
+    "input" : {
+      "name": "John",
+      "friends": "$F{json/test/filename/testArrStr.json}",
+      "nestedObj": "$F{json/test/filename/testObjNest.json}"
+    },
+    "target" : {
+      "name" : "John",
+      "friends" : ["john", "bill", "tim"],
+      "nestedObj" : {
+        "mixedArr" : ["john", {
+          "property" : "sping"
+        }],
+        "object" : {
+          "property1" : "sping",
+          "property2" : ["multiple", "spings"]
+        }
+      }
+    }
+  },
+  "circReference" : {
+    "input" : {
+      "name": "John",
+      "friends": "$F{json/test/filename/testArrStr.json}",
+      "nestedObj": "$F{json/test/filename/testObjLoop1.json}"
+    },
+    "target" : []
   }
 }

@@ -1,0 +1,4 @@
+{
+  "mixedArr": "$F{json/test/filename/testArrMix.json}",
+  "object": "$F{json/test/filename/testObj.json}"
+}

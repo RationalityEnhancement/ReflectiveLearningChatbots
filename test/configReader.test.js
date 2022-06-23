@@ -22,6 +22,11 @@ describe('Replacing file name deeply', () =>{
         let returnObj = ConfigReader.replaceFilenameDeeply(testFile["fileNotExist"].input);
         expect(returnObj).to.eql(testFile["fileNotExist"].target);
     })
+    it('Nested reference to file name', ()=>{
+        let returnObj = ConfigReader.replaceFilenameDeeply(testFile["nested"].input);
+        expect(returnObj).to.eql(testFile["nested"].target);
+    })
+
 })
 
 describe('Parse Filename Token', () => {

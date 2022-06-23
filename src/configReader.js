@@ -39,7 +39,8 @@ module.exports.parseFilenameToken = (expression) => {
  * @param targetObj
  * @returns {string|{}|*[]|*}
  */
-module.exports.replaceFilenameDeeply = (targetObj) => {
+module.exports.replaceFilenameDeeply = (targetObj, depth=0) => {
+    if(depth > DevConfig.RECURSION_MAX_DEPTH) return [];
     switch(typeof targetObj){
         case "string" :
             // Check if it is a filename token
@@ -57,7 +58,7 @@ module.exports.replaceFilenameDeeply = (targetObj) => {
                         let JSONElement;
                         try{
                             JSONElement = JSON.parse(JSONString);
-                            return JSONElement;
+                            return this.replaceFilenameDeeply(JSONElement, depth + 1);
                         } catch(e){
                             // Not a valid JSON file
                             return [];
@@ -77,14 +78,14 @@ module.exports.replaceFilenameDeeply = (targetObj) => {
                 // Deal with all elements of array
                 let newArray = [];
                 for(let i = 0; i < targetObj.length; i++){
-                    newArray.push(this.replaceFilenameDeeply(targetObj[i]));
+                    newArray.push(this.replaceFilenameDeeply(targetObj[i], depth+1));
                 }
                 return newArray;
             } else {
                 let newObj = {};
                 // Recursively deal with all properties of object
                 for(const [key, value] of Object.entries(targetObj)){
-                    newObj[key] = this.replaceFilenameDeeply(value);
+                    newObj[key] = this.replaceFilenameDeeply(value, depth+1);
                 }
                 return newObj;
             }

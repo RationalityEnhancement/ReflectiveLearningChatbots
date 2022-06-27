@@ -54,7 +54,8 @@
     "addValueTo" : 2,
     "startStage" : 1,
     "incrementStageDay" : 0,
-    "endExperiment" : 0
+    "endExperiment" : 0,
+    "saveOptionIdxTo" : 1
   },
   "END_STAGE_STRING" : "end",
   "BEGIN_STAGE_STRING": "begin",

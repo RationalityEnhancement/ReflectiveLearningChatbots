@@ -518,7 +518,7 @@ bot.on('text', async ctx => {
   const messageText = ctx.message.text;
   // Ignore commands
   if(messageText.charAt[0] === '/') return;
-  
+
   // Get the participants unique ID
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){

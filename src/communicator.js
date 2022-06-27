@@ -6,6 +6,8 @@ const InputOptions = require('./inputOptions');
 const AnswerHandler = require('./answerHandler');
 const idMaps = require('./apiControllers/idMapApiController')
 const ConfigParser = require('./configParser');
+const ExperimentUtils = require('./experimentUtils');
+const emoji = require('node-emoji');
 
 const msPerCharacter = config.msPerCharDelay || DevConfig.MS_PER_CHARACTER_DELAY;
 /**
@@ -27,6 +29,7 @@ let substituteVariables = (participant, text, sensitiveDataAlso) => {
     let newText = text;
     let varReplaceObj = ConfigParser.replaceVariablesInString(participant, text, sensitiveDataAlso);
     if(varReplaceObj.returnCode === DevConfig.SUCCESS_CODE) newText = varReplaceObj.data;
+    newText = emoji.emojify(newText);
     return newText;
 }
 
@@ -55,6 +58,28 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
 
     question.text = substituteVariables(participant, question.text, false);
 
+    // Attempt to send an image
+    if(question.image){
+        let imageValidationObj = await ExperimentUtils.validateImageSource(question.image);
+        if(imageValidationObj.returnCode === DevConfig.FAILURE_CODE){
+            console.log(imageValidationObj.data);
+        } else {
+            console.log('validated');
+            console.log(imageValidationObj.returnCode);
+            let imageSendObj = {}
+            switch(question.image.sourceType){
+                case "local":
+                    imageSendObj["source"] = question.image.source;
+                    break;
+                case "url":
+                    imageSendObj["url"] = question.image.source;
+                    break;
+                default:
+                    console.log("Communicator: Could not process image source type!")
+            }
+            await bot.telegram.sendPhoto(chatId, imageSendObj)
+        }
+    }
 
     let qLength = question.text.length;
     let qDelayMs = qLength * msPerCharacter;

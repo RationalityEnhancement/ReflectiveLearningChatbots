@@ -434,3 +434,90 @@ describe("Edit distance", () => {
 
 	})
 })
+
+describe('Image validation', () => {
+	describe('General fails', () => {
+		it('Should fail when image source type not present', async () => {
+			let imageObj = {
+				"source" : "data/test/images/cookie.jpg"
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+		})
+		it('Should fail when image source not present', async () => {
+			let imageObj = {
+				"sourceType" : "local",
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+		})
+		it('Should fail when image source type not string', async () => {
+			let imageObj = {
+				"sourceType" : 3,
+				"source" : "data/test/images/cookie.jpg"
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+		})
+		it('Should fail when image source not string', async () => {
+			let imageObj = {
+				"sourceType" : "local",
+				"source" : 3
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+		})
+		it('Should fail when image source type not valid', async () => {
+			let imageObj = {
+				"sourceType" : "locally",
+				"source" : "data/test/images/cookie.jpg"
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+		})
+	})
+	describe('Local', () => {
+		it('Should validate local image', async () => {
+			let imageObj = {
+				"sourceType" : "local",
+				"source" : "data/test/images/cookie.jpg"
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+		})
+		it('Should fail when file extension not image', async () => {
+			let imageObj = {
+				"sourceType" : "local",
+				"source" : "data/test/images/bigimageURL.txt"
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+		})
+		it('Should fail when file doesnt exist', async () => {
+			let imageObj = {
+				"sourceType" : "local",
+				"source" : "data/test/images/cookita.jpg"
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+		})
+	})
+	describe('URL', () => {
+		it('Should validate URL image', async () => {
+			let imageObj = {
+				"sourceType" : "url",
+				"source" : "https://images.freeimages.com/images/large-previews/043/test-tube-1539259.jpg"
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+		})
+		it('Should fail when URL errors', async () => {
+			let imageObj = {
+				"sourceType" : "url",
+				"source" : "http"
+			}
+			let returnObj = await experimentUtils.validateImageSource(imageObj);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+		})
+	})
+})

@@ -2,6 +2,9 @@ const moment = require('moment-timezone')
 const ReturnMethods = require('./returnMethods')
 const ConfigReader = require('../src/configReader');
 const DevConfig = ConfigReader.getDevConfig();
+const fs = require('fs');
+const path = require('path');
+const request = require('request');
 
 /**
  * Selects the appropriate condition assignment depending on whether the
@@ -285,4 +288,52 @@ module.exports.getClosestStrings = (str, strArr, num) => {
   let sortedByDist = indices.map(idx => newStrArr[idx]);
   return ReturnMethods.returnSuccess(sortedByDist.splice(0, num));
 
+}
+
+/**
+ *
+ * Validates an image source object of the type
+ * {
+ *     sourceType : "local" or "url"
+ *     source : path to file from working directory or URL of image
+ * }
+ *
+ * If image is URL, only checks whether URL returns a response (i.e., not dead)
+ *  Does not validate if the URL is a valid image!
+ *  Does not validate image size or dimensions!
+ *
+ */
+module.exports.validateImageSource = async (imageSourceObj) => {
+  if(!imageSourceObj.sourceType || !DevConfig.VALID_IMAGE_SOURCE_TYPES.includes(imageSourceObj.sourceType)){
+    return ReturnMethods.returnFailure("ExpUtils: image source type " + imageSourceObj.sourceType+ " not valid!");
+  }
+  if(!imageSourceObj.source){
+    return ReturnMethods.returnFailure("ExpUtils: image source must have source type!");
+  }
+  if(!(typeof imageSourceObj.sourceType === "string") || !(typeof imageSourceObj.source === "string")){
+    return ReturnMethods.returnFailure("ExpUtils: image source and source type must be strings!");
+  }
+  switch(imageSourceObj.sourceType){
+    case "local":
+      if(!fs.existsSync(imageSourceObj.source)){
+        return ReturnMethods.returnFailure(
+            "ExpUtils: Source " + imageSourceObj.source + " is not a valid file!"
+        );
+      }
+      if(!DevConfig.VALID_IMAGE_EXTENSIONS.includes(path.extname(imageSourceObj.source))){
+        return ReturnMethods.returnFailure(
+            "ExpUtils: Source " + imageSourceObj.source + " does not have a valid image extension!"
+        );
+      }
+      return ReturnMethods.returnSuccess(imageSourceObj.source);
+    case "url":
+      try{
+        let response = await request(imageSourceObj.source);
+        return ReturnMethods.returnSuccess(imageSourceObj.source)
+      } catch(e){
+        return ReturnMethods.returnFailure(
+            "ExpUtils: " + imageSourceObj.source + " is not a valid URL"
+        )
+      }
+  }
 }

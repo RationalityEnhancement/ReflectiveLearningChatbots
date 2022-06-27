@@ -7,9 +7,9 @@
     "test": "mocha --exit",
     "start": "node index.js",
     "start-local": "node index.js -l",
-    "download-data" : "node src/downloadData.js",
-    "delete-sensitive" : "node src/deleteSensitiveData.js",
-    "generate-team-names" : "node src/generateTeamNames.js"
+    "download-data": "node src/downloadData.js",
+    "delete-sensitive": "node src/deleteSensitiveData.js",
+    "generate-team-names": "node src/generateTeamNames.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
     "mongodb-memory-server": "^8.4.2",
     "mongoose": "^6.2.10",
     "node-schedule": "^2.1.0",
+    "request": "^2.88.2",
     "telegraf": "^4.7.0"
   },
   "engines": {

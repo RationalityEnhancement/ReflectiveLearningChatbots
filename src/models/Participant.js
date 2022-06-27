@@ -88,7 +88,11 @@ let schemaObject = {
       numRepeats : Number
     },
     inputPrompt : String,
-    answerShouldBe : [String]
+    answerShouldBe : [String],
+    image: {
+      sourceType : String,
+      source : String
+    }
   },
   currentState: String,
   answers:

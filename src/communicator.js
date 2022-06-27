@@ -7,6 +7,7 @@ const AnswerHandler = require('./answerHandler');
 const idMaps = require('./apiControllers/idMapApiController')
 const ConfigParser = require('./configParser');
 const ExperimentUtils = require('./experimentUtils');
+const emoji = require('node-emoji');
 
 const msPerCharacter = config.msPerCharDelay || DevConfig.MS_PER_CHARACTER_DELAY;
 /**
@@ -28,6 +29,7 @@ let substituteVariables = (participant, text, sensitiveDataAlso) => {
     let newText = text;
     let varReplaceObj = ConfigParser.replaceVariablesInString(participant, text, sensitiveDataAlso);
     if(varReplaceObj.returnCode === DevConfig.SUCCESS_CODE) newText = varReplaceObj.data;
+    newText = emoji.emojify(newText);
     return newText;
 }
 

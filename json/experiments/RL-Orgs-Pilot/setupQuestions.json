@@ -1,13 +1,9 @@
 [
   {
-    "image" : {
-      "sourceType" : "url",
-      "source" : "https://as1.ftcdn.net/v2/jpg/02/71/93/38/1000_F_271933863_TysBo7hfbznYl9aH3syaZJBJNH1CTK3n.jpg"
-    },
     "qId" : "langQuestion",
     "text" : {
-      "English" : "Hello ${FIRST_NAME}, I am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo ${FIRST_NAME}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
-      "Deutsch" : "Hello ${FIRST_NAME}, I am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo ${FIRST_NAME}, ich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
+      "English" : "Hello ${FIRST_NAME}! :heart:\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo ${FIRST_NAME}! :heart:\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
+      "Deutsch" : "Hello ${FIRST_NAME}! :heart:\nI am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo ${FIRST_NAME}! :heart:\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
     },
     "qType" : "singleChoice",
     "options" : {

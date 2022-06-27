@@ -411,6 +411,249 @@ describe('Processing actions', ()=>{
 
         })
     })
+    describe('SaveOptionIdxTo', ()=>{
+        describe('Number answer - single choice', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "saveOptionIdxTo",
+                args : ["testNum"]
+            }
+            let question = {
+                "qType" : "singleChoice",
+                "options" : ["a", "b", "c"]
+            }
+            let outString = "b";
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = [outString];
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                console.log(returnObj)
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(question.options.indexOf(outString))
+            })
+            it('Should have saved the parameter as number in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(!Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("number");
+                expect(participant.parameters[actionObj.args[0]]).to.equal(question.options.indexOf(outString));
+            })
+        })
+        describe('Number array answer - multi choice', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "saveOptionIdxTo",
+                args : ["testNumArr"]
+            }
+            let question = {
+                "qType" : "multiChoice",
+                "options" : ["a", "b", "c"]
+            }
+            let outString = ["b","c"];
+            let expectedAns = []
+            outString.forEach(el => {
+                expectedAns.push(question.options.indexOf(el));
+            })
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = outString;
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.eql(expectedAns)
+            })
+            it('Should have saved the parameter as number array in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(typeof participant.parameters[actionObj.args[0]][0]).to.equal("number");
+                expect(participant.parameters[actionObj.args[0]]).to.eql(expectedAns);
+            })
+        })
+        describe('Number answer - multi choice', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "saveOptionIdxTo",
+                args : ["testNum"]
+            }
+            let question = {
+                "qType" : "multiChoice",
+                "options" : ["a", "b", "c"]
+            }
+            let outString = ["b","c"];
+
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = outString;
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                console.log(returnObj)
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal(question.options.indexOf(outString[0]))
+            })
+            it('Should have saved the parameter as string in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(!Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("number");
+                expect(participant.parameters[actionObj.args[0]]).to.equal(question.options.indexOf(outString[0]));
+            })
+        })
+        describe('Number array answer - single choice', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "saveOptionIdxTo",
+                args : ["testNumArr"]
+            }
+            let question = {
+                "qType" : "singleChoice",
+                "options" : ["a", "b", "c"]
+            }
+            let outString = ["b"];
+            let expectedAns = []
+            outString.forEach(el => {
+                expectedAns.push(question.options.indexOf(el));
+            })
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = outString;
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.eql(expectedAns)
+            })
+            it('Should have saved the parameter as string in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                expect(typeof participant.parameters[actionObj.args[0]][0]).to.equal("number");
+                expect(participant.parameters[actionObj.args[0]]).to.eql(expectedAns);
+            })
+        })
+        describe('Fails', () => {
+            let returnObj;
+            let outString = "23";
+            let expectedOut = 23;
+
+            it('Should fail when variable name not string', async () => {
+                let actionObj = {
+                    aType : "",
+                    args : [234]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["hello"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            })
+            it('Should fail when current question not choice question', async () => {
+                let actionObj = {
+                    aType : "saveOptionIdxTo",
+                    args : ["testNumArr"]
+                }
+                let question = {
+                    "qType" : "freeform",
+                    "options" : ["a", "b", "c"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["b"];
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when current question doesnt have options', async () => {
+                let actionObj = {
+                    aType : "saveOptionIdxTo",
+                    args : ["testNumArr"]
+                }
+                let question = {
+                    "qType" : "singleChoice"
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["b"];
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when current answer missing', async () => {
+                let actionObj = {
+                    aType : "saveOptionIdxTo",
+                    args : ["timezone"]
+                }
+                let question = {
+                    "qType" : "singleChoice",
+                    "options" : ["a", "b", "c"]
+                }
+                let participant = await participants.get(testPartId);
+                delete participant.currentAnswer;
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+
+            })
+            it('Should fail when variable not recognized', async () => {
+                let actionObj = {
+                    aType : "saveOptionIdxTo",
+                    args : ["timezone2"]
+                }
+                let question = {
+                    "qType" : "singleChoice",
+                    "options" : ["a", "b", "c"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+
+            })
+            it('Should fail when cannot save to variable type', async () => {
+                let actionObj = {
+                    aType : "saveOptionIdxTo",
+                    args : ["testStr"]
+                }
+                let question = {
+                    "qType" : "singleChoice",
+                    "options" : ["a", "b", "c"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["Europe/Berlin"];
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+
+            })
+            it('Should fail when trying to save to reserved variable', async () => {
+                let actionObj = {
+                    aType : "saveOptionIdxTo",
+                    args : ["STAGE_DAY"]
+                }
+                let question = {
+                    "qType" : "singleChoice",
+                    "options" : ["a", "b", "c"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["4"];
+                participant.currentState = "answerReceived";
+                participant.currentQuestion = question;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+
+        })
+    })
     describe('SetBooleanVar', ()=>{
         describe('Set to true', () => {
             let returnObj;

@@ -288,6 +288,76 @@ let processAction = async(bot, config, participant, actionObj) => {
                     + aReturnVal.toString() + " added to " + aVarName, true);
             }
             return ReturnMethods.returnSuccess(aReturnVal);
+        // Save current answer to a variable
+        case "saveOptionIdxTo" :
+            // First argument is name of the variable to save to
+            let oVarName = actionObj.args[0];
+            if(typeof oVarName !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: Variable name must be string");
+            }
+
+            // Current answer must exist to save answer
+            if(!participant.currentAnswer
+                || !Array.isArray(participant.currentAnswer)
+                || participant.currentAnswer.length === 0){
+                return ReturnMethods.returnFailure("ActHandler: Current answer not available to save");
+            }
+
+            // Current question must be of type singleChoice or multiChoice and have options
+            if(!["singleChoice", "multiChoice"].includes(participant.currentQuestion.qType)){
+                return ReturnMethods.returnFailure("ActHandler: Current question must be choice question");
+            }
+            if(!participant.currentQuestion.options || participant.currentQuestion.options.length === 0){
+                return ReturnMethods.returnFailure("ActHandler: Current question must have options array");
+            }
+            let options = participant.currentQuestion.options;
+
+            let oParamType;
+            try{
+                oParamType = participant.parameterTypes[oVarName];
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
+            }
+            let oReturnVal;
+
+            if(DevConfig.RESERVED_VARIABLES.includes(oVarName)){
+                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+            }
+            // Check which data type the target parameter is
+            switch(oParamType){
+                // Can only save to number or number array types
+                case DevConfig.OPERAND_TYPES.NUMBER:
+                    let answer = participant.currentAnswer[0];
+                    let idx = options.indexOf(answer)
+                    try{
+                        await participants.updateParameter(participant.uniqueId, oVarName, idx);
+                    } catch(err){
+                        return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+                    }
+                    oReturnVal = idx;
+                    break;
+                case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
+                    let idxArr = []
+                    for(const answer of participant.currentAnswer){
+                        idxArr.push(options.indexOf(answer))
+                    }
+                    try{
+                        await participants.updateParameter(participant.uniqueId, oVarName, idxArr);
+                    } catch(err){
+                        return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+                    }
+                    oReturnVal = idxArr;
+                    break;
+                default:
+                    return ReturnMethods.returnFailure(
+                        "ActHandler: Cannot save option index to var of type " + oParamType
+                    );
+            }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Idx "
+                    + oReturnVal.toString() + " saved to " + oVarName, true);
+            }
+            return ReturnMethods.returnSuccess(oReturnVal);
         // Set the value of a boolean variable to true or false
         case "setBooleanVar" :
             // First argument must be the name of the variable

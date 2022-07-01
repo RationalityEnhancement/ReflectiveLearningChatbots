@@ -15,7 +15,7 @@
       {
         "if": "${remindWorkIntention} == $B{true}",
         "then" : {
-          "English" : ["The last time, you wanted me to remind you of the following intentions today:", "${workIntention}"],
+          "English" : ["The last time, you wanted me to remind you of the following intention today:", "${workIntention}"],
           "Deutsch" : ["Das letzte Mal haben Sie mir gesagt, Sie am nächsten Tag an diese Vorhaben zu erinnern:", "${workIntention}"]
         }
       }
@@ -250,7 +250,7 @@
   {
     "qId" : "wantRelGoalInfo",
     "text" : {
-      "English" : "Here is a tip on improving your work relationships and setting up relationship-oriented goals:\n\n <i>High quality relationships are characterized by mutual engagement, interest from both sides, and positivity.</i>\n\n Would you like to find out more?",
+      "English" : "Here is a tip on improving your work relationships and setting up goals to improve relationships:\n\n <i>High quality relationships are characterized by mutual engagement, interest from both sides, and positivity.</i>\n\n Would you like to find out more?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",
@@ -365,7 +365,7 @@
     "qId" : "relGoalsInfo",
     "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["Here is info about relationship goals"],
+      "English" : ["In high quality work relationships, people feel valued and appreciated. They feel safe to speak up, discuss problems openly, open themselves up without fearing interpersonal consequences or loss of their self-image, and display a wide range of emotions (including negative ones). People are engaged and willing to actively participate and disclose information. High quality relationships can withstand stress and conflict and bounce back after setbacks."],
       "Deutsch" : ["Hier sind Infos zu beziehungsorienterten Zielen"]
     },
     "nextQuestion" : "Morning-Goals-All.continueFromInfo"
@@ -395,7 +395,7 @@
     "qId" : "relGoalsExample",
     "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["Here are some example of relationship goals:\n\n * <i>discuss a recent work problem with a colleague today</i>\n\n* <i>appreciate individual differences</i>\n\n* <i>show empathy for a co-worker</i>\n\n* <i>do not judge a co-worker who made a mistake</i>"],
+      "English" : ["Here are some example of relationship goals:\n\n * <i>I will discuss a recent work issue with [team member] during lunch today</i>\n\n* <i>I will show empathy for [team member] at today's meeting</i>\n\n* <i>I will withhold judgement of [team member] who made a mistake yesterday</i>\n\n* <i>I will express gratitude for [team member's] hard work this morning</i>\n\n* <i>I will highlight the value of [team member's] unique perspective and input in the afternoon</i>\n\n* <i>I will encourage [team member] to speak up at today's meeting</i>"],
       "Deutsch" : ["Hier sind Beispiele von beziehungsorienterten Zielen"]
     },
     "nextQuestion" : "Morning-Goals-All.continueFromExample"
@@ -428,7 +428,7 @@
   {
     "qId" : "addFirstRelGoal",
     "text" : {
-      "English" : "${FIRST_NAME}, how would you like to relate to or behave toward which of your colleagues today? Tip: make it an SRT goal (specific, relevant, timely)",
+      "English" : "${FIRST_NAME}, how would you like to relate to or behave towards which of your colleagues today? Tip: make it an SRT goal (specific, relevant, timely)",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "minLengthWords" : 5,
@@ -453,7 +453,7 @@
     "qId" : "askAddRelGoal",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Would you like to set additional relationship-oriented goals for today?",
+      "English" : "Would you like to set additional relationship goals for today?",
       "Deutsch" : "Möchten Sie sich heute noch zusätzliche beziehungsorienterte Ziele setzen?"
     },
     "options" : {

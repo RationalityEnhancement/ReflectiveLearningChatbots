@@ -44,26 +44,14 @@
   {
     "qId" : "relGoalsProgress",
     "text" : {
-      "English" : "How much progress do you feel like you made towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
+      "English" : "To which extent did you act in accordance with these goals today, on a scale from 0 (not at all) to 100 (completely)?",
       "Deutsch" : "Gefühlt wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
     },
     "qType" : "number",
     "range" : {
       "lower" : 0
     },
-    "cReplyMessages" : [
-      {
-        "if" : "(${CURRENT_ANSWER} > ${lastReportedRelProgress}) AND (${relProgressReportedOnce} == $B{true})",
-        "then" : {
-          "English" : ["Congratulations on having improved your progress from the last time!"],
-          "Deutsch": ["Gratulation dazu, dass Sie heute mehr Fortschritt gemacht haben als beim letzten Mal!"]
-        },
-        "else" : {
-          "English" : ["Good to know!"],
-          "Deutsch" : ["Gut zu wissen!"]
-        }
-      }
-    ],
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/relGoalProgressReplies.json}",
     "nextActions" : [
       {
         "aType" : "saveAnswerTo",
@@ -97,8 +85,8 @@
           "Deutsch" : ["Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!", "Jetzt haben wir noch eine Runde Umfragen."]
         },
         "else" : {
-          "English" : ["Alright, see you tomorrow!"],
-          "Deutsch" : ["Alles klar, bis morgen!"]
+          "English" : ["Thank you for sharing. See you tomorrow!"],
+          "Deutsch" : ["Danke fürs Mitteilen. Bis morgen!"]
         }
       }
     ],
@@ -188,19 +176,7 @@
     "range" : {
       "lower" : 0
     },
-    "cReplyMessages" : [
-      {
-        "if" : "(${CURRENT_ANSWER} > ${lastReportedTaskProgress}) AND (${taskProgressReportedOnce} == $B{true})",
-        "then" : {
-          "English" : ["Congratulations on having improved your progress from the last time!"],
-          "Deutsch": ["Gratulation dazu, dass Sie heute mehr Fortschritt gemacht haben als beim letzten Mal!"]
-        },
-        "else" : {
-          "English" : ["That's good progress!"],
-          "Deutsch": ["Danke fürs Mitteilen"]
-        }
-      }
-    ],
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/taskGoalProgressReplies.json}",
     "nextActions" : [
       {
         "aType" : "saveAnswerTo",

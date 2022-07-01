@@ -520,19 +520,7 @@
     "range" : {
       "lower" : 0
     },
-    "cReplyMessages" : [
-      {
-        "if" : "(${CURRENT_ANSWER} > ${lastReportedRelProgress}) AND (${relProgressReportedOnce} == $B{true})",
-        "then" : {
-          "English" : ["Congratulations on having improved your progress from the last time!"],
-          "Deutsch": ["Gratulation dazu, dass Sie heute mehr Fortschritt gemacht haben als beim letzten Mal!"]
-        },
-        "else" : {
-          "English" : ["Good to know!"],
-          "Deutsch" : ["Gut zu wissen!"]
-        }
-      }
-    ],
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/relGoalProgressReplies.json}",
     "nextActions" : [
       {
         "aType" : "saveAnswerTo",
@@ -657,19 +645,7 @@
     "range" : {
       "lower" : 0
     },
-    "cReplyMessages" : [
-      {
-        "if" : "(${CURRENT_ANSWER} > ${lastReportedTaskProgress}) AND (${taskProgressReportedOnce} == $B{true})",
-        "then" : {
-          "English" : ["Congratulations on having improved your progress from the last time!"],
-          "Deutsch": ["Gratulation dazu, dass Sie heute mehr Fortschritt gemacht haben als beim letzten Mal!"]
-        },
-        "else" : {
-          "English" : ["That's good progress"],
-          "Deutsch": ["Danke fürs Mitteilen"]
-        }
-      }
-    ],
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/taskGoalProgressReplies.json}",
     "nextActions" : [
       {
         "aType" : "saveAnswerTo",

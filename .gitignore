@@ -105,3 +105,6 @@ dist
 
 # test files
 testcommands.js
+
+#.DS_Store
+*.DS_Store

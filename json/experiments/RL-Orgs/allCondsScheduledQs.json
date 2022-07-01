@@ -18,7 +18,7 @@
     "if" : "(${STAGE_NAME} == $S{Pre-Test}) AND (${preTestComplete} == $B{false})"
   },
   {
-    "qId" : "Goal-Setting.selectMorningQ",
+    "qId" : "Morning-Goals-All.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
     "if" : "${STAGE_NAME} == $S{Goal-Setting}"
@@ -42,13 +42,13 @@
     "if" : "(${STAGE_NAME} == $S{Pre-Test-2}) AND (${preTest2Complete} == $B{false})"
   },
   {
-    "qId" : "Intervention.initiateContact",
+    "qId" : "Morning-Goals-All.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
     "if" : "${STAGE_NAME} == $S{Intervention}"
   },
   {
-    "qId" : "Intervention.selectReflection",
+    "qId" : "Int-Reflection.selectReflection",
     "atTime" : "${eveningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
     "if" : "${STAGE_NAME} == $S{Intervention}"

@@ -27,7 +27,6 @@ const local = process.argv[2];
 
 const SKIP_TO_STAGE = {};
 
-
 // Validate the config file to ensure that it has all the necessary information
 // This throws an error and aborts execution if there is something missing/wrong
 // checkConfig();

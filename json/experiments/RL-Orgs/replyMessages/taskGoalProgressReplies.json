@@ -1,0 +1,50 @@
+[
+  {
+    "if": "(${CURRENT_ANSWER} > ${lastReportedTaskProgress}) AND (${taskProgressReportedOnce} == $B{true})",
+    "then": {
+      "English": [
+        "Congratulations on having improved your progress from the last time!"
+      ],
+      "Deutsch": [
+        "Gratulation dazu, dass Sie heute mehr Fortschritt gemacht haben als beim letzten Mal!"
+      ]
+    }
+  },
+  {
+    "if": "${CURRENT_ANSWER} == $N{0}",
+    "then": {
+      "English": [
+        "I see. That's unfortunate."
+      ],
+      "Deutsch": [
+        "Übersetzung nicht verfügbar"
+      ]
+    }
+  },
+  {
+    "if": "${CURRENT_ANSWER} < $N{30}",
+    "then": {
+      "English": [
+        "That's a start!"
+      ],
+      "Deutsch": [
+        "Übersetzung nicht verfügbar"
+      ]
+    }
+  },
+  {
+    "if": "${CURRENT_ANSWER} < $N{75}",
+    "then": {
+      "English": [
+        "That's good progress!"
+      ],
+      "Deutsch": [
+        "Übersetzung nicht verfügbar"
+      ]
+    },
+    "else" : {
+      "English" : ["That's amazing progress!"],
+      "Deutsch": ["Übersetzung nicht verfügbar"]
+    }
+  }
+]

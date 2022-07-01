@@ -1,547 +1,15 @@
 [
   {
-    "qId" : "initiateContact",
-    "qType" : "dummy",
-    "replyMessages" : {
-      "English" : ["Good morning, ${FIRST_NAME}!"],
-      "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
-    },
-    "nextQuestion" : "Intervention.selectMorningQ"
-  },
-  {
-    "qId" : "remindWorkIntention",
-    "qType" : "dummy",
-    "cReplyMessages" : [
-      {
-        "if": "${remindWorkIntention} == $B{true}",
-        "then" : {
-          "English" : ["The last time, you wanted me to remind you of the following intentions today:", "${workIntention}"],
-          "Deutsch" : ["Das letzte Mal haben Sie mir gesagt, Sie am nächsten Tag an diese Vorhaben zu erinnern:", "${workIntention}"]
-        }
-      }
-    ],
-    "cNextActions" : [
-      {
-        "if": "${remindWorkIntention} == $B{true}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["remindWorkIntention", "$B{false}"]
-          },
-          {
-            "aType" : "clearVar",
-            "args" : ["workIntention"]
-          }
-        ]
-      }
-    ],
-    "nextQuestion" : "Intervention.firstTaskGoal"
-  },
-  {
-    "qId" : "remindRelIntention",
-    "qType" : "dummy",
-    "cReplyMessages" : [
-      {
-        "if": "${remindRelIntention} == $B{true}",
-        "then" : {
-          "English" : ["The last time, you wanted me to remind you of the following intention today:", "${relIntention}"],
-          "Deutsch" : ["Das letzte Mal haben Sie mir gesagt, Sie am nächsten Tag an diese Vorhaben zu erinnern:", "${relIntention}"]
-        }
-      }
-    ],
-    "cNextActions" : [
-      {
-        "if": "${remindRelIntention} == $B{true}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["remindRelIntention", "$B{false}"]
-          },
-          {
-            "aType" : "clearVar",
-            "args" : ["remindRelIntention"]
-          }
-        ]
-      }
-    ],
-    "nextQuestion" : "Intervention.addFirstRelGoal"
-  },
-  {
-    "qId" : "selectMorningQ",
-    "qType" : "dummy",
-    "cNextQuestions" : [
-      {
-        "if": "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Intervention.firstRelationshipPrompt",
-        "else" : "Intervention.remindWorkIntention"
-      }
-    ]
-  },
-  {
-    "qId" : "firstTaskGoal",
-    "text" : {
-      "English" : "${FIRST_NAME}, what is the main thing you want to do to advance your project(s) today? Tip: Make it SMART.",
-      "Deutsch" : "${FIRST_NAME} was ist die wichtigste Sache, die Sie heute erledigen wollen, um Ihre(e) Projekt(e) voranzubringen? Tipp: Formulieren Sie ein SMART-Ziel."
-    },
-    "qType" : "freeform",
-
-    "nextQuestion" :"Intervention.askAddTaskGoals",
-    "minLengthWords" : 5,
-    "nextActions" : [
-      {
-        "aType" : "addAnswerTo",
-        "args" : ["taskGoals"]
-      },
-      {
-        "aType" : "setBooleanVar",
-        "args" : ["taskGoalsSetToday", "$B{true}"]
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "askAddTaskGoals",
-    "qType" : "singleChoice",
-    "text" : {
-      "English" : "Would you like to set additional goals for today?",
-      "Deutsch" : "Möchten Sie sich heute noch zusätzliche Ziele setzen?"
-    },
-    "options" : {
-      "English" : ["Yes", "No"],
-      "Deutsch": ["Ja", "Nein"]
-    },
-    "cNextQuestions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Intervention.addTaskGoals"
-      },
-      {
-        "if" : "(${STAGE_DAY} MULTIPLE_OF $N{2}) != $B{true}",
-        "then" : "Intervention.wantRelationshipGoal"
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}) AND (${STAGE_DAY} MULTIPLE_OF $N{2})",
-        "then" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
-        }
-      },
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
-        "then" : {
-          "English" : ["Alright, let's move on."],
-          "Deutsch" : ["Alles klar, machen wir weiter."]
-        }
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "addTaskGoals",
-    "text" : {
-      "English" : "What else would you like to accomplish today? If you are adding multiple goals, send each goal as a separate message.",
-      "Deutsch" : "Was sonst möchten Sie heute erledigen? Wenn Sie mehrere Ziele hinzufügen wollen, senden Sie jedes Ziel jeweils in einer einzelnen Nachricht."
-    },
-    "minLengthWords" : 5,
-    "qType" : "freeformMulti",
-    "nextActions" : [{
-      "aType" : "addAnswerTo",
-      "args" : ["taskGoals"]
-    }],
-    "cNextQuestions" : [
-      {
-        "if" : "(${STAGE_DAY} MULTIPLE_OF $N{2}) != $B{true}",
-        "then" : "Intervention.wantRelationshipGoal"
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
-        },
-        "else" : {
-          "English" : ["Great!"],
-          "Deutsch" : ["Toll!"]
-        }
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "wantRelationshipGoal",
-    "qType" : "singleChoice",
-    "text" : {
-      "English" : "${FIRST_NAME}, would you like to work on relationships with your colleagues today?",
-      "Deutsch" : "${FIRST_NAME}, möchten Sie heute an Ihren Beziehungen zu Ihren Kolleg*innen arbeiten?"
-    },
-    "options" : {
-      "English" : ["Yes", "No"],
-      "Deutsch": ["Ja", "Nein"]
-    },
-    "cNextQuestions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Intervention.checkWantRelGoalInfoQuestion"
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
-        "then" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
-        },
-        "else" : {
-          "English" : ["Good on you for choosing to improve your work climate!"],
-          "Deutsch" : ["Gut, dass Sie sich entschieden haben, Ihre Arbeitsatmösphare zu verbessern!"]
-        }
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "firstRelationshipPrompt",
-    "qType" : "singleChoice",
-    "text" : {
-      "English" : "Today, we will start by working on your relationships with your colleagues!",
-      "Deutsch" : "Heute, arbeiten wir zuerst an Ihren Beziehungen zu Ihren Kolleg*innen!"
-    },
-    "options" : {
-      "English" : ["Great, let's go!", "Maybe later."],
-      "Deutsch" : ["Lass uns anfangen!", "Vielleicht später."]
-    },
-    "cNextQuestions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Intervention.checkWantRelGoalInfoQuestion",
-        "else" : "Intervention.remindWorkIntention"
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if": "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
-        "then" : {
-          "English" : ["Very well.", "We shall then move on directly to the work-related goals."],
-          "Deutsch" : ["Alles klar.", "Jetzt machen wir dann direkt mit den arbeitsbezogenen Zielen weiter."]
-        }
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "wantRelGoalInfo",
-    "text" : {
-      "English" : "Here is a tip on improving your work relationships and setting up relationship-oriented goals:\n\n <i>High quality relationships are characterized by mutual engagement, interest from both sides, and positivity.</i>\n\n Would you like to find out more?",
-      "Deutsch" : "Übersetzung nicht verfügbar"
-    },
-    "qType" : "singleChoice",
-    "options" : {
-      "English" : ["Yes", "No", "Don't ask me again."],
-      "Deutsch" : ["Ja", "Nein", "Frag mich nicht wieder."]
-    },
-    "cNextQuestions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Intervention.relGoalsInfo"
-      },
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Intervention.checkWantRelGoalExampleQuestion"
-      }
-    ],
-    "cNextActions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["dontAskInfoAgain", "$B{true}"]
-          }
-        ]
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "checkWantRelGoalInfoQuestion",
-    "qType" : "dummy",
-    "cNextQuestions" : [
-      {
-        "if" : "${dontAskInfoAgain} == $B{true}",
-        "then" : "Intervention.checkWantRelGoalExampleQuestion",
-        "else" : "Intervention.wantRelGoalInfo"
-      }
-    ]
-  },
-  {
-    "qId" : "checkWantRelGoalExampleQuestion",
-    "qType" : "dummy",
-    "cNextQuestions" : [
-      {
-        "if" : "${dontAskExampleAgain} == $B{true}",
-        "then" : "Intervention.remindRelIntention",
-        "else" : "Intervention.wantRelGoalExample"
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "${dontAskExampleAgain} == $B{true}",
-        "then" : {
-          "English" : ["Then let's get right to it!"],
-          "Deutsch" : ["Dann kommen wir direkt zum Thema!"]
-        }
-      }
-    ]
-  },
-  {
-    "qId" : "wantRelGoalExample",
-    "text" : {
-      "English" : "Would you like to see some examples of relationship-oriented goals?",
-      "Deutsch" : "Übersetzung nicht verfügbar"
-    },
-    "qType" : "singleChoice",
-    "options" : {
-      "English" : ["Yes", "No", "Don't ask me again."],
-      "Deutsch" : ["Ja", "Nein", "Frag mich nicht wieder."]
-    },
-    "cNextQuestions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Intervention.relGoalsExample"
-      },
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Intervention.remindRelIntention"
-      }
-    ],
-    "cNextActions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["dontAskExampleAgain", "$B{true}"]
-          }
-        ]
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : {
-          "English" : ["Then let's get right to it!"],
-          "Deutsch" : ["Dann kommen wir direkt zum Thema!"]
-        }
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "relGoalsInfo",
-    "qType" : "dummy",
-    "replyMessages" : {
-      "English" : ["Here is info about relationship goals"],
-      "Deutsch" : ["Hier sind Infos zu beziehungsorienterten Zielen"]
-    },
-    "nextQuestion" : "Intervention.continueFromInfo"
-  },
-  {
-    "qId" : "continueFromInfo",
-    "qType" : "singleChoice",
-    "text" : {
-      "English" : "Click <i>Continue</i> when you are ready to go!",
-      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
-    },
-    "inputPrompt" : {
-      "English" : "(Hint: send <i>/repeat</i> if the <i>Continue</i> option is no longer visible.)",
-      "Deutsch" : "(Tipp: senden Sie <i>/repeat</i>, wenn die <i>Weiter</i>-Option nicht mehr sichtbar ist.)"
-    },
-    "options" : {
-      "English" : ["Continue"],
-      "Deutsch" : ["Weiter"]
-    },
-    "nextQuestion" : "Intervention.checkWantRelGoalExampleQuestion",
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "relGoalsExample",
-    "qType" : "dummy",
-    "replyMessages" : {
-      "English" : ["Here are some example of relationship goals:\n\n * <i>discuss a recent work problem with a colleague today</i>\n\n* <i>appreciate individual differences</i>\n\n* <i>show empathy for a co-worker</i>\n\n* <i>do not judge a co-worker who made a mistake</i>"],
-      "Deutsch" : ["Hier sind Beispiele von beziehungsorienterten Zielen"]
-    },
-    "nextQuestion" : "Intervention.continueFromExample"
-  },
-  {
-    "qId" : "continueFromExample",
-    "qType" : "singleChoice",
-    "text" : {
-      "English" : "Click <i>Continue</i> when you are ready to go!",
-      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
-    },
-    "inputPrompt" : {
-      "English" : "(Hint: send <i>/repeat</i> if the <i>Continue</i> option is no longer visible.)",
-      "Deutsch" : "(Tipp: senden Sie <i>/repeat</i>, wenn die <i>Weiter</i>-Option nicht mehr sichtbar ist.)"
-    },
-    "options" : {
-      "English" : ["Continue"],
-      "Deutsch" : ["Weiter"]
-    },
-    "nextQuestion" : "Intervention.remindRelIntention",
-    "replyMessages" : {
-      "English" : ["Great, let's get to it then!"],
-      "Deutsch" : ["Übersetzung nicht verfügbar"]
-    },
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "addFirstRelGoal",
-    "text" : {
-      "English" : "${FIRST_NAME}, how would you like to relate to or behave toward which of your colleagues today? Tip: make it an SRT goal (specific, relevant, timely)",
-      "Deutsch" : "Übersetzung nicht verfügbar"
-    },
-    "minLengthWords" : 5,
-    "qType" : "freeform",
-    "nextActions" : [
-      {
-        "aType" : "addAnswerTo",
-        "args" : ["relGoals"]
-      },
-      {
-        "aType" : "setBooleanVar",
-        "args" : ["relGoalsSetToday", "$B{true}"]
-      }
-    ],
-    "nextQuestion" : "Intervention.askAddRelGoal",
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "askAddRelGoal",
-    "qType" : "singleChoice",
-    "text" : {
-      "English" : "Would you like to set additional relationship-oriented goals for today?",
-      "Deutsch" : "Möchten Sie sich heute noch zusätzliche beziehungsorienterte Ziele setzen?"
-    },
-    "options" : {
-      "English" : ["Yes", "No"],
-      "Deutsch": ["Ja", "Nein"]
-    },
-    "cNextQuestions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Intervention.addRelGoals"
-      },
-      {
-        "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Intervention.remindWorkIntention"
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : {
-          "English" : ["Alright then."],
-          "Deutsch" : ["Na gut."]
-        }
-      },
-      {
-        "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : {
-          "English" : ["Very well.", "Now, we shall move on to the work-related goals."],
-          "Deutsch" : ["Alles klar.", "Jetzt machen wir mit den arbeitsbezogenen Zielen weiter."]
-        },
-        "else" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
-        }
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "addRelGoals",
-    "text" : {
-      "English" : "What else would you like to accomplish today? If you are adding multiple goals, send each goal as a separate message.",
-      "Deutsch" : "Was sonst möchten Sie heute erledigen? Wenn Sie mehrere Ziele hinzufügen wollen, senden Sie jedes Ziel jeweils in einer einzelnen Nachricht."
-    },
-    "minLengthWords" : 5,
-    "qType" : "freeformMulti",
-    "nextActions" : [{
-      "aType" : "addAnswerTo",
-      "args" : ["relGoals"]
-    }],
-    "cNextQuestions" : [
-      {
-        "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Intervention.remindWorkIntention"
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : {
-          "English" : ["Good job!", "Now, we shall move on to the work-related goals."],
-          "Deutsch" : ["Gute Arbeit!", "Jetzt machen wir mit den arbeitsbezogenen Zielen weiter."]
-        },
-        "else" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
-        }
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
     "qId" : "selectReflection",
     "qType" : "dummy",
     "cNextQuestions" : [
       {
         "if" : "${relGoalsSetToday} == $B{true}",
-        "then" : "Intervention.relGoalsRemind"
+        "then" : "Int-Reflection.relGoalsRemind"
       },
       {
         "if" : "${taskGoalsSetToday} == $B{true}",
-        "then" : "Intervention.taskGoalsRemind"
+        "then" : "Int-Reflection.taskGoalsRemind"
       }
     ],
     "cReplyMessages" : [
@@ -558,10 +26,10 @@
     "qId": "relGoalsRemind",
     "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["Today, you set the following relationship-oriented goals: ", "${relGoals}"],
+      "English" : ["Today you set the following goal(s) for improving your working climate and/or your relationships with your colleagues: ", "${relGoals}"],
       "Deutsch" : ["Heute haben Sie sich die folgenden beziehungsorienterten Ziele gesetzt: ", "${relGoals}"]
     },
-    "nextQuestion" : "Intervention.relGoalsProgress",
+    "nextQuestion" : "Int-Reflection.relGoalsProgress",
     "nextActions" : [
       {
         "aType" : "clearVar",
@@ -600,7 +68,7 @@
         }
       }
     ],
-    "nextQuestion" : "Intervention.anythingElse",
+    "nextQuestion" : "Int-Reflection.anythingElse",
     "nextActions" : [
       {
         "aType" : "saveAnswerTo",
@@ -666,8 +134,8 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Intervention.taskGoalsRemind",
-        "else" : "Intervention.checkDone"
+        "then" : "Int-Reflection.taskGoalsRemind",
+        "else" : "Int-Reflection.checkDone"
       }
     ],
     "cNextActions" : [
@@ -697,7 +165,7 @@
       "English" : ["Today, you set the following work-related goals: ", "${taskGoals}"],
       "Deutsch" : ["Heute haben Sie sich die folgenden arbeitsbezogenen Ziele gesetzt: ", "${taskGoals}"]
     },
-    "nextQuestion" : "Intervention.taskGoalsProgress",
+    "nextQuestion" : "Int-Reflection.taskGoalsProgress",
     "nextActions" : [
       {
         "aType" : "clearVar",
@@ -746,7 +214,7 @@
         "args" : ["taskProgressReportedOnce", "$B{true}"]
       }
     ],
-    "nextQuestion" : "Intervention.anythingElse",
+    "nextQuestion" : "Int-Reflection.anythingElse",
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -766,8 +234,8 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Intervention.moreWork",
-        "else" : "Intervention.satisfaction"
+        "then" : "Int-Reflection.moreWork",
+        "else" : "Int-Reflection.satisfaction"
       }
     ],
     "cReplyMessages" : [
@@ -795,7 +263,7 @@
       "Deutsch" : ["Gut zu wissen!"]
     },
     "qType" : "freeformMulti",
-    "nextQuestion" : "Intervention.satisfaction",
+    "nextQuestion" : "Int-Reflection.satisfaction",
     "minLengthWords" : 5,
     "reminder" : {
       "freqMins" : 30,
@@ -836,7 +304,7 @@
         }
       }
     ],
-    "nextQuestion" : "Intervention.emotions",
+    "nextQuestion" : "Int-Reflection.emotions",
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -869,7 +337,7 @@
         }
       }
     ],
-    "nextQuestion" : "Intervention.pursuitSatisfaction",
+    "nextQuestion" : "Int-Reflection.pursuitSatisfaction",
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -886,7 +354,7 @@
       "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
       "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
     },
-    "nextQuestion" : "Intervention.decisionSatisfaction",
+    "nextQuestion" : "Int-Reflection.decisionSatisfaction",
     "cReplyMessages":  [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
@@ -926,7 +394,7 @@
       "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
       "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
     },
-    "nextQuestion" : "Intervention.goalsImportance",
+    "nextQuestion" : "Int-Reflection.goalsImportance",
     "cReplyMessages":  [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
@@ -966,7 +434,7 @@
       "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
       "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
     },
-    "nextQuestion" : "Intervention.metaDescription",
+    "nextQuestion" : "Int-Reflection.metaDescription",
     "cReplyMessages":  [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
@@ -1007,7 +475,7 @@
       "English" : ["Thanks for sharing."],
       "Deutsch" : ["Danke, dass Sie das mit mir mitteilen."]
     },
-    "nextQuestion" : "Intervention.metaJudgement",
+    "nextQuestion" : "Int-Reflection.metaJudgement",
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -1024,7 +492,7 @@
       "English" : ["Rather ineffective", "Mediocre", "Somewhat effective", "Effective", "Very effective", "Perfect"],
       "Deutsch" : ["Eher ineffektiv", "Mittelmäßig", "Etwas effektiv", "Effektiv", "Sehr effektiv", "Perfekt"]
     },
-    "nextQuestion" : "Intervention.improveGoalSetting",
+    "nextQuestion" : "Int-Reflection.improveGoalSetting",
     "cReplyMessages":  [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
@@ -1060,8 +528,8 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Intervention.howImprove",
-        "else" : "Intervention.plan"
+        "then" : "Int-Reflection.howImprove",
+        "else" : "Int-Reflection.plan"
       }
     ],
     "reminder" : {
@@ -1097,7 +565,7 @@
         ]
       }
     ],
-    "nextQuestion" : "Intervention.planRemember",
+    "nextQuestion" : "Int-Reflection.planRemember",
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -1110,7 +578,7 @@
       "Deutsch" : "Nennen Sie eine konkrete Änderung, die Ihre Zielsetzung morgen verbessern könnte."
     },
     "qType" : "freeform",
-    "nextQuestion" : "Intervention.planRemember",
+    "nextQuestion" : "Int-Reflection.planRemember",
     "cNextActions" : [
       {
         "if" : "${inRelReflection} == $B{true}",
@@ -1167,8 +635,8 @@
     "cNextQuestions" : [
       {
         "if" : "${taskGoalsSetToday} == $B{true}",
-        "then" : "Intervention.askReflectTaskGoals",
-        "else" : "Intervention.checkDone"
+        "then" : "Int-Reflection.askReflectTaskGoals",
+        "else" : "Int-Reflection.checkDone"
       }
     ],
     "reminder" : {

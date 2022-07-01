@@ -1,0 +1,37 @@
+[
+  {
+    "name" : "Onboarding",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  },
+  {
+    "name" : "Pre-Test",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  },
+  {
+    "name" : "Goal-Setting",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "lengthDays" : 7
+  },
+  {
+    "name" : "Pre-Test-2",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  },
+  {
+    "name" : "Intervention",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "lengthDays" : 7
+  },
+  {
+    "name" : "Post-Test",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  },
+  {
+    "name" : "Pause",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "lengthDays" : 7
+  },
+  {
+    "name" : "Follow-Up",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  }
+]

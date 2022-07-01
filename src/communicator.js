@@ -59,7 +59,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
     question.text = substituteVariables(participant, question.text, false);
 
     // Attempt to send an image
-    if(question.image){
+    if(question.image && question.image.sourceType){
         let imageValidationObj = await ExperimentUtils.validateImageSource(question.image);
         if(imageValidationObj.returnCode === DevConfig.FAILURE_CODE){
             console.log(imageValidationObj.data);

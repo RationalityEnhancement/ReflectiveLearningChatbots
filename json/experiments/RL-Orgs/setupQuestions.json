@@ -1,0 +1,167 @@
+[
+  {
+    "qId" : "langQuestion",
+    "text" : {
+      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo ${FIRST_NAME}! :wave:\n\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
+      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo ${FIRST_NAME}! :wave:\n\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["English", "Deutsch"],
+      "Deutsch" : ["English", "Deutsch"]
+    },
+    "nextActions" : [{
+      "aType" : "saveAnswerTo",
+      "args" : ["language"]
+    }],
+    "nextQuestion" : "setupQuestions.interactionInstructions",
+    "replyMessages" : {
+      "English" : ["Thank you for choosing your language"],
+      "Deutsch": ["Danke, dass Sie eine Sprache ausgewählt haben."]
+    },
+    "start" : true
+  },
+  {
+    "qId" : "interactionInstructions",
+    "qType" : "dummy",
+    "nextQuestion" : "setupQuestions.continueFromInstructions",
+    "replyMessages" : {
+      "English" : ["Before we move forward, I want to explain to you how you can interact with me!", "Typically, you can only talk to me when I ask you a question. The answers that I request from you can be of various types, including typing out messages, inputting numbers, and selecting from given choices, among others. To help you understand how to answer, I will send you a message after each question telling you how to respond - look out for these!\n\nIf you need me to repeat a question before you have had the chance to submit a complete answer, just send /repeat, and I will ask the question again! Keep in mind that you will have to <b>enter your full answer from the beginning after I repeat the question</b>\n\nI will ask you questions either at different points during the day, or right after you have answered another question. So, please bear with me to answer all the questions until I tell you that we are finished!\n\nIf you don't answer certain questions, I will also send you periodic reminders for you to answer them, so that you can move on with the next steps."],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
+    }
+  },
+  {
+    "qId" : "continueFromInstructions",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Click <i>Continue</i> when you are ready to move on!",
+      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
+    },
+    "inputPrompt" : {
+      "English" : "(Hint: send /repeat if the <i>Continue</i> button is no longer visible.)",
+      "Deutsch" : "(Tipp: senden Sie /repeat, wenn die <i>Weiter</i>-Taste nicht mehr sichtbar ist.)"
+    },
+    "nextQuestion" : "setupQuestions.pIdQuestion",
+    "options": {
+      "English" : ["Continue"],
+      "Deutsch" : ["Weiter"]
+    }
+  },
+  {
+    "qId": "pIdQuestion",
+    "text": {
+      "English": "Please enter your team's name as provided to you.",
+      "Deutsch": "Bitte geben Sie den Namen Ihres Teams ein, der Ihnen verteilt wurde."
+    },
+    "qType": "freeform",
+    "replyMessages": {
+      "English": [
+        "Thank you, team name has been registered"
+      ],
+      "Deutsch": [
+        "Danke, Teilnehmer-ID ist erfasst worden"
+      ]
+    },
+    "answerShouldBe" : ["ControlLeader", "ShallowLeader", "MCLeader", "ControlFollower", "ShallowFollower", "MCFollower"],
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["PID"]
+      }
+    ],
+    "nextQuestion": "setupQuestions.timezoneQuestion"
+
+  },
+  {
+    "qId": "timezoneQuestion",
+    "text": {
+      "English": "Which time zone are you currently in?",
+      "Deutsch": "In welcher Zeitzone befinden Sie sich jetzt?"
+    },
+    "qType": "singleChoice",
+    "options": {
+      "English": [
+        "Europe/Berlin",
+        "US/Pacific",
+        "US/Mountain",
+        "US/Central",
+        "US/Eastern"
+      ],
+      "Deutsch": [
+        "Europe/Berlin",
+        "US/Pacific",
+        "US/Mountain",
+        "US/Central",
+        "US/Eastern"
+      ]
+    },
+    "replyMessages": {
+      "English": [
+        "Thank you, time zone has been registered."
+      ],
+      "Deutsch": [
+        "Danke, Zeitzone ist erfasst worden"
+      ]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["timezone"]
+      }],
+    "nextQuestion" : "setupQuestions.goalSetTime"
+  },
+  {
+    "qId" : "goalSetTime",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nAt which of the following times would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
+      "Deutsch" : "In einigen Phasen des Experiments, werden Sie morgens vor der Arbeit danach gefragt, sich Ziele zu setzen. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
+    },
+    "options" : {
+      "English" : ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00"],
+      "Deutsch" : ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00"]
+    },
+    "replyMessages" : {
+      "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
+      "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["morningTime"]
+      }
+    ],
+    "nextQuestion" : "setupQuestions.reflectionTime"
+  },
+  {
+    "qId" : "reflectionTime",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set the same morning.\n\nAt which of the following times would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
+      "Deutsch" : "In einigen Phasen des Experiments, werden Sie abends nach der Arbeit dazu aufgefordert, über Ihre Ziele zu reflektieren, die Sie sich am selben Morgen gesetzt haben. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
+    },
+    "options" : {
+      "English" : ["16:00", "17:00", "18:00", "19:00", "20:00", "21:00"],
+      "Deutsch" : ["16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
+    },
+    "replyMessages" : {
+      "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
+      "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["eveningTime"]
+      },
+      {
+        "aType" : "assignToCondition"
+      },
+      { "aType" : "scheduleQuestions" },
+      {
+        "aType" : "startStage",
+        "args" : ["Onboarding"]
+      }
+    ],
+    "nextQuestion" : "Onboarding.survey"
+  }
+]

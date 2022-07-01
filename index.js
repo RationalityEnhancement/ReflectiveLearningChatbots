@@ -35,7 +35,6 @@ const SKIP_TO_STAGE = {};
 const qHandler = new QuestionHandler(config);
 const bot = new Telegraf(BOT_TOKEN);
 
-
 //----------------------
 //--- database setup ---
 //----------------------
@@ -462,7 +461,8 @@ bot.start(async ctx => {
             uniqueId = await idMaps.generateUniqueId(config.experimentId);
             await idMaps.addIDMapping(config.experimentId, ctx.from.id, uniqueId);
         } catch(err){
-            await handleError({}, 'Unable to generate a new ID for participant!\n' +err);
+            await handleError({}, 'Unable to generate a new ID for participant!\n'
+                + err.message + '\n' + err.stack);
             console.log('Unable to generate a new ID for participant!');
             console.error(err);
         }
@@ -482,7 +482,8 @@ bot.start(async ctx => {
       // Use the new participant henceforth
       participant = await participants.get(uniqueId);
     } catch(err){
-        await handleError({}, 'Failed to initialize new participant\n'+err)
+        await handleError({}, 'Failed to initialize new participant\n'
+            + err.message + '\n' + err.stack)
       console.log('Failed to initialize new participant');
       console.error(err);
     }
@@ -506,7 +507,8 @@ bot.start(async ctx => {
           throw returnObj.data;
       }
     } catch(err){
-        await handleError(participant, "Failed to send language question\n" + err);
+        await handleError(participant, "Failed to send language question\n"
+            + err.message + '\n' + err.stack);
       console.log('Failed to send language question');
       console.error(err);
     }

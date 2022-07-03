@@ -125,7 +125,7 @@
   {
     "qId" : "relImpact",
     "text" : {
-      "English" : "All in all, how did your social interactions  today impact the working atmosphere of your team?\n",
+      "English" : "All in all, how did your social interactions today impact the working atmosphere of your team?\n",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",
@@ -153,6 +153,13 @@
         "then" : {
           "English" : ["I see, that's interesting."],
           "Deutsch" : ["Ich verstehe."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{5}",
+        "then" : {
+          "English" : ["That's amazing!"],
+          "Deutsch" : ["Toll!"]
         }
       }
     ],
@@ -189,7 +196,7 @@
         }
       }
     ],
-    "cNextQuestion" : [
+    "cNextQuestions" : [
       {
         "if" : "${STAGE_DAY} == $N{1}",
         "then" : "Int-Reflection.day1RelPursuit",
@@ -346,8 +353,28 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Int-Reflection.relHowImprove",
-        "else" : "Int-Reflection.relPlan"
+        "then" : "Int-Reflection.relHowImprove"
+      },
+      {
+        "if" : "${STAGE_DAY} == $N{1}",
+        "then" : "Int-Reflection.relPlan",
+        "else" : "Int-Reflection.checkTaskReflection"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}) AND (${STAGE_DAY} != $N{1})",
+        "then" : {
+          "English" : "We're done with your reflection goals for today.",
+          "Deutsch" : "Übersetzung nicht verfügbar."
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Congratulations on choosing to learn and improve!"],
+          "Deutsch" : ["Gratulation, dass Sie Lernen und Verbesserung gewählt haben!"]
+        }
       }
     ],
     "reminder" : {
@@ -358,8 +385,8 @@
   {
     "qId" : "relHowImprove",
     "text" : {
-      "English" : "Congratulations on choosing to learn and improve! What would you like to improve about your goal-setting process?",
-      "Deutsch" : "Gratulation, dass Sie Lernen und Verbesserung gewählt haben. Was möchten Sie an Ihrer Zielsetzungsprozedur verbessern?"
+      "English" : "What would you like to improve about your goal-setting process?",
+      "Deutsch" : "Was möchten Sie an Ihrer Zielsetzungsprozedur verbessern?"
     },
     "qType" : "freeform",
     "replyMessages" : {
@@ -421,11 +448,55 @@
         ]
       }
     ],
-    "cNextQuestions" : [
+    "cReplyMessages" : [
       {
-        "if" : "${taskGoalsSetToday} == $B{true}",
-        "then" : "Int-Reflection.askReflectTaskGoals",
-        "else" : "Int-Reflection.checkDone"
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Will do!"],
+          "Deutsch" : ["Abgemacht!"]
+        }
+      }
+    ],
+    "nextQuestion" : "Int-Reflection.checkTaskReflection",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+
+  {
+    "qId" : "dayNRelPursuit",
+    "text" : {
+      "English" : "Setting aside the outcomes and the content of your goals to improve your workplace relationships/atmosphere for a moment, <b>how much more or less</b> are you satisfied with <b>the way in which you pursued your goals</b> today than the last time you set relationship goals?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Much less satisfied", "Less satisfied", "Equally satisfied", "More satisfied", "Much more satisfied"],
+      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+    },
+    "nextQuestion" : "Int-Reflection.dayNRelRelevance",
+    "cReplyMessages":  [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : {
+          "English" : ["That's alright."],
+          "Deutsch" : ["Das tut mir leid."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : {
+          "English" : ["I'm happy to hear that!"],
+          "Deutsch" : ["Es freut mich zu hören!"]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : {
+          "English" : ["I see."],
+          "Deutsch" : ["Ich verstehe."]
+        }
       }
     ],
     "reminder" : {
@@ -433,7 +504,294 @@
       "numRepeats" : 4
     }
   },
+  {
+    "qId" : "dayNRelRelevance",
+    "text" : {
+      "English" : "Compared to your most recent previous relationship goals, <b>how much more/less relevant were the goals you pursued today</b> to improving your workplace relationships/atmosphere?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Much less relevant", "Less relevant", "Equally relevant", "More relevant", "Much more relevant"],
+      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+    },
+    "nextQuestion" : "Int-Reflection.dayNRelMetaDescription",
+    "cReplyMessages":  [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : {
+          "English" : ["It's okay."],
+          "Deutsch" : ["Das tut mir leid."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : {
+          "English" : ["That's great!"],
+          "Deutsch" : ["Es freut mich zu hören!"]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : {
+          "English" : ["Interesting."],
+          "Deutsch" : ["Ich verstehe."]
+        }
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["goalsMoreRelevant", "$B{False}"]
+          },
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["goalsEquallyRelevant", "$B{False}"]
+          }
+        ]
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["goalsMoreRelevant", "$B{True}"]
+          },
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["goalsEquallyRelevant", "$B{False}"]
+          }
+        ]
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["goalsMoreRelevant", "$B{False}"]
+          },
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["goalsEquallyRelevant", "$B{True}"]
+          }
+        ]
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" :  "dayNRelMetaDescription",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Let's take a step back and think about where those goals came from.\n\nDid you change your approach to setting goals for improving your working climate since the last time we talked about it? \n",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "options" : {
+      "English": ["Yes", "No"],
+      "Deutsch": ["Ja", "Nein"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : "Int-Reflection.dayNRelWhatChanged",
+        "else" : "Int-Reflection.dayNRelCanYouImprove"
+      }
+    ]
+  },
+  {
+    "qId" : "dayNRelWhatChanged",
+    "qType" : "multiChoice",
+    "text" : {
+      "English" : "What did you change? Please select one or more of the following options.\n\n(1) <i>I took a more deliberate/reflective approach to goal setting this time.</i>\n\n(2) <i>I took a more intuitive approach.</i>\n\n(3) <i>This time, I thought about my goals more concretely than last time and/or made a more detailed plan for how and/or when to achieve them.</i>\n\n(4) <i>This time, I explicitly thought about what the main problems/challenges with our working atmosphere are and how they can be addressed.</i>\n\n(5) <i>This time, I asked myself what I could do to make my colleagues feel safe to express disagreement and negative emotion.</i>\n\n(6) <i>This time, I asked myself what I could do to make my colleagues feel valued and appreciated for their unique perspectives.</i>\n\n(7) <i>This time, I asked myself what we could change to include more people in my team's activities and decisions.</i>\n\n(8) <i>This time, I thought about whether anyone on my team might sometimes feel that they don't belong and what I could do to help them.</i>\n\n(9) <i>This time, I thought about everyone on my team and not just the people I like the most.</i>\n\n(10) Other (I want to type my own answer)",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "inputPrompt" : {
+      "English" : "Select one or more of the above numbered statements that you agree with. <b>Remember to click <i>Done</i> after you are finished selecting.</b>",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "options" : {
+      "English" : ["1","2","3","4","5","6","7","8","9","10"],
+      "Deutsch" : ["1","2","3","4","5","6","7","8","9","10"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{9}",
+        "then" : "Int-Reflection.dayNRelOtherChange",
+        "else" : "Int-Reflection.dayNRelSelectChangeQuestion"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{9}) != $B{True}",
+        "then" : {
+          "English" : ["Good that you can notice the differences in your strategy!"],
+          "Deutsch" : ["Übersetzung nicht verfügbar"]
+        }
+      }
+    ]
 
+  },
+  {
+    "qId" : "dayNRelOtherChange",
+    "qType" : "freeform",
+    "text" : {
+      "English" : "Above, you mentioned that you would like to type in your own answer. What other change did you make in your approach to goal-setting for relationships since the last time?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "replyMessages" : {
+      "English" : ["Good that you can notice the differences in your strategy!"],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
+    },
+    "nextQuestion" : "Int-Reflection.dayNRelSelectChangeQuestion"
+  },
+  {
+    "qId" : "dayNRelSelectChangeQuestion",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if" : "${goalsMoreRelevant} == $B{true}",
+        "then" : "Int-Reflection.dayNRelChangeMoreRelevant"
+      },
+      {
+        "if" : "${goalsEquallyRelevant} == $B{true}",
+        "then" : "Int-Reflection.dayNRelChangeEquallyRelevant",
+        "else" : "Int-Reflection.dayNRelChangeLessRelevant"
+      }
+    ]
+  },
+  {
+    "qId" : "dayNRelChangeMoreRelevant",
+    "qType" : "freeform",
+    "text" : {
+      "English" : "Which of those changes that you did or did not make might have been a major reason for why your goals were more relevant to improving your workplace relationships/atmosphere this time?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "nextQuestion" : "Int-Reflection.relImproveGoalSetting"
+  },
+  {
+    "qId" : "dayNRelChangeLessRelevant",
+    "qType" : "freeform",
+    "text" : {
+      "English" : "Which of those changes that you did or did not make might have been a major reason for why your goals were less relevant to improving your workplace relationships/atmosphere this time?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "nextQuestion" : "Int-Reflection.relImproveGoalSetting"
+  },
+  {
+    "qId" : "dayNRelChangeEquallyRelevant",
+    "qType" : "freeform",
+    "text" : {
+      "English" : "Why do you think your goals did not increase or decrease in relevance despite these changes?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "nextQuestion" : "Int-Reflection.relImproveGoalSetting"
+  },
+  {
+    "qId" : "dayNRelCanYouImprove",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Do you think it is possible that your approach to goal setting for improving workplace relationships/atmosphere could be improved further?",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "options" : {
+      "English" : ["Yes", "No", "Maybe"],
+      "Deutsch" : ["Ja", "Nein", "Vielleicht"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : "Int-Reflection.checkTaskReflection",
+        "else" : "Int-Reflection.dayNRelChangeIdeas"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : {
+          "English" : ["Alright, sounds like you think your current strategy is already working really well for you."],
+          "Deutsch" : ["Übersetzung nicht verfügbar."]
+        }
+      }
+    ]
+  },
+  {
+    "qId" : "dayNRelChangeIdeas",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Interesting! Tell me more! Do you already have concrete ideas for things you want to try?",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "options" : {
+      "English" : ["YES, I already know what I want to do", "NO, I am not sure yet, do you have any suggestions?"],
+      "Deutsch" : ["Ja", "Nein"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : "Int-Reflection.relHowImprove",
+        "else" : "Int-Reflection.dayNRelChangeSuggestions"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Great! Please tell me more!"],
+          "Deutsch" : ["Toll! Erzählen Sie doch mehr!"]
+        }
+      }
+    ]
+  },
+  {
+    "qId" : "dayNRelChangeSuggestions",
+    "qType" : "freeform",
+    "text" : {
+      "English" : "Ok, here are some suggestions for changes you can make to your goal-setting. Feel free to use these as inspiration for your resolution, or enter another idea that you thought about.\n\n* <i>Think more concretely about what you personally want to do when and with whom.</i>\n\n* <i>Think about what the main problems/challenges with our working atmosphere are and how they can be addressed.</i>\n\n* <i>Ask yourself what you can do to make your colleagues feel safe to express disagreement and negative emotion.</i>\n\n* <i>Ask yourself what you can do to make your colleagues feel valued and appreciated for their unique perspectives.</i>\n\n* <i>Ask yourself what you can change to help your colleagues feel included in your team's activities and decisions.</i>\n\n* <i> Ask yourself whether anyone on your team might sometimes feel that they don't belong and what I could do to help them feel more included.</i>",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "nextQuestion" : "Int-Reflection.relPlanRemember",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["relIntention"]
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["Good thinking!"],
+      "Deutsch" : ["Gut mitgedacht!"]
+    }
+  },
+
+  {
+    "qId" : "checkTaskReflection",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if": "${taskGoalsSetToday} == $B{true}",
+        "then" : "Int-Reflection.askReflectTaskGoals",
+        "else" : "Int-Reflection.checkDone"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if": "${taskGoalsSetToday} != $B{true}",
+        "then": {
+          "English": [
+            "Okay, that's all for today."
+          ],
+          "Deutsch": [
+            "OK, das war es für heute."
+          ]
+        }
+      }
+    ]
+  },
   {
     "qId" : "checkDone",
     "qType" : "dummy",
@@ -624,8 +982,8 @@
   {
     "qId" : "impact",
     "text" : {
-      "English" : "All in all, the amount of value I created for my projects, my team, and my organization today was ...",
-      "Deutsch" : "Alles in allem, wie zufrieden sind Sie damit, was Sie heute erzielt haben?"
+      "English" : "Select the word that you feel best completes this sentence:\n\n<i>All in all, the amount of value I created for my projects, my team, and my organization today was ...</i>",
+      "Deutsch" : "Übersetzung nicht verfügbar?"
     },
     "qType" : "singleChoice",
     "options" : {

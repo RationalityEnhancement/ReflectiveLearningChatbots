@@ -56,10 +56,10 @@
     "qType": "freeform",
     "replyMessages": {
       "English": [
-        "Thank you, team name has been registered"
+        "Thank you, team name has been registered."
       ],
       "Deutsch": [
-        "Danke, Teilnehmer-ID ist erfasst worden"
+        "Danke, Teilnehmer-ID ist erfasst worden."
       ]
     },
     "answerShouldBe" : ["ControlLeader", "ShallowLeader", "MCLeader", "ControlFollower", "ShallowFollower", "MCFollower"],

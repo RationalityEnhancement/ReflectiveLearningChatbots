@@ -202,7 +202,7 @@
       "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
       "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
     },
-    "nextQuestion" : "Int-Reflection.relDecisionSatisfaction",
+    "nextQuestion" : "Int-Reflection.relRelevance",
     "cReplyMessages":  [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
@@ -232,14 +232,14 @@
     }
   },
   {
-    "qId" : "relDecisionSatisfaction",
+    "qId" : "relRelevance",
     "text" : {
-      "English" : "Now, setting aside how you pursued your goals and what the outcomes were, how satisfied are you with your <b>decision about which goals to set those goals</b> for improving your workplace relationships/atmosphere?",
-      "Deutsch" : "Also, abgesehen davon, wie Sie Ihren Zielen nachgegangen sind, wie zufrieden sind Sie mit <b>der Entscheidung dazu, an welchen Zielen Sie heute arbeiten</b>?"
+      "English" : "Now, setting aside how you pursued your goals and what the outcomes were, <b>how relevant were the goals you pursued today</b> to the improvement of your workplace relationships/atmosphere?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",
     "options" : {
-      "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
+      "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very relevant"],
       "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
     },
     "nextQuestion" : "Int-Reflection.relPlan",

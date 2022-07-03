@@ -110,7 +110,7 @@ let handleError = async (participant, errorString) => {
 
 // "handle" errors
 bot.catch((err, ctx) => {
-  console.error(`Encountered an error for ${ctx.updateType}\n.`, err);
+  console.error(`\nEncountered an error for ${ctx.updateType}\n.`, err);
 });
 
 // Log the current participant

@@ -554,8 +554,8 @@
           "Deutsch" : ["Glückwunsch, dass Sie das Ende dieser Phase erreicht haben!", "Jetzt haben wir noch eine Runde Umfragen."]
         },
         "else" : {
-          "English" : ["Alright, see you tomorrow!"],
-          "Deutsch" : ["Alles klar, bis morgen!"]
+          "English" : ["Thank you for sharing. See you tomorrow!"],
+          "Deutsch" : ["Danke fürs Mitteilen. Bis morgen!"]
         }
       }
     ],

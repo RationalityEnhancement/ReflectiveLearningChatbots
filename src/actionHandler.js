@@ -382,7 +382,9 @@ let processAction = async(bot, config, participant, actionObj) => {
 
             // Process only if target variable is boolean type
             if(bParamType !== DevConfig.OPERAND_TYPES.BOOLEAN){
-                return ReturnMethods.returnFailure("ActHandler: Can save boolean only to boolean param")
+                return ReturnMethods.returnFailure(
+                    "ActHandler: Can save boolean only to boolean param. Variable "
+                    + bVarName + " is type " + bParamType)
             }
 
 

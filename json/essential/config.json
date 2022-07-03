@@ -38,6 +38,8 @@
     "taskProgressReportedOnce" : "boolean",
     "lastReportedRelProgress" : "number",
     "relProgressReportedOnce" : "boolean",
+    "goalsMoreRelevant" : "boolean",
+    "goalsEquallyRelevant" : "boolean",
     "dontAskInfoAgain" : "boolean",
     "dontAskExampleAgain" : "boolean",
     "morningTime" : "string",

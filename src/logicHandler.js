@@ -62,7 +62,21 @@ let processNextSteps = async(bot, uniqueId) => {
             + "\n"+ replyMessagesObj.data
         );
     }
-    await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, !config.debug.messageDelay);
+
+    // Try to send replies
+    for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
+        try{
+            await Communicator.sendReplies(bot, participant, secretMap.chatId, replyMessagesObj.data, !config.debug.messageDelay);
+            break;
+        } catch(e){
+            if(i === DevConfig.SEND_MESSAGE_ATTEMPTS - 1){
+                return ReturnMethods.returnFailure("LHandler: Unable to send replies:\n" +
+                e.message + "\n" + e.stack)
+            }
+        }
+    }
+
+
 
     let nextQuestionObj;
 
@@ -217,7 +231,16 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
     await AnswerHandler.handleNoResponse(participant.uniqueId);
 
 
-    await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
+    for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
+        try{
+            await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
+            break;
+        } catch(e){
+            return ReturnMethods.returnFailure("LHandler: Unable to send question:\n"
+            + e.message + "\n" + e.stack)
+        }
+    }
+
 
     if(question.reminder && question.reminder["freqMins"]){
         let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,

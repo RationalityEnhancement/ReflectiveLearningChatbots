@@ -663,7 +663,10 @@ class ScheduleHandler{
                     }
                 }
                 if(evaluation){
-                    await sendQuestion(bot, newParticipant, chatId, question, !config.debug.messageDelay);
+                   let returnObj = await sendQuestion(bot, newParticipant, chatId, question, !config.debug.messageDelay);
+                   if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                       console.log("Scheduler: Error sending question:\n" + returnObj.data);
+                   }
                 }
             })
             // Add to local store and if necessary, to DB

@@ -116,7 +116,7 @@
     },
     "qType" : "freeformMulti",
     "nextQuestion" : "Int-Reflection.relImpact",
-    "minLengthWords" : 5,
+    "minLengthWords" : 4,
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -295,7 +295,7 @@
       "Deutsch" : "Beschreiben Sie die Denkweise, die Sie dazu geführt haben, sich die Ziele zu setzen, die Sie heute gewählt haben."
     },
     "qType" : "freeformMulti",
-    "minLengthWords" : 10,
+    "minLengthWords" : 5,
     "replyMessages" : {
       "English" : ["Thanks for sharing."],
       "Deutsch" : ["Danke, dass Sie das mit mir mitteilen."]
@@ -973,7 +973,7 @@
     },
     "qType" : "freeformMulti",
     "nextQuestion" : "Int-Reflection.impact",
-    "minLengthWords" : 5,
+    "minLengthWords" : 4,
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -1145,7 +1145,7 @@
       "Deutsch" : "Beschreiben Sie die Denkweise, die Sie dazu geführt haben, sich die Ziele zu setzen, die Sie heute gewählt haben."
     },
     "qType" : "freeformMulti",
-    "minLengthWords" : 10,
+    "minLengthWords" : 5,
     "replyMessages" : {
       "English" : ["Thanks for sharing."],
       "Deutsch" : ["Danke, dass Sie das mit mir mitteilen."]

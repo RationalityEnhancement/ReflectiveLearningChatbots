@@ -307,6 +307,7 @@ bot.command('next', async ctx => {
 
                 let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, !config.debug.messageDelay);
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
+                    await handleError(participant, returnObj.data);
                     throw returnObj.data;
                 }
                 if(onlyAction){
@@ -330,6 +331,7 @@ bot.command('next', async ctx => {
                 }
                 let returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
+                    await handleError(participant, returnObj.data)
                     throw returnObj.data;
                 }
                 if(config.debug.actionMessages){
@@ -503,6 +505,7 @@ bot.start(async ctx => {
     try{
       let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, !config.debug.messageDelay);
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+          await handleError(participant, returnObj.data)
           throw returnObj.data;
       }
     } catch(err){
@@ -626,3 +629,6 @@ ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
   }
 });
 
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'))
+process.once('SIGTERM', () => bot.stop('SIGTERM'))

@@ -112,7 +112,7 @@
     },
     "qType" : "freeformMulti",
     "nextQuestion" : "Int-Reflection.relImpact",
-    "minLengthWords" : 5,
+    "minLengthWords" : 4,
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -488,7 +488,7 @@
     },
     "qType" : "freeformMulti",
     "nextQuestion" : "Int-Reflection.impact",
-    "minLengthWords" : 5,
+    "minLengthWords" : 4,
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4

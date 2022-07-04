@@ -74,5 +74,6 @@
   "DEFAULT_TOP_STRINGS_COUNT" : 3,
   "RECURSION_MAX_DEPTH" : 20,
   "VALID_IMAGE_SOURCE_TYPES" : ["local", "url"],
-  "VALID_IMAGE_EXTENSIONS" : [".jpg", ".jpeg", ".png"]
+  "VALID_IMAGE_EXTENSIONS" : [".jpg", ".jpeg", ".png"],
+  "SEND_MESSAGE_ATTEMPTS" : 2
 }

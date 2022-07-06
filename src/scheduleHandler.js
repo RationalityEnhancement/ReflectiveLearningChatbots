@@ -179,7 +179,7 @@ class ScheduleHandler{
 
     /**
      *
-     * Reschedule all operations by fetching all scheduled operations
+     * Reschedule all operations for the current experiment by fetching all scheduled operations
      * from DB for each participant
      *
      * @param bot Telegram bot instance
@@ -193,6 +193,9 @@ class ScheduleHandler{
         // Loop through all participants
         for(let i = 0; i < allParticipants.length; i++){
             let curPart = allParticipants[i];
+
+            // Only reschedule for the given experiment
+            if(curPart.experimentId !== config.experimentId) continue;
 
             // Call the function to reschedule all operations for a given participant
             let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.uniqueId, config);

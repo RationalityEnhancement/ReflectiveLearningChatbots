@@ -1,0 +1,177 @@
+{
+  "experimentName" : "Keyboard Test",
+  "experimentId" : "KeyTest",
+  "experimentLengthWeeks" : 4,
+  "msPerCharacterDelay" : 5,
+  "experimentStages" : [
+    {
+      "name" : "Test"
+    }
+  ],
+  "mandatoryParameters" : {
+    "language" : "string",
+    "timezone" : "string",
+    "PID" : "string"
+  },
+  "customParameters" : {
+    "testStrArr" : "strArr",
+    "testBool" : "boolean",
+    "testNum" : "number",
+    "testNumArr" : "numArr"
+  },
+  "debug" : {
+    "experimenter" : true,
+    "actionMessages" : true,
+    "enableNext" : true,
+    "messageDelay" : false,
+    "developer" : false
+  },
+  "languages" : ["English"],
+  "defaultLanguage" : "English",
+  "phrases" : "$F{json/experiments/RL-Orgs/phrases.json}",
+  "questionCategories": {
+    "setupQuestions": [
+      {
+        "qId" : "normalEvenSingle",
+        "start" : true,
+        "text" : {
+          "English" : "Normal keyboard even single"
+        },
+        "qType" : "singleChoice",
+        "options" : {
+          "English" : ["1","2","3","4","5","6"]
+        },
+        "nextQuestion" : "setupQuestions.normalOddSingle"
+      },
+      {
+        "qId" : "normalOddSingle",
+        "text" : {
+          "English" : "Normal keyboard odd single"
+        },
+        "qType" : "singleChoice",
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7"]
+        },
+        "nextQuestion" : "setupQuestions.twoColOddSingle"
+      },
+      {
+        "qId" : "twoColOddSingle",
+        "text" : {
+          "English" : "Two-column keyboard odd single"
+        },
+        "qType" : "singleChoice",
+        "buttonLayoutCols" : 2,
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7"]
+        },
+        "nextQuestion" : "setupQuestions.twoColEvenSingle"
+      },
+      {
+        "qId" : "twoColEvenSingle",
+        "text" : {
+          "English" : "Two-column keyboard even single"
+        },
+        "qType" : "singleChoice",
+        "buttonLayoutCols" : 2,
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7","8"]
+        },
+        "nextQuestion" : "setupQuestions.threeColEvenSingle"
+      },
+      {
+        "qId" : "threeColEvenSingle",
+        "text" : {
+          "English" : "Three column keyboard even single"
+        },
+        "qType" : "singleChoice",
+        "buttonLayoutCols" : 3,
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7","8"]
+        },
+        "nextQuestion" : "setupQuestions.horizontalSingle"
+      },
+      {
+        "qId" : "horizontalSingle",
+        "text" : {
+          "English" : "Horizontal single"
+        },
+        "qType" : "singleChoice",
+        "buttonLayoutCols" : 8,
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7","8"]
+        },
+        "nextQuestion" : "setupQuestions.normalEvenMulti"
+      },
+      {
+        "qId" : "normalEvenMulti",
+        "start" : true,
+        "text" : {
+          "English" : "Normal keyboard even multi"
+        },
+        "qType" : "multiChoice",
+        "options" : {
+          "English" : ["1","2","3","4","5","6"]
+        },
+        "nextQuestion" : "setupQuestions.normalOddMulti"
+      },
+      {
+        "qId" : "normalOddMulti",
+        "text" : {
+          "English" : "Normal keyboard odd multi"
+        },
+        "qType" : "multiChoice",
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7"]
+        },
+        "nextQuestion" : "setupQuestions.twoColOddMulti"
+      },
+      {
+        "qId" : "twoColOddMulti",
+        "text" : {
+          "English" : "Two-column keyboard odd multi"
+        },
+        "qType" : "multiChoice",
+        "buttonLayoutCols" : 2,
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7"]
+        },
+        "nextQuestion" : "setupQuestions.twoColEvenMulti"
+      },
+      {
+        "qId" : "twoColEvenMulti",
+        "text" : {
+          "English" : "Two-column keyboard even multi"
+        },
+        "qType" : "multiChoice",
+        "buttonLayoutCols" : 2,
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7","8"]
+        },
+        "nextQuestion" : "setupQuestions.threeColEvenMulti"
+      },
+      {
+        "qId" : "threeColEvenMulti",
+        "text" : {
+          "English" : "Three column keyboard even multi"
+        },
+        "qType" : "multiChoice",
+        "buttonLayoutCols" : 3,
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7","8"]
+        },
+        "nextQuestion" : "setupQuestions.horizontalMulti"
+      },
+      {
+        "qId" : "horizontalMulti",
+        "text" : {
+          "English" : "Horizontal multi"
+        },
+        "qType" : "multiChoice",
+        "buttonLayoutCols" : 8,
+        "options" : {
+          "English" : ["1","2","3","4","5","6","7","8"]
+        }
+      }
+    ]
+  }
+}

@@ -154,7 +154,15 @@ class AnswerHandler{
         }
         // Process an answer only if an answer is expected
         if(!["awaitingAnswer"].includes(participant.currentState)){
-            return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
+            try{
+                return ReturnMethods.returnPartialFailure(
+                    config.phrases.experiment.cannotInteract[participant.parameters.language],
+                    DevConfig.NO_RESPONSE_STRING
+                );
+            } catch(err){
+                return ReturnMethods.returnFailure("AHandler: Unable to send cannot interact message\n" +
+                err.message + "\n" + err.stack)
+            }
         }
 
         // If answer is not string

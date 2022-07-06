@@ -762,7 +762,6 @@ bot.on('text', async ctx => {
             await handleError(participant, nextStepsObj.data);
             throw nextStepsObj.data;
         }
-
       }
       break;
 

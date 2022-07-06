@@ -161,6 +161,10 @@
     "cannotHelp" : {
       "English" : "Sorry, I cannot help you any further at this moment!",
       "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht weiter helfen!"
+    },
+    "cannotInteract" : {
+      "English" : "Sorry, I cannot respond to you at this moment! Please wait for the next time that I ask you a question to talk to me. Send <i>/help</i> if you would like more information on how to interact with me.",
+      "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht antworten! Bitte warten Sie auf meine nächste Frage, um mit mir zu reden. Senden Sie <i>/help</i>, wenn Sie mehr Informationen dazu möchten, wie mit mir zu interagieren ist."
     }
   }
 }

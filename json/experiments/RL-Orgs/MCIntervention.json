@@ -602,7 +602,11 @@
         "then" : "Int-Reflection.dayNRelWhatChanged",
         "else" : "Int-Reflection.dayNRelCanYouImprove"
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNRelWhatChanged",
@@ -634,7 +638,11 @@
           "Deutsch" : ["Übersetzung nicht verfügbar"]
         }
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
 
   },
   {
@@ -663,7 +671,11 @@
         "then" : "Int-Reflection.dayNRelChangeEquallyRelevant",
         "else" : "Int-Reflection.dayNRelChangeLessRelevant"
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNRelChangeMoreRelevant",
@@ -672,7 +684,11 @@
       "English" : "Which of those changes that you did or did not make might have been a major reason for why your goals were more relevant to improving your workplace relationships/atmosphere this time?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
-    "nextQuestion" : "Int-Reflection.relImproveGoalSetting"
+    "nextQuestion" : "Int-Reflection.relImproveGoalSetting",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNRelChangeLessRelevant",
@@ -681,7 +697,11 @@
       "English" : "Which of those changes that you did or did not make might have been a major reason for why your goals were less relevant to improving your workplace relationships/atmosphere this time?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
-    "nextQuestion" : "Int-Reflection.relImproveGoalSetting"
+    "nextQuestion" : "Int-Reflection.relImproveGoalSetting",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNRelChangeEquallyRelevant",
@@ -690,7 +710,11 @@
       "English" : "Why do you think your goals did not increase or decrease in relevance despite these changes?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
-    "nextQuestion" : "Int-Reflection.relImproveGoalSetting"
+    "nextQuestion" : "Int-Reflection.relImproveGoalSetting",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNRelCanYouImprove",
@@ -718,7 +742,11 @@
           "Deutsch" : ["Übersetzung nicht verfügbar."]
         }
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNRelChangeIdeas",
@@ -746,7 +774,11 @@
           "Deutsch" : ["Toll! Erzählen Sie doch mehr!"]
         }
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNRelChangeSuggestions",
@@ -765,6 +797,10 @@
     "replyMessages" : {
       "English" : ["Good thinking!"],
       "Deutsch" : ["Gut mitgedacht!"]
+    },
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
     }
   },
 
@@ -1492,7 +1528,11 @@
         "then" : "Int-Reflection.dayNWhatChanged",
         "else" : "Int-Reflection.dayNCanYouImprove"
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNWhatChanged",
@@ -1524,7 +1564,11 @@
           "Deutsch" : ["Übersetzung nicht verfügbar"]
         }
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
 
   },
   {
@@ -1538,7 +1582,11 @@
       "English" : ["Good that you can notice the differences in your strategy!"],
       "Deutsch" : ["Übersetzung nicht verfügbar"]
     },
-    "nextQuestion" : "Int-Reflection.dayNSelectChangeQuestion"
+    "nextQuestion" : "Int-Reflection.dayNSelectChangeQuestion",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNSelectChangeQuestion",
@@ -1562,7 +1610,11 @@
       "English" : "Which of those changes that you did or did not make might have been a major reason for why your goals were more relevant to the long-term goals of your project(s) this time?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
-    "nextQuestion" : "Int-Reflection.improveGoalSetting"
+    "nextQuestion" : "Int-Reflection.improveGoalSetting",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNChangeLessRelevant",
@@ -1571,7 +1623,11 @@
       "English" : "Which of those changes that you did or did not make might have been a major reason for why your goals were less relevant to the long-term goals of your project(s) this time?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
-    "nextQuestion" : "Int-Reflection.improveGoalSetting"
+    "nextQuestion" : "Int-Reflection.improveGoalSetting",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNChangeEquallyRelevant",
@@ -1580,7 +1636,11 @@
       "English" : "Why do you think your goals did not increase or decrease in relevance despite these changes?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
-    "nextQuestion" : "Int-Reflection.improveGoalSetting"
+    "nextQuestion" : "Int-Reflection.improveGoalSetting",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNCanYouImprove",
@@ -1608,7 +1668,11 @@
           "Deutsch" : ["Übersetzung nicht verfügbar."]
         }
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNChangeIdeas",
@@ -1636,7 +1700,11 @@
           "Deutsch" : ["Toll! Erzählen Sie doch mehr!"]
         }
       }
-    ]
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
   },
   {
     "qId" : "dayNChangeSuggestions",
@@ -1655,6 +1723,10 @@
     "replyMessages" : {
       "English" : ["Good thinking!"],
       "Deutsch" : ["Gut mitgedacht!"]
+    },
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
     }
   }
 ]

@@ -111,7 +111,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
 
             // Use default input prompt if no overwrite
             if(!inputPrompt) inputPrompt = config.phrases.keyboards.singleChoice[language];
-            keyboard = InputOptions.singleChoice(question.options).reply_markup;
+            keyboard = InputOptions.singleChoice(question.options, question.buttonLayoutCols).reply_markup;
             break;
 
         case 'multiChoice':
@@ -122,7 +122,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             });
 
             if(!inputPrompt) inputPrompt = config.phrases.keyboards.multiChoice[language];
-            keyboard = InputOptions.multiChoice(question.options, participant.parameters.language).reply_markup;
+            keyboard = InputOptions.multiChoice(question.options, participant.parameters.language, question.buttonLayoutCols).reply_markup;
 
             break;
         case 'number':

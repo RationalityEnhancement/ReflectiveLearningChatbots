@@ -41,6 +41,7 @@ let schemaObject = {
     text: String,
     qType: String,
     options: [String],
+    buttonLayoutCols : Number,
     replyMessages: [String],
     selectQFirst : Boolean,
     nextActions: [{

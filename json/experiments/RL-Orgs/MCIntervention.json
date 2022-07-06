@@ -180,6 +180,7 @@
       "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
       "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
     },
+    "buttonLayoutCols" : 3,
     "cReplyMessages" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
@@ -623,6 +624,7 @@
       "English" : ["1","2","3","4","5","6","7","8","9","10"],
       "Deutsch" : ["1","2","3","4","5","6","7","8","9","10"]
     },
+    "buttonLayoutCols" : 5,
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{9}",
@@ -1066,6 +1068,7 @@
       "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
       "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
     },
+    "buttonLayoutCols" : 3,
     "cReplyMessages" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
@@ -1549,6 +1552,7 @@
       "English" : ["1","2","3","4","5","6","7","8"],
       "Deutsch" : ["1","2","3","4","5","6","7","8"]
     },
+    "buttonLayoutCols" : 4,
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{7}",

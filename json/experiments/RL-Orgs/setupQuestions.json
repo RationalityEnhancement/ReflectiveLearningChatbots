@@ -14,7 +14,7 @@
       "aType" : "saveAnswerTo",
       "args" : ["language"]
     }],
-    "nextQuestion" : "setupQuestions.interactionInstructions",
+    "nextQuestion" : "setupQuestions.introduceInstructions",
     "replyMessages" : {
       "English" : ["Thank you for choosing your language"],
       "Deutsch": ["Danke, dass Sie eine Sprache ausgewählt haben."]
@@ -22,13 +22,19 @@
     "start" : true
   },
   {
-    "qId" : "interactionInstructions",
+    "qId" : "introduceInstructions",
     "qType" : "dummy",
-    "nextQuestion" : "setupQuestions.continueFromInstructions",
+    "nextQuestion" : "setupQuestions.displayInstructions",
     "replyMessages" : {
-      "English" : ["Before we move forward, I want to explain to you how you can interact with me!", "Typically, you can only talk to me when I ask you a question. The answers that I request from you can be of various types, including typing out messages, inputting numbers, and selecting from given choices, among others. To help you understand how to answer, I will send you a message after each question telling you how to respond - look out for these!\n\nIf you need me to repeat a question before you have had the chance to submit a complete answer, just send /repeat, and I will ask the question again! Keep in mind that you will <b>have to enter your full answer from the beginning after I repeat the question.</b>\n\nI will ask you questions either at different points during the day, or right after you have answered another question. So, please bear with me to answer all the questions until I tell you that we are finished!\n\nIf you don't answer certain questions, I will also send you periodic reminders for you to answer them, so that you can move on with the next steps."],
+      "English" : ["Before we move forward, I want to explain to you how you can interact with me!"],
       "Deutsch" : ["Übersetzung nicht verfügbar"]
     }
+  },
+  {
+    "qId" : "displayInstructions",
+    "qType" : "dummy",
+    "nextQuestion" : "setupQuestions.continueFromInstructions",
+    "replyMessages" : "$F{json/experiments/RL-Orgs/instructions.json}"
   },
   {
     "qId" : "continueFromInstructions",

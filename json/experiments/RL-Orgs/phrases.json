@@ -157,6 +157,10 @@
     "repeatFail" : {
       "English" : "No outstanding questions!",
       "Deutsch" : "Keine ausstehenden Fragen!"
+    },
+    "cannotHelp" : {
+      "English" : "Sorry, I cannot help you any further at this moment!",
+      "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht weiter helfen!"
     }
   }
 }

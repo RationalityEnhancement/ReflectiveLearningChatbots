@@ -243,17 +243,16 @@ bot.command('cancel', async ctx =>{
     if(SKIP_TO_STAGE[ctx.from.id]){
         SKIP_TO_STAGE[ctx.from.id] = false;
         await ctx.replyWithHTML("Skipping stage has been cancelled. The experiment will continue as normal. Send <i>/repeat</i> to recall any outstanding question.")
-    }
-    if(REPORT_FEEDBACK[ctx.from.id]){
+    } else if(REPORT_FEEDBACK[ctx.from.id]){
         REPORT_FEEDBACK[ctx.from.id] = false;
         let secretMap = await getByChatId(config.experimentId, ctx.from.id);
         if(!secretMap) {
-            console.log("Participant not found!")
+            console.log("Participant not found while cancelling!")
             return;
         }
         let participant = await getParticipant(secretMap.uniqueId);
         if(!participant){
-            console.log("Participant not found!")
+            console.log("Participant not found while cancelling!")
             return;
         }
         let partLang = participant.parameters.language;
@@ -268,6 +267,10 @@ bot.command('cancel', async ctx =>{
             console.log('Unable to send feedback cancel message!');
             console.error(err);
         }
+    } else {
+        console.log("Participant not found while cancelling!")
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
+        return;
     }
 })
 
@@ -411,6 +414,7 @@ bot.command('repeat', async ctx => {
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
         console.log("Participant unique ID not found while repeating!");
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
     let uniqueId = secretMap.uniqueId;
@@ -418,6 +422,7 @@ bot.command('repeat', async ctx => {
   let participant = await getParticipant(uniqueId);
     if(!participant){
         console.log("Participant not found while repeating!")
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
 
@@ -503,11 +508,13 @@ bot.command('report', async ctx => {
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap) {
         console.log("Participant not found while reporting!")
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
     let participant = await getParticipant(secretMap.uniqueId);
     if(!participant){
         console.log("Participant not found while reporting!")
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
 
@@ -524,6 +531,35 @@ bot.command('report', async ctx => {
         console.error(err);
     }
 
+})
+
+// Command to ask for help
+bot.command('help', async ctx => {
+    let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+    if(!secretMap) {
+        console.log("Participant not found while asking for help!")
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
+        return;
+    }
+    let participant = await getParticipant(secretMap.uniqueId);
+    if(!participant){
+        console.log("Participant not found while asking for help!")
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
+        return;
+    }
+    let instructionText = config.instructionText;
+    try{
+        let insMessages = instructionText[participant.parameters.language];
+        for(let i = 0; i < insMessages.length; i++){
+            await Communicator.sendMessage(bot, participant, ctx.from.id, insMessages[i], !config.debug.messageDelay)
+        }
+    } catch(err){
+        await ctx.replyWithHTML(config.phrases.experiment.cannotHelp[participant.parameters.language]);
+        await handleError(participant, 'Unable to send instructions!\n'
+            + err.message + '\n' + err.stack);
+        console.log('Unable to send instructions!');
+        console.error(err);
+    }
 })
 
 bot.start(async ctx => {
@@ -638,13 +674,12 @@ bot.start(async ctx => {
 // Handling any answer
 bot.on('text', async ctx => {
   const messageText = ctx.message.text;
-  // Ignore commands
-  if(messageText.charAt[0] === '/') return;
 
   // Get the participants unique ID
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
         console.log("Unable to find participant unique ID!");
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
     let uniqueId = secretMap.uniqueId;
@@ -652,7 +687,14 @@ bot.on('text', async ctx => {
   let participant = await getParticipant(uniqueId);
 
   // Participant has not started yet
-  if(!participant) return;
+  if(!participant) {
+      console.log("Participant has not started yet!");
+      await ctx.replyWithHTML("Send /start to begin interacting with me!")
+      return;
+  }
+
+    // Ignore commands
+    if(messageText.charAt[0] === '/') return;
 
     // If the text is supposed to be a stage name to skip to
     if(SKIP_TO_STAGE[ctx.from.id]){

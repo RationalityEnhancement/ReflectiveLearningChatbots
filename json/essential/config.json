@@ -42,6 +42,7 @@
     "goalsEquallyRelevant" : "boolean",
     "dontAskInfoAgain" : "boolean",
     "dontAskExampleAgain" : "boolean",
+    "warningGiven" : "boolean",
     "morningTime" : "string",
     "eveningTime" : "string",
     "testStrArr" : "strArr",

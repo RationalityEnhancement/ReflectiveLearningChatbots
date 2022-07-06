@@ -101,6 +101,7 @@
         "US/Eastern"
       ]
     },
+    "buttonLayoutCols" : 2,
     "replyMessages": {
       "English": [
         "Thank you, time zone has been registered."
@@ -127,6 +128,7 @@
       "English" : ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00"],
       "Deutsch" : ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00"]
     },
+    "buttonLayoutCols" : 2,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
       "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]
@@ -150,6 +152,7 @@
       "English" : ["16:00", "17:00", "18:00", "19:00", "20:00", "21:00"],
       "Deutsch" : ["16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
     },
+    "buttonLayoutCols" : 2,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
       "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]

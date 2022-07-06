@@ -22,10 +22,12 @@ const LogicHandler = require('./src/logicHandler')
 
 const ExperimentUtils = require("./src/experimentUtils");
 const {getByUniqueId} = require("./src/apiControllers/idMapApiController");
+const StageHandler = require("./src/stageHandler");
 
 const local = process.argv[2];
 
 const SKIP_TO_STAGE = {};
+const REPORT_FEEDBACK = {};
 
 // Validate the config file to ensure that it has all the necessary information
 // This throws an error and aborts execution if there is something missing/wrong
@@ -100,8 +102,22 @@ let handleError = async (participant, errorString) => {
         console.log("Error while trying to process error lol");
         console.log(e);
     }
+}
 
-
+let handleFeedback = async (participant, feedbackString) => {
+    let timeStamp = moment.tz(participant.parameters.timezone).format();
+    let message = timeStamp + "\n" + feedbackString;
+    delete participant["firstName"];
+    let participantJSON = JSON.stringify(participant);
+    try{
+        await experiments.addFeedbackObject(config.experimentId, {
+            message : message,
+            participantJSON : participantJSON
+        });
+    } catch(e){
+        console.log("Error while trying to process feedback lol");
+        console.log(e);
+    }
 }
 
 //-----------------
@@ -142,6 +158,7 @@ bot.command('log_exp', async ctx => {
     console.log('Logging experiment.');
     let experiment = await experiments.get(config.experimentId);
     experiment["errorMessages"] = undefined;
+    experiment["feedbackMessages"] = undefined;
     console.log(experiment);
     let experimentIds = await idMaps.getExperiment(config.experimentId);
     console.log(experimentIds);
@@ -222,18 +239,55 @@ bot.command('delete_exp', async ctx => {
   }
 });
 
+bot.command('cancel', async ctx =>{
+    if(SKIP_TO_STAGE[ctx.from.id]){
+        SKIP_TO_STAGE[ctx.from.id] = false;
+        await ctx.replyWithHTML("Skipping stage has been cancelled. The experiment will continue as normal. Send <i>/repeat</i> to recall any outstanding question.")
+    }
+    if(REPORT_FEEDBACK[ctx.from.id]){
+        REPORT_FEEDBACK[ctx.from.id] = false;
+        let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+        if(!secretMap) {
+            console.log("Participant not found!")
+            return;
+        }
+        let participant = await getParticipant(secretMap.uniqueId);
+        if(!participant){
+            console.log("Participant not found!")
+            return;
+        }
+        let partLang = participant.parameters.language;
+        try{
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.reportFeedbackCancel[partLang], !config.debug.messageDelay);
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.experimentContinue[partLang], !config.debug.messageDelay);
+        } catch(err){
+            await handleError(participant, 'Unable to send feedback cancel message!\n'
+                + err.message + '\n' + err.stack);
+            console.log('Unable to send feedback cancel message!');
+            console.error(err);
+        }
+    }
+})
+
 // Next command to pre-empt next scheduled question
 bot.command('next', async ctx => {
     if(!config.debug.enableNext) return;
     try{
+        // If command /skip_to has just been run
+        SKIP_TO_STAGE[ctx.from.id] = false;
+
+        // If command /report has just been run
+        REPORT_FEEDBACK[ctx.from.id] = false;
+
         // Get the participant's unique ID
         let secretMap = await idMaps.getByChatId(config.experimentId, ctx.from.id);
         if(!secretMap){
-            console.log("Participant not initialized yet!");
+            console.log("Participant not initialized yet! No next questions");
             return;
         }
         let uniqueId = secretMap.uniqueId;
-
 
         // Get the participant
         let participant = await getParticipant(uniqueId);
@@ -356,12 +410,36 @@ bot.command('next', async ctx => {
 bot.command('repeat', async ctx => {
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
-        console.log("Participant unique ID not found!");
+        console.log("Participant unique ID not found while repeating!");
         return;
     }
     let uniqueId = secretMap.uniqueId;
 
   let participant = await getParticipant(uniqueId);
+    if(!participant){
+        console.log("Participant not found while repeating!")
+        return;
+    }
+
+  // Cancel any outstanding commands
+    if(SKIP_TO_STAGE[ctx.from.id]){
+        SKIP_TO_STAGE[ctx.from.id] = false;
+        await ctx.replyWithHTML("Skipping stage has been cancelled.")
+    }
+    if(REPORT_FEEDBACK[ctx.from.id]){
+        REPORT_FEEDBACK[ctx.from.id] = false;
+
+        let partLang = participant.parameters.language;
+        try{
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.reportFeedbackCancel[partLang], !config.debug.messageDelay);
+        } catch(err){
+            await handleError(participant, 'Unable to send feedback cancel message after repeat!\n'
+                + err.message + '\n' + err.stack);
+            console.log('Unable to send feedback cancel message after repeat!');
+            console.error(err);
+        }
+    }
 
   // Repeat question only if there is an outstanding question
   if(participant.currentState === "awaitingAnswer"){
@@ -372,6 +450,17 @@ bot.command('repeat', async ctx => {
           await handleError(participant, returnObj.data);
           throw returnObj.data;
       }
+  } else {
+      try{
+          let partLang = participant.parameters.language;
+          await Communicator.sendMessage(bot, participant,
+              ctx.from.id, config.phrases.experiment.repeatFail[partLang], !config.debug.messageDelay);
+      } catch(err){
+          await handleError(participant, 'Unable to send repeat fail message!\n'
+              + err.message + '\n' + err.stack);
+          console.log('Unable to send repeat fail message!');
+          console.error(err);
+      }
   }
 
 })
@@ -381,12 +470,12 @@ bot.command('skip_to', async ctx => {
     if(!config.debug.experimenter) return;
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap) {
-        console.log("Participant not found!")
+        console.log("Participant not found while skipping to stage!")
         return;
     }
     let participant = await getParticipant(secretMap.uniqueId);
     if(!participant){
-        console.log("Participant not found!")
+        console.log("Participant not found while skipping to stage!")
         return;
     }
     const StageHandler = require('./src/stageHandler');
@@ -396,6 +485,7 @@ bot.command('skip_to', async ctx => {
         return;
     }
     SKIP_TO_STAGE[ctx.from.id] = true;
+    REPORT_FEEDBACK[ctx.from.id] = false;
     let stageListStrings = stageListObj.data.map(stage => {
         let string = "* " + stage.name;
         if(stage.lengthDays){
@@ -404,8 +494,36 @@ bot.command('skip_to', async ctx => {
         return string;
     })
 
-    await ctx.replyWithHTML("Type in the name of the stage you want to skip to, and the desired stage day separated by a comma\n\nExample: <i>Intervention, 0</i>" +
-        "\n\nYour options are: \n\n" + stageListStrings.join('\n'));
+    await ctx.replyWithHTML("In the following message, type in the name of the stage you want to skip to, and the desired stage day separated by a comma\n\nExample: <i>Intervention, 0</i>" +
+        "\n\nYour options are: \n\n" + stageListStrings.join('\n') + "\n\nSend <i>/cancel</i> to cancel skipping to another stage.");
+})
+
+// Command to report feedback
+bot.command('report', async ctx => {
+    let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+    if(!secretMap) {
+        console.log("Participant not found while reporting!")
+        return;
+    }
+    let participant = await getParticipant(secretMap.uniqueId);
+    if(!participant){
+        console.log("Participant not found while reporting!")
+        return;
+    }
+
+    SKIP_TO_STAGE[ctx.from.id] = false;
+    REPORT_FEEDBACK[ctx.from.id] = true;
+    try{
+        let partLang = participant.parameters.language;
+        await Communicator.sendMessage(bot, participant,
+            ctx.from.id, config.phrases.experiment.reportFeedback[partLang], !config.debug.messageDelay);
+    } catch(err){
+        await handleError(participant, 'Unable to send report feedback message!\n'
+            + err.message + '\n' + err.stack);
+        console.log('Unable to send report feedback message!');
+        console.error(err);
+    }
+
 })
 
 bot.start(async ctx => {
@@ -558,6 +676,27 @@ bot.on('text', async ctx => {
         }
         await participants.updateStageParameter(uniqueId, "stageDay", stageDay);
         SKIP_TO_STAGE[ctx.from.id] = false;
+        return;
+    }
+
+    // If the text is supposed to be feedback that is reported
+    if(REPORT_FEEDBACK[ctx.from.id]){
+        let feedback = messageText;
+
+        await handleFeedback(participant, feedback);
+        REPORT_FEEDBACK[ctx.from.id] = false;
+        let partLang = participant.parameters.language;
+        try{
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.reportFeedbackThanks[partLang], !config.debug.messageDelay);
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.experimentContinue[partLang], !config.debug.messageDelay);
+        } catch(err){
+            await handleError(participant, 'Unable to send feedback cancel message!\n'
+                + err.message + '\n' + err.stack);
+            console.log('Unable to send feedback cancel message!');
+            console.error(err);
+        }
         return;
     }
 

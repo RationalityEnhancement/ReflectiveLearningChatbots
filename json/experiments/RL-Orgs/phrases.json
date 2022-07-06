@@ -133,8 +133,30 @@
       "Deutsch" : "Hier ist eine Erinnerung, dass Sie eine ausstehende Frage noch haben. Geben Sie Ihre Antwort nach Anweisungen ein, oder senden Sie <i>/repeat</i>, um die Frage zu wiederholen."
     }
   },
-  "endExperiment" : {
-    "English" : "You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
-    "Deutsch" : "Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
+  "experiment" : {
+    "endExperiment" : {
+      "English" : "You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
+      "Deutsch" : "Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
+    },
+    "reportFeedback" : {
+      "English" : "<b>Report Feedback</b>\n\nJust type in your feedback in a single message and press send!\n\nIf this was a mistake and you don't want to report feedback, send <i>/cancel</i>.",
+      "Deutsch" : "<b>Feedback Melden</b>\n\nGeben Sie Ihr Feedback in eine Nachricht ein und schicken Sie es einfach ab!\n\nWenn Sie sich vertan haben und kein Feedback melden wollen, senden Sie <i>/cancel</i>."
+    },
+    "reportFeedbackCancel" : {
+      "English" : "Feedback reporting has been cancelled.",
+      "Deutsch" : "Feedback-Melden wurde abgebrochen."
+    },
+    "experimentContinue" : {
+      "English" : "The experiment will now continue as normal. If there is an outstanding question to answer, send <i>/repeat</i> to see it again.",
+      "Deutsch" : "Das Experiment geht weiter wie gewohnt. Wenn eine Frage noch aussteht, senden Sie <i>/repeat</i>, um sie wieder aufzurufen."
+    },
+    "reportFeedbackThanks" : {
+      "English" : "Thank you for your valuable feedback!",
+      "Deutsch" : "Danke für das nützliche Feedback!"
+    },
+    "repeatFail" : {
+      "English" : "No outstanding questions!",
+      "Deutsch" : "Keine ausstehenden Fragen!"
+    }
   }
 }

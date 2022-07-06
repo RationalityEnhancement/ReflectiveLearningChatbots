@@ -119,11 +119,47 @@ describe('Experiment Controller API: ', () =>{
 		expect(lastError.participantJSON).to.equal(testErrObj.participantJSON);
 	})
 
+	it('Should add feedback', async () => {
+		let part = {
+			uniqueId : "12345",
+			stages : {
+				"stageName" : "lol"
+			}
+		}
+		let testErrObj = {
+			message : "testFeedback",
+			participantJSON : JSON.stringify(part)
+		};
+		await experiments.addFeedbackObject(testId, testErrObj);
+		let experiment = await experiments.get(testId)
+		expect(experiment.feedbackMessages.length).to.equal(1)
+		let lastError = experiment.feedbackMessages[experiment.feedbackMessages.length-1];
+		expect(lastError.message).to.equal(testErrObj.message);
+		expect(lastError.participantJSON).to.equal(testErrObj.participantJSON);
+	})
+	it('Should add feedback - 2', async () => {
+		let part = {
+			uniqueId : "12346",
+			stages : {
+				"stageName" : "lmao"
+			}
+		}
+		let testErrObj = {
+			message : "testFeebag",
+			participantJSON : JSON.stringify(part)
+		};
+		await experiments.addFeedbackObject(testId, testErrObj);
+		let experiment = await experiments.get(testId)
+		expect(experiment.feedbackMessages.length).to.equal(2)
+		let lastError = experiment.feedbackMessages[experiment.feedbackMessages.length-1];
+		expect(lastError.message).to.equal(testErrObj.message);
+		expect(lastError.participantJSON).to.equal(testErrObj.participantJSON);
+	})
+
 	it('Should remove experiment', async () => {
 		await experiments.remove(testId);
 		let experiment = await experiments.get(testId);
 		expect(experiment).to.be.null;
-		
 	});
 
 	it('Should close connection', async () => {

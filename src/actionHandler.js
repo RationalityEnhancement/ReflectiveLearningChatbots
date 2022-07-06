@@ -534,7 +534,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                 // Send the participant a message that the experiment has ended.
                 if(incStageObj.data === -1){
                     await Communicator.sendMessage(bot, participant, secretMap.chatId,
-                        config.phrases.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+                        config.phrases.experiment.endExperiment[participant.parameters.language], !config.debug.messageDelay)
                 }
             }
             return incStageObj;
@@ -552,7 +552,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                     , true);
             }
             await Communicator.sendMessage(bot, participant, secretMap.chatId,
-                config.phrases.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+                config.phrases.experiment.endExperiment[participant.parameters.language], !config.debug.messageDelay)
             return endReturnObj;
 
         default:

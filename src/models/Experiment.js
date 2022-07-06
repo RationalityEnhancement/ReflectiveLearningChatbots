@@ -10,6 +10,10 @@ exports.ExperimentSchema = new Schema({
   errorMessages : [{
     message: String,
     participantJSON: String
+  }],
+  feedbackMessages : [{
+    message: String,
+    participantJSON: String
   }]
 });
 

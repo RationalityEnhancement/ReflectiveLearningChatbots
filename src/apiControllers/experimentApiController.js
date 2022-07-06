@@ -121,3 +121,14 @@ exports.addErrorObject = async (experimentId, errObj) => {
     console.error(err);
   }
 }
+
+// Add a feedback object
+exports.addFeedbackObject = async (experimentId, feedObj) => {
+  try{
+    let experiment = await Experiment.findOne( { experimentId });
+    experiment["feedbackMessages"].push(feedObj);
+    return experiment.save();
+  } catch(err) {
+    console.error(err);
+  }
+}

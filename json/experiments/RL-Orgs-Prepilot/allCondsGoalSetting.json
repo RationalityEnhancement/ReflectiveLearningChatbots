@@ -1,81 +1,18 @@
 [
   {
-    "qId" : "initiateContact",
-    "qType" : "dummy",
-    "replyMessages" : {
-      "English" : ["Good morning, ${FIRST_NAME}!"],
-      "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
-    },
-    "nextQuestion" : "Morning-Goals-All.selectMorningQ"
-  },
-  {
-    "qId" : "remindWorkIntention",
-    "qType" : "dummy",
-    "cReplyMessages" : [
-      {
-        "if": "${remindWorkIntention} == $B{true}",
-        "then" : {
-          "English" : ["The last time, you wanted me to remind you of the following intention today:", "${workIntention}"],
-          "Deutsch" : ["Das letzte Mal haben Sie mir gesagt, Sie am nächsten Tag an diese Vorhaben zu erinnern:", "${workIntention}"]
-        }
-      }
-    ],
-    "cNextActions" : [
-      {
-        "if": "${remindWorkIntention} == $B{true}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["remindWorkIntention", "$B{false}"]
-          },
-          {
-            "aType" : "clearVar",
-            "args" : ["workIntention"]
-          }
-        ]
-      }
-    ],
-    "nextQuestion" : "Morning-Goals-All.firstTaskGoal"
-  },
-  {
-    "qId" : "remindRelIntention",
-    "qType" : "dummy",
-    "cReplyMessages" : [
-      {
-        "if": "${remindRelIntention} == $B{true}",
-        "then" : {
-          "English" : ["The last time, you wanted me to remind you of the following intention today:", "${relIntention}"],
-          "Deutsch" : ["Das letzte Mal haben Sie mir gesagt, Sie am nächsten Tag an diese Vorhaben zu erinnern:", "${relIntention}"]
-        }
-      }
-    ],
-    "cNextActions" : [
-      {
-        "if": "${remindRelIntention} == $B{true}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["remindRelIntention", "$B{false}"]
-          },
-          {
-            "aType" : "clearVar",
-            "args" : ["remindRelIntention"]
-          }
-        ]
-      }
-    ],
-    "nextQuestion" : "Morning-Goals-All.addFirstRelGoal"
-  },
-  {
     "qId" : "selectMorningQ",
     "qType" : "dummy",
     "cNextQuestions" : [
       {
         "if": "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Morning-Goals-All.firstRelationshipPrompt",
-        "else" : "Morning-Goals-All.remindWorkIntention"
+        "then" : "Goal-Setting.firstRelationshipPrompt",
+        "else" : "Goal-Setting.firstTaskGoal"
       }
-    ]
+    ],
+    "replyMessages" : {
+      "English" : ["Good morning, ${FIRST_NAME}!"],
+      "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
+    }
   },
   {
     "qId" : "firstTaskGoal",
@@ -85,7 +22,7 @@
     },
     "qType" : "freeform",
 
-    "nextQuestion" :"Morning-Goals-All.askAddTaskGoals",
+    "nextQuestion" :"Goal-Setting.askAddTaskGoals",
     "minLengthWords" : 5,
     "nextActions" : [
       {
@@ -116,11 +53,11 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Morning-Goals-All.addTaskGoals"
+        "then" : "Goal-Setting.addTaskGoals"
       },
       {
         "if" : "(${STAGE_DAY} MULTIPLE_OF $N{2}) != $B{true}",
-        "then" : "Morning-Goals-All.wantRelationshipGoal"
+        "then" : "Goal-Setting.wantRelationshipGoal"
       }
     ],
     "cReplyMessages" : [
@@ -159,7 +96,7 @@
     "cNextQuestions" : [
       {
         "if" : "(${STAGE_DAY} MULTIPLE_OF $N{2}) != $B{true}",
-        "then" : "Morning-Goals-All.wantRelationshipGoal"
+        "then" : "Goal-Setting.wantRelationshipGoal"
       }
     ],
     "cReplyMessages" : [
@@ -194,7 +131,7 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Morning-Goals-All.checkWantRelGoalInfoQuestion"
+        "then" : "Goal-Setting.checkWantRelGoalInfoQuestion"
       }
     ],
     "cReplyMessages" : [
@@ -229,8 +166,8 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Morning-Goals-All.checkWantRelGoalInfoQuestion",
-        "else" : "Morning-Goals-All.remindWorkIntention"
+        "then" : "Goal-Setting.checkWantRelGoalInfoQuestion",
+        "else" : "Goal-Setting.firstTaskGoal"
       }
     ],
     "cReplyMessages" : [
@@ -250,7 +187,7 @@
   {
     "qId" : "wantRelGoalInfo",
     "text" : {
-      "English" : "Here is a tip on improving your work relationships and setting up goals to improve relationships:\n\n <i>High quality relationships are characterized by mutual engagement, interest from both sides, and positivity.</i>\n\n Would you like to find out more?",
+      "English" : "Here is a tip on improving your work relationships and setting up relationship-oriented goals:\n\n <i>High quality relationships are characterized by mutual engagement, interest from both sides, and positivity.</i>\n\n Would you like to find out more?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",
@@ -261,11 +198,11 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Morning-Goals-All.relGoalsInfo"
+        "then" : "Goal-Setting.relGoalsInfo"
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Morning-Goals-All.checkWantRelGoalExampleQuestion"
+        "then" : "Goal-Setting.checkWantRelGoalExampleQuestion"
       }
     ],
     "cNextActions" : [
@@ -290,8 +227,8 @@
     "cNextQuestions" : [
       {
         "if" : "${dontAskInfoAgain} == $B{true}",
-        "then" : "Morning-Goals-All.checkWantRelGoalExampleQuestion",
-        "else" : "Morning-Goals-All.wantRelGoalInfo"
+        "then" : "Goal-Setting.checkWantRelGoalExampleQuestion",
+        "else" : "Goal-Setting.wantRelGoalInfo"
       }
     ]
   },
@@ -301,8 +238,8 @@
     "cNextQuestions" : [
       {
         "if" : "${dontAskExampleAgain} == $B{true}",
-        "then" : "Morning-Goals-All.remindRelIntention",
-        "else" : "Morning-Goals-All.wantRelGoalExample"
+        "then" : "Goal-Setting.addFirstRelGoal",
+        "else" : "Goal-Setting.wantRelGoalExample"
       }
     ],
     "cReplyMessages" : [
@@ -329,11 +266,11 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Morning-Goals-All.relGoalsExample"
+        "then" : "Goal-Setting.relGoalsExample"
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Morning-Goals-All.remindRelIntention"
+        "then" : "Goal-Setting.addFirstRelGoal"
       }
     ],
     "cNextActions" : [
@@ -365,10 +302,10 @@
     "qId" : "relGoalsInfo",
     "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["In high quality work relationships, people feel valued and appreciated. They feel safe to speak up, discuss problems openly, open themselves up without fearing interpersonal consequences or loss of their self-image, and display a wide range of emotions (including negative ones). People are engaged and willing to actively participate and disclose information. High quality relationships can withstand stress and conflict and bounce back after setbacks."],
+      "English" : ["Here is info about relationship goals"],
       "Deutsch" : ["Hier sind Infos zu beziehungsorienterten Zielen"]
     },
-    "nextQuestion" : "Morning-Goals-All.continueFromInfo"
+    "nextQuestion" : "Goal-Setting.continueFromInfo"
   },
   {
     "qId" : "continueFromInfo",
@@ -385,7 +322,7 @@
       "English" : ["Continue"],
       "Deutsch" : ["Weiter"]
     },
-    "nextQuestion" : "Morning-Goals-All.checkWantRelGoalExampleQuestion",
+    "nextQuestion" : "Goal-Setting.checkWantRelGoalExampleQuestion",
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -395,10 +332,10 @@
     "qId" : "relGoalsExample",
     "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["Here are some example of relationship goals:\n\n * <i>I will discuss a recent work issue with [team member] during lunch today</i>\n\n* <i>I will show empathy for [team member] at today's meeting</i>\n\n* <i>I will withhold judgement of [team member] who made a mistake yesterday</i>\n\n* <i>I will express gratitude for [team member's] hard work this morning</i>\n\n* <i>I will highlight the value of [team member's] unique perspective and input in the afternoon</i>\n\n* <i>I will encourage [team member] to speak up at today's meeting</i>"],
+      "English" : ["Here are some example of relationship goals:\n\n * <i>discuss a recent work problem with a colleague today</i>\n\n* <i>appreciate individual differences</i>\n\n* <i>show empathy for a co-worker</i>\n\n* <i>do not judge a co-worker who made a mistake</i>"],
       "Deutsch" : ["Hier sind Beispiele von beziehungsorienterten Zielen"]
     },
-    "nextQuestion" : "Morning-Goals-All.continueFromExample"
+    "nextQuestion" : "Goal-Setting.continueFromExample"
   },
   {
     "qId" : "continueFromExample",
@@ -415,7 +352,7 @@
       "English" : ["Continue"],
       "Deutsch" : ["Weiter"]
     },
-    "nextQuestion" : "Morning-Goals-All.remindRelIntention",
+    "nextQuestion" : "Goal-Setting.addFirstRelGoal",
     "replyMessages" : {
       "English" : ["Great, let's get to it then!"],
       "Deutsch" : ["Übersetzung nicht verfügbar"]
@@ -428,45 +365,22 @@
   {
     "qId" : "addFirstRelGoal",
     "text" : {
-      "English" : "${FIRST_NAME}, how would you like to relate to or behave towards which of your colleagues today? Tip: make it an SRT goal (specific, relevant, timely)",
+      "English" : "${FIRST_NAME}, how would you like to relate to or behave toward which of your colleagues today? Tip: make it an SRT goal (specific, relevant, timely)",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "minLengthWords" : 5,
     "qType" : "freeform",
-    "cNextActions" : [
+    "nextActions" : [
       {
-        "if" : "${relGoalsSetBefore} == $B{false}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["firstRelGoalDay", "$B{true}"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["relGoalsSetBefore", "$B{true}"]
-          },
-          {
-            "aType" : "addAnswerTo",
-            "args" : ["relGoals"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["relGoalsSetToday", "$B{true}"]
-          }
-        ],
-        "else" : [
-          {
-            "aType" : "addAnswerTo",
-            "args" : ["relGoals"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["relGoalsSetToday", "$B{true}"]
-          }
-        ]
+        "aType" : "addAnswerTo",
+        "args" : ["relGoals"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["relGoalsSetToday", "$B{true}"]
       }
     ],
-    "nextQuestion" : "Morning-Goals-All.askAddRelGoal",
+    "nextQuestion" : "Goal-Setting.askAddRelGoal",
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4
@@ -476,7 +390,7 @@
     "qId" : "askAddRelGoal",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Would you like to set additional relationship goals for today?",
+      "English" : "Would you like to set additional relationship-oriented goals for today?",
       "Deutsch" : "Möchten Sie sich heute noch zusätzliche beziehungsorienterte Ziele setzen?"
     },
     "options" : {
@@ -486,11 +400,11 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Morning-Goals-All.addRelGoals"
+        "then" : "Goal-Setting.addRelGoals"
       },
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Morning-Goals-All.remindWorkIntention"
+        "then" : "Goal-Setting.firstTaskGoal"
       }
     ],
     "cReplyMessages" : [
@@ -533,7 +447,7 @@
     "cNextQuestions" : [
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Morning-Goals-All.remindWorkIntention"
+        "then" : "Goal-Setting.firstTaskGoal"
       }
     ],
     "cReplyMessages" : [
@@ -549,6 +463,200 @@
         }
       }
     ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "selectReflection",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if" : "${relGoalsSetToday} == $B{true}",
+        "then" : "Goal-Setting.relGoalsRemind"
+      },
+      {
+        "if" : "${taskGoalsSetToday} == $B{true}",
+        "then" : "Goal-Setting.taskGoalsRemind"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "(${taskGoalsSetToday} == $B{true}) OR (${relGoalsSetToday} == $B{true})",
+        "then" : {
+          "English" : ["Good evening, ${FIRST_NAME}!"],
+          "Deutsch" : ["Guten Abend, ${FIRST_NAME}!"]
+        }
+      }
+    ]
+  },
+  {
+    "qId": "relGoalsRemind",
+    "qType" : "dummy",
+    "replyMessages" : {
+      "English" : ["Today, you set the following relationship-oriented goals: ", "${relGoals}"],
+      "Deutsch" : ["Heute haben Sie sich die folgenden beziehungsorienterten Ziele gesetzt: ", "${relGoals}"]
+    },
+    "nextQuestion" : "Goal-Setting.relGoalsProgress",
+    "nextActions" : [
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoals"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoalsSetToday"]
+      }
+    ]
+  },
+  {
+    "qId" : "relGoalsProgress",
+    "text" : {
+      "English" : "How much progress do you feel like you made towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
+      "Deutsch" : "Gefühlt wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
+    },
+    "qType" : "number",
+    "range" : {
+      "lower" : 0
+    },
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs-Prepilot/replyMessages/relGoalProgressReplies.json}",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["lastReportedRelProgress"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["relProgressReportedOnce", "$B{true}"]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if" : "${taskGoalsSetToday} == $B{true}",
+        "then" : "Goal-Setting.askReflectTaskGoals",
+        "else" : "Goal-Setting.checkDone"
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "checkDone",
+    "qType" : "dummy",
+    "cReplyMessages" : [
+      {
+        "if" : "${STAGE_DAY} == $N{3}",
+        "then" : {
+          "English" : ["Good job on reaching the end of this first stage!", "We will now have another round of questionnaires."],
+          "Deutsch" : ["Glückwunsch, dass Sie das Ende dieser Phase erreicht haben!", "Jetzt haben wir noch eine Runde Umfragen."]
+        },
+        "else" : {
+          "English" : ["Thank you for sharing. See you tomorrow!"],
+          "Deutsch" : ["Danke fürs Mitteilen. Bis morgen!"]
+        }
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if": "${STAGE_DAY} == $N{3}",
+        "then" : [
+          {
+            "aType" : "startStage",
+            "args" : ["Pre-Test-2"]
+          }
+        ]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if": "${STAGE_DAY} == $N{3}",
+        "then" : "Pre-Test-2.survey"
+      }
+    ]
+  },
+
+  {
+    "qId" : "askReflectTaskGoals",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you also like to report progress on your work-related goals today?",
+      "Deutsch" : "Möchten Sie heute Ihren Fortschritt in Bezug auf Ihre arbeitsbezogenen Ziele auch mitteilen?"
+    },
+    "options" : {
+      "English" : ["Yes", "No"],
+      "Deutsch" : ["Ja", "Nein"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : "Goal-Setting.taskGoalsRemind",
+        "else" : "Goal-Setting.checkDone"
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : [
+          {
+            "aType" : "clearVar",
+            "args" : ["taskGoals"]
+          },
+          {
+            "aType" : "clearVar",
+            "args" : ["taskGoalsSetToday"]
+          }
+        ]
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId": "taskGoalsRemind",
+    "qType" : "dummy",
+    "replyMessages" : {
+      "English" : ["Today, you set the following work-related goals: ", "${taskGoals}"],
+      "Deutsch" : ["Heute haben Sie sich die folgenden arbeitsbezogenen Ziele gesetzt: ", "${taskGoals}"]
+    },
+    "nextQuestion" : "Goal-Setting.taskGoalsProgress",
+    "nextActions" : [
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoals"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoalsSetToday"]
+      }
+    ]
+  },
+  {
+    "qId" : "taskGoalsProgress",
+    "text" : {
+      "English" : "How much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
+      "Deutsch" : "Wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
+    },
+    "qType" : "number",
+    "range" : {
+      "lower" : 0
+    },
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs-Prepilot/replyMessages/taskGoalProgressReplies.json}",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["lastReportedTaskProgress"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["taskProgressReportedOnce", "$B{true}"]
+      }
+    ],
+    "nextQuestion" : "Goal-Setting.checkDone",
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4

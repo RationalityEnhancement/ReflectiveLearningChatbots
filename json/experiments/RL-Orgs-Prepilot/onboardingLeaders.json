@@ -1,0 +1,49 @@
+[
+  {
+    "qId" : "survey",
+    "qType" : "qualtrics",
+    "text" : {
+      "English" : "Let us begin with the first questions already!\n\nThe first thing we need from you is some basic information. Please take the time to fill out the following survey thoughtfully and thoroughly.",
+      "Deutsch" : "Fangen wir schon mit den ersten Fragen an!\n\nWir brauchen zuerst von Ihnen einige Basisinformationen. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+    },
+    "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
+    "qualtricsFields" : [
+      {
+        "field" : "uniqueId",
+        "value" : "${UNIQUE_ID}"
+      },
+      {
+        "field" : "condition",
+        "value" : "${CONDITION}"
+      },
+      {
+        "field" : "stage",
+        "value": "Onboarding"
+      }
+    ],
+    "nextActions" : [
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["onboardingComplete", "$B{true}"]
+      },
+      {
+        "aType" : "startStage",
+        "args" : ["Pre-Test"]
+      }
+    ],
+    "inputPrompt" : {
+      "English" : "Enter the survey code that you receive at the end of the survey to continue. (ABCDE, 12345)",
+      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren. (ABCDE, 12345)"
+    },
+    "continueStrings" : ["ABCDE", "12345"],
+    "replyMessages" : {
+      "English" : ["Good start! Thank you for completing the survey!", "We will now move on to the next set of preliminary questions."],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
+    },
+    "nextQuestion" : "Pre-Test.survey",
+    "reminder" : {
+      "freqMins" : 60,
+      "numRepeats" : 4
+    }
+  }
+]

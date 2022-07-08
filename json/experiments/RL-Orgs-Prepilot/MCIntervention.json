@@ -847,7 +847,7 @@
     "qType" : "dummy",
     "cReplyMessages" : [
       {
-        "if": "${STAGE_DAY} == $N{7}",
+        "if": "${STAGE_DAY} == $N{3}",
         "then": {
           "English": [
             "Good job on reaching the end of the second and final stage!",
@@ -874,7 +874,7 @@
     "selectQFirst" : true,
     "cNextActions" : [
       {
-        "if": "${STAGE_DAY} == $N{7}",
+        "if": "${STAGE_DAY} == $N{3}",
         "then" : [
           {
             "aType" : "startStage",
@@ -885,7 +885,7 @@
     ],
     "cNextQuestions" : [
       {
-        "if": "${STAGE_DAY} == $N{7}",
+        "if": "${STAGE_DAY} == $N{3}",
         "then" : "Post-Test.survey"
       }
     ]

@@ -165,6 +165,10 @@
     "cannotInteract" : {
       "English" : "Sorry, I cannot respond to you at this moment! Please wait for the next time that I ask you a question to talk to me. Send <i>/help</i> if you would like more information on how to interact with me.",
       "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht antworten! Bitte warten Sie auf meine nächste Frage, um mit mir zu reden. Senden Sie <i>/help</i>, wenn Sie mehr Informationen dazu möchten, wie mit mir zu interagieren ist."
+    },
+    "cannotInteractAfterEnd" : {
+      "English" : "Sorry, I cannot respond to you at this moment! The experiment has been ended. If you would like to report something, use the /report command.\n\nYou can contact the experimenters directly at srinidhi.srinivas@tuebingen.mpg.de",
+      "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht antworten! Das Experiment ist beendet worden. Wenn Sie etwas berichten möchten, benutzen Sie den Befehl /report.\n\nSie können die Experimenter direkt unter srinidhi.srinivas@tuebingen.mpg.de kontaktieren."
     }
   }
 }

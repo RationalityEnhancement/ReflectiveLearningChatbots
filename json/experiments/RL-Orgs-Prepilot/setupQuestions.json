@@ -86,20 +86,8 @@
     },
     "qType": "singleChoice",
     "options": {
-      "English": [
-        "Europe/Berlin",
-        "US/Pacific",
-        "US/Mountain",
-        "US/Central",
-        "US/Eastern"
-      ],
-      "Deutsch": [
-        "Europe/Berlin",
-        "US/Pacific",
-        "US/Mountain",
-        "US/Central",
-        "US/Eastern"
-      ]
+      "English": "$F{json/static/common_timezones.json}",
+      "Deutsch": "$F{json/static/common_timezones.json}"
     },
     "buttonLayoutCols" : 2,
     "replyMessages": {

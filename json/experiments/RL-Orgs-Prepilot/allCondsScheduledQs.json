@@ -24,7 +24,7 @@
     "if" : "${STAGE_NAME} == $S{Intervention}"
   },
   {
-    "qId" : "Int-Reflection.selectReflection",
+    "qId" : "Pre-Reflection.initiateContact",
     "atTime" : "${eveningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
     "if" : "${STAGE_NAME} == $S{Intervention}"

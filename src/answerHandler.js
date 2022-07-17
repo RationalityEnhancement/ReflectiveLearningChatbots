@@ -153,7 +153,18 @@ class AnswerHandler{
             return ReturnMethods.returnFailure("AHandler: Current state not found")
         }
         // Process an answer only if an answer is expected
-        if(!["awaitingAnswer"].includes(participant.currentState)){
+        if(participant.currentState == "experimentEnd"){
+            try{
+                return ReturnMethods.returnPartialFailure(
+                    config.phrases.experiment.cannotInteractAfterEnd[participant.parameters.language],
+                    DevConfig.NO_RESPONSE_STRING
+                );
+            } catch(err){
+                return ReturnMethods.returnFailure("AHandler: Unable to send cannot interact message\n" +
+                    err.message + "\n" + err.stack)
+            }
+        }
+        else if(!["awaitingAnswer"].includes(participant.currentState)){
             try{
                 return ReturnMethods.returnPartialFailure(
                     config.phrases.experiment.cannotInteract[participant.parameters.language],

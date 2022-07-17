@@ -11,15 +11,6 @@
         "if" : "${taskGoalsSetToday} == $B{true}",
         "then" : "Int-Reflection.taskGoalsRemind"
       }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "(${taskGoalsSetToday} == $B{true}) OR (${relGoalsSetToday} == $B{true})",
-        "then" : {
-          "English" : ["Good evening, ${FIRST_NAME}!"],
-          "Deutsch" : ["Guten Abend, ${FIRST_NAME}!"]
-        }
-      }
     ]
   },
   {
@@ -378,7 +369,7 @@
       {
         "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}) AND (${STAGE_DAY} != $N{1})",
         "then" : {
-          "English" : "We're done with your reflection goals for today.",
+          "English" : "We're done with your relationship goals for today.",
           "Deutsch" : "Übersetzung nicht verfügbar."
         }
       },
@@ -833,7 +824,7 @@
         "if": "${taskGoalsSetToday} != $B{true}",
         "then": {
           "English": [
-            "Okay, that's all for today."
+            "Okay, we're done with your goal reflections for today."
           ],
           "Deutsch": [
             "OK, das war es für heute."

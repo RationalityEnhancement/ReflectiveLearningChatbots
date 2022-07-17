@@ -69,6 +69,7 @@
         "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot/onboardingLeaders.json}",
         "Pre-Test" : "$F{json/experiments/RL-Orgs-Prepilot/preTestLeaders.json}",
         "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsPreReflection.json}",
         "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot/goalSettingIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Prepilot/followUpLeaders.json}"
@@ -80,6 +81,7 @@
         "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot/onboardingLeaders.json}",
         "Pre-Test" : "$F{json/experiments/RL-Orgs-Prepilot/preTestLeaders.json}",
         "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsPreReflection.json}",
         "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot/shallowIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Prepilot/followUpLeaders.json}"
@@ -91,6 +93,7 @@
         "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot/onboardingLeaders.json}",
         "Pre-Test" : "$F{json/experiments/RL-Orgs-Prepilot/preTestLeaders.json}",
         "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsPreReflection.json}",
         "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot/MCIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Prepilot/followUpLeaders.json}"

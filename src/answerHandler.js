@@ -153,7 +153,7 @@ class AnswerHandler{
             return ReturnMethods.returnFailure("AHandler: Current state not found")
         }
         // Process an answer only if an answer is expected
-        if(participant.currentState == "experimentEnd"){
+        if(participant.currentState === "experimentEnd"){
             try{
                 return ReturnMethods.returnPartialFailure(
                     config.phrases.experiment.cannotInteractAfterEnd[participant.parameters.language],

@@ -168,7 +168,7 @@ function QuestionHandler(config){
 
         const optionalParams = ["options", "replyMessages", "saveAnswerTo", "nextQuestion", "nextActions",
         "cReplyMessages", "cNextActions","cNextQuestions", "range", "selectQFirst", "minLengthChars", "minLengthWords",
-        "reminder", "inputPrompt", "continueStrings", "answerShouldBe", "image", "buttonLayoutCols"]
+        "reminder", "inputPrompt", "suppressInputPrompt", "continueStrings", "answerShouldBe", "image", "buttonLayoutCols"]
         for(let i = 0; i < optionalParams.length; i++){
             let field = optionalParams[i];
             if(field in selectedQuestion) {

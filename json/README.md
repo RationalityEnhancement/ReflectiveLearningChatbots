@@ -1634,7 +1634,7 @@ String array constants represent a value of the type `strArr`, a list of strings
 
 They are represented by enclosing either the string within the braces of: `$S*{...}`, and separating the strings by commas within the braces. Note that **no square brackets**, which are involved in normal representations of arrays/lists, are needed to define a string array constant.
 
-Also note that it is not possible for a string constant within your string array to contain commas, as commas are used to separate the string constants in the array.
+Also note that it is not possible for a string constant within your string array to contain commas, as commas are used to separate the string constants in the array. Similarly, the string cannot begin or end with an empty character (space, tab, or new line), as these will just be trimmed off when reading the string array.
 
 Examples:
 

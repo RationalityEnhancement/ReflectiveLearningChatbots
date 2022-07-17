@@ -64,8 +64,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
         if(imageValidationObj.returnCode === DevConfig.FAILURE_CODE){
             console.log(imageValidationObj.data);
         } else {
-            console.log('validated');
-            console.log(imageValidationObj.returnCode);
             let imageSendObj = {}
             switch(question.image.sourceType){
                 case "local":

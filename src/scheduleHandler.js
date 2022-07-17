@@ -287,7 +287,7 @@ class ScheduleHandler{
         // Get telegram chatId
         let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
         if(!secretMap){
-            return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+            return ReturnMethods.returnFailure("Scheduler (Re): Cannot find participant chat ID");
         }
         let chatId = secretMap.chatId;
 
@@ -365,7 +365,7 @@ class ScheduleHandler{
                 // has been scheduled
                 let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
                 if(!secretMap){
-                    return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+                    return ReturnMethods.returnFailure("Scheduler (SAQ) Cannot find participant chat ID");
                 }
                 let chatId = secretMap.chatId;
                 if(config.debug.actionMessages) {
@@ -393,7 +393,7 @@ class ScheduleHandler{
                 // has been scheduled
                 let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
                 if(!secretMap){
-                    return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+                    return ReturnMethods.returnFailure("Scheduler (SAA): Cannot find participant chat ID");
                 }
                 let chatId = secretMap.chatId;
                 let conditionString = ((scheduledActionInfo.if) ? "if: " + scheduledActionInfo.if : "")
@@ -636,7 +636,7 @@ class ScheduleHandler{
             // Get the telegram chatID of the participant
             let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
             if(!secretMap){
-                return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+                return ReturnMethods.returnFailure("Scheduler (SOQ): Cannot find participant chat ID");
             }
             let chatId = secretMap.chatId;
 
@@ -738,7 +738,7 @@ class ScheduleHandler{
             // Get the telegram chatID of the participant
             let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
             if(!secretMap){
-                return ReturnMethods.returnFailure("Scheduler: Cannot find participant chat ID");
+                return ReturnMethods.returnFailure("Scheduler (SOA): Cannot find participant chat ID");
             }
             let chatId = secretMap.chatId;
 

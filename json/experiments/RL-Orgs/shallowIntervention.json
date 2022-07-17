@@ -11,15 +11,6 @@
         "if" : "${taskGoalsSetToday} == $B{true}",
         "then" : "Int-Reflection.taskGoalsRemind"
       }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "(${taskGoalsSetToday} == $B{true}) OR (${relGoalsSetToday} == $B{true})",
-        "then" : {
-          "English" : ["Good evening, ${FIRST_NAME}!"],
-          "Deutsch" : ["Guten Abend, ${FIRST_NAME}!"]
-        }
-      }
     ]
   },
   {

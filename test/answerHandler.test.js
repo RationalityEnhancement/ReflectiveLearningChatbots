@@ -49,7 +49,10 @@ let testQuestion = {
 const testPart = {
     uniqueId: testId,
     currentState: "awaitingAnswer",
-    currentQuestion: testQuestion
+    currentQuestion: testQuestion,
+    parameters : {
+        language : "English"
+    }
 }
 describe('Finish answer', () => {
     describe('Finish string answer', ()=> {
@@ -100,8 +103,8 @@ describe('Process answer', () =>{
             testPart['currentState'] = "answerReceived";
             testPart['currentQuestion'] = testQuestion;
             let returnObj = await AnswerHandler.processAnswer(testPart, "hello");
-            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            expect(returnObj.data).to.equal(DevConfig.NO_RESPONSE_STRING);
+            expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+            expect(returnObj.successData).to.equal(DevConfig.NO_RESPONSE_STRING);
             testPart['currentState'] = "awaitingAnswer";
         });
         it('Should fail when participant is undefined', async () => {

@@ -74,6 +74,7 @@
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2Leaders.json}",
         "Morning-Goals-All" : "$F{json/experiments/RL-Orgs/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs/allCondsPreReflection.json}",
         "Int-Reflection" : "$F{json/experiments/RL-Orgs/goalSettingIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpLeaders.json}"
@@ -87,6 +88,7 @@
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2Leaders.json}",
         "Morning-Goals-All" : "$F{json/experiments/RL-Orgs/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs/allCondsPreReflection.json}",
         "Int-Reflection" : "$F{json/experiments/RL-Orgs/shallowIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpLeaders.json}"
@@ -100,6 +102,7 @@
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2Leaders.json}",
         "Morning-Goals-All" : "$F{json/experiments/RL-Orgs/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs/allCondsPreReflection.json}",
         "Int-Reflection" : "$F{json/experiments/RL-Orgs/MCIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpLeaders.json}"
@@ -113,6 +116,7 @@
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2Followers.json}",
         "Morning-Goals-All" : "$F{json/experiments/RL-Orgs/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs/allCondsPreReflection.json}",
         "Int-Reflection" : "$F{json/experiments/RL-Orgs/goalSettingIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestFollowers.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpFollowers.json}"
@@ -126,6 +130,7 @@
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2Followers.json}",
         "Morning-Goals-All" : "$F{json/experiments/RL-Orgs/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs/allCondsPreReflection.json}",
         "Int-Reflection" : "$F{json/experiments/RL-Orgs/shallowIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestFollowers.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpFollowers.json}"
@@ -139,6 +144,7 @@
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2Followers.json}",
         "Morning-Goals-All" : "$F{json/experiments/RL-Orgs/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs/allCondsPreReflection.json}",
         "Int-Reflection" : "$F{json/experiments/RL-Orgs/MCIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestFollowers.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpFollowers.json}"

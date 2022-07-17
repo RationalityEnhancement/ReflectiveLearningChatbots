@@ -1,6 +1,6 @@
 {
   "experimentName" : "DayOne",
-  "experimentId" : "ScheduleTestFail",
+  "experimentId" : "ScheduleTest",
   "experimentConditions" : ["Control", "Experimental"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",

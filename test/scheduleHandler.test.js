@@ -283,28 +283,29 @@ describe('Scheduling one Operation', () => {
         });
         it('Should add experiment ID mappings and add two subjects', async () => {
             await idMaps.addExperiment(testConfig.experimentId);
-            await idMaps.addExperiment(failConfig.experimentId);
+            // await idMaps.addExperiment(failConfig.experimentId);
 
             await idMaps.addIDMapping(testConfig.experimentId, "12455", testId)
             await idMaps.addIDMapping(testConfig.experimentId, "12345", testId2)
-            await idMaps.addIDMapping(failConfig.experimentId, "12355", testId)
-            await idMaps.addIDMapping(failConfig.experimentId, "12345", testId2)
+            // await idMaps.addIDMapping(failConfig.experimentId, "12355", testId)
+            // await idMaps.addIDMapping(failConfig.experimentId, "12345", testId2)
 
             let exp1 = await idMaps.getExperiment(testConfig.experimentId)
-            let exp2 = await idMaps.getExperiment(failConfig.experimentId)
+            // let exp2 = await idMaps.getExperiment(failConfig.experimentId)
 
             expect(exp1.IDMappings.length).to.equal(2)
-            expect(exp2.IDMappings.length).to.equal(2)
+            // expect(exp2.IDMappings.length).to.equal(2)
         })
         it('Should add and update participant parameter', async () => {
 
             await participants.add(testId);
-            await participants.updateParameter(testId, "language", "English")
+            await participants.initializeParticipant(testId, testConfig);
             await participants.updateParameter(testId, "timezone", "Europe/Berlin")
             var participant = await participants.get(testId);
             expect(participant).to.not.be.null;
             expect(participant.uniqueId).to.equal(testId);
             expect(participant.parameters.language).to.equal("English");
+            expect(participant.experimentId).to.equal(testConfig.experimentId)
             expect(participant.parameters.timezone).to.equal("Europe/Berlin");
 
 
@@ -312,12 +313,13 @@ describe('Scheduling one Operation', () => {
         it('Should add and update participant parameter 2', async () => {
 
             await participants.add(testId2);
-            await participants.updateParameter(testId2, "language", "English")
+            await participants.initializeParticipant(testId2, testConfig);
             await participants.updateParameter(testId2, "timezone", "Europe/Berlin")
             var participant = await participants.get(testId2);
             expect(participant).to.not.be.null;
             expect(participant.uniqueId).to.equal(testId2);
             expect(participant.parameters.language).to.equal("English");
+            expect(participant.experimentId).to.equal(testConfig.experimentId)
             expect(participant.parameters.timezone).to.equal("Europe/Berlin");
 
 

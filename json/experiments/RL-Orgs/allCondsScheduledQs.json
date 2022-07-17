@@ -21,13 +21,13 @@
     "qId" : "Morning-Goals-All.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Goal-Setting}"
+    "if" : "${STAGE_NAME} IN_ARRAY $S*{Goal-Setting, Intervention}"
   },
   {
-    "qId" : "Goal-Setting.selectReflection",
+    "qId" : "Pre-Reflection.initiateContact",
     "atTime" : "${eveningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Goal-Setting}"
+    "if" : "${STAGE_NAME} IN_ARRAY $S*{Goal-Setting, Intervention}"
   },
   {
     "qId" : "Pre-Test-2.checkComplete",
@@ -40,18 +40,6 @@
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
     "if" : "(${STAGE_NAME} == $S{Pre-Test-2}) AND (${preTest2Complete} == $B{false})"
-  },
-  {
-    "qId" : "Morning-Goals-All.initiateContact",
-    "atTime" : "${morningTime}",
-    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Intervention}"
-  },
-  {
-    "qId" : "Int-Reflection.selectReflection",
-    "atTime" : "${eveningTime}",
-    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Intervention}"
   },
   {
     "qId" : "Post-Test.checkComplete",

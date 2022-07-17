@@ -4,10 +4,6 @@
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
   },
   {
-    "name" : "Pre-Test",
-    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
-  },
-  {
     "name" : "Intervention",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
     "lengthDays" : 3

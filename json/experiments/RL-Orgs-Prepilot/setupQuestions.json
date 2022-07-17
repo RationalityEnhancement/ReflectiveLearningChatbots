@@ -159,6 +159,6 @@
         "args" : ["Onboarding"]
       }
     ],
-    "nextQuestion" : "Onboarding.survey"
+    "nextQuestion" : "Onboarding.startOnboarding"
   }
 ]

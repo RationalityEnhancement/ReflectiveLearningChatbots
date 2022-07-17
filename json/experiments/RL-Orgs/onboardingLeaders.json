@@ -1,10 +1,48 @@
 [
   {
+    "qId" : "startOnboarding",
+    "qType" : "dummy",
+    "replyMessages": {
+      "English" : ["Let us begin with the first questions already!"],
+      "Deutsch" : ["Fangen wir schon mit den ersten Fragen an!"]
+    },
+    "nextQuestion" : "Onboarding.survey"
+  },
+  {
+    "qId" : "initiateContact",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "then" : "Onboarding.wantContinue"
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "then" : "Onboarding.endExperiment",
+        "else" : "Onboarding.survey"
+      }
+    ],
+    "selectQFirst" : true,
+    "cNextActions" : {
+      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+      "then" : [
+        {
+          "aType" : "setBooleanVar",
+          "args" : ["warningGiven", "$B{true}"]
+        }
+      ]
+    },
+    "replyMessages" : {
+      "English" : ["Good morning, ${FIRST_NAME}!"],
+      "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
+    }
+  },
+  {
     "qId" : "survey",
     "qType" : "qualtrics",
     "text" : {
-      "English" : "Let us begin with the first questions already!\n\nThe first thing we need from you is some basic information. Please take the time to fill out the following survey thoughtfully and thoroughly.",
-      "Deutsch" : "Fangen wir schon mit den ersten Fragen an!\n\nWir brauchen zuerst von Ihnen einige Basisinformationen. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+      "English" : "The first thing we need from you is some basic information. Please take the time to fill out the following survey thoughtfully and thoroughly.",
+      "Deutsch" : "Wir brauchen zuerst von Ihnen einige Basisinformationen. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
     },
     "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
     "qualtricsFields" : [

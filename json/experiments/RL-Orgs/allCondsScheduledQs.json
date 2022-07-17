@@ -1,9 +1,9 @@
 [
   {
-    "qId" : "Onboarding.survey",
+    "qId" : "Onboarding.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Onboarding}"
+    "if" : "(${STAGE_NAME} == $S{Onboarding}) AND (${onboardingComplete} == $B{false})"
   },
   {
     "qId" : "Pre-Test.checkComplete",

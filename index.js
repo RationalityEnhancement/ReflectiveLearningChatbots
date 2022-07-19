@@ -11,6 +11,7 @@ const Communicator = require('./src/communicator')
 const QuestionHandler = require('./src/questionHandler');
 const AnswerHandler = require('./src/answerHandler');
 const ScheduleHandler = require('./src/scheduleHandler');
+const ReminderHandler = require('./src/reminderHandler')
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
@@ -170,7 +171,7 @@ bot.command('log_exp', async ctx => {
 
 // Delete the participant
 bot.command('delete_me', async ctx => {
-    if(!config.debug.experimenter) return;
+
 
     // Check if participant exists
     try{
@@ -185,10 +186,20 @@ bot.command('delete_me', async ctx => {
       console.log('Participant does not exist!')
       return;
     }
+    // In field experiment, only allow deleting in the setup phase
+    if(!config.debug.experimenter){
+        if(participant.stages.activity.length > 0)
+            return;
+    }
+
+
 
     // Remove all jobs for participant
     let conditionIdx = participant["conditionIdx"];
     await ScheduleHandler.removeAllJobsForParticipant(uniqueId);
+
+    // Cancel current reminders
+    await ReminderHandler.cancelCurrentReminder(uniqueId);
 
     // Remove participant from database
     await participants.remove(uniqueId);

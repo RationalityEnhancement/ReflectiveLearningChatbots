@@ -24,21 +24,9 @@
     "if" : "${STAGE_NAME} == $S{Intervention}"
   },
   {
-    "qId" : "Post-Test.checkComplete",
-    "atTime" : "05:00",
-    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Post-Test}"
-  },
-  {
     "qId" : "Post-Test.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
     "if" : "(${STAGE_NAME} == $S{Post-Test}) AND (${postTestComplete} == $B{false})"
-  },
-  {
-    "qId" : "Follow-Up.initiateContact",
-    "atTime" : "${morningTime}",
-    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Follow-Up}"
   }
 ]

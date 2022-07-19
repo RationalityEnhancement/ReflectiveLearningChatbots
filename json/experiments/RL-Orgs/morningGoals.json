@@ -127,7 +127,7 @@
       {
         "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}) AND (${STAGE_DAY} MULTIPLE_OF $N{2})",
         "then" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         }
       },
@@ -166,7 +166,7 @@
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
         "then" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         },
         "else" : {
@@ -201,7 +201,7 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
         "then" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         },
         "else" : {
@@ -508,7 +508,7 @@
           "Deutsch" : ["Alles klar.", "Jetzt machen wir mit den arbeitsbezogenen Zielen weiter."]
         },
         "else" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         }
       }
@@ -544,7 +544,7 @@
           "Deutsch" : ["Gute Arbeit!", "Jetzt machen wir mit den arbeitsbezogenen Zielen weiter."]
         },
         "else" : {
-          "English" : ["Got it. Good luck completing your goals today!"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         }
       }

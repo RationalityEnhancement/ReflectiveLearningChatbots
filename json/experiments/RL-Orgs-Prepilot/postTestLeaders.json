@@ -9,7 +9,7 @@
       },
       {
         "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
-        "then" : "Post-Test.endExperiment",
+        "then" : "Post-Test.endExperimentEarly",
         "else" : "Post-Test.survey"
       }
     ],
@@ -42,7 +42,7 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
-        "then" : "Post-Test.endExperiment",
+        "then" : "Post-Test.endExperimentEarly",
         "else" : "Post-Test.survey"
       }
     ],
@@ -57,7 +57,7 @@
     ]
   },
   {
-    "qId" : "endExperiment",
+    "qId" : "endExperimentEarly",
     "qType" : "dummy",
     "nextActions" : [
       {
@@ -70,13 +70,26 @@
     }
   },
   {
+    "qId" : "endExperiment",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["And with that, we have finally come to the end of the experiment!", "It was great interacting with you, and I appreciate the effort you put into your responses."],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    }
+  },
+  {
     "qId" : "survey",
     "qType" : "qualtrics",
     "text" : {
-      "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
+      "English" : "This is the last stage of the experiment! Please take the time to fill out the following survey thoughtfully and thoroughly.",
       "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
     },
-    "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
+    "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_b4aaj0DegDmfmUS",
     "qualtricsFields" : [
       {
         "field" : "uniqueId",
@@ -96,36 +109,14 @@
       "numRepeats" : 4
     },
     "inputPrompt" : {
-      "English" : "Enter the survey code that you receive at the end of the survey to continue. (ABCDE, 12345)",
-      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren. (ABCDE, 12345)"
+      "English" : "Enter the survey code that you receive at the end of the survey to continue.",
+      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren."
     },
-    "continueStrings" : ["ABCDE", "12345"],
-    "nextActions" : [
-      {
-        "aType" : "setBooleanVar",
-        "args" : ["postTestComplete", "$B{true}"]
-      },
-      {
-        "aType" : "setBooleanVar",
-        "args" : ["warningGiven", "$B{false}"]
-      }
-    ],
+    "continueStrings" : ["HEDGEHOG"],
+    "nextQuestion" : "Post-Test.endExperiment",
     "replyMessages" : {
-      "English" : ["Thank you for that!", "That’s all for now. From today onwards, I will be quiet for a day. You will hear from me after 1 day, when I present you the final round of questionnaires.", "See you later, and have a good break!"],
-      "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
+      "English" : ["Thank you for that!"],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
     }
-  },
-  {
-    "qId" : "checkComplete",
-    "qType" : "dummy",
-    "cNextActions" : [
-      {
-        "if": "${postTestComplete} == $B{true}",
-        "then" : [{
-          "aType" : "startStage",
-          "args" : ["Pause"]
-        }]
-      }
-    ]
   }
 ]

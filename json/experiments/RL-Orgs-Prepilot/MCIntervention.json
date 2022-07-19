@@ -841,7 +841,7 @@
         "if": "${STAGE_DAY} == $N{3}",
         "then": {
           "English": [
-            "Good job on reaching the end of the second and final stage!",
+            "Good job on reaching the end of the reflection stage!",
             "We will now have another round of questionnaires."
           ],
           "Deutsch": [

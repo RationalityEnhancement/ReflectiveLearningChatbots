@@ -323,7 +323,7 @@
       {
         "if" : "${STAGE_DAY} == $N{3}",
         "then" : {
-          "English" : ["Good job on reaching the end of the second and final stage!", "We will now have another round of questionnaires."],
+          "English" : ["Good job on reaching the end of the reflection stage!", "We will now have another round of questionnaires."],
           "Deutsch" : ["Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!", "Jetzt haben wir noch eine Runde Umfragen."]
         },
         "else" : {

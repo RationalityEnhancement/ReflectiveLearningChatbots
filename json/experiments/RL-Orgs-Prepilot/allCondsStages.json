@@ -11,14 +11,5 @@
   {
     "name" : "Post-Test",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
-  },
-  {
-    "name" : "Pause",
-    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    "lengthDays" : 1
-  },
-  {
-    "name" : "Follow-Up",
-    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
   }
 ]

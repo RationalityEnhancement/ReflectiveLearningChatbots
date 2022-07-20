@@ -50,11 +50,11 @@
     "testNumArr" : "numArr"
   },
   "debug" : {
-    "experimenter" : false,
+    "experimenter" : true,
     "actionMessages" : true,
     "enableNext" : true,
     "messageDelay" : false,
-    "developer" : false
+    "developer" : true
   },
   "languages" : ["English"],
   "defaultLanguage" : "English",

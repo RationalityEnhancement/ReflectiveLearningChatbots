@@ -222,6 +222,16 @@ class ConfigParser{
                 varVal = config.phrases.schedule.dayNames[participant.parameters.language][tDateObj.dayOfWeek];
                 foundReserved = true;
                 break;
+            case DevConfig.VAR_STRINGS.CURRENT_HOUR:
+                let hDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
+                varVal = hDateObj.hours;
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CURRENT_MIN:
+                let mDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
+                varVal = mDateObj.minutes;
+                foundReserved = true;
+                break;
             case DevConfig.VAR_STRINGS.CONDITION:
                 varVal = participant["conditionName"];
                 if(!varVal) varVal = "";
@@ -1332,6 +1342,53 @@ class ConfigParser{
         }
         return ReturnMethods.returnSuccess(expression);
     }
+    static validateUserPrompts(userPrompts){
+        if(!Array.isArray(userPrompts)) {
+            return ReturnMethods.returnFailure("CParser: user prompted questions must be array");
+        }
+
+        if(!userPrompts.every(el => (typeof el === "object") && !Array.isArray(el) && (Object.keys(el).length > 0))) {
+            return ReturnMethods.returnFailure("CParser: all user prompted questions must be non-empty objects");
+        }
+
+        if(!userPrompts.every(el => ("keyword" in el) && (typeof el["keyword"] === "string"))) {
+            return ReturnMethods.returnFailure("CParser: all user prompted questions must have a string keyword");
+        }
+
+        if(!userPrompts.every(el => ("description" in el) && (typeof el["description"] === "string"))) {
+            return ReturnMethods.returnFailure("CParser: all user prompted questions must have a string description");
+        }
+
+        if(!userPrompts.every(el => ("qId" in el) && (typeof el["qId"] === "string"))) {
+            return ReturnMethods.returnFailure("CParser: all user prompted questions must have a string qId");
+        }
+
+        if(!userPrompts.every(el => !("if" in el) || (typeof el["if"] === "string"))){
+            return ReturnMethods.returnFailure("CParser: all if fields must be strings");
+        }
+
+        return ReturnMethods.returnSuccess(true);
+    }
+    static buildQuestionPromptText(participant, config){
+        let condition;
+        if(!participant.conditionName){
+            condition = config;
+        } else {
+            if(!(participant.conditionName in config["conditionQuestions"])){
+                let errorMsg = "CParser: Condition " + participant.conditionName + " does not exist in config file!";
+                return ReturnMethods.returnFailure(errorMsg)
+            }
+            condition = config["conditionQuestions"][participant.conditionName];
+        }
+        let userPrompts = condition["userPromptedQuestions"];
+
+        let promptTexts = [];
+        for(let i = 0; i < userPrompts.length; i++){
+            let currentPrompt = userPrompts[i];
+
+        }
+    }
+
 }
 
 module.exports = ConfigParser;

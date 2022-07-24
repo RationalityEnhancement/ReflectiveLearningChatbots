@@ -103,7 +103,8 @@ describe('Replacing variables', () => {
         uniqueId: "12345",
         parameters : {
             "PID" : "80085",
-            "pLength" : undefined
+            "pLength" : undefined,
+            "timezone" : "Europe/Berlin"
         },
         stages : {
             activity : [],
@@ -225,6 +226,20 @@ describe('Replacing variables', () => {
             let returnObj = ConfigParser.getVariable(copyPart, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal("");
+        })
+        it('Should fetch current hour as number', () => {
+
+            let testString = DevConfig.VAR_STRINGS.CURRENT_HOUR;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(typeof returnObj.data).to.equal("number");
+        })
+        it('Should fetch current minute as number', () => {
+
+            let testString = DevConfig.VAR_STRINGS.CURRENT_MIN;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(typeof returnObj.data).to.equal("number");
         })
         it('Should fail if participant undefined', () => {
             let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
@@ -2991,5 +3006,102 @@ describe("Evaluate expression object", () => {
         })
     })
 
+})
 
+describe('User prompted questions', () => {
+    let userPromptedGood = [
+        {
+            "keyword" : "test1",
+            "description" : "desc1",
+            "qId" : "eep"
+        },
+        {
+            "keyword" : "test2",
+            "description" : "desc2",
+            "qId" : "oop",
+            "if" : "condition"
+        }
+    ]
+    describe('Validate user prompted questions', () => {
+        it('Should fail when keyword missing', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            delete copyPrompts[0]["keyword"];
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when description missing', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            delete copyPrompts[0]["description"];
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when qId missing', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            delete copyPrompts[0]["qId"];
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when qId not string', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[0]["qId"] = 4;
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when keyword not string', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[0]["keyword"] = 4;
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when description not string', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[0]["description"] = 4;
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when if not string', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[1]["if"] = 4;
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when if not string', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[1]["if"] = 4;
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when not array', () => {
+            let returnObj = ConfigParser.validateUserPrompts({});
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when element of array not object', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[1] = ["1", "2", "3"]
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when element of array empty object', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[1] = {}
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should succeed', () => {
+            let returnObj = ConfigParser.validateUserPrompts(userPromptedGood);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        })
+        
+    })
 })

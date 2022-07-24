@@ -600,7 +600,7 @@ bot.command('talk', async ctx => {
     if(participant.currentState.startsWith('awaitingAnswer')){
         try {
             await Communicator.sendMessage(bot, participant,
-                ctx.from.id, config.phrases.experiment.cannotStartTalk[partLang], !config.debug.messageDelay);
+                ctx.from.id, config.phrases.experiment.cannotStartTalkOutstanding[partLang], !config.debug.messageDelay);
             return;
         } catch(err){
             await handleError(participant, 'Unable to send talk cannot start message!\n'
@@ -608,17 +608,28 @@ bot.command('talk', async ctx => {
             console.log('Unable to send talk cannot start message!');
             console.error(err);
         }
-
     }
 
     // Cancel other open operations, if any
     SKIP_TO_STAGE[ctx.from.id] = false;
-    TALK[ctx.from.id] = true;
     REPORT_FEEDBACK[ctx.from.id] = false;
-    // TODO: Build appropriate talk start message and present keywords
+    TALK[ctx.from.id] = false;
+    let sendText = config.phrases.experiment.cannotStartTalk[participant.parameters.language];
+
+    // Try to build the text if there are any possible options, otherwise send default message that there are no
+    //      questions available to prompt.
+    let userInfo = await bot.telegram.getChat(ctx.from.id);
+    participant.firstName = userInfo.first_name;
+    let textObj = ConfigParser.buildQuestionPromptText(participant, config);
+    if(textObj.returnCode === DevConfig.SUCCESS_CODE){
+        TALK[ctx.from.id] = true;
+        sendText = textObj.data;
+    } else if(textObj.returnCode === DevConfig.FAILURE_CODE){
+        await handleError(participant, 'Unable to build talk start message\n' + textObj.data);
+    }
     try {
         await Communicator.sendMessage(bot, participant,
-            ctx.from.id, config.phrases.experiment.talkStart[partLang], !config.debug.messageDelay);
+            ctx.from.id, sendText, !config.debug.messageDelay);
     } catch(err){
         await handleError(participant, 'Unable to send talk start message!\n'
             + err.message + '\n' + err.stack);

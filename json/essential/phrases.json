@@ -163,7 +163,7 @@
       "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht weiter helfen!"
     },
     "didntUnderstand" : {
-      "English" : "Sorry, I didn't understand what you are trying to say! Send <i>/help</i> if you would like more information on how to interact with me, or wait for the next time that I ask you a question to talk to me",
+      "English" : "Sorry, I didn't understand what you are trying to say! Send <i>/help</i> if you would like more information on how to interact with me, or wait for the next time that I ask you a question to talk to me.",
       "Deutsch" : "Tut mir leid, ich habe das nicht verstanden! Senden Sie <i>/help</i>, wenn Sie mehr Informationen dazu möchten, wie mit mir zu interagieren ist, oder warten Sie einfach auf meine nächste Frage, um mit mir zu reden."
     },
     "cannotInteract" : {
@@ -179,8 +179,8 @@
       "Deutsch" : "Keine Operationen sind jetzt am Laufen, die abgebrochen werden müssen!"
     },
     "talkStart" : {
-      "English" : "I see that you want to tell me something. Send one of the following keywords in bold below corresponding to the topic you want to talk about.",
-      "Deutsch" : "Ich sehe, dass Sie mir etwas sagen wollen. Senden Sie eines der untenstehenden Stichwörter im Fettdruck, das dem Thema entspricht, das Sie besprechen wollen."
+      "English" : "Hi ${FIRST_NAME}!\n\nI see that you want to tell me something. Send one of the following keywords in bold below corresponding to the topic you want to talk about.",
+      "Deutsch" : "Hi ${FIRST_NAME}!\n\nIch sehe, dass Sie mir etwas sagen wollen. Senden Sie eines der untenstehenden Stichwörter im Fettdruck, das dem Thema entspricht, das Sie besprechen wollen."
     },
     "talkCancelDescription" : {
       "English" : "Cancel this operation and return to experiment.",
@@ -190,7 +190,15 @@
       "English" : "Seems like you don't have anything else to tell me now. No problem!",
       "Deutsch" : "Es scheint, dass Sie mir jetzt sonst nichts zu sagen haben. Kein Problem!"
     },
+    "talkKeywordNotRecognized" : {
+      "English" : "I didn't understand. Please try again and make sure to type in the keyword correctly.",
+      "Deutsch" : "Ich habe nicht verstanden. Versuchen Sie noch einmal, und stellen Sie sicher, das Stichwort richtig einzugeben."
+    },
     "cannotStartTalk" : {
+      "English" : "Sorry, but there is nothing I can talk to you about at this point in time. Please try another time, or wait for the next scheduled question.",
+      "Deutsch" : "Entschuldigung, es gibt derzeit nichts, über das ich mit Ihnen reden kann. Versuchen später noch einmal, oder warten Sie auf die nächste geplante Frage."
+    },
+    "cannotStartTalkOutstanding" : {
       "English" : "Sorry, but I cannot talk to you about anything else while there is an outstanding question. Send <i>/repeat</i> to see the question again.",
       "Deutsch" : "Entschuldigung, ich kann nicht mit Ihnen über sonst etwas reden, wenn eine Frage aussteht. Senden Sie <i>/repeat</i>, um die Frage wieder abzurufen."
     }

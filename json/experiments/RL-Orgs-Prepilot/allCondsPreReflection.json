@@ -16,6 +16,12 @@
         "if" : "(${taskGoalsSetToday} == $B{true}) OR (${relGoalsSetToday} == $B{true})",
         "then" : "Pre-Reflection.readyToStart"
       }
+    ],
+    "nextActions" : [
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["reflectionStartedToday", "$B{true}"]
+      }
     ]
   },
   {

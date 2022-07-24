@@ -3152,6 +3152,7 @@ describe('User prompted questions', () => {
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         })
 
+
     })
     describe('Filtering available prompts',() => {
         it('Should fail when condition is invalid', () => {

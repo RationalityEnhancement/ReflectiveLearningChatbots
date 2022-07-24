@@ -1363,7 +1363,8 @@ class ConfigParser{
             if(!("keyword" in el)) return false;
             if(!(typeof el["keyword"] === "object")) return false;
             if(Array.isArray(el["keyword"])) return false;
-            if(!lodash.isEqual(Object.keys(el["keyword"]), languages)) return false;
+            if(languages.length !==
+                lodash.intersection(Object.keys(el["keyword"]), languages).length) return false;
             if(!Object.values(el["keyword"]).every(word => typeof word === "string")) return false;
             return true;
         })) {
@@ -1374,7 +1375,8 @@ class ConfigParser{
             if(!("description" in el)) return false;
             if(!(typeof el["description"] === "object")) return false;
             if(Array.isArray(el["description"])) return false;
-            if(!lodash.isEqual(Object.keys(el["description"]), languages)) return false;
+            if(languages.length !==
+                lodash.intersection(Object.keys(el["description"]), languages).length) return false;
             if(!Object.values(el["description"]).every(word => typeof word === "string")) return false;
             return true;
         })) {
@@ -1476,16 +1478,17 @@ class ConfigParser{
 
         // If conditions rule out all possible questions
         if(availablePromptsObj.data.length === 0){
-            return ReturnMethods.returnPartialFailure("CParser: No prompts found for this time!",promptTexts)
+            return ReturnMethods.returnPartialFailure("CParser: No prompts found for this time!",[])
         }
 
         // Build the text with all of the keywords and corresponding descriptions
-        let promptTexts = availablePromptsObj.data.filter(prompt => {
+        let promptTexts = availablePromptsObj.data.map(prompt => {
             return "* <b>" + prompt.keyword[partLang] + "</b> - " + prompt.description[partLang];
         });
-        let stringText = config.phrases.experiment.talkStart[partLang] + "\n";
+        console.log(promptTexts);
+        let stringText = config.phrases.experiment.talkStart[partLang].trim() + "\n\n";
         stringText += promptTexts.join('\n\n').trim();
-        stringText += "\n\n" + "* <i>/cancel</i>" +
+        stringText += "\n\n" + "* <i>/cancel</i> - " +
             config.phrases.experiment.talkCancelDescription[partLang];
 
         return ReturnMethods.returnSuccess(stringText);

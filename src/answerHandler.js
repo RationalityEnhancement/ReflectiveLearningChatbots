@@ -168,7 +168,7 @@ class AnswerHandler{
         else if(!["awaitingAnswer", "awaitingAnswerScheduled"].includes(participant.currentState)){
             try{
                 return ReturnMethods.returnPartialFailure(
-                    config.phrases.experiment.cannotInteract[participant.parameters.language],
+                    config.phrases.experiment.didntUnderstand[participant.parameters.language],
                     DevConfig.NO_RESPONSE_STRING
                 );
             } catch(err){

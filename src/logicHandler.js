@@ -137,7 +137,8 @@ let processNextSteps = async(bot, uniqueId) => {
 
     // If a constructed question has been stored in next question obj
     if(!!nextQuestionObj.data){
-        let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data, !config.debug.messageDelay);
+        let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data,
+            false, !config.debug.messageDelay);
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure(
                 "LHandler (PNS):Failure sending question:"
@@ -199,10 +200,11 @@ module.exports.getAndConstructNextQuestion = (participant, currentQuestion) => {
  * @param participant participant object
  * @param chatId participant chatId
  * @param question question to be sent
+ * @param scheduled
  * @param debugExp whether in experimenter debug mode or not
  * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
  */
-module.exports.sendQuestion = async (bot, participant, chatId, question, debugExp) => {
+module.exports.sendQuestion = async (bot, participant, chatId, question, scheduled=false, debugExp) => {
 
     // Cancel any outstanding reminder messages
     let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant.uniqueId);
@@ -230,7 +232,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
     // Handle any outstanding questions before sending next question.
     await AnswerHandler.handleNoResponse(participant.uniqueId);
 
-
     for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
         try{
             await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
@@ -241,7 +242,13 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
         }
     }
 
+    // Update participant state parameters
+    let newState = scheduled ? "awaitingAnswerScheduled" : "awaitingAnswer";
+    await participants.updateField(participant.uniqueId, 'currentState', newState);
+    await participants.eraseCurrentAnswer(participant.uniqueId)
+    await participants.updateField(participant.uniqueId, 'currentQuestion', question);
 
+    // Set reminders, if any
     if(question.reminder && question.reminder["freqMins"]){
         let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,
             question.reminder.freqMins, question.reminder.numRepeats);

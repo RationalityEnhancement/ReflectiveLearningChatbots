@@ -44,6 +44,7 @@ class AnswerHandler{
 
             let saveString = DevConfig.NO_RESPONSE_STRING;
             switch(participant.currentState){
+                case 'awaitingAnswerScheduled':
                 case "awaitingAnswer" :
                     saveString = DevConfig.NO_RESPONSE_STRING;
                     break;
@@ -58,7 +59,7 @@ class AnswerHandler{
             // E.g., in a multi-choice question where the user has not clicked "Done"
             // If there's no current answer, save the answer as "No response" if
             let fullAnswer = [saveString];
-            if(participant.currentState === 'awaitingAnswer'){
+            if(participant.currentState.startsWith('awaitingAnswer')){
                 try{
                     fullAnswer = currentAnswer.length > 0 ? currentAnswer : fullAnswer;
                 } catch(error){
@@ -164,7 +165,7 @@ class AnswerHandler{
                     err.message + "\n" + err.stack)
             }
         }
-        else if(!["awaitingAnswer"].includes(participant.currentState)){
+        else if(!["awaitingAnswer", "awaitingAnswerScheduled"].includes(participant.currentState)){
             try{
                 return ReturnMethods.returnPartialFailure(
                     config.phrases.experiment.cannotInteract[participant.parameters.language],
@@ -183,7 +184,7 @@ class AnswerHandler{
         let currentQuestion = participant.currentQuestion;
 
         // If answer is expected
-        if(participant.currentState === 'awaitingAnswer'){
+        if(participant.currentState.startsWith('awaitingAnswer')){
 
             switch(currentQuestion["qType"]){
                 // If the expected answer is one from a list of possible answers

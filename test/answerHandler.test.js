@@ -980,6 +980,21 @@ describe('Handling no answer', () => {
         expect(lastAnswer.text).to.equal(testQuestion.text);
         expect(participant.currentState).to.equal("answerReceived");
     });
+    it('Should update answer with no response - scheduled', async () => {
+        await participants.updateField(testId, "currentState", "awaitingAnswerScheduled");
+        await participants.eraseCurrentAnswer(testId);
+        await participants.updateField(testId, "currentQuestion", testQuestion);
+        let returnObj = await AnswerHandler.handleNoResponse(testId);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+
+        let participant = await participants.get(testId);
+        let lastAnswer = participant.answers[participant.answers.length-1];
+        expect(lastAnswer.answer).to.eql([DevConfig.NO_RESPONSE_STRING]);
+        expect(lastAnswer.qId).to.equal(testQuestion.qId);
+        expect(lastAnswer.text).to.equal(testQuestion.text);
+        expect(participant.currentState).to.equal("answerReceived");
+    });
     it('Should update answer with invalid answer', async () => {
         await participants.updateField(testId, "currentState", "invalidAnswer");
         await participants.eraseCurrentAnswer(testId);
@@ -1013,6 +1028,23 @@ describe('Handling no answer', () => {
     it('Should update answer with current Answer', async () => {
         const currentAnswer = ["a","b","c"];
         await participants.updateField(testId, "currentState", "awaitingAnswer");
+        await participants.updateField(testId,"currentAnswer", currentAnswer);
+        await participants.updateField(testId, "currentQuestion", testQuestion);
+        let returnObj = await AnswerHandler.handleNoResponse(testId);
+        expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
+
+        let participant = await participants.get(testId);
+        let lastAnswer = participant.answers[participant.answers.length-1];
+        expect(lastAnswer.answer).to.eql(currentAnswer);
+        expect(lastAnswer.qId).to.equal(testQuestion.qId);
+        expect(lastAnswer.text).to.equal(testQuestion.text);
+        expect(participant.currentState).to.equal("answerReceived");
+
+    });
+    it('Should update answer with current Answer - scheduled', async () => {
+        const currentAnswer = ["a","b","c"];
+        await participants.updateField(testId, "currentState", "awaitingAnswerScheduled");
         await participants.updateField(testId,"currentAnswer", currentAnswer);
         await participants.updateField(testId, "currentQuestion", testQuestion);
         let returnObj = await AnswerHandler.handleNoResponse(testId);

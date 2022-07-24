@@ -666,7 +666,7 @@ class ScheduleHandler{
                     }
                 }
                 if(evaluation){
-                   let returnObj = await sendQuestion(bot, newParticipant, chatId, question, !config.debug.messageDelay);
+                   let returnObj = await sendQuestion(bot, newParticipant, chatId, question, true, !config.debug.messageDelay);
                    if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                        console.log("Scheduler: Error sending question:\n" + returnObj.data);
                    }

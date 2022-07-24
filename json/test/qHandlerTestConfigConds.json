@@ -1,7 +1,7 @@
 {
   "experimentName" : "QHandler",
   "experimentId" : "12345",
-  "experimentConditions" : ["Cond1", "Cond2", "VarCond", "FailCond"],
+  "experimentConditions" : ["Cond1", "Cond2", "VarCond", "FailCond1", "FailCond2"],
   "conditionAssignments" : [0.5, 0.5],
   "assignmentScheme" : "pid",
   "debug" : {
@@ -62,7 +62,31 @@
         "qId": "chain1.q1",
         "atTime" : "13:00",
         "onDays" : ["Mon"]
-      }]
+      }],
+      "userPromptedQuestions" : [
+        {
+          "keyword" : {
+            "English" : "space",
+            "Deutsch" : "weltraum"
+          },
+          "description" : {
+            "English" : "test description space",
+            "Deutsch" : "Testbeschreibung weltraum"
+          },
+          "qId" : "chain1.q1"
+        },
+        {
+          "keyword" : {
+            "English" : "sponge",
+            "Deutsch" : "schwamm"
+          },
+          "description" : {
+            "English" : "test description sponge",
+            "Deutsch" : "Testbeschreibung schwamm"
+          },
+          "qId" : "chain1.q2"
+        }
+      ]
     },
     "Cond2" : {
       "questionCategories": {
@@ -154,6 +178,30 @@
           "qId" : "chain4.q2",
           "atTime" : "10:00",
           "onDays" : ["Mon"]
+        }
+      ],
+      "userPromptedQuestions" : [
+        {
+          "keyword" : {
+            "English" : "space",
+            "Deutsch" : "weltraum"
+          },
+          "description" : {
+            "English" : "test description space",
+            "Deutsch" : "Testbeschreibung weltraum"
+          },
+          "qId" : 4
+        },
+        {
+          "keyword" : {
+            "English" : "sponge",
+            "Deutsch" : "schwamm"
+          },
+          "description" : {
+            "English" : "test description sponge",
+            "Deutsch" : "Testbeschreibung schwamm"
+          },
+          "qId" : "chain1.q2"
         }
       ]
     },

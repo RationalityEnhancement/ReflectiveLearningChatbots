@@ -179,8 +179,8 @@
       "Deutsch" : "Keine Operationen sind jetzt am Laufen, die abgebrochen werden müssen!"
     },
     "talkStart" : {
-      "English" : "I see that you want to tell me something. Send one of the following keywords below corresponding to the topic you want to talk about.",
-      "Deutsch" : "Ich sehe, dass Sie mir etwas sagen wollen. Senden Sie eines der untenstehenden Stichwörter, das dem Thema entspricht, das Sie besprechen wollen."
+      "English" : "I see that you want to tell me something. Send one of the following keywords in bold below corresponding to the topic you want to talk about.",
+      "Deutsch" : "Ich sehe, dass Sie mir etwas sagen wollen. Senden Sie eines der untenstehenden Stichwörter im Fettdruck, das dem Thema entspricht, das Sie besprechen wollen."
     },
     "talkCancelDescription" : {
       "English" : "Cancel this operation and return to experiment.",

@@ -1342,7 +1342,15 @@ class ConfigParser{
         }
         return ReturnMethods.returnSuccess(expression);
     }
-    static validateUserPrompts(userPrompts){
+
+    /**
+     *
+     * Check whether a list of user prompted question objects is valid
+     *
+     * @param userPrompts
+     * @returns {{returnCode: number, data: *}}
+     */
+    static validateUserPrompts(userPrompts, languages){
         if(!Array.isArray(userPrompts)) {
             return ReturnMethods.returnFailure("CParser: user prompted questions must be array");
         }
@@ -1351,12 +1359,26 @@ class ConfigParser{
             return ReturnMethods.returnFailure("CParser: all user prompted questions must be non-empty objects");
         }
 
-        if(!userPrompts.every(el => ("keyword" in el) && (typeof el["keyword"] === "string"))) {
-            return ReturnMethods.returnFailure("CParser: all user prompted questions must have a string keyword");
+        if(!userPrompts.every(el => {
+            if(!("keyword" in el)) return false;
+            if(!(typeof el["keyword"] === "object")) return false;
+            if(Array.isArray(el["keyword"])) return false;
+            if(!lodash.isEqual(Object.keys(el["keyword"]), languages)) return false;
+            if(!Object.values(el["keyword"]).every(word => typeof word === "string")) return false;
+            return true;
+        })) {
+            return ReturnMethods.returnFailure("CParser: keyword must exist and be object of strings with all available langs as keys");
         }
 
-        if(!userPrompts.every(el => ("description" in el) && (typeof el["description"] === "string"))) {
-            return ReturnMethods.returnFailure("CParser: all user prompted questions must have a string description");
+        if(!userPrompts.every(el => {
+            if(!("description" in el)) return false;
+            if(!(typeof el["description"] === "object")) return false;
+            if(Array.isArray(el["description"])) return false;
+            if(!lodash.isEqual(Object.keys(el["description"]), languages)) return false;
+            if(!Object.values(el["description"]).every(word => typeof word === "string")) return false;
+            return true;
+        })) {
+            return ReturnMethods.returnFailure("CParser: description must exist and be object of strings with all available langs as keys");
         }
 
         if(!userPrompts.every(el => ("qId" in el) && (typeof el["qId"] === "string"))) {
@@ -1369,24 +1391,164 @@ class ConfigParser{
 
         return ReturnMethods.returnSuccess(true);
     }
+
+    /**
+     *
+     * For a list of user prompted questions, filter out the ones whose condition does not
+     * evaluate to true
+     *
+     * Each user prompted question is an object of the form:
+     * {
+     *     keyword: object with keys as all available languages,
+     *               values are keywords that user enters to prompt that question
+     *     description: object with keys as all available languages,
+     *               values are description of the question that will be initiated if that keyword is typed
+     *     qId: question ID that has to be asked when that keyword is typed
+     *     if: (optional) conditions under which this question can be prompted
+     * }
+     *
+     * @param participant
+     * @param userPrompts list of user prompted question objects
+     * @returns {{returnCode: number, data: *}}
+     */
+    static filterAvailableUserPrompts(participant, userPrompts){
+        let availablePrompts = []
+        for(let i = 0; i < userPrompts.length; i++){
+            let currentPrompt = userPrompts[i];
+            if(currentPrompt.if){
+                let evaluateObj = this.evaluateConditionString(participant, currentPrompt.if);
+                if(evaluateObj.returnCode === DevConfig.FAILURE_CODE){
+                    let errorMsg = "CParser: Unable to evaluate condition "
+                        + currentPrompt.if + ":\n" + evaluateObj.data;
+                    return ReturnMethods.returnFailure(errorMsg)
+                }
+                if(!evaluateObj.data.value){
+                    continue;
+                }
+            }
+            availablePrompts.push(currentPrompt);
+        }
+        return ReturnMethods.returnSuccess(availablePrompts);
+    }
+
+    /**
+     *
+     * Builds the text showing which keywords are available for the users to enter
+     * so that they can initiate conversation with the chatbot by themselves.
+     *
+     * If there are no available questions that users can prompt at a given time,
+     * then partial failure is returned so that the appropriate text can be displayed.
+     *
+     * @param participant participant object, must have language as parameter
+     * @param config
+     * @returns {{returnCode: number, successData: *, failData: *}|{returnCode: number, data: *}}
+     */
     static buildQuestionPromptText(participant, config){
+        // Read the user list of questions users can prompt from the config file
         let condition;
         if(!participant.conditionName){
             condition = config;
         } else {
             if(!(participant.conditionName in config["conditionQuestions"])){
-                let errorMsg = "CParser: Condition " + participant.conditionName + " does not exist in config file!";
+                let errorMsg = "CParser (Build Prompt): Condition " + participant.conditionName + " does not exist in config file!";
                 return ReturnMethods.returnFailure(errorMsg)
             }
             condition = config["conditionQuestions"][participant.conditionName];
         }
         let userPrompts = condition["userPromptedQuestions"];
+        let partLang = participant.parameters.language;
 
-        let promptTexts = [];
-        for(let i = 0; i < userPrompts.length; i++){
-            let currentPrompt = userPrompts[i];
-
+        // Validate these to see whether they have the required format
+        let validateObj = this.validateUserPrompts(userPrompts, config.languages);
+        if(validateObj.returnCode === DevConfig.FAILURE_CODE){
+            let errorMsg = "CParser: Unable to validate user prompted questions for condition "
+                + participant.conditionName + ":\n" + validateObj.data;
+            return ReturnMethods.returnFailure(errorMsg);
         }
+
+        // Filter out based on conditions, if any
+        let availablePromptsObj = this.filterAvailableUserPrompts(participant, userPrompts);
+        if(availablePromptsObj.returnCode === DevConfig.FAILURE_CODE){
+            let errorMsg = "CParser: Unable to filter available user prompts for condition "
+                + participant.conditionName + ":\n" + availablePromptsObj.data
+            return ReturnMethods.returnFailure(errorMsg);
+        }
+
+        // If conditions rule out all possible questions
+        if(availablePromptsObj.data.length === 0){
+            return ReturnMethods.returnPartialFailure("CParser: No prompts found for this time!",promptTexts)
+        }
+
+        // Build the text with all of the keywords and corresponding descriptions
+        let promptTexts = availablePromptsObj.data.filter(prompt => {
+            return "* <b>" + prompt.keyword[partLang] + "</b> - " + prompt.description[partLang];
+        });
+        let stringText = config.phrases.experiment.talkStart[partLang] + "\n";
+        stringText += promptTexts.join('\n\n').trim();
+        stringText += "\n\n" + "* <i>/cancel</i>" +
+            config.phrases.experiment.talkCancelDescription[partLang];
+
+        return ReturnMethods.returnSuccess(stringText);
+    }
+
+    /**
+     *
+     * Get the question ID associated with a given keyword input by the user
+     * If user input does not match any valid keywords, then return partial failure
+     *
+     * @param participant
+     * @param config
+     * @param keyword user input that needs to be matched to get the question ID
+     * @returns {{returnCode: number, successData: *, failData: *}|{returnCode: number, data: *}}
+     */
+    static getUserPromptQID(participant, config, keyword){
+        // Read questions from config file
+        let condition;
+        if(!participant.conditionName){
+            condition = config;
+        } else {
+            if(!(participant.conditionName in config["conditionQuestions"])){
+                let errorMsg = "CParser (Get QID): Condition " + participant.conditionName + " does not exist in config file!";
+                return ReturnMethods.returnFailure(errorMsg)
+            }
+            condition = config["conditionQuestions"][participant.conditionName];
+        }
+        let userPrompts = condition["userPromptedQuestions"];
+        let partLang = participant.parameters.language;
+
+        // Validate promptable questions
+        let validateObj = this.validateUserPrompts(userPrompts, config.languages);
+        if(validateObj.returnCode === DevConfig.FAILURE_CODE){
+            let errorMsg = "CParser: Unable to validate user prompted questions for condition "
+                + participant.conditionName + ":\n" + validateObj.data;
+            return ReturnMethods.returnFailure(errorMsg);
+        }
+
+        // Filter for all the ones available
+        let availablePromptsObj = this.filterAvailableUserPrompts(participant, userPrompts);
+        if(availablePromptsObj.returnCode === DevConfig.FAILURE_CODE){
+            let errorMsg = "CParser (Get QID): Unable to filter available user prompts for condition "
+                + participant.conditionName + ":\n" + availablePromptsObj.data
+            return ReturnMethods.returnFailure(errorMsg);
+        }
+
+        // Compare whether user input matches keyword
+        let foundQuestion, foundKeyword = false;
+        let regex = /[.()!?;:_ ,'-]/g;
+        for(let i = 0; i < availablePromptsObj.data.length; i++){
+            let currentPrompt = availablePromptsObj.data[i];
+            let trimmedInput = keyword.replace(regex, "").toLowerCase();
+            let trimmedTarget = currentPrompt.keyword[partLang].replace(regex, "").toLowerCase();
+            if(trimmedInput === trimmedTarget){
+                foundQuestion = currentPrompt.qId;
+                foundKeyword = true;
+                break;
+            }
+        }
+        if(!foundKeyword){
+            return ReturnMethods.returnPartialFailure("CParser: No prompts found for this time!","")
+        }
+        return ReturnMethods.returnSuccess(foundQuestion);
     }
 
 }

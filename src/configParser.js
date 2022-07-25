@@ -1485,7 +1485,6 @@ class ConfigParser{
         let promptTexts = availablePromptsObj.data.map(prompt => {
             return "* <b>" + prompt.keyword[partLang] + "</b> - " + prompt.description[partLang];
         });
-        console.log(promptTexts);
         let stringText = config.phrases.experiment.talkStart[partLang].trim() + "\n\n";
         stringText += promptTexts.join('\n\n').trim();
         stringText += "\n\n" + "* <i>/cancel</i> - " +

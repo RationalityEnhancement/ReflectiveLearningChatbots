@@ -860,8 +860,42 @@ bot.on('text', async ctx => {
     if(TALK[ctx.from.id]){
         TALK[ctx.from.id] = false;
 
-        // TODO: Handle the text and send a question appropriately
-        ctx.replyWithHTML("I received your keyword!");
+        let userInfo = await bot.telegram.getChat(ctx.from.id);
+        participant["firstName"] = userInfo.first_name;
+        let partLang = participant.parameters.language;
+
+        // Get the QID for the entered keyword
+        let getQIDObj = ConfigParser.getUserPromptQID(participant, config, messageText);
+        if(getQIDObj.returnCode !== DevConfig.SUCCESS_CODE){
+            try{
+                await Communicator.sendMessage(bot, participant,
+                    ctx.from.id, config.phrases.experiment.talkKeywordNotRecognized[partLang], !config.debug.messageDelay);
+            } catch(err){
+                await handleError(participant, 'Unable to send didnt understand message!\n'
+                    + err.message + '\n' + err.stack);
+                console.log('Unable to send didnt understand message!');
+                console.error(err);
+            }
+            return;
+        }
+
+        // Create the question
+        let questionObj = qHandler.constructQuestionByID(participant.conditionName,
+            getQIDObj.data, partLang);
+        if(questionObj.returnCode !== DevConfig.SUCCESS_CODE){
+            await handleError(participant, 'Unable to construct question prompted by user!\n'
+                + questionObj.data);
+            throw questionObj.data;
+        }
+
+        // Ask the question
+        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
+            questionObj.data, false, config.debug.experimenter)
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            await handleError(participant, returnObj.data);
+            throw returnObj.data;
+        }
+
         return;
     }
 

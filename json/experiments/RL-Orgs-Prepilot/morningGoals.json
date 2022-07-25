@@ -594,6 +594,10 @@
       {
         "aType" : "addAnswerTo",
         "args" : ["taskGoals"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["taskGoalsSetToday", "$B{true}"]
       }
     ]
   },
@@ -612,6 +616,10 @@
       {
         "aType" : "addAnswerTo",
         "args" : ["relGoals"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["relGoalsSetToday", "$B{true}"]
       }
     ]
   }

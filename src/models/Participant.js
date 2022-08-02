@@ -40,6 +40,7 @@ let schemaObject = {
     qId: String,
     text: String,
     qType: String,
+    askTimeStamp: String,
     options: [String],
     buttonLayoutCols : Number,
     replyMessages: [String],
@@ -101,9 +102,27 @@ let schemaObject = {
     [{
       qId: String,
       text: String,
-      timeStamp: String,
+      askTimeStamp: String,
+      answerTimeStamp: String,
+      stageName: String,
+      stageDay: Number,
       answer: [String]
     }],
+  actions: [
+    {
+      parameters: {},
+      stages : {
+        stageName: String,
+        stageDay: Number
+      },
+      actionObj: {
+        aType: String,
+        args: [String]
+      },
+      timeStamp: String,
+      from: String
+    }
+  ],
   scheduledOperations : {
     questions : [
       {
@@ -142,11 +161,19 @@ for(const[key, value] of Object.entries(config.customParameters)){
       type: dataTypeMap[value],
       default: DevConfig.DEFAULT_DTYPE_VALUES[value]
     };
+    schemaObject["actions"][0]["parameters"][key] = {
+      type: dataTypeMap[value],
+      default: DevConfig.DEFAULT_DTYPE_VALUES[value]
+    };
   }
 }
 for(const[key, value] of Object.entries(config.mandatoryParameters)){
   if(value in dataTypeMap){
     schemaObject["parameters"][key] = {
+      type: dataTypeMap[value],
+      default: DevConfig.DEFAULT_DTYPE_VALUES[value]
+    };
+    schemaObject["actions"][0]["parameters"][key] = {
       type: dataTypeMap[value],
       default: DevConfig.DEFAULT_DTYPE_VALUES[value]
     };

@@ -44,7 +44,8 @@ describe('DB Connection', () => {
 
 let testQuestion = {
     qId: "testQ",
-    text: "Test text"
+    text: "Test text",
+    askTimeStamp: "hello test timestamp"
 };
 const testPart = {
     uniqueId: testId,
@@ -52,6 +53,10 @@ const testPart = {
     currentQuestion: testQuestion,
     parameters : {
         language : "English"
+    },
+    stages : {
+        stageName: "Test",
+        stageDay: 0
     }
 }
 describe('Finish answer', () => {
@@ -59,6 +64,8 @@ describe('Finish answer', () => {
         const addedAnswer = "Europe/Berlin"
         let returnObj, participant;
         it('Should return success with next action string', async () => {
+            await participants.updateStageParameter(testPart.uniqueId, "stageDay", testPart.stages.stageDay)
+            await participants.updateStageParameter(testPart.uniqueId, "stageName", testPart.stages.stageName)
             returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
@@ -68,7 +75,11 @@ describe('Finish answer', () => {
             let latestAns = participant.answers[participant.answers.length-1];
             expect(latestAns.qId).to.equal(testQuestion.qId);
             expect(latestAns.text).to.equal(testQuestion.text);
+            expect(typeof latestAns.askTimeStamp).to.equal("string")
+            expect(typeof latestAns.answerTimeStamp).to.equal("string")
             expect(latestAns.answer).to.eql([addedAnswer]);
+            expect(latestAns.stageDay).to.eql(testPart.stages.stageDay);
+            expect(latestAns.stageName).to.eql(testPart.stages.stageName);
         });
         it('Should update current state to answerReceived',  () => {
             expect(participant.currentState).to.equal("answerReceived");
@@ -89,6 +100,10 @@ describe('Finish answer', () => {
             expect(latestAns.qId).to.equal(testQuestion.qId);
             expect(latestAns.text).to.equal(testQuestion.text);
             expect(latestAns.answer).to.eql(curAns);
+            expect(typeof latestAns.askTimeStamp).to.equal("string")
+            expect(typeof latestAns.answerTimeStamp).to.equal("string")
+            expect(latestAns.stageDay).to.eql(testPart.stages.stageDay);
+            expect(latestAns.stageName).to.eql(testPart.stages.stageName);
         });
         it('Should update current state to answerReceived',  () => {
             expect(participant.currentState).to.equal("answerReceived");

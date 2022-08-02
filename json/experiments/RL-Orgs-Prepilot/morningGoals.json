@@ -11,6 +11,22 @@
       {
         "aType" : "setBooleanVar",
         "args" : ["reflectionStartedToday", "$B{false}"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoalsSetToday"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoalsSetToday"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoals"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoals"]
       }
     ]
   },

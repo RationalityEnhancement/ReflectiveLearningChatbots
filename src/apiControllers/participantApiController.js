@@ -21,7 +21,7 @@ exports.getAll = async () => {
 // Get a single document by chatID
 exports.get = async (uniqueId) => {
   try {
-    return Participant.findOne({ uniqueId });
+    return Participant.findOne({ uniqueId: uniqueId });
   } catch (err) {
     console.error(err);
   }
@@ -50,7 +50,7 @@ exports.add = async (uniqueId) => {
 // Initialize the experiment document with some basic essential information
 exports.initializeParticipant = async (uniqueId, config) => {
   try{
-    const participant = await Participant.findOne({ uniqueId });
+    const participant = await Participant.findOne({ uniqueId: uniqueId });
     participant['experimentId'] = config.experimentId;
     participant['parameters'] = {
       "language" : config.defaultLanguage
@@ -77,7 +77,7 @@ exports.initializeParticipant = async (uniqueId, config) => {
 // Update the field of a document with a new value
 exports.updateField = async (uniqueId, field, value) => {
   try{
-    let participant = await Participant.findOne({ uniqueId });  
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     participant[field] = value;
     return participant.save();
   } catch(err){
@@ -90,7 +90,7 @@ exports.updateField = async (uniqueId, field, value) => {
 exports.updateParameter = async (uniqueId, param, value) => {
 
   try{
-    let participant = await Participant.findOne({ uniqueId });  
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     let updatedParams = participant.parameters;
     updatedParams[param] = value;
     participant.parameters = updatedParams;
@@ -105,7 +105,7 @@ exports.updateParameter = async (uniqueId, param, value) => {
 exports.updateStageParameter = async (uniqueId, param, value) => {
 
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     let updatedParams = participant.stages;
     updatedParams[param] = value;
     participant.stages = updatedParams;
@@ -120,7 +120,7 @@ exports.updateStageParameter = async (uniqueId, param, value) => {
 exports.clearStageParam = async (uniqueId, param) => {
 
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     if(param in participant.stages){
       participant.stages[param] = undefined;
     }
@@ -135,7 +135,7 @@ exports.clearStageParam = async (uniqueId, param) => {
 exports.addToArrParameter = async (uniqueId, param, value) => {
 
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     let updatedParams = participant.parameters;
     updatedParams[param].push(value);
     participant.parameters = updatedParams;
@@ -149,7 +149,7 @@ exports.addToArrParameter = async (uniqueId, param, value) => {
 // Add a value to an array parameter
 exports.addToArrField = async (uniqueId, fieldName, value) => {
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     let ans = participant[fieldName];
     if(Array.isArray(ans)){
       participant[fieldName].push(value);
@@ -166,7 +166,7 @@ exports.addToArrField = async (uniqueId, fieldName, value) => {
 exports.clearParamValue = async (uniqueId, param) => {
 
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     if(param in participant.parameters){
       participant.parameters[param] = undefined;
     }
@@ -182,8 +182,21 @@ exports.clearParamValue = async (uniqueId, param) => {
 // given by the participants in response to question prompts
 exports.addAnswer = async (uniqueId, answer) => {
   try{
-    let participant = await Participant.findOne({ uniqueId });  
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     participant.answers.push(answer);
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to add answer');
+    console.error(err);
+  }
+}
+
+// Add an action to the end of a chronological list of actions
+// carried out for the participant
+exports.addAction = async (uniqueId, actionObj) => {
+  try{
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
+    participant.actions.push(actionObj);
     return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
@@ -194,7 +207,7 @@ exports.addAnswer = async (uniqueId, answer) => {
 // Adds an object to the stages.activity array
 exports.addStageActivity = async (uniqueId, activity) => {
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     participant.stages.activity.push(activity);
     return participant.save();
   } catch(err){
@@ -206,7 +219,7 @@ exports.addStageActivity = async (uniqueId, activity) => {
 exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
     let exists = false;
-    let participant = await Participant.findOne({uniqueId});
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     let scheduledOperations = participant.scheduledOperations[type];
     for(let i = 0; i < scheduledOperations.length; i++){
       let curQ = scheduledOperations[i];
@@ -232,7 +245,7 @@ exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
 
 exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     let hasOAlready = await exports.hasScheduledOperation(uniqueId, type, jobInfo)
     if(!hasOAlready){
       participant.scheduledOperations[type].push(jobInfo);
@@ -246,7 +259,7 @@ exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
 }
 exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     let scheduledQs = participant.scheduledOperations[type];
     let jobIdx = -1;
     for(let i = 0; i < scheduledQs.length; i++){
@@ -268,7 +281,7 @@ exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
 
 exports.addToCurrentAnswer = async (uniqueId, answerPart) => {
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     let ans = participant.currentAnswer;
     if(!ans.includes(answerPart)){
       participant.currentAnswer.push(answerPart);
@@ -283,7 +296,7 @@ exports.addToCurrentAnswer = async (uniqueId, answerPart) => {
 
 exports.eraseCurrentAnswer = async (uniqueId) => {
   try{
-    let participant = await Participant.findOne({ uniqueId });
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
     participant.currentAnswer = [];
     return participant.save();
   }

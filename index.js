@@ -420,7 +420,7 @@ bot.command('next', async ctx => {
                     aType : nextQObj.aType,
                     args : nextQObj.args
                 }
-                let returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                let returnObj = await ActionHandler.processAction(bot, config, participant, actionObj, "/next");
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
                     await handleError(participant, returnObj.data)
                     throw returnObj.data;
@@ -825,7 +825,7 @@ bot.on('text', async ctx => {
         let returnObj = await ActionHandler.processAction(bot, copyConfig, participant, {
             "aType" : "startStage",
             "args" : [stageName]
-        });
+        }, "/skip_to");
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             await ctx.replyWithHTML("Unable to start stage " + stageName +". See console for more information.");
             console.log(returnObj.data);

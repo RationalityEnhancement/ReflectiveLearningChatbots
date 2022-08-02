@@ -10,6 +10,7 @@ const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = ConfigReader.getPIDCondMap();
 const StageHandler = require('./stageHandler')
+const moment = require('moment')
 
 /**
  * Action handler deals with the processing of actions
@@ -56,10 +57,11 @@ module.exports.validateActionObject = validateActionObject;
  * @param config
  * @param participant updated participant object
  * @param actionObj action that is to be sent
+ * @param from string denoting where the action was called from - for debugging purposes
  * @returns {Promise<{returnCode: *, data: *}>}
  *
  */
-let processAction = async(bot, config, participant, actionObj) => {
+let processAction = async(bot, config, participant, actionObj, from="undefined") => {
     // Get the participant
     if(!participant){
         return ReturnMethods.returnFailure("ActHandler: Participant not received")
@@ -72,12 +74,25 @@ let processAction = async(bot, config, participant, actionObj) => {
     // Get chat ID
     let secretMap = await getByUniqueId(config.experimentId, participant.uniqueId);
     if(!secretMap){
-        return ReturnMethods.returnFailure("LHandler: Unable to find participant chat ID while processing next");
+        return ReturnMethods.returnFailure("ActHandler: Unable to find participant chat ID while processing next");
     }
 
     let userInfo = await bot.telegram.getChat(secretMap.chatId);
     participant["firstName"] = userInfo.first_name;
 
+    // Save action that was performed
+    let saveActionObj = {
+        parameters: participant.parameters,
+        stages: participant.stages,
+        actionObj: actionObj,
+        timeStamp: moment.tz(participant.parameters.timezone).format(),
+        from: from
+    }
+    try{
+        await participants.addAction(participant.uniqueId, saveActionObj);
+    } catch(e){
+        return ReturnMethods.returnFailure("ActHandler: could not add save action obj");
+    }
     switch(actionObj.aType){
         // Schedule all questions specified for given condition in config file
         case "scheduleQuestions":
@@ -119,7 +134,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             try{
                 experiment = await experiments.get(config.experimentId);
             } catch(err){
-                return ReturnMethods.returnFailure("LHandler: could not fetch experiment " + config.experimentId)
+                return ReturnMethods.returnFailure("ActHandler - assign: could not fetch experiment " + config.experimentId)
             }
             // Get the PID, if present, otherwise, use participant unique ID
             let ID = participant.parameters.PID;
@@ -164,25 +179,25 @@ let processAction = async(bot, config, participant, actionObj) => {
             // First argument is name of the variable to save to
             let varName = actionObj.args[0];
             if(typeof varName !== "string"){
-                return ReturnMethods.returnFailure("ActHandler: Variable name must be string");
+                return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Variable name must be string: " + varName);
             }
 
             // Current answer must exist to save answer
             if(!participant.currentAnswer
                 || !Array.isArray(participant.currentAnswer)
                 || participant.currentAnswer.length === 0){
-                return ReturnMethods.returnFailure("ActHandler: Current answer not available to save");
+                return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Current answer not available to save");
             }
             let paramType;
             try{
                 paramType = participant.parameterTypes[varName];
             } catch(err){
-                return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
+                return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: parameterTypes field not present in participant obj");
             }
             let returnVal;
 
             if(DevConfig.RESERVED_VARIABLES.includes(varName)){
-                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+                return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Cannot update reserved variable!");
             }
             // Check which data type the target parameter is
             switch(paramType){
@@ -191,7 +206,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                     try{
                         await participants.updateParameter(participant.uniqueId, varName, participant.currentAnswer[0]);
                     } catch(err){
-                        return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+                        return ReturnMethods.returnFailure("ActHandler - saveAnswerTo(str): could not update participant params");
                     }
                     returnVal = participant.currentAnswer[0];
                     break;
@@ -199,7 +214,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                     try{
                         await participants.updateParameter(participant.uniqueId, varName, participant.currentAnswer);
                     } catch(err){
-                        return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+                        return ReturnMethods.returnFailure("ActHandler - saveAnswerTo(strArr): could not update participant params");
                     }
                     returnVal = participant.currentAnswer;
                     break;
@@ -214,12 +229,12 @@ let processAction = async(bot, config, participant, actionObj) => {
                     try{
                         await participants.updateParameter(participant.uniqueId, varName, conversionObj.data);
                     } catch(err){
-                        return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+                        return ReturnMethods.returnFailure("ActHandler - saveAnswerTo(num): could not update participant params");
                     }
                     returnVal = conversionObj.data;
                     break;
                 default:
-                    return ReturnMethods.returnFailure("ActHandler: Cannot save to var of type " + paramType);
+                    return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Cannot save to var of type " + paramType);
             }
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Answer "
@@ -231,25 +246,25 @@ let processAction = async(bot, config, participant, actionObj) => {
             // First argument is the answer to save it to
             let aVarName = actionObj.args[0];
             if(typeof aVarName !== "string"){
-                return ReturnMethods.returnFailure("ActHandler: Variable name must be string");
+                return ReturnMethods.returnFailure("ActHandler - addAnswerTo: Variable name must be string: " + aVarName);
             }
 
             // Current answer cannot be empty to save it to parameter
             if(!participant.currentAnswer
                 || !Array.isArray(participant.currentAnswer)
                 || participant.currentAnswer.length === 0){
-                return ReturnMethods.returnFailure("ActHandler: Current answer not available to save");
+                return ReturnMethods.returnFailure("ActHandler - addAnswerTo: Current answer not available to save");
             }
             let aParamType;
             let aReturnVal;
             try{
                 aParamType = participant.parameterTypes[aVarName];
             } catch(err){
-                return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
+                return ReturnMethods.returnFailure("ActHandler - addAnswerTo: parameterTypes field not present in participant obj");
             }
 
             if(DevConfig.RESERVED_VARIABLES.includes(aVarName)){
-                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+                return ReturnMethods.returnFailure("ActHandler - addAnswerTo: Cannot update reserved variable!");
             }
             // Process only when the target parameter is strArr or numArr
             switch(aParamType){
@@ -265,7 +280,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                     try{
                         await participants.addToArrParameter(participant.uniqueId, aVarName, conversionObj.data);
                     } catch(err){
-                        return ReturnMethods.returnFailure("ActHandler: could not add to participant params");
+                        return ReturnMethods.returnFailure("ActHandler - addAnswerTo(numArr): could not add to participant params");
                     }
                     aReturnVal = conversionObj.data;
                     break;
@@ -276,7 +291,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                             await participants.addToArrParameter(participant.uniqueId, aVarName, el);
                         }
                     } catch(err){
-                        return ReturnMethods.returnFailure("ActHandler: could not add to participant params");
+                        return ReturnMethods.returnFailure("ActHandler - addAnswerTo(strArr): could not add to participant params");
                     }
                     aReturnVal = participant.currentAnswer;
                     break;
@@ -293,22 +308,22 @@ let processAction = async(bot, config, participant, actionObj) => {
             // First argument is name of the variable to save to
             let oVarName = actionObj.args[0];
             if(typeof oVarName !== "string"){
-                return ReturnMethods.returnFailure("ActHandler: Variable name must be string");
+                return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo: Variable name must be string: " + oVarName);
             }
 
             // Current answer must exist to save answer
             if(!participant.currentAnswer
                 || !Array.isArray(participant.currentAnswer)
                 || participant.currentAnswer.length === 0){
-                return ReturnMethods.returnFailure("ActHandler: Current answer not available to save");
+                return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo: Current answer not available to save");
             }
 
             // Current question must be of type singleChoice or multiChoice and have options
             if(!["singleChoice", "multiChoice"].includes(participant.currentQuestion.qType)){
-                return ReturnMethods.returnFailure("ActHandler: Current question must be choice question");
+                return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo: Current question must be choice question");
             }
             if(!participant.currentQuestion.options || participant.currentQuestion.options.length === 0){
-                return ReturnMethods.returnFailure("ActHandler: Current question must have options array");
+                return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo: Current question must have options array");
             }
             let options = participant.currentQuestion.options;
 
@@ -316,12 +331,12 @@ let processAction = async(bot, config, participant, actionObj) => {
             try{
                 oParamType = participant.parameterTypes[oVarName];
             } catch(err){
-                return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
+                return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo: parameterTypes field not present in participant obj");
             }
             let oReturnVal;
 
             if(DevConfig.RESERVED_VARIABLES.includes(oVarName)){
-                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+                return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo: Cannot update reserved variable!");
             }
             // Check which data type the target parameter is
             switch(oParamType){
@@ -332,7 +347,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                     try{
                         await participants.updateParameter(participant.uniqueId, oVarName, idx);
                     } catch(err){
-                        return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+                        return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo(num): could not update participant params");
                     }
                     oReturnVal = idx;
                     break;
@@ -344,7 +359,7 @@ let processAction = async(bot, config, participant, actionObj) => {
                     try{
                         await participants.updateParameter(participant.uniqueId, oVarName, idxArr);
                     } catch(err){
-                        return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+                        return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo(numArr): could not update participant params");
                     }
                     oReturnVal = idxArr;
                     break;
@@ -391,7 +406,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             // Parse the boolean token
             let boolValObj = ConfigParser.parseBooleanToken(newVal);
             if(boolValObj.returnCode === DevConfig.FAILURE_CODE){
-                return ReturnMethods.returnFailure("ActHandler: Unable to parse boolean token")
+                return ReturnMethods.returnFailure("ActHandler - setBooleanVar: Unable to parse boolean token")
             }
             let boolVal = boolValObj.data;
 
@@ -399,7 +414,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             try{
                 await participants.updateParameter(participant.uniqueId, bVarName, boolVal);
             } catch(err){
-                return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+                return ReturnMethods.returnFailure("ActHandler - setBooleanVar: could not update participant params");
             }
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Var "
@@ -411,21 +426,21 @@ let processAction = async(bot, config, participant, actionObj) => {
             // First argument must be name of target variable
             let cVarName = actionObj.args[0];
             if(typeof cVarName !== "string"){
-                return ReturnMethods.returnFailure("ActHandler: Variable name must be string");
+                return ReturnMethods.returnFailure("ActHandler - clearVar: Variable name must be string: " + cVarName);
             }
 
             let cParamType;
             try{
                 cParamType = participant.parameterTypes[cVarName];
             } catch(err){
-                return ReturnMethods.returnFailure("ActHandler: parameterTypes field not present in participant obj");
+                return ReturnMethods.returnFailure("ActHandler - clearVar: parameterTypes field not present in participant obj");
             }
             if(DevConfig.RESERVED_VARIABLES.includes(cVarName)){
-                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+                return ReturnMethods.returnFailure("ActHandler - clearVar: Cannot update reserved variable!");
             }
             // If type is unrecognized (mostly when varname doesnt exist)
             if(!Object.values(DevConfig.OPERAND_TYPES).includes(cParamType)){
-                return ReturnMethods.returnFailure("ActHandler: did not recognize variable type " + cParamType + " of variable " + cVarName);
+                return ReturnMethods.returnFailure("ActHandler - clearVar: did not recognize variable type " + cParamType + " of variable " + cVarName);
             }
 
             // Clear the parameter value
@@ -444,21 +459,21 @@ let processAction = async(bot, config, participant, actionObj) => {
             // First argument must be the name of the variable
             let addVarName = actionObj.args[0];
             if(typeof addVarName !== "string"){
-                return ReturnMethods.returnFailure("ActHandler: Variable name (arg1) must be string");
+                return ReturnMethods.returnFailure("ActHandler - addValueTo: Variable name (arg1) must be string");
             }
             // Second argument must be a number token
             let addVal = actionObj.args[1];
             if(typeof addVal !== "string"){
-                return ReturnMethods.returnFailure("ActHandler: Number token (arg2) must be string");
+                return ReturnMethods.returnFailure("ActHandler - addValueTo: Number token (arg2) must be string");
             }
             let addParamType;
             try{
                 addParamType = participant.parameterTypes[addVarName];
             } catch(err){
-                return ReturnMethods.returnFailure("ActHandler: variable not found : " + addVarName);
+                return ReturnMethods.returnFailure("ActHandler - addValueTo: variable not found : " + addVarName);
             }
             if(DevConfig.RESERVED_VARIABLES.includes(addVarName)){
-                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
+                return ReturnMethods.returnFailure("ActHandler - addValueTo: Cannot update reserved variable!");
             }
 
             // Process only if target variable is number type
@@ -469,7 +484,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             // Parse the number token
             let addValObj = ConfigParser.parseNumberToken(addVal);
             if(addValObj.returnCode === DevConfig.FAILURE_CODE){
-                return ReturnMethods.returnFailure("ActHandler: Unable to parse number token")
+                return ReturnMethods.returnFailure("ActHandler - addValueTo: Unable to parse number token")
             }
 
             // If parameter hasn't been set already, initialize it
@@ -485,7 +500,7 @@ let processAction = async(bot, config, participant, actionObj) => {
             try{
                 await participants.updateParameter(participant.uniqueId, addVarName, newNumVal);
             } catch(err){
-                return ReturnMethods.returnFailure("ActHandler: could not update participant params");
+                return ReturnMethods.returnFailure("ActHandler - addValueTo: could not update participant params");
             }
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
@@ -532,9 +547,18 @@ let processAction = async(bot, config, participant, actionObj) => {
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
                     + message, true);
                 // Send the participant a message that the experiment has ended.
-                if(incStageObj.data === -1){
-                    await Communicator.sendMessage(bot, participant, secretMap.chatId,
-                        config.phrases.experiment.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+
+            }
+            if(incStageObj.data === -1){
+                for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
+                    try{
+                        await Communicator.sendMessage(bot, participant, secretMap.chatId,
+                            config.phrases.experiment.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+                        break;
+                    } catch(e){
+                        return ReturnMethods.returnFailure("AHandler: Unable to send end exp message:\n"
+                            + e.message + "\n" + e.stack)
+                    }
                 }
             }
             return incStageObj;
@@ -551,8 +575,19 @@ let processAction = async(bot, config, participant, actionObj) => {
                     "successfully ended, all operations cancelled."
                     , true);
             }
-            await Communicator.sendMessage(bot, participant, secretMap.chatId,
-                config.phrases.experiment.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+
+            // Send a message that the experiment has been ended
+            for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
+                try{
+                    await Communicator.sendMessage(bot, participant, secretMap.chatId,
+                        config.phrases.experiment.endExperiment[participant.parameters.language], !config.debug.messageDelay)
+                    break;
+                } catch(e){
+                    return ReturnMethods.returnFailure("AHandler: Unable to send end exp message:\n"
+                        + e.message + "\n" + e.stack)
+                }
+            }
+
             return endReturnObj;
 
         default:

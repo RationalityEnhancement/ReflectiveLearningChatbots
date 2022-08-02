@@ -768,7 +768,7 @@ class ScheduleHandler{
                     }
                 }
                 if(evaluation){
-                    await processAction(bot, config, newParticipant, actionObj);
+                    await processAction(bot, config, newParticipant, actionObj, "scheduled");
                 }
             })
             // Add to local store and if necessary, to DB

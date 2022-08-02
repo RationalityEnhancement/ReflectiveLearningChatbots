@@ -109,8 +109,11 @@ class AnswerHandler{
             const answer = {
                 qId: currentQuestion.qId,
                 text: currentQuestion.text,
-                timeStamp: timeString,
-                answer: answerConv
+                askTimeStamp: currentQuestion.askTimeStamp,
+                answerTimeStamp: timeString,
+                answer: answerConv,
+                stageName: participant.stages.stageName,
+                stageDay: participant.stages.stageDay,
             };
             await participants.addAnswer(uniqueId, answer);
             await participants.updateField(uniqueId, "currentAnswer", answerConv);

@@ -91,7 +91,16 @@ class ReminderHandler{
             let reminderText = config.phrases.schedule.reminderText[participant.parameters.language];
             if(!reminderText) throw "Reminder text is undefined"
             job = scheduler.scheduleJob(recRuleObj.data, async function(){
-                await Communicator.sendMessage(bot, participant, chatId, reminderText, !config.debug.messageDelay, false)
+                for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
+                    try{
+                        await Communicator.sendMessage(bot, participant, chatId, reminderText,
+                            !config.debug.messageDelay, false)
+                        break;
+                    } catch(e){
+                        return ReturnMethods.returnFailure("RHandler: Unable to send reminder:\n"
+                            + e.message + "\n" + e.stack)
+                    }
+                }
             })
             if(!job) throw "Job is null"
         } catch(err){
@@ -353,7 +362,7 @@ class ReminderHandler{
                 await participants.removeScheduledOperation(uniqueId, "reminders", jobId);
                 succeededJobs.push(jobId);
             } catch(err){
-                failedJobs.push(jobId);
+                failedJobs.push(jobId + "\n" + err.message + "\n" + err.stack);
             }
         }
 

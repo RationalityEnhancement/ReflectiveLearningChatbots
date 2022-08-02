@@ -2,8 +2,8 @@
   {
     "qId" : "langQuestion",
     "text" : {
-      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?",
-      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?"
+      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)",
+      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)"
     },
     "qType" : "singleChoice",
     "options" : {

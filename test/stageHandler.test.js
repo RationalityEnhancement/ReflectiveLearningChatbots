@@ -276,6 +276,11 @@ describe('End/Begin Stage', () => {
         let stageName = "Pre-Test";
         it('Should return success', async () => {
             let participant = await participants.get(testPartId);
+            await participants.updateField(testPartId, "currentState", "awaitingAnswer")
+            await participants.updateField(testPartId, "currentQuestion", {
+                "qId" : "test",
+                "text" : "testText"
+            });
             returnObj = await StageHandler.endCurrentStage(participant, stageName);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         })
@@ -290,6 +295,12 @@ describe('End/Begin Stage', () => {
         it('Should have erased stage day and stage name', async () => {
             expect(newPart.stages.stageDay).to.equal(0);
             expect(newPart.stages.stageName).to.equal("");
+        })
+        it('Should have added no response for outstanding quetsion', async () => {
+            let answers = newPart.answers;
+            let lastAnswer = answers[answers.length - 1];
+            expect(lastAnswer.answer[0]).to.equal("[No Response]");
+            expect(lastAnswer.qId).to.equal("test");
         })
     })
 

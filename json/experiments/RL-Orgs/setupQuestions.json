@@ -2,8 +2,8 @@
   {
     "qId" : "langQuestion",
     "text" : {
-      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer?\n\nHallo ${FIRST_NAME}! :wave:\n\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie?",
-      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them!! Which language do you prefer?\n\nHHallo ${FIRST_NAME}! :wave:\n\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie"
+      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer? (send <i>/repeat</i> if the options are no longer visible.) \n\nHallo ${FIRST_NAME}! :wave:\n\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie? (senden Sie <i>/repeat</i>, wenn die Optionen nicht mehr sichtbar sind.)",
+      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer? (send <i>/repeat</i> if the options are no longer visible.) \n\nHallo ${FIRST_NAME}! :wave:\n\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie? (senden Sie <i>/repeat</i>, wenn die Optionen nicht mehr sichtbar sind.)"
     },
     "qType" : "singleChoice",
     "options" : {

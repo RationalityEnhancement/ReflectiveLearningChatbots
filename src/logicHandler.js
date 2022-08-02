@@ -10,6 +10,7 @@ const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ActionHandler = require("./actionHandler")
 const AnswerHandler = require("./answerHandler");
 const ReminderHandler = require("./reminderHandler");
+const moment = require('moment')
 
 /**
  * Logic handler deals with the logic of what is to occur at each step
@@ -107,7 +108,7 @@ let processNextSteps = async(bot, uniqueId) => {
 
     // Process all next actions, if any
     for(let i = 0; i < nextActions.length; i++){
-        let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i]);
+        let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i], currentQuestion.qId);
 
         if(pActionObj.returnCode === DevConfig.FAILURE_CODE){
             failedActions.push(pActionObj.data);
@@ -246,6 +247,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
     let newState = scheduled ? "awaitingAnswerScheduled" : "awaitingAnswer";
     await participants.updateField(participant.uniqueId, 'currentState', newState);
     await participants.eraseCurrentAnswer(participant.uniqueId)
+    question.askTimeStamp = moment.tz(participant.parameters.timezone).format();
     await participants.updateField(participant.uniqueId, 'currentQuestion', question);
 
     // Set reminders, if any

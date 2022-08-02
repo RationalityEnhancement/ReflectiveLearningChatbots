@@ -36,6 +36,7 @@
     "lastReportedRelProgress" : "number",
     "relProgressReportedOnce" : "boolean",
     "goalsMoreRelevant" : "boolean",
+    "reflectionStartedToday" : "boolean",
     "goalsEquallyRelevant" : "boolean",
     "dontAskInfoAgain" : "boolean",
     "dontAskExampleAgain" : "boolean",
@@ -74,7 +75,8 @@
         "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Prepilot/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsUserPromptQs.json}"
     },
     "Shallow" : {
       "questionCategories" : {
@@ -86,7 +88,8 @@
         "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Prepilot/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsUserPromptQs.json}"
     },
     "MC" : {
       "questionCategories" : {
@@ -98,7 +101,8 @@
         "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Prepilot/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot/allCondsUserPromptQs.json}"
     }
   }
 }

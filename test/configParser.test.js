@@ -2,6 +2,9 @@ const { expect, assert } = require('chai');
 const ConfigReader = require('../src/configReader');
 const DevConfig = ConfigReader.getDevConfig();
 
+const config = require('../json/test/qHandlerTestConfig.json')
+const configConds = require('../json/test/qHandlerTestConfigConds.json')
+
 const ConfigParser = require('../src/configParser');
 
 
@@ -103,7 +106,8 @@ describe('Replacing variables', () => {
         uniqueId: "12345",
         parameters : {
             "PID" : "80085",
-            "pLength" : undefined
+            "pLength" : undefined,
+            "timezone" : "Europe/Berlin"
         },
         stages : {
             activity : [],
@@ -225,6 +229,20 @@ describe('Replacing variables', () => {
             let returnObj = ConfigParser.getVariable(copyPart, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal("");
+        })
+        it('Should fetch current hour as number', () => {
+
+            let testString = DevConfig.VAR_STRINGS.CURRENT_HOUR;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(typeof returnObj.data).to.equal("number");
+        })
+        it('Should fetch current minute as number', () => {
+
+            let testString = DevConfig.VAR_STRINGS.CURRENT_MIN;
+            let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(typeof returnObj.data).to.equal("number");
         })
         it('Should fail if participant undefined', () => {
             let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
@@ -2991,5 +3009,227 @@ describe("Evaluate expression object", () => {
         })
     })
 
+})
 
+describe('User prompted questions', () => {
+    const participant = {
+        firstName: "John",
+        currentAnswer: ["Mon", "Tue", "Wed"],
+        uniqueId: "12345",
+        parameters : {
+            "PID" : "80085",
+            "pLength" : undefined,
+            "timezone" : "Europe/Berlin",
+            "language" : "Deutsch"
+        },
+        stages : {
+            activity : [],
+            stageName : "Test",
+            stageDay : 0
+        },
+        currentQuestion : {
+            qType : "freeformMulti",
+        },
+        conditionName : "Test"
+    }
+    let languages = ["English", "Deutsch"];
+    let userPromptedGood = [
+        {
+            "keyword" : {
+                "English": "test1",
+                "Deutsch": "testeins"
+            },
+            "description" : {
+                "English": "desc1",
+                "Deutsch": "beschr1"
+            },
+            "qId" : "eep"
+        },
+        {
+            "keyword" : {
+                "English": "test2",
+                "Deutsch": "testzwei"
+            },
+            "description" : {
+                "English": "desc2",
+                "Deutsch": "beschr2"
+            },
+            "qId" : "oop",
+            "if" : "${CONDITION} == $S{Test}"
+        },
+        {
+            "keyword" : {
+                "English": "test3",
+                "Deutsch": "testdrei"
+            },
+            "description" : {
+                "English": "desc3",
+                "Deutsch": "beschr3"
+            },
+            "qId" : "aap",
+            "if" : "${CONDITION} != $S{Test}"
+        }
+    ]
+    describe('Validate user prompted questions', () => {
+        it('Should fail when keyword missing', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            delete copyPrompts[0]["keyword"];
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when description missing', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            delete copyPrompts[0]["description"];
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when qId missing', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            delete copyPrompts[0]["qId"];
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when qId not string', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[0]["qId"] = 4;
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when keyword not object', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[0]["keyword"] = 4;
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when keyword not available in all languages', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            delete copyPrompts[0]["keyword"]["Deutsch"];
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when lang keyword not string', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[0]["keyword"]["Deutsch"] = 4;
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+
+        it('Should fail when if not string', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[1]["if"] = 4;
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when not array', () => {
+            let returnObj = ConfigParser.validateUserPrompts({});
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when element of array not object', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[1] = ["1", "2", "3"]
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail when element of array empty object', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[1] = {}
+            let returnObj = ConfigParser.validateUserPrompts(copyPrompts, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should succeed', () => {
+            let returnObj = ConfigParser.validateUserPrompts(userPromptedGood, languages);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        })
+
+
+    })
+    describe('Filtering available prompts',() => {
+        it('Should fail when condition is invalid', () => {
+            let copyPrompts = JSON.parse(JSON.stringify(userPromptedGood));
+            copyPrompts[1]["if"] = "${CONDITION} == Test";
+            let returnObj = ConfigParser.filterAvailableUserPrompts(participant, copyPrompts)
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(returnObj.data);
+        })
+        it('Should successfully filter', () => {
+            let returnObj = ConfigParser.filterAvailableUserPrompts(participant, userPromptedGood)
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+            expect(returnObj.data.length).to.equal(2);
+            expect(returnObj.data[0].keyword[participant.parameters.language]).to.equal("testeins")
+            expect(returnObj.data[1].keyword[participant.parameters.language]).to.equal("testzwei")
+        })
+    })
+    describe('Getting question ID', () => {
+        describe('Without conditions', () => {
+            let copyPart = JSON.parse(JSON.stringify(participant));
+            delete copyPart["conditionName"]
+            it('Should succeed when keyword found', () => {
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, config, "weltraum");
+                console.log(returnObj)
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal("chain1.q1")
+            })
+            it('Should return partial failure when keyword not found', () => {
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, config, "spork");
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+            })
+        })
+        describe('With conditions', () => {
+
+            it('Should succeed when keyword found', () => {
+                let copyPart = JSON.parse(JSON.stringify(participant));
+                copyPart["conditionName"] = "Cond1"
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "weltraum");
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal("chain1.q1")
+            })
+            it('Should succeed when keyword found - case insensitive', () => {
+                let copyPart = JSON.parse(JSON.stringify(participant));
+                copyPart["conditionName"] = "Cond1"
+                copyPart["parameters"]["language"] = "English"
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "sPacE?");
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data).to.equal("chain1.q1")
+            })
+
+            it('Should return partial failure when keyword not found', () => {
+                let copyPart = JSON.parse(JSON.stringify(participant));
+                copyPart["conditionName"] = "Cond1"
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "spork");
+                expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
+            })
+            it('Should fail when no user prompted questions found', () => {
+                let copyPart = JSON.parse(JSON.stringify(participant));
+                copyPart["conditionName"] = "Cond2"
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "weltraum");
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+            it('Should fail when condition doesnt exist', () => {
+                let copyPart = JSON.parse(JSON.stringify(participant));
+                copyPart["conditionName"] = "FailCond"
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "weltraum");
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+            it('Should fail when user prompted questions are not valid', () => {
+                let copyPart = JSON.parse(JSON.stringify(participant));
+                copyPart["conditionName"] = "FailCond1"
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "weltraum");
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+        })
+    })
 })

@@ -6,7 +6,29 @@
       "English" : ["Good morning, ${FIRST_NAME}!"],
       "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
     },
-    "nextQuestion" : "Morning-Goals-All.selectMorningQ"
+    "nextQuestion" : "Morning-Goals-All.selectMorningQ",
+    "nextActions" : [
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["reflectionStartedToday", "$B{false}"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoalsSetToday"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoalsSetToday"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoals"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoals"]
+      }
+    ]
   },
   {
     "qId" : "remindWorkIntention",
@@ -553,5 +575,68 @@
       "freqMins" : 30,
       "numRepeats" : 4
     }
+  },
+  {
+    "qId" : "addGoalsLater",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "So you want to add some more goals for the day! Tell me, would you like to add work goals or relationship goals?",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "options" : {
+      "English" : ["Work goals.", "Relationship goals."],
+      "Deutsch" : ["Work goals.", "Relationship goals."]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : "Morning-Goals-All.addWorkGoalsLater",
+        "else" : "Morning-Goals-All.addRelGoalsLater"
+      }
+    ]
+  },
+  {
+    "qId" : "addWorkGoalsLater",
+    "qType" : "freeformMulti",
+    "text" : {
+      "English" : "Tell me, what work goals do you want to add to your day? You can enter multiple goals over multiple messages.",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "replyMessages" : {
+      "English" : ["Alright, I will remember these goals. Good luck completing them!"],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    },
+    "nextActions" : [
+      {
+        "aType" : "addAnswerTo",
+        "args" : ["taskGoals"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["taskGoalsSetToday", "$B{true}"]
+      }
+    ]
+  },
+  {
+    "qId" : "addRelGoalsLater",
+    "qType" : "freeformMulti",
+    "text" : {
+      "English" : "Tell me, what relationship goals do you want to add to your day? You can enter multiple goals over multiple messages.",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "replyMessages" : {
+      "English" : ["Alright, I will remember these goals. Good luck completing them!"],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    },
+    "nextActions" : [
+      {
+        "aType" : "addAnswerTo",
+        "args" : ["relGoals"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["relGoalsSetToday", "$B{true}"]
+      }
+    ]
   }
 ]

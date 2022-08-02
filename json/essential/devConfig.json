@@ -20,7 +20,9 @@
     "ANSWER_LEN_WORDS" : "ANSWER_LEN_WORDS",
     "TODAY" : "TODAY",
     "TODAY_NAME" : "TODAY_NAME",
-    "CONDITION" : "CONDITION"
+    "CONDITION" : "CONDITION",
+    "CURRENT_HOUR" : "CURRENT_HOUR",
+    "CURRENT_MIN" : "CURRENT_MIN"
   },
   "SENSITIVE_DATA_VARS" : ["FIRST_NAME"],
   "MS_PER_CHARACTER_DELAY" : 12,
@@ -64,7 +66,7 @@
     "LENGTH_DAYS" : "lengthDays",
     "ON_DAYS" : "onDays"
   },
-  "STAGE_UPDATE_TIME" : "21:00",
+  "STAGE_UPDATE_TIME" : "04:00",
   "DATA_FOLDER_PATH" : "data/",
   "ADJECTIVES_PATH" : "json/static/adjectives.json",
   "NOUNS_PATH" : "json/static/nouns.json",

@@ -29,6 +29,7 @@ const local = process.argv[2];
 
 const SKIP_TO_STAGE = {};
 const REPORT_FEEDBACK = {};
+const TALK = {};
 
 // Validate the config file to ensure that it has all the necessary information
 // This throws an error and aborts execution if there is something missing/wrong
@@ -251,22 +252,22 @@ bot.command('delete_exp', async ctx => {
 });
 
 bot.command('cancel', async ctx =>{
+    let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+    if(!secretMap) {
+        console.log("Participant not found while cancelling!")
+        return;
+    }
+    let participant = await getParticipant(secretMap.uniqueId);
+    if(!participant){
+        console.log("Participant not found while cancelling!")
+        return;
+    }
+    let partLang = participant.parameters.language;
     if(SKIP_TO_STAGE[ctx.from.id]){
         SKIP_TO_STAGE[ctx.from.id] = false;
         await ctx.replyWithHTML("Skipping stage has been cancelled. The experiment will continue as normal. Send <i>/repeat</i> to recall any outstanding question.")
     } else if(REPORT_FEEDBACK[ctx.from.id]){
         REPORT_FEEDBACK[ctx.from.id] = false;
-        let secretMap = await getByChatId(config.experimentId, ctx.from.id);
-        if(!secretMap) {
-            console.log("Participant not found while cancelling!")
-            return;
-        }
-        let participant = await getParticipant(secretMap.uniqueId);
-        if(!participant){
-            console.log("Participant not found while cancelling!")
-            return;
-        }
-        let partLang = participant.parameters.language;
         try{
             await Communicator.sendMessage(bot, participant,
                 ctx.from.id, config.phrases.experiment.reportFeedbackCancel[partLang], !config.debug.messageDelay);
@@ -278,10 +279,29 @@ bot.command('cancel', async ctx =>{
             console.log('Unable to send feedback cancel message!');
             console.error(err);
         }
+    } else if(TALK[ctx.from.id]){
+        TALK[ctx.from.id] = false;
+        try{
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.talkCancelled[partLang], !config.debug.messageDelay);
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.experimentContinue[partLang], !config.debug.messageDelay);
+        } catch(err){
+            await handleError(participant, 'Unable to send talk cancel message!\n'
+                + err.message + '\n' + err.stack);
+            console.log('Unable to send talk cancel message!');
+            console.error(err);
+        }
     } else {
-        console.log("Participant not found while cancelling!")
-        await ctx.replyWithHTML("Send /start to begin interacting with me!")
-        return;
+        try{
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.nothingToCancel[partLang], !config.debug.messageDelay);
+        } catch(err){
+            await handleError(participant, 'Unable to send no cancel message!\n'
+                + err.message + '\n' + err.stack);
+            console.log('Unable to send no cancel message!');
+            console.error(err);
+        }
     }
 })
 
@@ -294,6 +314,9 @@ bot.command('next', async ctx => {
 
         // If command /report has just been run
         REPORT_FEEDBACK[ctx.from.id] = false;
+
+        // If command /talk has just been run
+        TALK[ctx.from.id] = false;
 
         // Get the participant's unique ID
         let secretMap = await idMaps.getByChatId(config.experimentId, ctx.from.id);
@@ -373,7 +396,7 @@ bot.command('next', async ctx => {
                     nextQuestionFound = true;
                 }
 
-                let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, !config.debug.messageDelay);
+                let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, true, !config.debug.messageDelay);
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
                     await handleError(participant, returnObj.data);
                     throw returnObj.data;
@@ -397,7 +420,7 @@ bot.command('next', async ctx => {
                     aType : nextQObj.aType,
                     args : nextQObj.args
                 }
-                let returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                let returnObj = await ActionHandler.processAction(bot, config, participant, actionObj, "/next");
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
                     await handleError(participant, returnObj.data)
                     throw returnObj.data;
@@ -431,6 +454,7 @@ bot.command('repeat', async ctx => {
     let uniqueId = secretMap.uniqueId;
 
   let participant = await getParticipant(uniqueId);
+    let partLang = participant.parameters.language;
     if(!participant){
         console.log("Participant not found while repeating!")
         await ctx.replyWithHTML("Send /start to begin interacting with me!")
@@ -444,8 +468,6 @@ bot.command('repeat', async ctx => {
     }
     if(REPORT_FEEDBACK[ctx.from.id]){
         REPORT_FEEDBACK[ctx.from.id] = false;
-
-        let partLang = participant.parameters.language;
         try{
             await Communicator.sendMessage(bot, participant,
                 ctx.from.id, config.phrases.experiment.reportFeedbackCancel[partLang], !config.debug.messageDelay);
@@ -456,12 +478,24 @@ bot.command('repeat', async ctx => {
             console.error(err);
         }
     }
+    if(TALK[ctx.from.id]){
+        TALK[ctx.from.id] = false;
+        try{
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.talkCancelled[partLang], !config.debug.messageDelay);
+        } catch(err){
+            await handleError(participant, 'Unable to send talk cancel message after repeat!\n'
+                + err.message + '\n' + err.stack);
+            console.log('Unable to send talk cancel message after repeat!');
+            console.error(err);
+        }
+    }
 
   // Repeat question only if there is an outstanding question
-  if(participant.currentState === "awaitingAnswer"){
+  if(participant.currentState.startsWith("awaitingAnswer")){
       await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;
-    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, !config.debug.messageDelay);
+    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, false, !config.debug.messageDelay);
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
           await handleError(participant, returnObj.data);
           throw returnObj.data;
@@ -502,6 +536,7 @@ bot.command('skip_to', async ctx => {
     }
     SKIP_TO_STAGE[ctx.from.id] = true;
     REPORT_FEEDBACK[ctx.from.id] = false;
+    TALK[ctx.from.id] = false;
     let stageListStrings = stageListObj.data.map(stage => {
         let string = "* " + stage.name;
         if(stage.lengthDays){
@@ -530,6 +565,7 @@ bot.command('report', async ctx => {
     }
 
     SKIP_TO_STAGE[ctx.from.id] = false;
+    TALK[ctx.from.id] = false;
     REPORT_FEEDBACK[ctx.from.id] = true;
     try{
         let partLang = participant.parameters.language;
@@ -539,6 +575,65 @@ bot.command('report', async ctx => {
         await handleError(participant, 'Unable to send report feedback message!\n'
             + err.message + '\n' + err.stack);
         console.log('Unable to send report feedback message!');
+        console.error(err);
+    }
+
+})
+
+// Command to initiate talking
+bot.command('talk', async ctx => {
+    let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+    if(!secretMap) {
+        console.log("Participant not found while talking!")
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
+        return;
+    }
+    let participant = await getParticipant(secretMap.uniqueId);
+    let partLang = participant.parameters.language;
+    if(!participant){
+        console.log("Participant not found while talking!")
+        await ctx.replyWithHTML("Send /start to begin interacting with me!")
+        return;
+    }
+
+    // Don't allow initiation of talking if there is an outstanding question
+    if(participant.currentState.startsWith('awaitingAnswer')){
+        try {
+            await Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.cannotStartTalkOutstanding[partLang], !config.debug.messageDelay);
+            return;
+        } catch(err){
+            await handleError(participant, 'Unable to send talk cannot start message!\n'
+                + err.message + '\n' + err.stack);
+            console.log('Unable to send talk cannot start message!');
+            console.error(err);
+        }
+    }
+
+    // Cancel other open operations, if any
+    SKIP_TO_STAGE[ctx.from.id] = false;
+    REPORT_FEEDBACK[ctx.from.id] = false;
+    TALK[ctx.from.id] = false;
+    let sendText = config.phrases.experiment.cannotStartTalk[participant.parameters.language];
+
+    // Try to build the text if there are any possible options, otherwise send default message that there are no
+    //      questions available to prompt.
+    let userInfo = await bot.telegram.getChat(ctx.from.id);
+    participant.firstName = userInfo.first_name;
+    let textObj = ConfigParser.buildQuestionPromptText(participant, config);
+    if(textObj.returnCode === DevConfig.SUCCESS_CODE){
+        TALK[ctx.from.id] = true;
+        sendText = textObj.data;
+    } else if(textObj.returnCode === DevConfig.FAILURE_CODE){
+        await handleError(participant, 'Unable to build talk start message\n' + textObj.data);
+    }
+    try {
+        await Communicator.sendMessage(bot, participant,
+            ctx.from.id, sendText, !config.debug.messageDelay);
+    } catch(err){
+        await handleError(participant, 'Unable to send talk start message!\n'
+            + err.message + '\n' + err.stack);
+        console.log('Unable to send talk start message!');
         console.error(err);
     }
 
@@ -668,7 +763,7 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, !config.debug.messageDelay);
+      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, false, !config.debug.messageDelay);
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
           await handleError(participant, returnObj.data)
           throw returnObj.data;
@@ -707,6 +802,14 @@ bot.on('text', async ctx => {
     // Ignore commands
     if(messageText.charAt[0] === '/') return;
 
+    // If it is a response to a scheduled question, cancel all open operations
+    //  so that answer is registered for the question
+    if(participant.currentState === "awaitingAnswerScheduled"){
+        SKIP_TO_STAGE[ctx.from.id] = false;
+        TALK[ctx.from.id] = false;
+        REPORT_FEEDBACK[ctx.from.id] = false;
+    }
+
     // If the text is supposed to be a stage name to skip to
     if(SKIP_TO_STAGE[ctx.from.id]){
         let split = messageText.split(',');
@@ -722,7 +825,7 @@ bot.on('text', async ctx => {
         let returnObj = await ActionHandler.processAction(bot, copyConfig, participant, {
             "aType" : "startStage",
             "args" : [stageName]
-        });
+        }, "/skip_to");
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             await ctx.replyWithHTML("Unable to start stage " + stageName +". See console for more information.");
             console.log(returnObj.data);
@@ -750,6 +853,49 @@ bot.on('text', async ctx => {
             console.log('Unable to send feedback cancel message!');
             console.error(err);
         }
+        return;
+    }
+
+    // If text is supposed to be keyword to start talking about something
+    if(TALK[ctx.from.id]){
+        TALK[ctx.from.id] = false;
+
+        let userInfo = await bot.telegram.getChat(ctx.from.id);
+        participant["firstName"] = userInfo.first_name;
+        let partLang = participant.parameters.language;
+
+        // Get the QID for the entered keyword
+        let getQIDObj = ConfigParser.getUserPromptQID(participant, config, messageText);
+        if(getQIDObj.returnCode !== DevConfig.SUCCESS_CODE){
+            try{
+                await Communicator.sendMessage(bot, participant,
+                    ctx.from.id, config.phrases.experiment.talkKeywordNotRecognized[partLang], !config.debug.messageDelay);
+            } catch(err){
+                await handleError(participant, 'Unable to send didnt understand message!\n'
+                    + err.message + '\n' + err.stack);
+                console.log('Unable to send didnt understand message!');
+                console.error(err);
+            }
+            return;
+        }
+
+        // Create the question
+        let questionObj = qHandler.constructQuestionByID(participant.conditionName,
+            getQIDObj.data, partLang);
+        if(questionObj.returnCode !== DevConfig.SUCCESS_CODE){
+            await handleError(participant, 'Unable to construct question prompted by user!\n'
+                + questionObj.data);
+            throw questionObj.data;
+        }
+
+        // Ask the question
+        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
+            questionObj.data, false, config.debug.experimenter)
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            await handleError(participant, returnObj.data);
+            throw returnObj.data;
+        }
+
         return;
     }
 
@@ -783,7 +929,7 @@ bot.on('text', async ctx => {
       // Repeat the question if needed
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
         let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
-            participant.currentQuestion, !config.debug.messageDelay)
+            participant.currentQuestion, false, !config.debug.messageDelay)
           if(returnObj.returnCode === DevConfig.FAILURE_CODE){
               await handleError(participant, returnObj.data);
               throw returnObj.data;

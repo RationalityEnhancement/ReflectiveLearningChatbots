@@ -4,6 +4,7 @@ const DevConfig = ConfigReader.getDevConfig();
 const participants = require('./apiControllers/participantApiController')
 const moment = require('moment-timezone')
 const ConfigParser = require('./configParser')
+const AnswerHandler = require('./answerHandler')
 
 /**
  * Stage handler class that takes in a config as a parameter
@@ -289,6 +290,9 @@ module.exports.endCurrentStage = async (participant) => {
     if(currentStage === ""){
         return ReturnMethods.returnFailure("StageHandler (end): no stage currently underway!");
     }
+
+    // If there is still an outstanding question, handle that
+    await AnswerHandler.handleNoResponse(participant.uniqueId);
 
     // Update the activity and the parameters
     let now = moment.tz(participant.parameters.timezone);

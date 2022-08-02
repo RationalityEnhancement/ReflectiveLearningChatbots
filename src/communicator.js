@@ -197,10 +197,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             reply_markup: keyboard
         });
     }
-
-    await participants.updateField(participant.uniqueId, 'currentState', 'awaitingAnswer');
-    await participants.eraseCurrentAnswer(participant.uniqueId)
-    await participants.updateField(participant.uniqueId, 'currentQuestion', question);
 }
 
 /**

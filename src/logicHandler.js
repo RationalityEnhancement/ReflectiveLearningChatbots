@@ -10,6 +10,7 @@ const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ActionHandler = require("./actionHandler")
 const AnswerHandler = require("./answerHandler");
 const ReminderHandler = require("./reminderHandler");
+const moment = require('moment')
 
 /**
  * Logic handler deals with the logic of what is to occur at each step
@@ -107,7 +108,7 @@ let processNextSteps = async(bot, uniqueId) => {
 
     // Process all next actions, if any
     for(let i = 0; i < nextActions.length; i++){
-        let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i]);
+        let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i], currentQuestion.qId);
 
         if(pActionObj.returnCode === DevConfig.FAILURE_CODE){
             failedActions.push(pActionObj.data);
@@ -137,7 +138,8 @@ let processNextSteps = async(bot, uniqueId) => {
 
     // If a constructed question has been stored in next question obj
     if(!!nextQuestionObj.data){
-        let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data, !config.debug.messageDelay);
+        let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data,
+            false, !config.debug.messageDelay);
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure(
                 "LHandler (PNS):Failure sending question:"
@@ -199,10 +201,11 @@ module.exports.getAndConstructNextQuestion = (participant, currentQuestion) => {
  * @param participant participant object
  * @param chatId participant chatId
  * @param question question to be sent
+ * @param scheduled
  * @param debugExp whether in experimenter debug mode or not
  * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
  */
-module.exports.sendQuestion = async (bot, participant, chatId, question, debugExp) => {
+module.exports.sendQuestion = async (bot, participant, chatId, question, scheduled=false, debugExp) => {
 
     // Cancel any outstanding reminder messages
     let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant.uniqueId);
@@ -230,7 +233,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
     // Handle any outstanding questions before sending next question.
     await AnswerHandler.handleNoResponse(participant.uniqueId);
 
-
     for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
         try{
             await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
@@ -241,7 +243,14 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, debugEx
         }
     }
 
+    // Update participant state parameters
+    let newState = scheduled ? "awaitingAnswerScheduled" : "awaitingAnswer";
+    await participants.updateField(participant.uniqueId, 'currentState', newState);
+    await participants.eraseCurrentAnswer(participant.uniqueId)
+    question.askTimeStamp = moment.tz(participant.parameters.timezone).format();
+    await participants.updateField(participant.uniqueId, 'currentQuestion', question);
 
+    // Set reminders, if any
     if(question.reminder && question.reminder["freqMins"]){
         let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,
             question.reminder.freqMins, question.reminder.numRepeats);

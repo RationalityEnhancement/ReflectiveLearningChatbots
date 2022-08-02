@@ -44,6 +44,7 @@
     "dontAskExampleAgain" : "boolean",
     "relGoalsSetBefore" : "boolean",
     "firstRelGoalDay" : "boolean",
+    "reflectionStartedToday" : "boolean",
     "warningGiven" : "boolean",
     "morningTime" : "string",
     "eveningTime" : "string",
@@ -79,7 +80,8 @@
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs/allCondsUserPromptQs.json}"
     },
     "ShallowLeader" : {
       "questionCategories" : {
@@ -93,7 +95,8 @@
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs/allCondsUserPromptQs.json}"
     },
     "MCLeader" : {
       "questionCategories" : {
@@ -107,7 +110,8 @@
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs/allCondsUserPromptQs.json}"
     },
     "ControlFollower" : {
       "questionCategories" : {
@@ -121,7 +125,8 @@
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestFollowers.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpFollowers.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs/allCondsUserPromptQs.json}"
     },
     "ShallowFollower" : {
       "questionCategories" : {
@@ -135,7 +140,8 @@
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestFollowers.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpFollowers.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs/allCondsUserPromptQs.json}"
     },
     "MCFollower" : {
       "questionCategories" : {
@@ -149,7 +155,8 @@
         "Post-Test" : "$F{json/experiments/RL-Orgs/postTestFollowers.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs/followUpFollowers.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs/allCondsUserPromptQs.json}"
     }
   }
 }

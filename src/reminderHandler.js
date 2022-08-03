@@ -73,7 +73,7 @@ class ReminderHandler{
      * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
      *              When success, list of objects with { jobId : string, job : scheduled object }
      */
-    static createReminderJob(config, bot, participant, chatId, currentTime){
+    static createReminderJob(config, bot, participant, chatId, currentTime, long=true){
         if(!("parameters" in participant)){
             return ReturnMethods.returnFailure("RHandler: Participant object must have parameters");
         }
@@ -88,8 +88,11 @@ class ReminderHandler{
         let job;
         // Get the reminder text from config and schedule the message
         try{
-            let reminderText = config.phrases.schedule.reminderText[participant.parameters.language];
-            if(!reminderText) throw "Reminder text is undefined"
+            let reminderTextLong = config.phrases.schedule.reminderTextLong[participant.parameters.language];
+            let reminderTextShort = config.phrases.schedule.reminderTextShort[participant.parameters.language];
+            if(!reminderTextLong) throw "Reminder text long is undefined"
+            if(!reminderTextShort) throw "Reminder text short is undefined"
+            let reminderText = long ? reminderTextLong : reminderTextShort;
             job = scheduler.scheduleJob(recRuleObj.data, async function(){
                 for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
                     try{
@@ -157,6 +160,7 @@ class ReminderHandler{
      */
     static async setReminder(config, bot, participant, chatId, freqMins, numRepeats){
 
+        console.log("Setting reminder")
         if((typeof freqMins !== "number") || (typeof numRepeats !== "number")){
             return ReturnMethods.returnFailure("RHandler: frequency and numRepeats must be numbers\n" + freqMins +"\n"+numRepeats);
         }
@@ -177,7 +181,7 @@ class ReminderHandler{
         for(let i = 0; i < numRepeats; i++){
             let newTime = this.addMins(currentTime, (i + 1) * freqMins);
             let jobId = participant.uniqueId + "_" + newTime.hours + "_" + newTime.minutes;
-            let curJobObj = this.createReminderJob(config, bot, participant, chatId, newTime);
+            let curJobObj = this.createReminderJob(config, bot, participant, chatId, newTime, i===0);
             if(curJobObj.returnCode === DevConfig.FAILURE_CODE){
                 failedJobs.push(curJobObj.data);
             } else {

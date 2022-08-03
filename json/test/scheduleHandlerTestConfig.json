@@ -142,9 +142,13 @@
         "English" : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         "Deutsch" : ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
       },
-      "reminderText" : {
-        "English" : "Here's a reminder that you have an outstanding question. Give your answer, or type <i>/repeat</i> to repeat the question.",
-        "Deutsch" : "Hier ist eine Erinnerung, dass Sie eine ausstehende Frage noch haben. Geben Sie Ihre Antwort ein, oder senden Sie <i>/repeat</i>, um die Frage zu wiederholen"
+      "reminderTextLong" : {
+        "English" : "Here's a reminder that you have an outstanding question. Provide an answer here as instructed, or type <i>/repeat</i> to repeat the question.\n\nIf you have already typed out or selected your answer(s), it may be that you have not sent the appropriate message to continue. Instead of repeating the question, you may simply continue with your answer in the next message. <b>If you choose to repeat the question, you must enter or select all your answer(s) once again.</b>",
+        "Deutsch" : "Hier ist eine Erinnerung, dass Sie eine ausstehende Frage noch haben. Geben Sie Ihre Antwort nach Anweisungen ein, oder senden Sie <i>/repeat</i>, um die Frage zu wiederholen."
+      },
+      "reminderTextShort" : {
+        "English" : "Here's a reminder that you have an outstanding question. Provide an answer here as instructed, or type <i>/repeat</i> to repeat the question.",
+        "Deutsch" : "Hier ist eine Erinnerung, dass Sie eine ausstehende Frage noch haben. Geben Sie Ihre Antwort nach Anweisungen ein, oder senden Sie <i>/repeat</i>, um die Frage zu wiederholen."
       }
     },
     "endExperiment" : {

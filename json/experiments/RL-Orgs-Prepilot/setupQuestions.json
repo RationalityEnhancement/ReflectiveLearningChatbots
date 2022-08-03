@@ -90,20 +90,65 @@
       "Deutsch": "$F{json/static/common_timezones.json}"
     },
     "buttonLayoutCols" : 2,
-    "replyMessages": {
+    "cReplyMessages": [
+      {
+        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{6}) != $B{True}",
+        "then" : {
+          "English": [
+            "Thank you, time zone has been registered."
+          ],
+          "Deutsch": [
+            "Danke, Zeitzone ist erfasst worden"
+          ]
+        }
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{6}) != $B{True}",
+        "then" : [
+          {
+            "aType" : "saveAnswerTo",
+            "args" : ["timezone"]
+          }
+        ]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{6}) != $B{True}",
+        "then" : "setupQuestions.goalSetTime",
+        "else" : "setupQuestions.moreTimezones"
+      }
+    ]
+  },
+  {
+    "qId" : "moreTimezones",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Select your timezone from the following list.",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "options" : {
+      "English" : "$F{json/static/more_timezones.json}",
+      "Deutsch" : "$F{json/static/more_timezones.json}"
+    },
+    "buttonLayoutCols" : 2,
+    "nextQuestion" : "setupQuestions.goalSetTime",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["timezone"]
+      }
+    ],
+    "replyMessages" : {
       "English": [
         "Thank you, time zone has been registered."
       ],
       "Deutsch": [
         "Danke, Zeitzone ist erfasst worden"
       ]
-    },
-    "nextActions" : [
-      {
-        "aType" : "saveAnswerTo",
-        "args" : ["timezone"]
-      }],
-    "nextQuestion" : "setupQuestions.goalSetTime"
+    }
   },
   {
     "qId" : "goalSetTime",
@@ -113,10 +158,10 @@
       "Deutsch" : "In einigen Phasen des Experiments, werden Sie morgens vor der Arbeit danach gefragt, sich Ziele zu setzen. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
     },
     "options" : {
-      "English" : ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00"],
-      "Deutsch" : ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00"]
+      "English" : "$F{json/static/morningTimeOptions.json}",
+      "Deutsch" : "$F{json/static/morningTimeOptions.json}"
     },
-    "buttonLayoutCols" : 2,
+    "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
       "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]
@@ -137,10 +182,10 @@
       "Deutsch" : "In einigen Phasen des Experiments, werden Sie abends nach der Arbeit dazu aufgefordert, über Ihre Ziele zu reflektieren, die Sie sich am selben Morgen gesetzt haben. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
     },
     "options" : {
-      "English" : ["16:00", "17:00", "18:00", "19:00", "20:00", "21:00"],
-      "Deutsch" : ["16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
+      "English" : "$F{json/static/eveningTimeOptions.json}",
+      "Deutsch" : "$F{json/static/eveningTimeOptions.json}"
     },
-    "buttonLayoutCols" : 2,
+    "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
       "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]

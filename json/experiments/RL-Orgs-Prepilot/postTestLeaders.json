@@ -105,7 +105,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 60,
+      "freqMins" : 30,
       "numRepeats" : 4
     },
     "inputPrompt" : {

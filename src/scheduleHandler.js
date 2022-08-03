@@ -346,6 +346,23 @@ class ScheduleHandler{
                 + "\n"+ schQObj.data
             );
         }
+
+        // Save scheduled questions that were fetched
+        let saveActionObj = {
+            infoType: "getSchQs",
+            scheduledOperations: participant.scheduledOperations,
+            parameters: participant.parameters,
+            stages: participant.stages,
+            info: [JSON.stringify(schQObj.data)],
+            timeStamp: moment.tz(participant.parameters.timezone).format(),
+            from: "SHandler"
+        }
+        try{
+            await participants.addDebugInfo(participant.uniqueId, saveActionObj);
+        } catch(e){
+            return ReturnMethods.returnFailure("ActHandler: could not add save action obj");
+        }
+
         let scheduledQuestionsList = schQObj.data;
         let failedOperations = [];
         let succeededOperations = [];
@@ -666,7 +683,8 @@ class ScheduleHandler{
                     }
                 }
                 if(evaluation){
-                   let returnObj = await sendQuestion(bot, newParticipant, chatId, question, true, !config.debug.messageDelay);
+                   let returnObj = await sendQuestion(bot, newParticipant, chatId, question, true,
+                       !config.debug.messageDelay, "scheduled");
                    if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                        console.log("Scheduler: Error sending question:\n" + returnObj.data);
                    }
@@ -769,7 +787,26 @@ class ScheduleHandler{
                 }
                 if(evaluation){
                     await processAction(bot, config, newParticipant, actionObj, "scheduled");
+                    try {
+                        newParticipant = await participants.get(uniqueId);
+                        if(!newParticipant) throw "Participant not found"
+                    } catch(err){
+                        console.log(err);
+                    }
+
+                    // Save result of action for debug purposes
+                    let saveActionObj = {
+                        infoType: "actionResult",
+                        scheduledOperations: newParticipant.scheduledOperations,
+                        parameters: newParticipant.parameters,
+                        stages: newParticipant.stages,
+                        info: [],
+                        timeStamp: moment.tz(newParticipant.parameters.timezone).format(),
+                        from: "LHandler"
+                    }
+                    await participants.addDebugInfo(uniqueId, saveActionObj);
                 }
+
             })
             // Add to local store and if necessary, to DB
             this.scheduledOperations["actions"][jobId] = job;

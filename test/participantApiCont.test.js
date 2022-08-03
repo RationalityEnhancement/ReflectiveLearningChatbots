@@ -240,33 +240,58 @@ describe('Participant Controller API: ', () =>{
 		expect(participant["answers"][0]['answerTimeStamp']).to.eql(testAnswer.answerTimeStamp);
 		expect(participant["answers"][0]['answer']).to.eql(testAnswer.answer);
 	});
-	it('Should add an action', async () => {
+	it('Should add a debugInfo object', async () => {
 		let oldParticipant = await participants.get(testId)
 		oldParticipant['stages'].stageName = "Test-Stage"
 		oldParticipant['stages'].stageDay = 69
+		oldParticipant['scheduledOperations']['questions'] = [
+		{
+			jobId : "testJobId",
+			qId: "testQiD",
+			atTime : "testTime",
+			onDays : ["Day1", "Day2"],
+			if : "testIf",
+			tz : "testTz"
+		},
+		]
 		const testActionObj = {
+			aType: "testAction",
+			args: ["testArgs1", "testArgs2"]
+		};
+		const testInfoObj = {
+			infoType: "action",
+			scheduledOperations: oldParticipant.scheduledOperations,
 			parameters: oldParticipant.parameters,
 			stages : oldParticipant.stages,
 			timeStamp: moment.tz().format(),
-			actionObj: {
-				aType: "testAction",
-				args: ["testArgs1", "testArgs2"]
-			},
+			info: [testActionObj.aType, ...testActionObj.args],
 			from: "test"
 		}
-		await participants.addAction(testId, testActionObj);
+		await participants.addDebugInfo(testId, testInfoObj);
 		let participant = await participants.get(testId)
 		// console.log(participant["answers"]);
 		// for(const [key, value] of participant.parameters){
 		// 	expect(participant["actions"][0]['parameters'][key]).to.eql(value);
 		// }
-		expect(participant["actions"][0]['parameters']).to.eql(oldParticipant.parameters);
-		expect(participant["actions"][0]['stages']['stageName']).to.eql(oldParticipant.stages.stageName);
-		expect(participant["actions"][0]['stages']['stageDay']).to.eql(oldParticipant.stages.stageDay);
-		expect(participant["actions"][0]['actionObj']['aType']).to.eql(testActionObj.actionObj.aType);
-		expect(participant["actions"][0]['actionObj']['args']).to.eql(testActionObj.actionObj.args);
-		expect(participant["actions"][0]['timeStamp']).to.eql(testActionObj.timeStamp);
-		expect(participant["actions"][0]['from']).to.eql(testActionObj.from);
+		expect(participant["debugInfo"][0]['parameters']).to.eql(oldParticipant.parameters);
+		expect(participant["debugInfo"][0]['stages']['stageName']).to.eql(oldParticipant.stages.stageName);
+		expect(participant["debugInfo"][0]['stages']['stageDay']).to.eql(oldParticipant.stages.stageDay);
+		expect(participant["debugInfo"][0]['info'][0]).to.eql(testActionObj.aType);
+		expect(participant["debugInfo"][0]['info'].slice(1)).to.eql(testActionObj.args);
+		expect(participant["debugInfo"][0]['timeStamp']).to.eql(testInfoObj.timeStamp);
+		expect(participant["debugInfo"][0]['from']).to.eql(testInfoObj.from);
+		expect(participant["debugInfo"][0]['scheduledOperations']['questions'][0]['jobId'])
+			.to.eql(oldParticipant.scheduledOperations['questions'][0]['jobId'])
+		expect(participant["debugInfo"][0]['scheduledOperations']['questions'][0]['qId'])
+			.to.eql(oldParticipant.scheduledOperations['questions'][0]['qId'])
+		expect(participant["debugInfo"][0]['scheduledOperations']['questions'][0]['atTime'])
+			.to.eql(oldParticipant.scheduledOperations['questions'][0]['atTime'])
+		expect(participant["debugInfo"][0]['scheduledOperations']['questions'][0]['onDays'])
+			.to.eql(oldParticipant.scheduledOperations['questions'][0]['onDays'])
+		expect(participant["debugInfo"][0]['scheduledOperations']['questions'][0]['tz'])
+			.to.eql(oldParticipant.scheduledOperations['questions'][0]['tz'])
+		expect(participant["debugInfo"][0]['scheduledOperations']['questions'][0]['if'])
+			.to.eql(oldParticipant.scheduledOperations['questions'][0]['if'])
 	});
 	it('Should add to an array field', async () => {
 		const testAnswer = {

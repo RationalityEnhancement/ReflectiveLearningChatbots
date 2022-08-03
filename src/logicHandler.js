@@ -113,10 +113,24 @@ let processNextSteps = async(bot, uniqueId) => {
         if(pActionObj.returnCode === DevConfig.FAILURE_CODE){
             failedActions.push(pActionObj.data);
         }
+
         // Get updated participant for next action:
         try{
             participant = await participants.get(uniqueId)
             if(!participant) throw "Participant not found"
+
+            // Save result of action for debug purposes
+            let saveActionObj = {
+                infoType: "actionResult",
+                scheduledOperations: participant.scheduledOperations,
+                parameters: participant.parameters,
+                stages: participant.stages,
+                info: [],
+                timeStamp: moment.tz(participant.parameters.timezone).format(),
+                from: "LHandler"
+            }
+            await participants.addDebugInfo(participant.uniqueId, saveActionObj);
+
         } catch(err){
             return ReturnMethods.returnFailure("LHandler: Could not fetch participant again: " + uniqueId)
         }
@@ -139,7 +153,7 @@ let processNextSteps = async(bot, uniqueId) => {
     // If a constructed question has been stored in next question obj
     if(!!nextQuestionObj.data){
         let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data,
-            false, !config.debug.messageDelay);
+            false, !config.debug.messageDelay, "nextQuestion");
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure(
                 "LHandler (PNS):Failure sending question:"
@@ -205,7 +219,7 @@ module.exports.getAndConstructNextQuestion = (participant, currentQuestion) => {
  * @param debugExp whether in experimenter debug mode or not
  * @returns {Promise<{returnCode: *, data: *}|{returnCode: *, data: *}>}
  */
-module.exports.sendQuestion = async (bot, participant, chatId, question, scheduled=false, debugExp) => {
+module.exports.sendQuestion = async (bot, participant, chatId, question, scheduled=false, debugExp, from=undefined) => {
 
     // Cancel any outstanding reminder messages
     let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant.uniqueId);
@@ -214,6 +228,22 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
             "LHandler (SQ):Failure cancelling reminder:"
             + "\n"+ cancelReminderObj.data
         );
+    }
+
+    // Save question that will be sent (for debug purposes)
+    let saveQuestionObj = {
+        infoType: "question",
+        scheduledOperations: participant.scheduledOperations,
+        parameters: participant.parameters,
+        stages: participant.stages,
+        info: [question.qId, JSON.stringify(question)],
+        timeStamp: moment.tz(participant.parameters.timezone).format(),
+        from: from
+    }
+    try{
+        await participants.addDebugInfo(participant.uniqueId, saveQuestionObj);
+    } catch(e){
+        return ReturnMethods.returnFailure("LHandler: could not add save question obj");
     }
 
     // Don't send the question if it is a dummy

@@ -80,16 +80,18 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
     let userInfo = await bot.telegram.getChat(secretMap.chatId);
     participant["firstName"] = userInfo.first_name;
 
-    // Save action that was performed
+    // Save action that will be performed
     let saveActionObj = {
+        infoType: "action",
+        scheduledOperations: participant.scheduledOperations,
         parameters: participant.parameters,
         stages: participant.stages,
-        actionObj: actionObj,
+        info: [actionObj.aType, ...actionObj.args],
         timeStamp: moment.tz(participant.parameters.timezone).format(),
         from: from
     }
     try{
-        await participants.addAction(participant.uniqueId, saveActionObj);
+        await participants.addDebugInfo(participant.uniqueId, saveActionObj);
     } catch(e){
         return ReturnMethods.returnFailure("ActHandler: could not add save action obj");
     }

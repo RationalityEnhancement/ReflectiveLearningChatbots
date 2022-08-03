@@ -108,17 +108,45 @@ let schemaObject = {
       stageDay: Number,
       answer: [String]
     }],
-  actions: [
+  debugInfo: [
     {
+      infoType: String,
+      scheduledOperations : {
+        questions : [
+          {
+            jobId : String,
+            qId: String,
+            atTime : String,
+            onDays : [String],
+            if : String,
+            tz : String
+          },
+        ],
+        actions : [
+          {
+            jobId : String,
+            aType: String,
+            args: [String],
+            atTime : String,
+            onDays : [String],
+            if : String,
+            tz : String
+          }
+        ],
+        reminders : [
+          {
+            jobId : String,
+            minutes : Number,
+            hours : Number
+          }
+        ]
+      },
       parameters: {},
       stages : {
         stageName: String,
         stageDay: Number
       },
-      actionObj: {
-        aType: String,
-        args: [String]
-      },
+      info: [String],
       timeStamp: String,
       from: String
     }
@@ -161,7 +189,7 @@ for(const[key, value] of Object.entries(config.customParameters)){
       type: dataTypeMap[value],
       default: DevConfig.DEFAULT_DTYPE_VALUES[value]
     };
-    schemaObject["actions"][0]["parameters"][key] = {
+    schemaObject["debugInfo"][0]["parameters"][key] = {
       type: dataTypeMap[value],
       default: DevConfig.DEFAULT_DTYPE_VALUES[value]
     };
@@ -173,7 +201,7 @@ for(const[key, value] of Object.entries(config.mandatoryParameters)){
       type: dataTypeMap[value],
       default: DevConfig.DEFAULT_DTYPE_VALUES[value]
     };
-    schemaObject["actions"][0]["parameters"][key] = {
+    schemaObject["debugInfo"][0]["parameters"][key] = {
       type: dataTypeMap[value],
       default: DevConfig.DEFAULT_DTYPE_VALUES[value]
     };

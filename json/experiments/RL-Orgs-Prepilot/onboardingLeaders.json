@@ -120,7 +120,7 @@
       "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
     },
     "reminder" : {
-      "freqMins" : 30,
+      "freqMins" : 1,
       "numRepeats" : 4
     }
   },

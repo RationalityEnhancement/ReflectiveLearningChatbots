@@ -191,12 +191,11 @@ exports.addAnswer = async (uniqueId, answer) => {
   }
 }
 
-// Add an action to the end of a chronological list of actions
-// carried out for the participant
-exports.addAction = async (uniqueId, actionObj) => {
+// Add debug information to the chronological list
+exports.addDebugInfo = async (uniqueId, infoObj) => {
   try{
     let participant = await Participant.findOne({ uniqueId: uniqueId });
-    participant.actions.push(actionObj);
+    participant.debugInfo.push(infoObj);
     return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');

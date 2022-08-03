@@ -396,7 +396,8 @@ bot.command('next', async ctx => {
                     nextQuestionFound = true;
                 }
 
-                let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion, true, !config.debug.messageDelay);
+                let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion,
+                    true, !config.debug.messageDelay, "nextCommand");
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
                     await handleError(participant, returnObj.data);
                     throw returnObj.data;
@@ -495,7 +496,8 @@ bot.command('repeat', async ctx => {
   if(participant.currentState.startsWith("awaitingAnswer")){
       await participants.updateField(uniqueId, "currentState", "repeatQuestion");
     let currentQuestion = participant.currentQuestion;
-    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion, false, !config.debug.messageDelay);
+    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion,
+        false, !config.debug.messageDelay, "repeat");
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
           await handleError(participant, returnObj.data);
           throw returnObj.data;
@@ -763,7 +765,8 @@ bot.start(async ctx => {
   } else {
     let curQuestion = curQuestionObj.data;
     try{
-      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion, false, !config.debug.messageDelay);
+      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion,
+          false, !config.debug.messageDelay, "firstQuestion");
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
           await handleError(participant, returnObj.data)
           throw returnObj.data;
@@ -890,7 +893,7 @@ bot.on('text', async ctx => {
 
         // Ask the question
         let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
-            questionObj.data, false, config.debug.experimenter)
+            questionObj.data, false, config.debug.experimenter, "talk")
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
             await handleError(participant, returnObj.data);
             throw returnObj.data;
@@ -929,7 +932,7 @@ bot.on('text', async ctx => {
       // Repeat the question if needed
       if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
         let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
-            participant.currentQuestion, false, !config.debug.messageDelay)
+            participant.currentQuestion, false, !config.debug.messageDelay, "invalid")
           if(returnObj.returnCode === DevConfig.FAILURE_CODE){
               await handleError(participant, returnObj.data);
               throw returnObj.data;

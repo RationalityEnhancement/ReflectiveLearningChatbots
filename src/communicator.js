@@ -1,10 +1,7 @@
 const ConfigReader = require('../src/configReader');
 const config = ConfigReader.getExpConfig();
 const DevConfig = ConfigReader.getDevConfig();
-const participants = require('./apiControllers/participantApiController');
 const InputOptions = require('./inputOptions');
-const AnswerHandler = require('./answerHandler');
-const idMaps = require('./apiControllers/idMapApiController')
 const ConfigParser = require('./configParser');
 const ExperimentUtils = require('./experimentUtils');
 const emoji = require('node-emoji');
@@ -84,7 +81,11 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
 
     // Simulate typing by adding delay and sending chat action
     if(!noDelay){
-        bot.telegram.sendChatAction(chatId, "typing");
+
+        bot.telegram.sendChatAction(chatId, "typing").catch((reason) => {
+            console.log("Unable to send chat action for chatId " + chatId+ ": \n" + reason)
+        });
+
         await new Promise(res => {
             setTimeout(res, qDelayMs)
         });
@@ -102,10 +103,16 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
     switch(question.qType){
         case 'singleChoice':
 
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
+            try{
+                await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                    parse_mode: "HTML",
+                    reply_markup: InputOptions.removeKeyboard().reply_markup
+                });
+            } catch(e) {
+                console.log("Error sending message: \n" + e.message + "\n" + e.stack);
+                return;
+            }
+
 
             // Use default input prompt if no overwrite
             if(!inputPrompt) inputPrompt = config.phrases.keyboards.singleChoice[language];
@@ -113,36 +120,57 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             break;
 
         case 'multiChoice':
-
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
+            try{
+                await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                    parse_mode: "HTML",
+                    reply_markup: InputOptions.removeKeyboard().reply_markup
+                });
+            } catch(e) {
+                console.log("Error sending message: \n" + e.message + "\n" + e.stack);
+                return;
+            }
 
             if(!inputPrompt) inputPrompt = config.phrases.keyboards.multiChoice[language];
             keyboard = InputOptions.multiChoice(question.options, participant.parameters.language, question.buttonLayoutCols).reply_markup;
 
             break;
         case 'number':
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
+            try{
+                await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                    parse_mode: "HTML",
+                    reply_markup: InputOptions.removeKeyboard().reply_markup
+                });
+            } catch(e) {
+                console.log("Error sending message: \n" + e.message + "\n" + e.stack);
+                return;
+            }
+
 
             break;
         case 'freeform':
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
+            try{
+                await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                    parse_mode: "HTML",
+                    reply_markup: InputOptions.removeKeyboard().reply_markup
+                });
+            } catch(e) {
+                console.log("Error sending message: \n" + e.message + "\n" + e.stack);
+                return;
+            }
 
             if(!inputPrompt) inputPrompt = config.phrases.keyboards.freeformSinglePrompt[language];
             break;
         case 'freeformMulti':
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
+            try{
+                await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                    parse_mode: "HTML",
+                    reply_markup: InputOptions.removeKeyboard().reply_markup
+                });
+            } catch(e) {
+                console.log("Error sending message: \n" + e.message + "\n" + e.stack);
+                return;
+            }
+
 
             if(!inputPrompt) inputPrompt = config.phrases.keyboards.freeformMultiPrompt[language];
 
@@ -150,11 +178,17 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
         case 'qualtrics' :
             let link = question.qualtricsLink;
 
-            // Send the question text
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
-                parse_mode: "HTML",
-                reply_markup: InputOptions.removeKeyboard().reply_markup
-            });
+            try{
+                // Send the question text
+                await bot.telegram.sendMessage(chatId, substituteVariables(participant, question.text, true), {
+                    parse_mode: "HTML",
+                    reply_markup: InputOptions.removeKeyboard().reply_markup
+                });
+            } catch(e) {
+                console.log("Error sending message: \n" + e.message + "\n" + e.stack);
+                return;
+            }
+
 
             // Send the prompt to fill the link
             await new Promise(res => {
@@ -192,10 +226,16 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             setTimeout(res, delayMs)
         });
 
-        await bot.telegram.sendMessage(chatId, substituteVariables(participant, inputPrompt, true), {
-            parse_mode: "HTML",
-            reply_markup: keyboard
-        });
+        try{
+            // Send the question text
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, inputPrompt, true), {
+                parse_mode: "HTML",
+                reply_markup: keyboard
+            });
+        } catch(e) {
+            console.log("Error sending message: \n" + e.message + "\n" + e.stack);
+            return;
+        }
     }
 }
 
@@ -218,12 +258,15 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
     }
 
     // Send each reply message
-	for(let i = 0; i < replyMessages.length; i++){
-		const reply = replyMessages[i];
+    for(let i = 0; i < replyMessages.length; i++){
+        const reply = replyMessages[i];
 
         // Simulate typing by adding delay and sending chat action
         if(!noDelay){
-            bot.telegram.sendChatAction(chatId, "typing");
+
+            bot.telegram.sendChatAction(chatId, "typing").catch((reason) => {
+                console.log("Unable to send chat action for chatId " + chatId+ ": \n" + reason)
+            });
             let delayMs = reply.length * msPerCharacter;
             await new Promise(res => {
                 setTimeout(res, delayMs)
@@ -231,11 +274,17 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
         }
 
         // Send the message
-		await bot.telegram.sendMessage(chatId, substituteVariables(participant, reply, true), {
-            parse_mode: "HTML",
-            reply_markup: InputOptions.removeKeyboard().reply_markup
-        });
-	}
+        try{
+            await bot.telegram.sendMessage(chatId, substituteVariables(participant, reply, true), {
+                parse_mode: "HTML",
+                reply_markup: InputOptions.removeKeyboard().reply_markup
+            });
+        } catch(e) {
+            console.log("Error sending message: \n" + e.message + "\n" + e.stack);
+            return;
+        }
+
+    }
 
     await new Promise(res => {
         setTimeout(res, 300)
@@ -264,14 +313,24 @@ module.exports.sendMessage = async (bot, participant, chatId, message, noDelay =
 
     // Simulate typing by adding delay and sending chat action
     if(!noDelay){
-        bot.telegram.sendChatAction(chatId, "typing");
+
+        bot.telegram.sendChatAction(chatId, "typing").catch((reason) => {
+            console.log("Unable to send chat action for chatId " + chatId+ ": \n" + reason)
+        });
+
         await new Promise(res => {
             setTimeout(res, delayMs)
         });
     }
     let finalMessage = noVarSub ? message : substituteVariables(participant, message, true)
-    await bot.telegram.sendMessage(chatId, finalMessage, {
-        parse_mode: "HTML",
-        reply_markup: InputOptions.removeKeyboard().reply_markup
-    });
+    try{
+        await bot.telegram.sendMessage(chatId, finalMessage, {
+            parse_mode: "HTML",
+            reply_markup: InputOptions.removeKeyboard().reply_markup
+        });
+    } catch(e) {
+        console.log("Error sending message: \n" + e.message + "\n" + e.stack);
+        return;
+    }
+
 }

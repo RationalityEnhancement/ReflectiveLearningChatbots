@@ -14,7 +14,9 @@ const moment = require('moment-timezone');
 
 const testId = "123";
 const testId2 = "321";
+const testId3 = "1234";
 const testExptId = config.experimentId;
+const testExptId2 = config.experimentId + "1234";
 describe('Participant Controller API: ', () =>{
 		
 
@@ -77,6 +79,38 @@ describe('Participant Controller API: ', () =>{
 		let savedPart = await participants.initializeParticipant(testId2, config);
 		let newPart = await participants.get(testId2);
 		expect(newPart['experimentId']).to.equal(testExptId);
+		expect(newPart['parameters']['language']).to.eql(expectedParams.language);
+		expect(newPart['currentState']).to.equal("starting");
+		for(const [key,value] of Object.entries(config.mandatoryParameters)){
+			console.log(key+": "+value);
+			assert(key in newPart.parameterTypes);
+			assert(newPart.parameterTypes[key] === value);
+		}
+		for(const [key,value] of Object.entries(config.customParameters)){
+			assert(key in newPart.parameterTypes);
+			assert(newPart.parameterTypes[key] === value);
+		}
+	})
+	it('Should add and get participant - 3', async () => {
+
+		await participants.add(testId3);
+		let participant = await participants.get(testId3);
+		expect(participant).to.not.be.null;
+		expect(participant.uniqueId).to.equal(testId3);
+
+
+	});
+	it('Should initialize a participant - 3', async() => {
+
+		const testDefaultLang = 'Shona';
+		const expectedParams = {
+			"language": "English",
+		};
+		let copyConfig = JSON.parse(JSON.stringify(config))
+		copyConfig.experimentId = testExptId2;
+		let savedPart = await participants.initializeParticipant(testId3, copyConfig);
+		let newPart = await participants.get(testId3);
+		expect(newPart['experimentId']).to.equal(testExptId2);
 		expect(newPart['parameters']['language']).to.eql(expectedParams.language);
 		expect(newPart['currentState']).to.equal("starting");
 		for(const [key,value] of Object.entries(config.mandatoryParameters)){
@@ -486,10 +520,20 @@ describe('Participant Controller API: ', () =>{
 		expect(cAnswer).to.eql([]);
 	});
 
+	it('Should remove all participants for a given experiment', async () => {
+		await participants.removeAllForExperiment(testExptId);
+		let participant = await participants.get(testId);
+		expect(participant).to.be.null;
+		participant = await participants.get(testId2);
+		expect(participant).to.be.null;
+		participant = await participants.get(testId3);
+		expect(participant).to.not.be.null;
+
+	});
 
 	it('Should remove participant', async () => {
-		await participants.remove(testId);
-		let participant = await participants.get(testId);
+		await participants.remove(testId3);
+		let participant = await participants.get(testId3);
 		expect(participant).to.be.null;
 		
 	});

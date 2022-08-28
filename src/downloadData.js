@@ -21,6 +21,7 @@ const config = ConfigReader.getExpConfig();
             console.log('\x1b[42m\x1b[30m%s\x1b[0m', `Connected to the database`);
         }
     });
+    console.log("Downloading data for experiment with id: " + config.experimentId);
 
     // Reading experiment and participants
 
@@ -56,7 +57,7 @@ const config = ConfigReader.getExpConfig();
     let jsonFilePath = path.join(experimentPath, 'data.json');
     try{
         fs.writeFileSync(jsonFilePath, JSON.stringify(dataObj));
-        console.log("Written to JSON!")
+        console.log("Written to JSON!\n" + jsonFilePath)
     } catch(err) {
         throw "ERROR: Unable to write to JSON file\n" + err;
     }
@@ -74,7 +75,7 @@ const config = ConfigReader.getExpConfig();
         experimentList.push(experiment.currentlyAssignedToCondition.join(''));
         let CSVString = experimentHeaders.join(',') + '\n' + experimentList.join(',');
         fs.writeFileSync(experimentCSVPath, CSVString);
-        console.log("Written experiment to CSV!")
+        console.log("\nWritten experiment to CSV!\n" + experimentCSVPath)
     } catch(err) {
         throw "ERROR: Unable to write experiment to CSV file\n" + err;
     }
@@ -104,7 +105,7 @@ const config = ConfigReader.getExpConfig();
             participantValues.push(JSON.stringify(curPart.answers).replace(/,/g,'|'))
             CSVString += '\n' + participantValues.join(',')
             fs.writeFileSync(participantCSVPath, CSVString);
-            console.log("Written participants to CSV!")
+            console.log("\nWritten participants to CSV!\n" + participantCSVPath)
         }
     } catch(error){
         throw "ERROR: Unable to write participants to CSV file\n" + error;
@@ -112,4 +113,9 @@ const config = ConfigReader.getExpConfig();
 
     await mongo.connection.close();
 
-})();
+})().catch((err) => {
+    mongo.connection.close().then( (res) =>{
+        console.log(err);
+    });
+
+});

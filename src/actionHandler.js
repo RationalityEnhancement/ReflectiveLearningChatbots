@@ -149,7 +149,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             let conditionNames = experiment["experimentConditions"];
 
             // Assign participant to condition
-            let conditionObj = ExperimentUtils.assignToCondition(ID, PIDtoConditionMap, conditionRatios, currentAssignments, scheme);
+            let conditionObj = ExperimentUtils.assignToCondition(ID, config.conditionMapping, conditionRatios, currentAssignments, scheme);
             if(conditionObj.returnCode === DevConfig.FAILURE_CODE){
                 return ReturnMethods.returnFailure(
                     "ActHandler:Unable to assignt to condition:\n"+ conditionObj.data

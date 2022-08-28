@@ -112,7 +112,7 @@
   {
     "qId" : "relImpact",
     "text" : {
-      "English" : "All in all, how did your social interactions  today impact the working atmosphere of your team?\n",
+      "English" : "All in all, how did your social interactions  today impact the working atmosphere of your team?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",

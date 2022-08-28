@@ -305,10 +305,10 @@ exports.eraseCurrentAnswer = async (uniqueId) => {
   }
 }
 
-// Remove all records
-exports.removeAll = async () => {
+
+exports.removeAllForExperiment = async experimentId => {
   try {
-    return Participant.deleteMany({});
+    return Participant.deleteMany({ experimentId : experimentId });
   } catch (err) {
     console.error(err);
   }

@@ -4,6 +4,7 @@
   "experimentConditions" : ["ControlLeader", "ShallowLeader", "MCLeader", "ControlFollower", "ShallowFollower", "MCFollower"],
   "conditionAssignments" : [1, 1, 1, 1, 1, 1],
   "assignmentScheme" : "pid",
+  "conditionMapping" : "$F{json/experiments/RL-Orgs-Pilot/PIDCondMap.json}",
   "experimentLengthWeeks" : 4,
   "msPerCharacterDelay" : 5,
   "experimentStages" : {
@@ -25,9 +26,11 @@
     "preTest2Complete" : "boolean",
     "postTestComplete" : "boolean",
     "pauseEnded" : "boolean",
-    "remindIntention" : "boolean",
-    "intentionReminded" : "boolean",
-    "intentions" : "strArr",
+    "remindWorkIntention" : "boolean",
+    "workIntention" : "string",
+    "relIntention" : "string",
+    "remindRelIntention" : "boolean",
+    "inRelReflection" : "boolean",
     "taskGoals" : "strArr",
     "relGoals" : "strArr",
     "taskGoalsSetToday" : "boolean",
@@ -36,8 +39,16 @@
     "taskProgressReportedOnce" : "boolean",
     "lastReportedRelProgress" : "number",
     "relProgressReportedOnce" : "boolean",
+    "goalsMoreRelevant" : "boolean",
+    "goalsEquallyRelevant" : "boolean",
     "dontAskInfoAgain" : "boolean",
     "dontAskExampleAgain" : "boolean",
+    "relGoalsSetBefore" : "boolean",
+    "firstRelGoalDay" : "boolean",
+    "firstWorkGoalDay" : "boolean",
+    "workGoalsSetBefore" : "boolean",
+    "reflectionStartedToday" : "boolean",
+    "warningGiven" : "boolean",
     "morningTime" : "string",
     "eveningTime" : "string",
     "testStrArr" : "strArr",
@@ -55,6 +66,7 @@
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : "$F{json/experiments/RL-Orgs-Pilot/phrases.json}",
+  "instructionText" : "$F{json/experiments/RL-Orgs-Pilot/instructions.json}",
   "questionCategories": {
     "setupQuestions": "$F{json/experiments/RL-Orgs-Pilot/setupQuestions.json}"
   },
@@ -65,11 +77,14 @@
         "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestLeaders.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Leaders.json}",
-        "Intervention" : "$F{json/experiments/RL-Orgs-Pilot/goalSettingIntervention.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/goalSettingIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
     },
     "ShallowLeader" : {
       "questionCategories" : {
@@ -77,11 +92,14 @@
         "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestLeaders.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Leaders.json}",
-        "Intervention" : "$F{json/experiments/RL-Orgs-Pilot/shallowIntervention.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/shallowIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
     },
     "MCLeader" : {
       "questionCategories" : {
@@ -89,11 +107,14 @@
         "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestLeaders.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Leaders.json}",
-        "Intervention" : "$F{json/experiments/RL-Orgs-Pilot/MCIntervention.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/MCIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestLeaders.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
     },
     "ControlFollower" : {
       "questionCategories" : {
@@ -101,11 +122,14 @@
         "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestFollowers.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Followers.json}",
-        "Intervention" : "$F{json/experiments/RL-Orgs-Pilot/goalSettingIntervention.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/goalSettingIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestFollowers.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpFollowers.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
     },
     "ShallowFollower" : {
       "questionCategories" : {
@@ -113,11 +137,14 @@
         "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestFollowers.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Followers.json}",
-        "Intervention" : "$F{json/experiments/RL-Orgs-Pilot/shallowIntervention.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/shallowIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestFollowers.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpFollowers.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
     },
     "MCFollower" : {
       "questionCategories" : {
@@ -125,11 +152,14 @@
         "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestFollowers.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Followers.json}",
-        "Intervention" : "$F{json/experiments/RL-Orgs-Pilot/MCIntervention.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/MCIntervention.json}",
         "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestFollowers.json}",
         "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpFollowers.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
     }
   }
 }

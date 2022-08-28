@@ -2,12 +2,23 @@
   {
     "qId" : "initiateContact",
     "qType" : "dummy",
-    "nextQuestion" : "Follow-Up.survey",
+    "cNextQuestions" : [
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "then" : "Follow-Up.wantContinue"
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "then" : "Follow-Up.endExperimentEarly",
+        "else" : "Follow-Up.survey"
+      }
+    ],
+    "selectQFirst" : true,
     "cReplyMessages" : [
       {
         "if" : "${pauseEnded} == $B{false}",
         "then" : {
-          "English" : ["Hello again, ${FIRST_NAME}! I hope you had a good week.", "I am back to complete the final round of questionnaires for the experiment."],
+          "English" : ["Hello again, ${FIRST_NAME}! I hope you had a good break.", "I am back now to complete the final round of questionnaires for the experiment."],
           "Deutsch" : ["Übersetzung nicht verfügbar"]
         },
         "else" : {
@@ -25,8 +36,71 @@
             "args" : ["pauseEnded", "$B{true}"]
           }
         ]
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["warningGiven", "$B{true}"]
+          }
+        ]
       }
     ]
+  },
+  {
+    "qId" : "wantContinue",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
+      "Deutsch" : "Übersetzung nicht verfügbar?"
+    },
+    "options" : {
+      "English" : ["Continue", "End Experiment"],
+      "Deutsch" : ["Continue", "End Experiment"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : "Follow-Up.endExperimentEarly",
+        "else" : "Follow-Up.survey"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
+          "Deutsch" : ["Übersetzung nicht verfügbar."]
+        }
+      }
+    ]
+  },
+  {
+    "qId" : "endExperimentEarly",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["The experiment has ended.\n\nEnter the following code into the Prolific HIT to show how much you have progressed in the experiment and to receive the appropriate payment.", "C9Y4IGJ8"],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    }
+  },
+  {
+    "qId" : "endExperiment",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["And with that, we have finally come to the end of the experiment!", "It was great interacting with you, and I appreciate the effort you put into your responses.","Enter the following code into the Prolific HIT to show how much you have progressed in the experiment and to receive the appropriate payment.", "CK0JQL84"],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    }
   },
   {
     "qId" : "survey",
@@ -47,7 +121,7 @@
       },
       {
         "field" : "stage",
-        "value": "Post-Test"
+        "value": "Follow-Up"
       }
     ],
     "reminder" : {
@@ -55,17 +129,13 @@
       "numRepeats" : 4
     },
     "inputPrompt" : {
-      "English" : "Enter the survey code that you receive at the end of the survey to continue. (ABCDE, 12345)",
-      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren. (ABCDE, 12345)"
+      "English" : "Enter the survey code displayed at the end of the survey to continue.",
+      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren."
     },
     "continueStrings" : ["ABCDE", "12345"],
-    "nextActions" : [
-      {
-        "aType" : "endExperiment"
-      }
-    ],
+    "nextQuestion" : "Follow-Up.endExperiment",
     "replyMessages" : {
-      "English" : ["Thank you for that!", "And with that, we have finally come to the end of the experiment!", "It was great interacting with you, and I appreciate the effort you put into your responses."],
+      "English" : ["Thank you for that!"],
       "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
     }
   }

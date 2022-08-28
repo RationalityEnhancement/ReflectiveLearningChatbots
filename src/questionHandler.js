@@ -287,8 +287,10 @@ function QuestionHandler(config){
         if(!("scheduledQuestions" in condition)){
             return ReturnMethods.returnSuccess([]);
         }
-        let schQList = condition["scheduledQuestions"];
+        let schQListOrig = condition["scheduledQuestions"];
 
+        // Create a copy of the list from config file to avoid aliasing when replacing variables
+        let schQList = JSON.parse(JSON.stringify(schQListOrig));
         // Replace all variable timing values with values.
         for(let i = 0; i < schQList.length; i++){
             let curQ = schQList[i];

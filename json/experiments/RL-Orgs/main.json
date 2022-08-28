@@ -4,6 +4,7 @@
   "experimentConditions" : ["ControlLeader", "ShallowLeader", "MCLeader", "ControlFollower", "ShallowFollower", "MCFollower"],
   "conditionAssignments" : [1, 1, 1, 1, 1, 1],
   "assignmentScheme" : "pid",
+  "conditionMapping" : "$F{json/experiments/RL-Orgs/PIDCondMap.json}",
   "experimentLengthWeeks" : 4,
   "msPerCharacterDelay" : 5,
   "experimentStages" : {

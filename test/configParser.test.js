@@ -2,13 +2,18 @@ const { expect, assert } = require('chai');
 const ConfigReader = require('../src/configReader');
 const DevConfig = ConfigReader.getDevConfig();
 
-const config = require('../json/test/qHandlerTestConfig.json')
-const configConds = require('../json/test/qHandlerTestConfigConds.json')
-
 const ConfigParser = require('../src/configParser');
+const testConfig = require("../json/test/qHandlerTestConfig.json");
+const testConfigConds = require("../json/test/qHandlerTestConfigConds.json");
+const testConfigCondsOrig = JSON.parse(JSON.stringify(testConfigConds));
+const testConfigOrig = JSON.parse(JSON.stringify(testConfig));
 
 
 describe('Replacing variables', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     describe('Isolate Variables', () => {
         it('Should isolate variable at beginning', () => {
             let testString = "${Name} am I";
@@ -485,6 +490,10 @@ describe('Replacing variables', () => {
 })
 
 describe('Evaluating conditions old', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     const options = ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited", "Secret"];
     const replyRules = [
         {
@@ -601,6 +610,10 @@ describe('Evaluating conditions old', () => {
 })
 
 describe('Evaluating conditions', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     const options = ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited", "Secret"];
 
     const participant = {
@@ -818,6 +831,10 @@ describe('Evaluating conditions', () => {
     })
 })
 describe('Parse simple expression', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('Should parse parameter and number operands normally', () => {
         let expression = "${Parameter} GREATER_THAN $N{10}"
         let expectedObj = {
@@ -1030,6 +1047,10 @@ describe('Parse simple expression', () => {
     })
 })
 describe('Removing enclosing braces', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('Should remove enclosing braces normally', () => {
         let testString = "(hello)"
         let expectedString = "hello"
@@ -1075,6 +1096,10 @@ describe('Removing enclosing braces', () => {
     })
 })
 describe('Getting values from strings', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     describe('Number', () => {
         it('Should return integer', () => {
             let testStr = "123";
@@ -1315,6 +1340,10 @@ describe('Construct expression object', () => {
         },
         conditionName : "Test"
     }
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('Should parse parameter and number operands normally', () => {
         let expression = "${UNIQUE_ID} >= $N{34565}"
         let expectedObj = {
@@ -1540,6 +1569,10 @@ describe('Construct expression object', () => {
     })
 })
 describe('Constructing expressions', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     describe('Multiple AND conditions', () => {
         let op1 = "A";
         let operator = "=="
@@ -1585,6 +1618,10 @@ describe('Constructing expressions', () => {
     })
 })
 describe('Get operand type', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('Should return number array', () => {
         let testVal = [1,23];
         let expected = DevConfig.OPERAND_TYPES.NUMBER_ARRAY;
@@ -1631,6 +1668,10 @@ describe('Get operand type', () => {
 })
 
 describe("Evaluate expression object", () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     const part = {
         uniqueId : "12345",
         firstName : "John",
@@ -3012,6 +3053,10 @@ describe("Evaluate expression object", () => {
 })
 
 describe('User prompted questions', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     const participant = {
         firstName: "John",
         currentAnswer: ["Mon", "Tue", "Wed"],
@@ -3175,13 +3220,13 @@ describe('User prompted questions', () => {
             let copyPart = JSON.parse(JSON.stringify(participant));
             delete copyPart["conditionName"]
             it('Should succeed when keyword found', () => {
-                let returnObj = ConfigParser.getUserPromptQID(copyPart, config, "weltraum");
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, testConfig, "weltraum");
                 console.log(returnObj)
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal("chain1.q1")
             })
             it('Should return partial failure when keyword not found', () => {
-                let returnObj = ConfigParser.getUserPromptQID(copyPart, config, "spork");
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, testConfig, "spork");
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
             })
         })
@@ -3190,7 +3235,7 @@ describe('User prompted questions', () => {
             it('Should succeed when keyword found', () => {
                 let copyPart = JSON.parse(JSON.stringify(participant));
                 copyPart["conditionName"] = "Cond1"
-                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "weltraum");
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, testConfigConds, "weltraum");
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal("chain1.q1")
             })
@@ -3198,7 +3243,7 @@ describe('User prompted questions', () => {
                 let copyPart = JSON.parse(JSON.stringify(participant));
                 copyPart["conditionName"] = "Cond1"
                 copyPart["parameters"]["language"] = "English"
-                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "sPacE?");
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, testConfigConds, "sPacE?");
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal("chain1.q1")
             })
@@ -3206,27 +3251,27 @@ describe('User prompted questions', () => {
             it('Should return partial failure when keyword not found', () => {
                 let copyPart = JSON.parse(JSON.stringify(participant));
                 copyPart["conditionName"] = "Cond1"
-                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "spork");
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, testConfigConds, "spork");
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
             })
             it('Should fail when no user prompted questions found', () => {
                 let copyPart = JSON.parse(JSON.stringify(participant));
                 copyPart["conditionName"] = "Cond2"
-                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "weltraum");
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, testConfigConds, "weltraum");
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
                 console.log(returnObj.data)
             })
             it('Should fail when condition doesnt exist', () => {
                 let copyPart = JSON.parse(JSON.stringify(participant));
                 copyPart["conditionName"] = "FailCond"
-                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "weltraum");
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, testConfigConds, "weltraum");
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
                 console.log(returnObj.data)
             })
             it('Should fail when user prompted questions are not valid', () => {
                 let copyPart = JSON.parse(JSON.stringify(participant));
                 copyPart["conditionName"] = "FailCond1"
-                let returnObj = ConfigParser.getUserPromptQID(copyPart, configConds, "weltraum");
+                let returnObj = ConfigParser.getUserPromptQID(copyPart, testConfigConds, "weltraum");
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
                 console.log(returnObj.data)
             })

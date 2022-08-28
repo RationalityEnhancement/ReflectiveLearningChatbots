@@ -10,7 +10,7 @@
   {
     "name" : "Goal-Setting",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "lengthDays" : 7
+    "lengthDays" : 3
   },
   {
     "name" : "Pre-Test-2",
@@ -19,7 +19,7 @@
   {
     "name" : "Intervention",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "lengthDays" : 7
+    "lengthDays" : 3
   },
   {
     "name" : "Post-Test",
@@ -28,7 +28,7 @@
   {
     "name" : "Pause",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    "lengthDays" : 7
+    "lengthDays" : 1
   },
   {
     "name" : "Follow-Up",

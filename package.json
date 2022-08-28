@@ -9,6 +9,7 @@
     "start-local": "node index.js -l",
     "download-data": "node src/downloadData.js",
     "delete-sensitive": "node src/deleteSensitiveData.js",
+    "delete-all": "node src/deleteAllData.js",
     "generate-team-names": "node src/generateTeamNames.js"
   },
   "repository": {

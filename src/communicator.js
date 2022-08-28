@@ -72,7 +72,9 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
                 default:
                     console.log("Communicator: Could not process image source type!")
             }
-            await bot.telegram.sendPhoto(chatId, imageSendObj)
+            await bot.telegram.sendPhoto(chatId, imageSendObj).catch((reason) => {
+                console.log("Unable to send photo for chatId " + chatId+ ": \n" + reason)
+            });
         }
     }
 

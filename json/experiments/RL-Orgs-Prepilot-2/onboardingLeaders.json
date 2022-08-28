@@ -1,21 +1,30 @@
 [
   {
+    "qId" : "startOnboarding",
+    "qType" : "dummy",
+    "replyMessages": {
+      "English" : ["Let's begin with the first questions!"],
+      "Deutsch" : ["Fangen wir schon mit den ersten Fragen an!"]
+    },
+    "nextQuestion" : "Onboarding.survey"
+  },
+  {
     "qId" : "initiateContact",
     "qType" : "dummy",
     "cNextQuestions" : [
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
-        "then" : "Pre-Test-2.wantContinue"
+        "if" : "(${STAGE_DAY} > $N{2}) AND (${warningGiven} != $B{true})",
+        "then" : "Onboarding.wantContinue"
       },
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
-        "then" : "Pre-Test-2.endExperiment",
-        "else" : "Pre-Test-2.survey"
+        "if" : "(${STAGE_DAY} > $N{2}) AND (${warningGiven} == $B{true})",
+        "then" : "Onboarding.endExperiment",
+        "else" : "Onboarding.survey"
       }
     ],
     "selectQFirst" : true,
     "cNextActions" : {
-      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+      "if" : "(${STAGE_DAY} > $N{2}) AND (${warningGiven} != $B{true})",
       "then" : [
         {
           "aType" : "setBooleanVar",
@@ -42,8 +51,8 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
-        "then" : "Pre-Test-2.endExperiment",
-        "else" : "Pre-Test-2.survey"
+        "then" : "Onboarding.endExperiment",
+        "else" : "Onboarding.survey"
       }
     ],
     "cReplyMessages" : [
@@ -65,7 +74,7 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["The experiment has ended.\n\nEnter the following code into the Prolific HIT to show how much you have progressed in the experiment and to receive the appropriate payment.", "CIESTZJD"],
+      "English" : ["The experiment has ended."],
       "Deutsch" : ["Übersetzung nicht verfügbar."]
     }
   },
@@ -73,8 +82,8 @@
     "qId" : "survey",
     "qType" : "qualtrics",
     "text" : {
-      "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
-      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+      "English" : "The first thing we need is some basic information. Please take the time to fill out the following survey thoughtfully and thoroughly.",
+      "Deutsch" : "Wir brauchen zuerst von Ihnen einige Basisinformationen. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
     },
     "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
     "qualtricsFields" : [
@@ -88,31 +97,35 @@
       },
       {
         "field" : "stage",
-        "value": "Pre-Test-2"
+        "value": "Onboarding"
+      },
+      {
+        "field" : "experiment",
+        "value" : "Pre-Pilot-2"
       }
     ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    },
-    "inputPrompt" : {
-      "English" : "Enter the survey code displayed at the end of the survey to continue.",
-      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren."
-    },
-    "continueStrings" : ["ABCDE", "12345"],
     "nextActions" : [
       {
         "aType" : "setBooleanVar",
-        "args" : ["preTest2Complete", "$B{true}"]
+        "args" : ["onboardingComplete", "$B{true}"]
       },
       {
         "aType" : "setBooleanVar",
         "args" : ["warningGiven", "$B{false}"]
       }
     ],
+    "inputPrompt" : {
+      "English" : "Enter the survey code displayed at the end of the survey to continue.",
+      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren."
+    },
+    "continueStrings" : ["CK0JQL84"],
     "replyMessages" : {
-      "English" : ["Thank you!", "That’s all for today. On the next weekday, we will start again with a daily routine of setting goals in the morning and then reflecting on them in the evening, which will last another 3 days.", "See you later!"],
+      "English" : ["Thank you! Please remember to enter this code into Prolific as well, so that you can receive your first payment. The remaining payments will be given out as a bonus for completing further stages of the experiment.", "That’s all for today. On the next weekday, we will start the daily routine of setting goals in the morning and then reflecting on them in the evening. This will last three days.", "See you later!"],
       "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
+    },
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
     }
   },
   {
@@ -120,10 +133,10 @@
     "qType" : "dummy",
     "cNextActions" : [
       {
-        "if": "${preTestComplete} == $B{true}",
+        "if": "${onboardingComplete} == $B{true}",
         "then" : [{
           "aType" : "startStage",
-          "args" : ["Goal-Setting"]
+          "args" : ["Intervention"]
         }]
       }
     ]

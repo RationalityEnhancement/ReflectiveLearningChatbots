@@ -256,7 +256,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         let copyQuestion = JSON.parse(JSON.stringify(question));
         copyQuestion.text = participant.currentQuestion.text;
         copyQuestion.qId = participant.currentQuestion.qId;
-
+        copyQuestion.askTimeStamp = participant.currentQuestion.askTimeStamp;
         await participants.updateField(participant.uniqueId, "currentQuestion", copyQuestion);
         return this.processNextSteps(bot, participant.uniqueId);
     }

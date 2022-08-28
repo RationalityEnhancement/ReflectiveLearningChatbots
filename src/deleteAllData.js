@@ -2,6 +2,8 @@ require('dotenv').config();
 const readline = require('readline');
 const mongo = require('mongoose');
 const idMaps = require('./apiControllers/idMapApiController');
+const experiments = require('./apiControllers/experimentApiController');
+const participants = require('./apiControllers/participantApiController');
 const ConfigReader = require('../src/configReader');
 const config = ConfigReader.getExpConfig();
 
@@ -22,6 +24,10 @@ let deleteSensitiveData = async () => {
     });
     console.log("\nDeleting Sensitive Data for Experiment with ID: " + config.experimentId);
     await idMaps.remove(config.experimentId);
+    console.log("\nDeleting Participant Data for Experiment with ID: " + config.experimentId);
+    await participants.removeAllForExperiment(config.experimentId);
+    console.log("\nDeleting Experiment Data for Experiment with ID: " + config.experimentId);
+    await experiments.remove(config.experimentId);
     console.log("\nDeletion Complete\n")
     await mongo.connection.close();
 };
@@ -33,8 +39,7 @@ const rl = readline.createInterface({
 
 console.log('\n')
 console.log('\x1b[41m\x1b[37m%s\x1b[0m', 'WARNING!');
-console.log('This script deletes the sensitive identifying information of participants\' Telegram accounts. This ' +
-    'data is essential to the continued functioning of the experiment - ' + config.experimentId)
+console.log('This script deletes ALL the collected data for your experiment entitled - ' + config.experimentId);
 console.log('Run this script only when your experiment is no longer running!')
 console.log('If you delete this information, the chatbot will have to be restarted on every device that it is ' +
     'currently running on. Deletion cannot be undone!')

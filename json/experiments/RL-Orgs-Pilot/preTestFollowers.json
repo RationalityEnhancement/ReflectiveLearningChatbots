@@ -2,10 +2,71 @@
   {
     "qId" : "initiateContact",
     "qType" : "dummy",
-    "nextQuestion" : "Pre-Test.survey",
+    "cNextQuestions" : [
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "then" : "Pre-Test.wantContinue"
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "then" : "Pre-Test.endExperiment",
+        "else" : "Pre-Test.survey"
+      }
+    ],
+    "selectQFirst" : true,
+    "cNextActions" : {
+      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+      "then" : [
+        {
+          "aType" : "setBooleanVar",
+          "args" : ["warningGiven", "$B{true}"]
+        }
+      ]
+    },
     "replyMessages" : {
       "English" : ["Good morning, ${FIRST_NAME}!"],
       "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
+    }
+  },
+  {
+    "qId" : "wantContinue",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you like to continue with the experiment or would you like to end it here and stop receiving messages?",
+      "Deutsch" : "Übersetzung nicht verfügbar?"
+    },
+    "options" : {
+      "English" : ["Continue", "End Experiment"],
+      "Deutsch" : ["Continue", "End Experiment"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : "Pre-Test.endExperiment",
+        "else" : "Pre-Test.survey"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Great to hear from you again and that you want to continue the experiment!", "Follow the instructions to continue."],
+          "Deutsch" : ["Übersetzung nicht verfügbar."]
+        }
+      }
+    ]
+  },
+  {
+    "qId" : "endExperiment",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["The experiment has been ended.\n\nEnter the following code into the Prolific HIT to show how much you have progressed in the experiment and to receive the appropriate payment.", "54321"],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
     }
   },
   {
@@ -43,6 +104,10 @@
       {
         "aType" : "setBooleanVar",
         "args" : ["preTestComplete", "$B{true}"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["warningGiven", "$B{false}"]
       }
     ],
     "replyMessages" : {

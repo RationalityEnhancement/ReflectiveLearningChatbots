@@ -1,6 +1,8 @@
 const { expect, assert } = require('chai');
 const testConfig = require('../json/test/qHandlerTestConfig.json');
 const testConfigConds = require('../json/test/qHandlerTestConfigConds.json');
+const testConfigCondsOrig = JSON.parse(JSON.stringify(testConfigConds));
+const testConfigOrig = JSON.parse(JSON.stringify(testConfig));
 const ConfigReader = require('../src/configReader');
 const DevConfig = ConfigReader.getDevConfig();
 
@@ -11,6 +13,10 @@ const qHandler = new QuestionHandler(testConfig);
 
 describe('Constructing questions, no conditions', () => {
 
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('returns appropriate question id and qtype', () => {
         const result = qHandler.constructQuestionByID(undefined, "chain1.q1", "Deutsch");
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -132,6 +138,10 @@ describe('Constructing questions, no conditions', () => {
 });
 
 describe('Getting first question, no condition', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('returns first question in category', () => {
         const result = qHandler.getFirstQuestionInCategory(undefined, "chain1","Deutsch");
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -153,6 +163,10 @@ describe('Getting first question, no condition', () => {
 
 describe('Getting scheduled questions, no condition', () => {
 
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('returns success and a list of scheduled questions', () => {
         const result = qHandler.getScheduledQuestions(undefined);
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -166,6 +180,10 @@ let qHandler2 = new QuestionHandler(testConfigConds);
 
 describe('Constructing questions normally, yes conditions', () => {
 
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('returns appropriate question id and qtype', () => {
         const result = qHandler2.constructQuestionByID("Cond1", "chain1.q1", "Deutsch");
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -230,6 +248,10 @@ describe('Constructing questions normally, yes conditions', () => {
 });
 
 describe('Getting first question, yes condition', () => {
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('returns first question in category', () => {
         const result = qHandler2.getFirstQuestionInCategory("Cond1", "chain1","Deutsch");
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -268,6 +290,10 @@ const participant = {
 }
 describe('Getting scheduled questions, yes condition', () => {
 
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('returns success and a list of scheduled questions', () => {
         const result = qHandler2.getScheduledQuestions("Cond1", participant);
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -308,6 +334,10 @@ describe('Replacing language deeply', () => {
         "English" : "Hello",
         "Deutsch" : "Hallo"
     }
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
     it('Should replace languages on the zeroth level', () => {
         let testObj = JSON.parse(JSON.stringify(languageObj));
         let testObjCopy = JSON.parse(JSON.stringify(testObj));

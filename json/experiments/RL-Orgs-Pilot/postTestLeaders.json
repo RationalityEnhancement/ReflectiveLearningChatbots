@@ -2,10 +2,71 @@
   {
     "qId" : "initiateContact",
     "qType" : "dummy",
-    "nextQuestion" : "Post-Test.survey",
+    "cNextQuestions" : [
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "then" : "Post-Test.wantContinue"
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "then" : "Post-Test.endExperiment",
+        "else" : "Post-Test.survey"
+      }
+    ],
+    "selectQFirst" : true,
+    "cNextActions" : {
+      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+      "then" : [
+        {
+          "aType" : "setBooleanVar",
+          "args" : ["warningGiven", "$B{true}"]
+        }
+      ]
+    },
     "replyMessages" : {
       "English" : ["Good morning, ${FIRST_NAME}!"],
       "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
+    }
+  },
+  {
+    "qId" : "wantContinue",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you like to continue with the experiment or would you like to end it here and stop receiving messages?",
+      "Deutsch" : "Übersetzung nicht verfügbar?"
+    },
+    "options" : {
+      "English" : ["Continue", "End Experiment"],
+      "Deutsch" : ["Continue", "End Experiment"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : "Post-Test.endExperiment",
+        "else" : "Post-Test.survey"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Great to hear from you again and that you want to continue the experiment!", "Follow the instructions to continue."],
+          "Deutsch" : ["Übersetzung nicht verfügbar."]
+        }
+      }
+    ]
+  },
+  {
+    "qId" : "endExperiment",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["The experiment has been ended.\n\nEnter the following code into the Prolific HIT to show how much you have progressed in the experiment and to receive the appropriate payment.", "98765"],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
     }
   },
   {
@@ -43,10 +104,14 @@
       {
         "aType" : "setBooleanVar",
         "args" : ["postTestComplete", "$B{true}"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["warningGiven", "$B{false}"]
       }
     ],
     "replyMessages" : {
-      "English" : ["Thank you for that!", "That’s all for now. From today onwards, I will be quiet for a week. You will hear from me after 7 days, when I present you the final round of questionnaires.", "See you later, and have a good week!"],
+      "English" : ["Thank you for that!", "That’s all for now. From today onwards, I will be quiet for a while. You will hear from me after 1 day, when I present you the final round of questionnaires.", "See you later, and have a good break!"],
       "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
     }
   },

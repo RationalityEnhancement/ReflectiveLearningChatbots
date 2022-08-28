@@ -116,7 +116,7 @@
   {
     "qId" : "relImpact",
     "text" : {
-      "English" : "All in all, how did your social interactions today impact the working atmosphere of your team?\n",
+      "English" : "All in all, how did your social interactions today impact the working atmosphere of your team?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",
@@ -331,7 +331,7 @@
         }
       },
       {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2,3,4}",
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2,3,4,5}",
         "then" : {
           "English" : ["Awesome!"],
           "Deutsch" : ["Toll!"]
@@ -593,7 +593,7 @@
     "qId" :  "dayNRelMetaDescription",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Let's take a step back and think about where those goals came from.\n\nDid you change your approach to setting goals for improving your working climate since the last time we talked about it? \n",
+      "English" : "Let's take a step back and think about where those goals came from.\n\nDid you change your approach to setting goals for improving your working climate since the last time we talked about it?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "options" : {
@@ -1521,7 +1521,7 @@
     "qId" :  "dayNMetaDescription",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Let's take a step back and think about where those goals came from.\n\nDid you change your approach to goal setting since the last time we talked about it? \n",
+      "English" : "Let's take a step back and think about where those goals came from.\n\nDid you change your approach to goal setting since the last time we talked about it?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "options" : {

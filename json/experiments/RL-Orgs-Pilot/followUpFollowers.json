@@ -2,7 +2,18 @@
   {
     "qId" : "initiateContact",
     "qType" : "dummy",
-    "nextQuestion" : "Follow-Up.survey",
+    "cNextQuestions" : [
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "then" : "Follow-Up.wantContinue"
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "then" : "Follow-Up.endExperiment",
+        "else" : "Follow-Up.survey"
+      }
+    ],
+    "selectQFirst" : true,
     "cReplyMessages" : [
       {
         "if" : "${pauseEnded} == $B{false}",
@@ -25,8 +36,58 @@
             "args" : ["pauseEnded", "$B{true}"]
           }
         ]
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["warningGiven", "$B{true}"]
+          }
+        ]
       }
     ]
+  },
+  {
+    "qId" : "wantContinue",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you like to continue with the experiment or would you like to end it here and stop receiving messages?",
+      "Deutsch" : "Übersetzung nicht verfügbar?"
+    },
+    "options" : {
+      "English" : ["Continue", "End Experiment"],
+      "Deutsch" : ["Continue", "End Experiment"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : "Follow-Up.endExperiment",
+        "else" : "Follow-Up.survey"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Great to hear from you again and that you want to continue the experiment!", "Follow the instructions to continue."],
+          "Deutsch" : ["Übersetzung nicht verfügbar."]
+        }
+      }
+    ]
+  },
+  {
+    "qId" : "endExperiment",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["The experiment has been ended.\n\nEnter the following code into the Prolific HIT to show how much you have progressed in the experiment and to receive the appropriate payment.", "45678"],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    }
   },
   {
     "qId" : "survey",
@@ -47,7 +108,7 @@
       },
       {
         "field" : "stage",
-        "value": "Post-Test"
+        "value": "Follow-Up"
       }
     ],
     "reminder" : {

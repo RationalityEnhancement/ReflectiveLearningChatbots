@@ -58,7 +58,7 @@
     },
     "image" : {
       "sourceType" : "local",
-      "source" : "data/images/LE-PANAVA/bored_enthusiastic.png"
+      "source" : "data/images/LE-PANAVA/listless_energy.png"
     },
     "inputPrompt" : {
       "English" : "Select the number that best represents your current feeling.",

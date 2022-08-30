@@ -1088,6 +1088,7 @@
         }
       }
     ],
+    "selectQFirst": true,
     "cNextQuestions" : [
       {
         "if" : "${firstWorkGoalDay} == $B{true}",

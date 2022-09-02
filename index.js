@@ -954,6 +954,7 @@ bot.on('text', async ctx => {
 
 // Reschedule all operations after server restart
 let start = Date.now();
+console.log("Starting rescheduling now")
 ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
     let end = Date.now();
     console.log("Finished rescheduling: time taken = " + ((end - start)/1000));

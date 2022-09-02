@@ -193,6 +193,7 @@ class ScheduleHandler{
         // Loop through all participants
         for(let i = 0; i < allParticipants.length; i++){
             let curPart = allParticipants[i];
+            console.log("Rescheduling participant " + curPart.uniqueId);
 
             // Only reschedule for the given experiment
             if(curPart.experimentId !== config.experimentId) continue;

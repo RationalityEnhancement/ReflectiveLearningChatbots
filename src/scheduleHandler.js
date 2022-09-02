@@ -12,6 +12,7 @@ const ConfigParser = require('./configParser');
 const ExperimentUtils = require('./experimentUtils')
 const moment = require('moment-timezone');
 const ReminderHandler = require('./reminderHandler')
+const sizeof = require('object-sizeof');
 
 class ScheduleHandler{
     static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -194,7 +195,10 @@ class ScheduleHandler{
         for(let i = 0; i < allParticipants.length; i++){
             let curPart = allParticipants[i];
             console.log("Rescheduling participant " + curPart.uniqueId);
-
+            console.log("Memory used: ")
+            console.log(process.memoryUsage())
+            console.log("Size of JobJect: ")
+            console.log(sizeof(this.scheduledOperations))
             // Only reschedule for the given experiment
             if(curPart.experimentId !== config.experimentId) continue;
 

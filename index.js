@@ -980,6 +980,9 @@ if(!!local && local === "-l"){
         ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
             let end = Date.now();
             console.log("Finished rescheduling: time taken = " + ((end - start)/1000));
+        }).catch(err => {
+            console.log(err.message + "\n" + err.stack);
+            throw err
         });
     }).catch((err) => {
         console.log(err.message + "\n" + err.stack);

@@ -953,31 +953,40 @@ bot.on('text', async ctx => {
 });
 
 // Reschedule all operations after server restart
-let start = Date.now();
-console.log("Starting rescheduling now")
-ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
-    let end = Date.now();
-    console.log("Finished rescheduling: time taken = " + ((end - start)/1000));
-  if(!!local && local === "-l"){
+
+if(!!local && local === "-l"){
     console.log('Local launch')
     bot.launch().then(() => {
+
         console.log('Listening to humans');
+        let start = Date.now();
+        console.log("Starting rescheduling now")
+        ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
+            let end = Date.now();
+            console.log("Finished rescheduling: time taken = " + ((end - start)/1000));
+        });
     });
-  } else {
-      console.log('Server launch');
-      bot.launch({
-          webhook: {
-              domain: URL,
-              port: PORT
-          }
-      }).then(() => {
-          console.log('Listening to humans');
-      }).catch((err) => {
-          console.log(err.message + "\n" + err.stack);
-          throw err
-      });
-  }
-});
+} else {
+    console.log('Server launch');
+    bot.launch({
+        webhook: {
+            domain: URL,
+            port: PORT
+        }
+    }).then(() => {
+        console.log('Listening to humans');
+        let start = Date.now();
+        console.log("Starting rescheduling now")
+        ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
+            let end = Date.now();
+            console.log("Finished rescheduling: time taken = " + ((end - start)/1000));
+        });
+    }).catch((err) => {
+        console.log(err.message + "\n" + err.stack);
+        throw err
+    });
+}
+
 
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'))

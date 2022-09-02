@@ -953,19 +953,28 @@ bot.on('text', async ctx => {
 });
 
 // Reschedule all operations after server restart
+let start = Date.now();
 ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
-  console.log('Listening to humans');
+    let end = Date.now();
+    console.log("Finished rescheduling: time taken = " + ((end - start)/1000));
   if(!!local && local === "-l"){
     console.log('Local launch')
-    bot.launch();
-  } else {
-    console.log('Server launch');
-    bot.launch({
-      webhook: {
-        domain: URL,
-        port: PORT
-      }
+    bot.launch().then(() => {
+        console.log('Listening to humans');
     });
+  } else {
+      console.log('Server launch');
+      bot.launch({
+          webhook: {
+              domain: URL,
+              port: PORT
+          }
+      }).then(() => {
+          console.log('Listening to humans');
+      }).catch((err) => {
+          console.log(err.message + "\n" + err.stack);
+          throw err
+      });
   }
 });
 

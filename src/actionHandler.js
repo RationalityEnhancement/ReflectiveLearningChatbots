@@ -74,10 +74,17 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
     // Get chat ID
     let secretMap = await getByUniqueId(config.experimentId, participant.uniqueId);
     if(!secretMap){
-        return ReturnMethods.returnFailure("ActHandler: Unable to find participant chat ID while processing next");
+        return ReturnMethods.returnFailure("ActHandler: Unable to find participant " + participant.uniqueId
+            + " chat ID while processing action");
     }
-
-    let userInfo = await bot.telegram.getChat(secretMap.chatId);
+    let userInfo;
+    try{
+        userInfo = await bot.telegram.getChat(secretMap.chatId);
+    } catch(e) {
+        return ReturnMethods.returnFailure("ActHandler: Unable to find participant " + participant.uniqueId +
+            " chat while processing action\n"
+            + e.message + "\n" + e.stack);
+    }
     participant["firstName"] = userInfo.first_name;
 
     // Save action that will be performed

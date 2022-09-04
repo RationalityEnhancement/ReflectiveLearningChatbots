@@ -5,6 +5,7 @@ const InputOptions = require('./inputOptions');
 const ConfigParser = require('./configParser');
 const ExperimentUtils = require('./experimentUtils');
 const emoji = require('node-emoji');
+const ReturnMethods = require("./returnMethods");
 
 const msPerCharacter = config.msPerCharDelay || DevConfig.MS_PER_CHARACTER_DELAY;
 /**
@@ -49,7 +50,15 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
     let delayMs = 500;
 
     if(!("firstName" in participant) || !participant["firstName"]){
-        let userInfo = await bot.telegram.getChat(chatId);
+        let userInfo;
+        try{
+            userInfo = await bot.telegram.getChat(chatId);
+        } catch(e) {
+            console.log("Communicator: Unable to find participant " + participant.uniqueId +
+                " chat while sending question: " + question.qId + "\n"
+                + e.message + "\n" + e.stack);
+            return;
+        }
         participant["firstName"] = userInfo.first_name;
     }
 
@@ -255,7 +264,15 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
 module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noDelay = false) => {
 
     if(!("firstName" in participant) || !participant["firstName"]){
-        let userInfo = await bot.telegram.getChat(chatId);
+        let userInfo;
+        try{
+            userInfo = await bot.telegram.getChat(chatId);
+        } catch(e) {
+            console.log("Communicator: Unable to find participant " + participant.uniqueId +
+                " chat while sending replies\n"
+                + e.message + "\n" + e.stack);
+            return;
+        }
         participant["firstName"] = userInfo.first_name;
     }
 
@@ -307,7 +324,15 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
 module.exports.sendMessage = async (bot, participant, chatId, message, noDelay = false, noVarSub = false) => {
 
     if(!("firstName" in participant) || !participant["firstName"]){
-        let userInfo = await bot.telegram.getChat(chatId);
+        let userInfo
+        try{
+            userInfo = await bot.telegram.getChat(chatId);
+        } catch(e) {
+            console.log("Communicator: Unable to find participant " + participant.uniqueId +
+                " chat while sending message\n"
+                + e.message + "\n" + e.stack);
+            return;
+        }
         participant["firstName"] = userInfo.first_name;
     }
 

@@ -374,6 +374,7 @@ module.exports.startStage = async (participant, nextStageName) => {
 module.exports.endExperiment = async (uniqueId) => {
     // Put require here because of dependency issues or sth, I guess.
     const ScheduleHandler = require('./scheduleHandler');
+    /**
     let removeReturnObj = await ScheduleHandler.removeAllJobsForParticipant(uniqueId);
 
     // Remove all jobs for participant
@@ -388,6 +389,7 @@ module.exports.endExperiment = async (uniqueId) => {
             + "\n"+ removeReturnObj.failData
         );
     }
+     **/
 
     let participant;
     try{

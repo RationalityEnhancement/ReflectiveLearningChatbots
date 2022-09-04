@@ -328,7 +328,10 @@ bot.command('next', async ctx => {
 
         // Get the participant
         let participant = await getParticipant(uniqueId);
+
         let userInfo = bot.telegram.getChat(ctx.from.id);
+
+
         participant["firstName"] = userInfo["first_name"];
 
         // Shift the debug queue for the participant if it hasn't been done already
@@ -620,7 +623,15 @@ bot.command('talk', async ctx => {
 
     // Try to build the text if there are any possible options, otherwise send default message that there are no
     //      questions available to prompt.
-    let userInfo = await bot.telegram.getChat(ctx.from.id);
+    let userInfo;
+    try{
+        userInfo = await bot.telegram.getChat(ctx.from.id);
+    } catch(e) {
+        await handleError(participant, 'Unable to get userID in /talk\n' + e.message + "\n" + e.stack);
+        console.log("ERROR: Unable to get userID in /talk\n" + e.message + "\n" + e.stack);
+        return;
+    }
+
     participant.firstName = userInfo.first_name;
     let textObj = ConfigParser.buildQuestionPromptText(participant, config);
     if(textObj.returnCode === DevConfig.SUCCESS_CODE){
@@ -862,8 +873,14 @@ bot.on('text', async ctx => {
     // If text is supposed to be keyword to start talking about something
     if(TALK[ctx.from.id]){
         TALK[ctx.from.id] = false;
-
-        let userInfo = await bot.telegram.getChat(ctx.from.id);
+        let userInfo;
+        try{
+            userInfo = await bot.telegram.getChat(ctx.from.id);
+        } catch(e) {
+            await handleError(participant, 'Unable to get userID in /talk answer\n' + e.message + "\n" + e.stack);
+            console.log("ERROR: Unable to get userID in /talk answer\n" + e.message + "\n" + e.stack);
+            return;
+        }
         participant["firstName"] = userInfo.first_name;
         let partLang = participant.parameters.language;
 

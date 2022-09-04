@@ -52,7 +52,14 @@ let processNextSteps = async(bot, uniqueId) => {
         return ReturnMethods.returnFailure("LHandler: Unable to find participant chat ID while processing next: " + uniqueId);
     }
 
-    let userInfo = await bot.telegram.getChat(secretMap.chatId);
+    let userInfo;
+    try{
+        userInfo = await bot.telegram.getChat(secretMap.chatId);
+    } catch(e) {
+        return ReturnMethods.returnFailure("LHandler(PNS): Unable to find participant " + uniqueId +
+            " chat while processing next\n"
+            + e.message + "\n" + e.stack);
+    }
     participant["firstName"] = userInfo.first_name;
 
     // Get all reply messages and send

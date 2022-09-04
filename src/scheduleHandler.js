@@ -15,7 +15,6 @@ const ReminderHandler = require('./reminderHandler')
 const sizeof = require('object-sizeof');
 
 class ScheduleHandler{
-    static dayIndexOrdering = ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     static scheduledOperations = {
         "questions" : {},
         "actions" : {}
@@ -677,7 +676,16 @@ class ScheduleHandler{
                 // if yes, evaluate that condition and get the truth value
                 let evaluation = true;
                 if(questionInfo.if){
-                    let userInfo = await bot.telegram.getChat(chatId);
+                    let userInfo;
+                    try{
+                        userInfo = await bot.telegram.getChat(chatId);
+                    } catch(e) {
+                        console.log("Scheduler: Unable to find participant "
+                            + newParticipant.uniqueId +
+                            " chat while scheduling question " + questionInfo.qId+ "\n"
+                            + e.message + "\n" + e.stack);
+                        return;
+                    }
                     newParticipant["firstName"] = userInfo["first_name"];
                     let evaluationObj = ConfigParser.evaluateConditionString(newParticipant, questionInfo.if);
                     if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
@@ -780,7 +788,16 @@ class ScheduleHandler{
                 // if yes, evaluate that condition and get the truth value
                 let evaluation = true;
                 if(actionInfo.if){
-                    let userInfo = await bot.telegram.getChat(chatId);
+                    let userInfo;
+                    try{
+                        userInfo = await bot.telegram.getChat(chatId);
+                    } catch(e) {
+                        console.log("Scheduler: Unable to find participant "
+                            + newParticipant.uniqueId +
+                            " chat while scheduling action " + actionInfo.aType + "\n"
+                            + e.message + "\n" + e.stack);
+                        return;
+                    }
                     newParticipant["firstName"] = userInfo["first_name"];
                     let evaluationObj = ConfigParser.evaluateConditionString(newParticipant, actionInfo.if);
                     if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){

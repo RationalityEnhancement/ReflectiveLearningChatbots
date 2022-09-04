@@ -283,7 +283,7 @@ class ReminderHandler{
                 hours : schRems[i].hours,
                 minutes : schRems[i].minutes
             };
-            let curJobObj = this.createReminderJob(config, bot, participant, chatId, currentTime);
+            let curJobObj = this.createReminderJob(config, bot, participant, chatId, currentTime, i===0);
             if(curJobObj.returnCode === DevConfig.FAILURE_CODE){
                 failedJobs.push(curJobObj.data);
             } else {

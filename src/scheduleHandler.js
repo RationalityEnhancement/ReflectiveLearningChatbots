@@ -677,15 +677,30 @@ class ScheduleHandler{
                 let evaluation = true;
                 if(questionInfo.if){
                     let userInfo;
-                    try{
-                        userInfo = await bot.telegram.getChat(chatId);
-                    } catch(e) {
-                        console.log("Scheduler: Unable to find participant "
-                            + newParticipant.uniqueId +
-                            " chat while scheduling question " + questionInfo.qId+ "\n"
-                            + e.message + "\n" + e.stack);
+                    // Try again if getChat fails, usually due to "socket hang up"
+                    let numAttempts;
+                    for(numAttempts = 0; numAttempts < DevConfig.SEND_MESSAGE_ATTEMPTS; numAttempts++){
+                        try{
+                            if(numAttempts > 0){
+                                console.log("Trying question " +
+                                    questionInfo.qId + " again for participant " + newParticipant.uniqueId);
+                            }
+                            userInfo = await bot.telegram.getChat(chatId);
+                            break;
+                        } catch(e) {
+                            console.log("Scheduler: Unable to find participant "
+                                + newParticipant.uniqueId +
+                                " chat while sending scheduled question " + questionInfo.qId+ "\n"
+                                + e.message + "\n" + e.stack);
+                            // Wait before trying again
+                            await new Promise(resolve => setTimeout(resolve, DevConfig.REPEAT_ATTEMPT_WAIT_MS));
+                            continue;
+                        }
+                    }
+                    if(numAttempts >= DevConfig.SEND_MESSAGE_ATTEMPTS){
                         return;
                     }
+
                     newParticipant["firstName"] = userInfo["first_name"];
                     let evaluationObj = ConfigParser.evaluateConditionString(newParticipant, questionInfo.if);
                     if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
@@ -789,15 +804,30 @@ class ScheduleHandler{
                 let evaluation = true;
                 if(actionInfo.if){
                     let userInfo;
-                    try{
-                        userInfo = await bot.telegram.getChat(chatId);
-                    } catch(e) {
-                        console.log("Scheduler: Unable to find participant "
-                            + newParticipant.uniqueId +
-                            " chat while scheduling action " + actionInfo.aType + "\n"
-                            + e.message + "\n" + e.stack);
+                    // Try again if getChat fails, usually due to "socket hang up"
+                    let numAttempts;
+                    for(numAttempts = 0; numAttempts < DevConfig.SEND_MESSAGE_ATTEMPTS; numAttempts++){
+                        try{
+                            if(numAttempts > 0){
+                                console.log("Trying action " +
+                                    actionInfo.aType + " again for participant " + newParticipant.uniqueId);
+                            }
+                            userInfo = await bot.telegram.getChat(chatId);
+                            break;
+                        } catch(e) {
+                            console.log("Scheduler: Unable to find participant "
+                                    + newParticipant.uniqueId +
+                                    " chat while performing scheduled action " + actionInfo.aType + "\n"
+                                    + e.message + "\n" + e.stack);
+                            // Wait before trying again
+                            await new Promise(resolve => setTimeout(resolve, DevConfig.REPEAT_ATTEMPT_WAIT_MS));
+                            continue;
+                        }
+                    }
+                    if(numAttempts >= DevConfig.SEND_MESSAGE_ATTEMPTS){
                         return;
                     }
+
                     newParticipant["firstName"] = userInfo["first_name"];
                     let evaluationObj = ConfigParser.evaluateConditionString(newParticipant, actionInfo.if);
                     if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){

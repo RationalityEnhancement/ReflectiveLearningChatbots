@@ -19,6 +19,7 @@ const ConfigParser = require('./src/configParser')
 const moment = require('moment-timezone')
 const lodash = require('lodash');
 const ActionHandler = require('./src/actionHandler');
+const scheduler = require('node-schedule')
 const LogicHandler = require('./src/logicHandler')
 
 const ExperimentUtils = require("./src/experimentUtils");
@@ -94,6 +95,7 @@ let handleError = async (participant, errorString) => {
     let timeStamp = moment.tz(participant.parameters.timezone).format();
     let message = timeStamp + "\n" + errorString;
     delete participant["firstName"];
+    participant['debugInfo'] = undefined;
     let participantJSON = JSON.stringify(participant);
     try{
         await experiments.addErrorObject(config.experimentId, {
@@ -110,6 +112,7 @@ let handleFeedback = async (participant, feedbackString) => {
     let timeStamp = moment.tz(participant.parameters.timezone).format();
     let message = timeStamp + "\n" + feedbackString;
     delete participant["firstName"];
+    participant['debugInfo'] = undefined;
     let participantJSON = JSON.stringify(participant);
     try{
         await experiments.addFeedbackObject(config.experimentId, {
@@ -1009,5 +1012,13 @@ if(!!local && local === "-l"){
 
 
 // Enable graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
+process.once('SIGINT', () => {
+    const jobNames = lodash.keys(scheduler.scheduledJobs);
+    for(let name of jobNames) scheduler.cancelJob(name);
+    bot.stop('SIGINT')
+})
+process.once('SIGTERM', () => {
+    const jobNames = lodash.keys(scheduler.scheduledJobs);
+    for(let name of jobNames) scheduler.cancelJob(name);
+    bot.stop('SIGTERM')
+})

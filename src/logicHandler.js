@@ -62,6 +62,7 @@ let processNextSteps = async(bot, uniqueId) => {
     }
     participant["firstName"] = userInfo.first_name;
 
+    console.time("getting replies")
     // Get all reply messages and send
     let replyMessagesObj = this.getNextReplies(participant, currentQuestion);
     if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
@@ -70,7 +71,9 @@ let processNextSteps = async(bot, uniqueId) => {
             + "\n"+ replyMessagesObj.data
         );
     }
+    console.timeEnd("getting replies")
 
+    console.time("sending replies")
     // Try to send replies
     for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
         try{
@@ -83,6 +86,7 @@ let processNextSteps = async(bot, uniqueId) => {
             }
         }
     }
+    console.timeEnd("sending replies")
 
 
 
@@ -102,6 +106,7 @@ let processNextSteps = async(bot, uniqueId) => {
     }
 
     // Get all next actions
+    console.time("getting actions")
     let actionsObj = this.getNextActions(participant, currentQuestion);
     if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
         return ReturnMethods.returnFailure(
@@ -109,10 +114,12 @@ let processNextSteps = async(bot, uniqueId) => {
             + "\n"+ actionsObj.data
         );
     }
+    console.timeEnd("getting actions")
     let nextActions = actionsObj.data;
 
     let failedActions = [];
 
+    console.time("processing actions")
     // Process all next actions, if any
     for(let i = 0; i < nextActions.length; i++){
         let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i], currentQuestion.qId);
@@ -127,6 +134,7 @@ let processNextSteps = async(bot, uniqueId) => {
             if(!participant) throw "Participant not found"
 
             // Save result of action for debug purposes
+            console.time("next steps: saving debug info")
             let saveActionObj = {
                 infoType: "actionResult",
                 scheduledOperations: participant.scheduledOperations,
@@ -136,6 +144,7 @@ let processNextSteps = async(bot, uniqueId) => {
                 timeStamp: moment.tz(participant.parameters.timezone).format(),
                 from: "LHandler"
             }
+            console.timeEnd("next steps: saving debug info")
             await participants.addDebugInfo(participant.uniqueId, saveActionObj);
 
         } catch(err){
@@ -144,6 +153,7 @@ let processNextSteps = async(bot, uniqueId) => {
         participant["firstName"] = userInfo.first_name;
 
     }
+    console.timeEnd("processing actions")
 
     // If question is not selected first, select and construct it after participant parameters are updated
     if(!currentQuestion.selectQFirst){
@@ -159,6 +169,7 @@ let processNextSteps = async(bot, uniqueId) => {
 
     // If a constructed question has been stored in next question obj
     if(!!nextQuestionObj.data){
+        console.time("sending next question")
         let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data,
             false, !config.debug.messageDelay, "nextQuestion");
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
@@ -167,6 +178,7 @@ let processNextSteps = async(bot, uniqueId) => {
                 + "\n"+ returnObj.data
             );
         }
+        console.timeEnd("sending next question")
     }
     if(failedActions.length === 0){
         return ReturnMethods.returnSuccess("");

@@ -930,10 +930,10 @@ bot.on('text', async ctx => {
   const answerText = ctx.message.text;
 
   // Handle the answer and respond appropriately
-    console.time("Processing Answer")
+    // console.time("Processing Answer")
   let answerHandlerObj = await AnswerHandler.processAnswer(participant, answerText);
-    console.timeEnd("Processing Answer")
-    console.time("Handling answer return")
+    // console.timeEnd("Processing Answer")
+    // console.time("Handling answer return")
   switch(answerHandlerObj.returnCode){
     // Answer was valid
     case DevConfig.SUCCESS_CODE:
@@ -977,7 +977,7 @@ bot.on('text', async ctx => {
         await handleError(participant, "Answer Handler did not respond appropriately");
       throw "ERROR: Answer Handler did not respond appropriately"
   }
-    console.timeEnd("Handling answer return")
+    // console.timeEnd("Handling answer return")
   
 });
 

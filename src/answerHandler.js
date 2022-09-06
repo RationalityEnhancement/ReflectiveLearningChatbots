@@ -143,7 +143,7 @@ class AnswerHandler{
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}|{returnCode: *, data: *}>}
      */
     static async processAnswer(participant, answerText){
-
+        console.log("Answer text: " + answerText)
         // Error handling to ensure that the participant has the required fields
         if(!participant){
             return ReturnMethods.returnFailure("AHandler: Participant not available")
@@ -432,6 +432,9 @@ class AnswerHandler{
 
                     // All checks passed, answer is valid
                     return this.finishAnswering(participant.uniqueId, currentQuestion, answerText);
+                case 'dummy':
+                    // TODO: test dummy
+                    return ReturnMethods.returnPartialFailure("Dummy Question", DevConfig.NO_RESPONSE_STRING)
 
                 default:
                     return ReturnMethods.returnFailure("AHandler: Question is missing valid question type: " + currentQuestion.qId);

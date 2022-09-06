@@ -253,6 +253,9 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         return ReturnMethods.returnFailure("LHandler: could not add save question obj");
     }
 
+    // Handle any outstanding questions before sending next question.
+    await AnswerHandler.handleNoResponse(participant.uniqueId);
+
     // Don't send the question if it is a dummy
     // Dummies are used to either just send messages or to conditionally
     //  select next questions/actions which are not preceded by another question already
@@ -267,8 +270,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         await participants.updateField(participant.uniqueId, "currentQuestion", copyQuestion);
         return this.processNextSteps(bot, participant.uniqueId);
     }
-    // Handle any outstanding questions before sending next question.
-    await AnswerHandler.handleNoResponse(participant.uniqueId);
 
     for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
         try{

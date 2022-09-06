@@ -506,6 +506,7 @@ bot.command('repeat', async ctx => {
         false, !config.debug.messageDelay, "repeat");
       if(returnObj.returnCode === DevConfig.FAILURE_CODE){
           await handleError(participant, returnObj.data);
+          await participants.updateField(uniqueId, "currentState", "awaitingAnswer");
           throw returnObj.data;
       }
   } else {
@@ -797,7 +798,7 @@ bot.start(async ctx => {
 // Handling any answer
 bot.on('text', async ctx => {
   const messageText = ctx.message.text;
-
+    console.log(ctx.update)
   // Get the participants unique ID
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){

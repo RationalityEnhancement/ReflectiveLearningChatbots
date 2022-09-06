@@ -800,6 +800,7 @@ bot.on('text', async ctx => {
   const messageText = ctx.message.text;
     console.log(ctx.update)
   // Get the participants unique ID
+    console.time("Getting participant")
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
         console.log("Unable to find participant unique ID!");
@@ -816,7 +817,9 @@ bot.on('text', async ctx => {
       await ctx.replyWithHTML("Send /start to begin interacting with me!")
       return;
   }
+    console.timeEnd("Getting participant")
 
+    console.time("Preprocessing")
     // Ignore commands
     if(messageText.charAt[0] === '/') return;
 
@@ -923,10 +926,14 @@ bot.on('text', async ctx => {
         return;
     }
 
+    console.timeEnd("Preprocessing")
   const answerText = ctx.message.text;
 
   // Handle the answer and respond appropriately
+    console.time("Processing Answer")
   let answerHandlerObj = await AnswerHandler.processAnswer(participant, answerText);
+    console.timeEnd("Processing Answer")
+    console.time("Handling answer return")
   switch(answerHandlerObj.returnCode){
     // Answer was valid
     case DevConfig.SUCCESS_CODE:
@@ -970,6 +977,7 @@ bot.on('text', async ctx => {
         await handleError(participant, "Answer Handler did not respond appropriately");
       throw "ERROR: Answer Handler did not respond appropriately"
   }
+    console.timeEnd("Handling answer return")
   
 });
 

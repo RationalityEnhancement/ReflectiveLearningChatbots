@@ -52,7 +52,7 @@
   "debug" : {
     "experimenter" : false,
     "actionMessages" : false,
-    "enableNext" : false,
+    "enableNext" : true,
     "messageDelay" : true,
     "developer" : false
   },

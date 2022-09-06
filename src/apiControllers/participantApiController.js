@@ -270,7 +270,8 @@ exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
     }
     if(jobIdx != -1) participant.scheduledOperations[type].splice(jobIdx,1);
 
-    return participant.update();
+    // TODO: Change this to update at some point? Can't do it now, apparently
+    return participant.save();
   }
   catch(err){
     console.log('Participant API Controller: Unable to add scheduled question');

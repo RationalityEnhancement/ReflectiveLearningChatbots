@@ -194,15 +194,17 @@ class ScheduleHandler{
         for(let i = 0; i < allParticipants.length; i++){
             let curPart = allParticipants[i];
             console.log("Rescheduling participant " + curPart.uniqueId);
-            console.log("Memory used: ")
-            console.log(process.memoryUsage())
-            console.log("Size of JobJect: ")
-            console.log(sizeof(this.scheduledOperations))
+            // console.log("Memory used: ")
+            // console.log(process.memoryUsage())
+            // console.log("Size of JobJect: ")
+            // console.log(sizeof(this.scheduledOperations))
             // Only reschedule for the given experiment
             if(curPart.experimentId !== config.experimentId) continue;
 
             // Call the function to reschedule all operations for a given participant
+            console.time("Rescheduling participant: " + curPart.uniqueId)
             let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.uniqueId, config);
+            console.timeEnd("Rescheduling participant: " + curPart.uniqueId)
             if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
                 // Append returned jobs to array of succeeded jobs
                 succeededParticipants.push(...returnObj.data);
@@ -261,7 +263,9 @@ class ScheduleHandler{
                 if: jobInfo.if,
                 tz: participant.parameters.timezone
             }
+            console.time("Scheduling question: " + questionInfo.qId)
             let returnObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, questionInfo, config,false);
+            console.timeEnd("Scheduling question: " + questionInfo.qId)
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedOperations.push(returnObj.data);
             } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
@@ -279,7 +283,9 @@ class ScheduleHandler{
                 if: jobInfo.if,
                 tz: participant.parameters.timezone
             }
+            console.time("Scheduling action: " + actionInfo.aType)
             let returnObj = await this.scheduleOneAction(bot, uniqueId, actionInfo, config,false);
+            console.timeEnd("Scheduling action: " + actionInfo.aType)
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedOperations.push(returnObj.data);
             } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
@@ -759,7 +765,9 @@ class ScheduleHandler{
         }
 
         // Build the recurrence rule
+        console.time("Building recurrence rule")
         let recurrenceRuleObj = this.buildRecurrenceRule(actionInfo);
+        console.timeEnd("Building recurrence rule")
         if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(
                 "Scheduler: Failure to build recurrence rule in scheduleAction"
@@ -788,6 +796,7 @@ class ScheduleHandler{
             }
             let chatId = secretMap.chatId;
 
+            console.time("Scheduling the job")
             // Schedule the question to be sent
             job = scheduler.scheduleJob(recRule, async function(){
                 // Get the updated participant
@@ -858,12 +867,14 @@ class ScheduleHandler{
                     }
                     await participants.addDebugInfo(uniqueId, saveActionObj);
                 }
-
             })
+            console.timeEnd("Scheduling the job")
             // Add to local store and if necessary, to DB
             this.scheduledOperations["actions"][jobId] = job;
             if(isNew) {
+                console.time("Writing to the database")
                 let writeReturn = await this.writeActionInfoToDB(uniqueId, jobId, actionInfo);
+                console.timeEnd("Writing to the database")
                 if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
                     return ReturnMethods.returnFailure(
                         "Scheduler: Failure to write action info to DB"

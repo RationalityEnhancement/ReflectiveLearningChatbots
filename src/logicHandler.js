@@ -241,7 +241,9 @@ module.exports.getAndConstructNextQuestion = (participant, currentQuestion) => {
 module.exports.sendQuestion = async (bot, participant, chatId, question, scheduled=false, debugExp, from=undefined) => {
 
     // Cancel any outstanding reminder messages
+    console.time("Sending question: Cancelling reminder")
     let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant.uniqueId);
+    console.timeEnd("Sending question: Cancelling reminder")
     if(cancelReminderObj.returnCode === DevConfig.FAILURE_CODE){
         return ReturnMethods.returnFailure(
             "LHandler (SQ):Failure cancelling reminder:"
@@ -249,6 +251,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         );
     }
 
+    console.time("Sending question: Saving debug info")
     // Save question that will be sent (for debug purposes)
     let saveQuestionObj = {
         infoType: "question",
@@ -259,14 +262,17 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         timeStamp: moment.tz(participant.parameters.timezone).format(),
         from: from
     }
+    console.timeEnd("Sending question: Saving debug info")
     try{
         await participants.addDebugInfo(participant.uniqueId, saveQuestionObj);
     } catch(e){
         return ReturnMethods.returnFailure("LHandler: could not add save question obj");
     }
 
+    console.time("Sending question: Handling no response")
     // Handle any outstanding questions before sending next question.
     await AnswerHandler.handleNoResponse(participant.uniqueId);
+    console.timeEnd("Sending question: Handling no response")
 
     // Don't send the question if it is a dummy
     // Dummies are used to either just send messages or to conditionally
@@ -283,6 +289,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         return this.processNextSteps(bot, participant.uniqueId);
     }
 
+    console.time("Sending question: sending question itself")
     for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
         try{
             await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
@@ -292,14 +299,18 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
             + e.message + "\n" + e.stack)
         }
     }
+    console.timeEnd("Sending question: sending question itself")
 
+    console.time("Sending question: updating parameters")
     // Update participant state parameters
     let newState = scheduled ? "awaitingAnswerScheduled" : "awaitingAnswer";
     await participants.updateField(participant.uniqueId, 'currentState', newState);
     await participants.eraseCurrentAnswer(participant.uniqueId)
     question.askTimeStamp = moment.tz(participant.parameters.timezone).format();
     await participants.updateField(participant.uniqueId, 'currentQuestion', question);
+    console.timeEnd("Sending question: updating parameters")
 
+    console.time("Sending question: setting reminders")
     // Set reminders, if any
     if(question.reminder && question.reminder["freqMins"]){
         let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,
@@ -309,6 +320,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
             console.log(reminderObj.data);
         }
     }
+    console.timeEnd("Sending question: setting reminders")
 
     return ReturnMethods.returnSuccess("");
 }

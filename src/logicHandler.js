@@ -262,12 +262,12 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         timeStamp: moment.tz(participant.parameters.timezone).format(),
         from: from
     }
-    console.timeEnd("Sending question: Saving debug info")
     try{
         await participants.addDebugInfo(participant.uniqueId, saveQuestionObj);
     } catch(e){
         return ReturnMethods.returnFailure("LHandler: could not add save question obj");
     }
+    console.timeEnd("Sending question: Saving debug info")
 
     console.time("Sending question: Handling no response")
     // Handle any outstanding questions before sending next question.

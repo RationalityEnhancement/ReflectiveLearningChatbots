@@ -150,6 +150,22 @@ describe('Participant Controller API: ', () =>{
 		
 	});
 
+	it('Should update multiple Fields', async () => {
+
+		const testState = 'peem2';
+		const testCondIdx = 3;
+		await participants.updateFields(testId, {
+			currentState: testState,
+			conditionIdx: testCondIdx
+		});
+
+		let participant = await participants.get(testId)
+
+		expect(participant.currentState).to.equal(testState);
+		expect(participant.conditionIdx).to.equal(testCondIdx);
+
+	});
+
 	it('Should update string parameter', async () => {
 		
 		const paramField = 'timezone';
@@ -268,11 +284,31 @@ describe('Participant Controller API: ', () =>{
 		await participants.addAnswer(testId, testAnswer);
 		let participant = await participants.get(testId)
 		// console.log(participant["answers"]);
-		expect(participant["answers"][0]['qId']).to.eql(testAnswer.qId);
-		expect(participant["answers"][0]['text']).to.eql(testAnswer.text);
-		expect(participant["answers"][0]['askTimeStamp']).to.eql(testAnswer.askTimeStamp);
-		expect(participant["answers"][0]['answerTimeStamp']).to.eql(testAnswer.answerTimeStamp);
-		expect(participant["answers"][0]['answer']).to.eql(testAnswer.answer);
+		let lastIdx = participant["answers"].length - 1
+		expect(participant["answers"][lastIdx]['qId']).to.eql(testAnswer.qId);
+		expect(participant["answers"][lastIdx]['text']).to.eql(testAnswer.text);
+		expect(participant["answers"][lastIdx]['askTimeStamp']).to.eql(testAnswer.askTimeStamp);
+		expect(participant["answers"][lastIdx]['answerTimeStamp']).to.eql(testAnswer.answerTimeStamp);
+		expect(participant["answers"][lastIdx]['answer']).to.eql(testAnswer.answer);
+	});
+	it('Should add an answer and update current answer', async () => {
+		const testAnswer = {
+			qId : "Zombotron2",
+			text: "Are you a zombie please?",
+			askTimeStamp: moment.tz().format(),
+			answerTimeStamp: moment.tz().format(),
+			answer: ["yes","no","maybe so"]
+		}
+		await participants.addAnswer(testId, testAnswer, testAnswer.answer);
+		let participant = await participants.get(testId)
+		// console.log(participant["answers"]);
+		let lastIdx = participant["answers"].length - 1
+		expect(participant["answers"][lastIdx]['qId']).to.eql(testAnswer.qId);
+		expect(participant["answers"][lastIdx]['text']).to.eql(testAnswer.text);
+		expect(participant["answers"][lastIdx]['askTimeStamp']).to.eql(testAnswer.askTimeStamp);
+		expect(participant["answers"][lastIdx]['answerTimeStamp']).to.eql(testAnswer.answerTimeStamp);
+		expect(participant["answers"][lastIdx]['answer']).to.eql(testAnswer.answer);
+		expect(participant.currentAnswer).to.eql(testAnswer.answer)
 	});
 	it('Should add a debugInfo object', async () => {
 		let oldParticipant = await participants.get(testId)
@@ -329,18 +365,19 @@ describe('Participant Controller API: ', () =>{
 	});
 	it('Should add to an array field', async () => {
 		const testAnswer = {
-			qId : "Zombotron2",
+			qId : "Zombotron3",
 			text: "Are you a zombie please?",
 			askTimeStamp: moment.tz().format(),
 			answer: ["yes","no","maybe so"]
 		}
 		await participants.addToArrField(testId, "answers", testAnswer);
 		let participant = await participants.get(testId)
-		expect(participant["answers"].length).to.equal(2);
-		expect(participant["answers"][1]['qId']).to.eql(testAnswer.qId);
-		expect(participant["answers"][1]['text']).to.eql(testAnswer.text);
-		expect(participant["answers"][1]['askTimeStamp']).to.eql(testAnswer.askTimeStamp);
-		expect(participant["answers"][1]['answer']).to.eql(testAnswer.answer);
+		let lastIdx = participant["answers"].length - 1
+		expect(participant["answers"].length).to.equal(3);
+		expect(participant["answers"][lastIdx]['qId']).to.eql(testAnswer.qId);
+		expect(participant["answers"][lastIdx]['text']).to.eql(testAnswer.text);
+		expect(participant["answers"][lastIdx]['askTimeStamp']).to.eql(testAnswer.askTimeStamp);
+		expect(participant["answers"][lastIdx]['answer']).to.eql(testAnswer.answer);
 	});
 	it('Should add stage activity', async () => {
 		const testActivity = {
@@ -380,6 +417,19 @@ describe('Participant Controller API: ', () =>{
 		fakeJob = Object.assign(fakeJob, testQJob);
 		fakeJob.qId = "fakeQuestion";
 		let hasQ = await participants.hasScheduledOperation(testId, "questions", fakeJob);
+		assert(!hasQ);
+	})
+	it('Should have the scheduled question - object', async () => {
+		let part = await participants.get(testId)
+		let hasQ = participants.hasScheduledOperationObject(part, "questions", testQJob);
+		assert(hasQ);
+	})
+	it('Should not have a question that wasnt scheduled - object', async () => {
+		let fakeJob = {};
+		fakeJob = Object.assign(fakeJob, testQJob);
+		fakeJob.qId = "fakeQuestion";
+		let part = await participants.get(testId)
+		let hasQ = participants.hasScheduledOperationObject(part, "questions", fakeJob);
 		assert(!hasQ);
 	})
 	it('Should not add the same scheduled question again', async () => {
@@ -493,6 +543,7 @@ describe('Participant Controller API: ', () =>{
 	});
 	it('Should add an answer to current answer', async () => {
 
+		await participants.updateField(testId, "currentAnswer", [])
 		await participants.addToCurrentAnswer(testId, "answer1");
 		let participant = await participants.get(testId)
 		let cAnswer = participant["currentAnswer"];

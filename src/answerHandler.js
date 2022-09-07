@@ -119,8 +119,7 @@ class AnswerHandler{
                 stageName: participant.stages.stageName,
                 stageDay: participant.stages.stageDay,
             };
-            await participants.addAnswer(uniqueId, answer);
-            await participants.updateField(uniqueId, "currentAnswer", answerConv);
+            await participants.addAnswer(uniqueId, answer, answerConv);
             console.timeEnd("finishing answer: adding answer")
         } catch(e){
             ReturnMethods.returnFailure("AHandler: unable to add answer")
@@ -212,6 +211,7 @@ class AnswerHandler{
                             return finishObj;
                         } else {
                             // console.time("Fail Single choice")
+                            // TODO: create function update fields
                             await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                             await participants.updateField(participant.uniqueId, "currentAnswer", [answerText]);
                             // console.timeEnd("Fail Single choice")

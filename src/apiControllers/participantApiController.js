@@ -86,6 +86,20 @@ exports.updateField = async (uniqueId, field, value) => {
   }
 }
 
+// Update multiple fields
+exports.updateFields = async (uniqueId, newFields) => {
+  try{
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
+    for(const [field, value] of Object.entries(newFields)){
+      participant[field] = value;
+    }
+    return participant.save();
+  } catch(err){
+    console.log('Participant API Controller: Unable to update field ' + field);
+    console.error(err);
+  }
+}
+
 // Update the 'parameters' field of the participant with a new value
 exports.updateParameter = async (uniqueId, param, value) => {
 
@@ -180,13 +194,17 @@ exports.clearParamValue = async (uniqueId, param) => {
 
 // Add an answer to the end of a chronological list of answers
 // given by the participants in response to question prompts
-exports.addAnswer = async (uniqueId, answer) => {
+// If updateAnswer is not undefined, then set current answer to that
+exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
   try{
     console.time(uniqueId + " adding answer - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
     console.timeEnd(uniqueId + " adding answer - getting the participant")
     console.time(uniqueId + " adding answer - pushing answer")
     participant.answers.push(answer);
+    if(updateAnswer){
+      participant.currentAnswer = updateAnswer
+    }
     console.timeEnd(uniqueId + " adding answer - pushing answer")
     console.time(uniqueId + " adding answer - saving participant")
     let newP = await participant.save();
@@ -228,7 +246,9 @@ exports.addStageActivity = async (uniqueId, activity) => {
   }
 }
 
-exports.hasScheduledOperation = (participant, type, jobInfo) => {
+// Pass participant object to check if it has scheduled operation
+// TODO: test
+exports.hasScheduledOperationObject = (participant, type, jobInfo) => {
   try{
     let exists = false;
     let scheduledOperations = participant.scheduledOperations[type];
@@ -254,8 +274,8 @@ exports.hasScheduledOperation = (participant, type, jobInfo) => {
   }
 }
 
-// Unnecessary call to participant
-exports.hasScheduledOperationOld = async (uniqueId, type, jobInfo) => {
+// Unnecessary call to database
+exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
     let exists = false;
     let participant = await Participant.findOne({ uniqueId: uniqueId });
@@ -288,7 +308,7 @@ exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
     let participant = await Participant.findOne({ uniqueId: uniqueId });
     console.timeEnd(uniqueId + " adding SO - getting the participant")
     console.time(uniqueId + " adding SO - checking if has SO")
-    let hasOAlready = exports.hasScheduledOperation(participant, type, jobInfo)
+    let hasOAlready = exports.hasScheduledOperationObject(participant, type, jobInfo)
     console.timeEnd(uniqueId + " adding SO - checking if has SO")
     if(!hasOAlready){
       participant.scheduledOperations[type].push(jobInfo);
@@ -323,7 +343,7 @@ exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
     // TODO: Change this to update at some point? Can't do it now, apparently
     console.time(uniqueId + " removing SO - saving participant")
     let newP = await participant.save();
-    console.timeEnd(uniqueId + " removing SO - removing stuff")
+    console.timeEnd(uniqueId + " removing SO - saving participant")
     return newP;
   }
   catch(err){

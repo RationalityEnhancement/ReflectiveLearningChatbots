@@ -193,7 +193,7 @@ class ScheduleHandler{
         // Loop through all participants
         for(let i = 0; i < allParticipants.length; i++){
             let curPart = allParticipants[i];
-            console.log("Rescheduling participant " + curPart.uniqueId);
+            // console.log("Rescheduling participant " + curPart.uniqueId);
             // console.log("Memory used: ")
             // console.log(process.memoryUsage())
             // console.log("Size of JobJect: ")
@@ -625,7 +625,9 @@ class ScheduleHandler{
         }
 
         // Build the recurrence rule
+        console.time(uniqueId + " - " + questionInfo.qId + " - Building recurrence rule")
         let recurrenceRuleObj = this.buildRecurrenceRule(questionInfo);
+        console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Building recurrence rule")
         if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(
                 "Scheduler: Failure to build recurrence rule in scheduleOne"
@@ -648,8 +650,10 @@ class ScheduleHandler{
         let partLang = participant.parameters.language;
         let partCond = participant["conditionName"];
 
+        console.time(uniqueId + " - " + questionInfo.qId + " - Constructing the question")
         // Construct the question based on the assigned condition and preferred language
         let questionObj = qHandler.constructQuestionByID(partCond, questionInfo.qId, partLang);
+        console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Constructing the question")
         if(questionObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(
                 "Scheduler: Failure to get construct question in scheduleOne"
@@ -659,6 +663,7 @@ class ScheduleHandler{
         let question = questionObj.data;
 
         let job;
+
         try{
             // Get the telegram chatID of the participant
             let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
@@ -666,7 +671,7 @@ class ScheduleHandler{
                 return ReturnMethods.returnFailure("Scheduler (SOQ): Cannot find participant chat ID");
             }
             let chatId = secretMap.chatId;
-
+            console.time(uniqueId + " - " + questionInfo.qId + " - Scheduling the job")
             // Schedule the question to be sent
             job = scheduler.scheduleJob(recRule, async function(){
                 // Get the updated participant
@@ -724,8 +729,11 @@ class ScheduleHandler{
                    }
                 }
             })
+            console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Scheduling the job")
             // Add to local store and if necessary, to DB
+            console.time(uniqueId + " - " + questionInfo.qId + " - Adding to local store")
             this.scheduledOperations["questions"][jobId] = job;
+            console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Adding to local store")
             if(isNew) {
                 let writeReturn = await this.writeQuestionInfoToDB(uniqueId, jobId, questionInfo);
                 if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
@@ -765,9 +773,9 @@ class ScheduleHandler{
         }
 
         // Build the recurrence rule
-        console.time("Building recurrence rule")
+        console.time(uniqueId + " - " + actionInfo.aType + " - " + "Building recurrence rule")
         let recurrenceRuleObj = this.buildRecurrenceRule(actionInfo);
-        console.timeEnd("Building recurrence rule")
+        console.timeEnd(uniqueId + " - " + actionInfo.aType + " - " +"Building recurrence rule")
         if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(
                 "Scheduler: Failure to build recurrence rule in scheduleAction"
@@ -796,7 +804,7 @@ class ScheduleHandler{
             }
             let chatId = secretMap.chatId;
 
-            console.time("Scheduling the job")
+            console.time(uniqueId + " - " + actionInfo.aType + " - " +"Scheduling the job")
             // Schedule the question to be sent
             job = scheduler.scheduleJob(recRule, async function(){
                 // Get the updated participant
@@ -868,13 +876,13 @@ class ScheduleHandler{
                     await participants.addDebugInfo(uniqueId, saveActionObj);
                 }
             })
-            console.timeEnd("Scheduling the job")
+            console.timeEnd(uniqueId + " - " + actionInfo.aType + " - " +"Scheduling the job")
             // Add to local store and if necessary, to DB
             this.scheduledOperations["actions"][jobId] = job;
             if(isNew) {
-                console.time("Writing to the database")
+                console.time(uniqueId + " - " + actionInfo.aType + " - " +"Writing to the database")
                 let writeReturn = await this.writeActionInfoToDB(uniqueId, jobId, actionInfo);
-                console.timeEnd("Writing to the database")
+                console.timeEnd(uniqueId + " - " + actionInfo.aType + " - " +"Writing to the database")
                 if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
                     return ReturnMethods.returnFailure(
                         "Scheduler: Failure to write action info to DB"

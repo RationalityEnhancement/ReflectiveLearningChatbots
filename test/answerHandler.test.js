@@ -282,7 +282,6 @@ describe('Process answer', () =>{
                 let ansString = "Done";
                 it('Should return success and next action', async () => {
                     returnObj = await AnswerHandler.processAnswer(part, ansString)
-                    console.log(returnObj)
                     expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                     expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
                 });

@@ -196,10 +196,8 @@ class AnswerHandler{
 
                 case 'singleChoice':
                     // Process answer if it is one of the valid options
-                    console.log("In single choice")
                     try{
                         if(currentQuestion.options.includes(answerText)){
-                            console.log("Valid answer")
                             // Complete answering
                             // // // console.time("Finish Single choice")
                             let finishObj = await this.finishAnswering(participant, currentQuestion, answerText);
@@ -305,8 +303,10 @@ class AnswerHandler{
                     } else if(!meetsMinLen) {
                         // Repeat the question if not long enough
                         // // console.time("failing freeform")
-                        await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
-                        await participants.updateField(participant.uniqueId, "currentAnswer", [answerText]);
+                        await participants.updateFields(participant.uniqueId,{
+                            currentState: "invalidAnswer",
+                            currentAnswer: [answerText]
+                        });
                         let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
                             {"MinLength" : minLength})
                         if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
@@ -314,8 +314,10 @@ class AnswerHandler{
                         return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING)
                     } else {
                         // Suggest the top closest required answers if it is supposed to be one from a set of answers
-                        await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
-                        await participants.updateField(participant.uniqueId, "currentAnswer", [answerText]);
+                        await participants.updateFields(participant.uniqueId,{
+                            currentState: "invalidAnswer",
+                            currentAnswer: [answerText]
+                        });
                         let closestStringsObj = ExperimentUtils.getClosestStrings(
                             answerText, currentQuestion.answerShouldBe, DevConfig.DEFAULT_TOP_STRINGS_COUNT);
                         if(closestStringsObj.returnCode === DevConfig.FAILURE_CODE){
@@ -420,8 +422,10 @@ class AnswerHandler{
                 case 'number' :
                     // Check if it can be parsed as a number
                     if(isNaN(answerText) || answerText.length === 0) {
-                        await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
-                        await participants.updateField(participant.uniqueId, "currentAnswer", [answerText]);
+                        await participants.updateFields(participant.uniqueId,{
+                            currentState: "invalidAnswer",
+                            currentAnswer: [answerText]
+                        });
                         let errorString = config.phrases.answerValidation.notANumber[participant.parameters.language]
                         return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING);
                     }
@@ -439,8 +443,10 @@ class AnswerHandler{
                         if("lower" in currentQuestion.range){
                             if(numberForm < currentQuestion.range.lower){
                                 // Answer is invalid. Send corresponding message, and ask to repeat question
-                                await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
-                                await participants.updateField(participant.uniqueId, "currentAnswer", [answerText]);
+                                await participants.updateFields(participant.uniqueId,{
+                                    currentState: "invalidAnswer",
+                                    currentAnswer: [answerText]
+                                });
                                 let errorString = config.phrases.answerValidation.numberTooLow[participant.parameters.language]
                                 let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
                                     {"LowerBound" : currentQuestion.range.lower})
@@ -450,8 +456,10 @@ class AnswerHandler{
                         }
                         if("upper" in currentQuestion.range){
                             if(numberForm > currentQuestion.range.upper){
-                                await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
-                                await participants.updateField(participant.uniqueId, "currentAnswer", [answerText]);
+                                await participants.updateFields(participant.uniqueId,{
+                                    currentState: "invalidAnswer",
+                                    currentAnswer: [answerText]
+                                });
                                 let errorString = config.phrases.answerValidation.numberTooHigh[participant.parameters.language]
                                 let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
                                     {"UpperBound" : currentQuestion.range.upper})

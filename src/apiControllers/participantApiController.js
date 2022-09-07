@@ -182,9 +182,16 @@ exports.clearParamValue = async (uniqueId, param) => {
 // given by the participants in response to question prompts
 exports.addAnswer = async (uniqueId, answer) => {
   try{
+    console.time(uniqueId + " adding answer - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
+    console.timeEnd(uniqueId + " adding answer - getting the participant")
+    console.time(uniqueId + " adding answer - pushing answer")
     participant.answers.push(answer);
-    return participant.save();
+    console.timeEnd(uniqueId + " adding answer - pushing answer")
+    console.time(uniqueId + " adding answer - saving participant")
+    let newP = await participant.save();
+    console.timeEnd(uniqueId + " adding answer - saving participant")
+    return newP;
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
     console.error(err);
@@ -194,9 +201,15 @@ exports.addAnswer = async (uniqueId, answer) => {
 // Add debug information to the chronological list
 exports.addDebugInfo = async (uniqueId, infoObj) => {
   try{
+    console.time(uniqueId + " adding debug - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
+    console.timeEnd(uniqueId + " adding debug - getting the participant")
+    console.time(uniqueId + " adding debug - pushing debug")
     participant.debugInfo.push(infoObj);
-    return participant.save();
+    console.timeEnd(uniqueId + " adding debug - pushing debug")
+    console.time(uniqueId + " adding debug - saving participant")
+    let newP = await participant.save();
+    console.timeEnd(uniqueId + " adding debug - saving participant")
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
     console.error(err);
@@ -215,7 +228,34 @@ exports.addStageActivity = async (uniqueId, activity) => {
   }
 }
 
-exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
+exports.hasScheduledOperation = (participant, type, jobInfo) => {
+  try{
+    let exists = false;
+    let scheduledOperations = participant.scheduledOperations[type];
+    for(let i = 0; i < scheduledOperations.length; i++){
+      let curQ = scheduledOperations[i];
+      let allEqual = true;
+      for(const [key, value] of Object.entries(jobInfo)){
+        if(!lodash.isEqual(jobInfo[key], curQ[key])){
+          allEqual = false;
+          break;
+        }
+      }
+      if(allEqual){
+        exists = true;
+        break;
+      }
+    }
+    return exists;
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to check if scheduled question exists');
+    console.error(err);
+  }
+}
+
+// Unnecessary call to participant
+exports.hasScheduledOperationOld = async (uniqueId, type, jobInfo) => {
   try{
     let exists = false;
     let participant = await Participant.findOne({ uniqueId: uniqueId });
@@ -244,12 +284,19 @@ exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
 
 exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
+    console.time(uniqueId + " adding SO - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
-    let hasOAlready = await exports.hasScheduledOperation(uniqueId, type, jobInfo)
+    console.timeEnd(uniqueId + " adding SO - getting the participant")
+    console.time(uniqueId + " adding SO - checking if has SO")
+    let hasOAlready = exports.hasScheduledOperation(participant, type, jobInfo)
+    console.timeEnd(uniqueId + " adding SO - checking if has SO")
     if(!hasOAlready){
       participant.scheduledOperations[type].push(jobInfo);
     }
-    return participant.save();
+    console.time(uniqueId + " adding SO - saving participant")
+    let newP = await participant.save();
+    console.timeEnd(uniqueId + " adding SO - saving participant")
+    return newP;
   }
   catch(err){
     console.log('Participant API Controller: Unable to add scheduled question');
@@ -258,7 +305,10 @@ exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
 }
 exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
   try{
+    console.time(uniqueId + " removing SO - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
+    console.timeEnd(uniqueId + " removing SO - getting the participant")
+    console.time(uniqueId + " removing SO - removing stuff")
     let scheduledQs = participant.scheduledOperations[type];
     let jobIdx = -1;
     for(let i = 0; i < scheduledQs.length; i++){
@@ -269,8 +319,12 @@ exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
       }
     }
     if(jobIdx != -1) participant.scheduledOperations[type].splice(jobIdx,1);
+    console.timeEnd(uniqueId + " removing SO - removing stuff")
     // TODO: Change this to update at some point? Can't do it now, apparently
-    return participant.save();
+    console.time(uniqueId + " removing SO - saving participant")
+    let newP = await participant.save();
+    console.timeEnd(uniqueId + " removing SO - removing stuff")
+    return newP;
   }
   catch(err){
     console.log('Participant API Controller: Unable to add scheduled question');

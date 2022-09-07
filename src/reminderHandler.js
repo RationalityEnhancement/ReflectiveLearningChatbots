@@ -333,7 +333,7 @@ class ReminderHandler{
 
         console.time(uniqueId + " - removing reminder jobs")
         let deleteObj = await this.removeJobsForId(uniqueId);
-        console.timeEnd(uniqueId + " - cancelling reminder jobs")
+        console.timeEnd(uniqueId + " - removing reminder jobs")
         if(deleteObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
             return ReturnMethods.returnFailure(deleteObj.failData);
         } else if(deleteObj.returnCode === DevConfig.FAILURE_CODE){

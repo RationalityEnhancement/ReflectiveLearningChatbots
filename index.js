@@ -455,73 +455,85 @@ bot.command('repeat', async ctx => {
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
         console.log("Participant unique ID not found while repeating!");
-        await ctx.replyWithHTML("Send /start to begin interacting with me!")
+        ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
     let uniqueId = secretMap.uniqueId;
+
+    // Cancel any outstanding commands
+    if(SKIP_TO_STAGE[ctx.from.id]){
+        SKIP_TO_STAGE[ctx.from.id] = false;
+        ctx.replyWithHTML("Skipping stage has been cancelled.")
+    }
+    if(REPORT_FEEDBACK[ctx.from.id]){
+        REPORT_FEEDBACK[ctx.from.id] = false;
+        Communicator.sendMessage(bot, participant,
+            ctx.from.id, config.phrases.experiment.reportFeedbackCancel[partLang], !config.debug.messageDelay)
+            .catch((err) => {
+                handleError(participant, 'Unable to send feedback cancel message after repeat!\n'
+                    + err.message + '\n' + err.stack);
+                console.log('Unable to send feedback cancel message after repeat!');
+                console.error(err);
+            });
+    }
 
   let participant = await getParticipant(uniqueId);
     let partLang = participant.parameters.language;
     if(!participant){
         console.log("Participant not found while repeating!")
-        await ctx.replyWithHTML("Send /start to begin interacting with me!")
+        ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
 
-  // Cancel any outstanding commands
-    if(SKIP_TO_STAGE[ctx.from.id]){
-        SKIP_TO_STAGE[ctx.from.id] = false;
-        await ctx.replyWithHTML("Skipping stage has been cancelled.")
-    }
-    if(REPORT_FEEDBACK[ctx.from.id]){
-        REPORT_FEEDBACK[ctx.from.id] = false;
-        try{
-            await Communicator.sendMessage(bot, participant,
-                ctx.from.id, config.phrases.experiment.reportFeedbackCancel[partLang], !config.debug.messageDelay);
-        } catch(err){
-            await handleError(participant, 'Unable to send feedback cancel message after repeat!\n'
-                + err.message + '\n' + err.stack);
-            console.log('Unable to send feedback cancel message after repeat!');
-            console.error(err);
-        }
-    }
     if(TALK[ctx.from.id]){
         TALK[ctx.from.id] = false;
-        try{
-            await Communicator.sendMessage(bot, participant,
-                ctx.from.id, config.phrases.experiment.talkCancelled[partLang], !config.debug.messageDelay);
-        } catch(err){
-            await handleError(participant, 'Unable to send talk cancel message after repeat!\n'
-                + err.message + '\n' + err.stack);
-            console.log('Unable to send talk cancel message after repeat!');
-            console.error(err);
-        }
+        Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.talkCancelled[partLang], !config.debug.messageDelay)
+            .catch((err) => {
+                handleError(participant, 'Unable to send talk cancel message after repeat!\n'
+                    + err.message + '\n' + err.stack);
+                console.log('Unable to send talk cancel message after repeat!');
+                console.error(err);
+            });
     }
 
   // Repeat question only if there is an outstanding question
   if(participant.currentState.startsWith("awaitingAnswer")){
-      await participants.updateField(uniqueId, "currentState", "repeatQuestion");
+      participants.updateField(uniqueId, "currentState", "repeatQuestion")
+          .catch((err) => {
+              handleError(participant, 'Unable to update participant state in repeat!\n'
+                  + err.message + '\n' + err.stack);
+              console.log('Unable to update participant state in repeat!');
+              console.error(err);
+          });
     let currentQuestion = participant.currentQuestion;
-    let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion,
-        false, !config.debug.messageDelay, "repeat");
-      if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-          await handleError(participant, returnObj.data);
-          await participants.updateField(uniqueId, "currentState", "awaitingAnswer");
-          throw returnObj.data;
-      }
+    LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion,
+        false, !config.debug.messageDelay, "repeat")
+        .then((returnObj) => {
+            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                handleError(participant, returnObj.data);
+                participants.updateField(uniqueId, "currentState", "awaitingAnswer")
+                    .catch((err) => {
+                        handleError(participant, 'Unable to update participant state after fail in repeat!\n'
+                            + err.message + '\n' + err.stack);
+                        console.log('Unable to update participant state after fail in repeat!');
+                        console.error(err);
+                    });
+                throw returnObj.data;
+            }
+        });
+
   } else {
-      try{
-          let partLang = participant.parameters.language;
-          await Communicator.sendMessage(bot, participant,
-              ctx.from.id, config.phrases.experiment.repeatFail[partLang], !config.debug.messageDelay);
-      } catch(err){
-          await handleError(participant, 'Unable to send repeat fail message!\n'
+      let partLang = participant.parameters.language;
+      Communicator.sendMessage(bot, participant,
+          ctx.from.id, config.phrases.experiment.repeatFail[partLang], !config.debug.messageDelay)
+        .catch((err) => {
+          handleError(participant, 'Unable to send repeat fail message!\n'
               + err.message + '\n' + err.stack);
           console.log('Unable to send repeat fail message!');
           console.error(err);
-      }
+      })
   }
-
 })
 
 // Command to skip to a stage
@@ -798,9 +810,8 @@ bot.start(async ctx => {
 // Handling any answer
 bot.on('text', async ctx => {
   const messageText = ctx.message.text;
-    console.log(ctx.update)
   // Get the participants unique ID
-    console.time("Getting participant")
+    console.time("Received message - Getting participant")
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
         console.log("Unable to find participant unique ID!");
@@ -817,9 +828,8 @@ bot.on('text', async ctx => {
       await ctx.replyWithHTML("Send /start to begin interacting with me!")
       return;
   }
-    console.timeEnd("Getting participant")
+    console.timeEnd("Received message - Getting participant")
 
-    console.time("Preprocessing")
     // Ignore commands
     if(messageText.charAt[0] === '/') return;
 
@@ -926,57 +936,69 @@ bot.on('text', async ctx => {
         return;
     }
 
-    console.timeEnd("Preprocessing")
   const answerText = ctx.message.text;
 
   // Handle the answer and respond appropriately
     // console.time("Processing Answer")
-  let answerHandlerObj = await AnswerHandler.processAnswer(participant, answerText);
+  AnswerHandler.processAnswer(participant, answerText)
+      .then((answerHandlerObj) => {
+          switch(answerHandlerObj.returnCode){
+              // Answer was valid
+              case DevConfig.SUCCESS_CODE:
+                  if(answerHandlerObj.data === DevConfig.NEXT_ACTION_STRING){
+                      // Move on to the next actions
+                      // Send this message only if participant has finished choosing from multi-choice
+                      // if(participant.currentQuestion.qType === "multiChoice"){
+                      //   await Communicator.sendMessage(bot, participant, ctx.from.id,
+                      //       config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], !config.debug.messageDelay);
+                      // }
+                      // Process the next steps
+                      LogicHandler.processNextSteps(bot, uniqueId)
+                          .then((result) => {
+                              if(result.returnCode === DevConfig.FAILURE_CODE){
+                                  handleError(participant, result.data);
+                                  throw result.data;
+                              }
+                          });
+                  }
+                  break;
+
+              // Answer was invalid (not part of options, etc.)
+              case DevConfig.PARTIAL_FAILURE_CODE:
+                  // Send the error message
+                  Communicator.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, !config.debug.messageDelay);
+                  // Repeat the question if needed
+                  if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
+                      LogicHandler.sendQuestion(bot, participant, ctx.from.id,
+                          participant.currentQuestion, false, !config.debug.messageDelay, "invalid")
+                          .then(returnObj => {
+                              if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                                  handleError(participant, returnObj.data);
+                                  throw returnObj.data;
+                              }
+                          })
+                  }
+                  break;
+
+              // Failure occurred
+              case DevConfig.FAILURE_CODE:
+                  handleError(participant, answerHandlerObj.data)
+                      .then(() => {
+                          throw "ERROR: " + answerHandlerObj.data;
+                      });
+                  break;
+
+              default:
+                  handleError(participant, "Answer Handler did not respond appropriately")
+                      .then(() => {
+                          throw "ERROR: Answer Handler did not respond appropriately"
+                      });
+                  break;
+          }
+      })
     // console.timeEnd("Processing Answer")
     // console.time("Handling answer return")
-  switch(answerHandlerObj.returnCode){
-    // Answer was valid
-    case DevConfig.SUCCESS_CODE:
-      if(answerHandlerObj.data === DevConfig.NEXT_ACTION_STRING){
-        // Move on to the next actions
-        // Send this message only if participant has finished choosing from multi-choice
-        // if(participant.currentQuestion.qType === "multiChoice"){
-        //   await Communicator.sendMessage(bot, participant, ctx.from.id,
-        //       config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], !config.debug.messageDelay);
-        // }
-        // Process the next steps
-        let nextStepsObj = await LogicHandler.processNextSteps(bot, uniqueId);
-        if(nextStepsObj.returnCode === DevConfig.FAILURE_CODE){
-            await handleError(participant, nextStepsObj.data);
-            throw nextStepsObj.data;
-        }
-      }
-      break;
 
-    // Answer was invalid (not part of options, etc.)
-    case DevConfig.PARTIAL_FAILURE_CODE:
-        // Send the error message
-        await Communicator.sendMessage(bot, participant, ctx.from.id, answerHandlerObj.failData, !config.debug.messageDelay);
-      // Repeat the question if needed
-      if(answerHandlerObj.successData === DevConfig.REPEAT_QUESTION_STRING){
-        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
-            participant.currentQuestion, false, !config.debug.messageDelay, "invalid")
-          if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-              await handleError(participant, returnObj.data);
-              throw returnObj.data;
-          }
-      }
-      break;
-
-    // Failure occurred
-    case DevConfig.FAILURE_CODE:
-        await handleError(participant, answerHandlerObj.data);
-      throw "ERROR: " + answerHandlerObj.data;
-
-    default:
-        await handleError(participant, "Answer Handler did not respond appropriately");
-      throw "ERROR: Answer Handler did not respond appropriately"
-  }
     // console.timeEnd("Handling answer return")
   
 });

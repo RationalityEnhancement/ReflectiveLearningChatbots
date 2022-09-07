@@ -634,10 +634,13 @@ class ScheduleHandler{
                 + "\n"+ recurrenceRuleObj.data
             );
         }
+        console.time(uniqueId + " - " + questionInfo.qId + " - Constructing job Id")
         let recRule = recurrenceRuleObj.data;
 
         // Construct the jobID for the job
         let jobId = uniqueId + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
+        console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Constructing job Id")
+        console.time(uniqueId + " - " + questionInfo.qId + " - Getting participant")
         let participant;
         try{
             participant = await participants.get(uniqueId);
@@ -645,6 +648,7 @@ class ScheduleHandler{
         } catch(err){
             return ReturnMethods.returnFailure("Scheduler: Unable to fetch participant " + uniqueId + "\n"+err)
         }
+        console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Getting participant")
 
         // Get the assigned condition and preferred language of the participant
         let partLang = participant.parameters.language;

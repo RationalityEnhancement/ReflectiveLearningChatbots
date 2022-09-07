@@ -70,6 +70,7 @@ class ReminderHandler{
      * @param participant participant object
      * @param chatId chat Id of participant
      * @param currentTime time object for scheduling with number fields hours and minutes
+     * @param long whether the reminder message should be long or short (1st message long, rest short)
      * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
      *              When success, list of objects with { jobId : string, job : scheduled object }
      */
@@ -121,29 +122,20 @@ class ReminderHandler{
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
      */
     static async writeRemindersToDB(uniqueId, jobList){
-        let failedJobs = [];
-        let succeededJobs = [];
-
-
+        let addJobs = []
         for(let i = 0; i < jobList.length; i++){
-            try {
-                await participants.addScheduledOperation(uniqueId, "reminders", jobList[i])
-                succeededJobs.push(jobList[i].jobId)
-            } catch(e){
-                failedJobs.push(jobList[i].jobId)
-            }
+            addJobs.push({
+                type: "reminders",
+                jobInfo: jobList[i]
+            })
         }
-
-        if(failedJobs.length > 0){
-            if(succeededJobs.length === 0){
-                return ReturnMethods.returnFailure(
-                    "RHandler: Errors adding the following jobs:\n" + failedJobs.join('\n'))
-            }
-            return ReturnMethods.returnPartialFailure(
-                "RHandler: Errors adding the following jobs:\n" + failedJobs.join('\n'),
-                succeededJobs);
+        try {
+            await participants.addScheduledOperations(uniqueId, addJobs)
+            return ReturnMethods.returnSuccess(jobList.map(job => job.jobId));
+        } catch(e){
+            return ReturnMethods.returnFailure(
+                "RHandler: Errors adding jobs to DB:\n" + e.message + "\n" + estack)
         }
-        return ReturnMethods.returnSuccess(succeededJobs);
     }
 
     /**
@@ -202,11 +194,11 @@ class ReminderHandler{
         // console.time(participant.uniqueId + " - setting reminder - writing all to DB")
         let writeObj = await this.writeRemindersToDB(participant.uniqueId, dbJobs);
         // console.timeEnd(participant.uniqueId + " - setting reminder - writing all to DB")
-        if(writeObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
-            failedJobs = failedJobs.concat(writeObj.failData);
-            succeededJobs = succeededJobs.concat(writeObj.successData);
-        } else if(writeObj.returnCode === DevConfig.FAILURE_CODE){
-            failedJobs = failedJobs.concat(writeObj.data);
+        if(writeObj.returnCode === DevConfig.FAILURE_CODE){
+            for(const [jobId, job] of Object.entries(this.scheduledReminders)){
+                job.cancel();
+            }
+            return writeObj;
         }
 
         if(failedJobs.length > 0){
@@ -317,13 +309,13 @@ class ReminderHandler{
      * Cancels the current reminder for the participant by cancelling all the
      * present reminder jobs as well as removing them from the database
      *
-     * @param uniqueId
+     * @param participant participant object
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}|{returnCode: *, data: *}>}
      */
-    static async cancelCurrentReminder(uniqueId){
+    static async cancelCurrentReminder(participant){
 
         // console.time(uniqueId + " - cancelling reminder jobs")
-        let cancelObj = this.cancelJobsForId(uniqueId);
+        let cancelObj = this.cancelJobsForId(participant.uniqueId);
         // console.timeEnd(uniqueId + " - cancelling reminder jobs")
         if(cancelObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
             return ReturnMethods.returnFailure(cancelObj.failData);
@@ -332,11 +324,9 @@ class ReminderHandler{
         }
 
         // console.time(uniqueId + " - removing reminder jobs")
-        let deleteObj = await this.removeJobsForId(uniqueId);
+        let deleteObj = await this.removeJobsForId(participant);
         // console.timeEnd(uniqueId + " - removing reminder jobs")
-        if(deleteObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
-            return ReturnMethods.returnFailure(deleteObj.failData);
-        } else if(deleteObj.returnCode === DevConfig.FAILURE_CODE){
+        if(deleteObj.returnCode === DevConfig.FAILURE_CODE){
             return deleteObj;
         }
 
@@ -348,51 +338,36 @@ class ReminderHandler{
      *
      * Removes jobs from the database for a given participant but not from the scheduledReminders object
      *
-     * @param uniqueId
+     * @param participant participant object
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
      */
-    static async removeJobsForId(uniqueId){
-
-        // Get the participant
-        // console.time(uniqueId + " - removing reminders - getting participant")
-        let participant;
-        try{
-            participant = await participants.get(uniqueId);
-            if(!participant) throw "Participant not found";
-        } catch(err){
-            return ReturnMethods.returnFailure("RHandler: Unable to fetch participant\n");
+    static async removeJobsForId(participant){
+        if(typeof participant !== "object" || !("scheduledOperations" in participant)){
+            return ReturnMethods.returnFailure("RHandler: participant is undefined or does not have scheduled operations")
         }
-        // console.timeEnd(uniqueId + " - removing reminders - getting participant")
-
         // Get the jobs for the participant
         let schRems = participant.scheduledOperations["reminders"];
-        let succeededJobs = [], failedJobs = [];
+        if(!schRems || !Array.isArray(schRems)) {
+            return ReturnMethods.returnFailure("RHandler: participant does not have scheduled reminders object")
+        }
 
-        // Remove them one by one
-        // console.time(uniqueId + " - removing reminders - removing one by one")
+        // Remove all jobs at once
+        let removeJobs = [];
         for(let i = 0; i < schRems.length; i++){
-            let jobId = schRems[i].jobId;
-            try{
-                // console.time(uniqueId + " - removing reminders - removing from database")
-                await participants.removeScheduledOperation(uniqueId, "reminders", jobId);
-                // console.timeEnd(uniqueId + " - removing reminders - removing from database")
-                succeededJobs.push(jobId);
-            } catch(err){
-                failedJobs.push(jobId + "\n" + err.message + "\n" + err.stack);
-            }
+            removeJobs.push({
+                type: "reminders",
+                jobId: schRems[i].jobId
+            })
         }
-        // console.timeEnd(uniqueId + " - removing reminders - removing one by one")
-
-        if(failedJobs.length > 0){
-            if(succeededJobs.length === 0){
-                return ReturnMethods.returnFailure(
-                    "RHandler: Errors removing the following jobs:\n" + failedJobs.join('\n'))
-            }
-            return ReturnMethods.returnPartialFailure(
-                "RHandler: Errors removing the following jobs:\n" + failedJobs.join('\n'),
-                succeededJobs);
-        }
-        return ReturnMethods.returnSuccess(succeededJobs);
+        if(removeJobs.length === 0) return ReturnMethods.returnSuccess(removeJobs);
+        return participants.removeScheduledOperations(participant.uniqueId, removeJobs)
+            .then((resolve) => {
+                return ReturnMethods.returnSuccess(removeJobs.map(job => job.jobId))
+            })
+            .catch(err => {
+                return ReturnMethods.returnFailure("RHandler: Errors removing reminder jobs\n"
+                + err.message + "\n" + err.stack);
+            })
 
     }
 

@@ -240,9 +240,10 @@ module.exports.getAndConstructNextQuestion = (participant, currentQuestion) => {
  */
 module.exports.sendQuestion = async (bot, participant, chatId, question, scheduled=false, debugExp, from=undefined) => {
 
+
     // Cancel any outstanding reminder messages
     console.time("Sending question: Cancelling reminder")
-    let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant.uniqueId);
+    let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant);
     console.timeEnd("Sending question: Cancelling reminder")
     if(cancelReminderObj.returnCode === DevConfig.FAILURE_CODE){
         return ReturnMethods.returnFailure(
@@ -250,7 +251,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
             + "\n"+ cancelReminderObj.data
         );
     }
-
+    // TODO: Debug info does not save updated participant with cancelled reminders
     console.time("Sending question: Saving debug info")
     // Save question that will be sent (for debug purposes)
     let saveQuestionObj = {
@@ -303,13 +304,14 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
 
     console.time("Sending question: updating parameters")
     // Update participant state parameters
-    let newState = scheduled ? "awaitingAnswerScheduled" : "awaitingAnswer";
-    await participants.updateField(participant.uniqueId, 'currentState', newState);
-    await participants.eraseCurrentAnswer(participant.uniqueId)
     question.askTimeStamp = moment.tz(participant.parameters.timezone).format();
-    await participants.updateField(participant.uniqueId, 'currentQuestion', question);
+    let newState = scheduled ? "awaitingAnswerScheduled" : "awaitingAnswer";
+    await participants.updateFields(participant.uniqueId,{
+        currentState: newState,
+        currentAnswer: [],
+        currentQuestion: question
+    });
     console.timeEnd("Sending question: updating parameters")
-
     console.time("Sending question: setting reminders")
     // Set reminders, if any
     if(question.reminder && question.reminder["freqMins"]){

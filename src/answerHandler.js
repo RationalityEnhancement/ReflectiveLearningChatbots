@@ -88,12 +88,13 @@ class AnswerHandler{
      */
     static async finishAnswering(participant, currentQuestion, fullAnswer){
         // console.time("cancelling reminder")
-        let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant.uniqueId);
+        let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant);
         if(cancelReminderObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure(
                 "AHandler:Unable to cancel reminder:\n"+ cancelReminderObj.data
             );
         }
+        // TODO: participant is not up to date because of cancelled reminder, but perhaps it doesn't matter?
         // console.timeEnd("cancelling reminder")
         try{
             let tz = participant.parameters.timezone;
@@ -130,7 +131,6 @@ class AnswerHandler{
         }
         // Trigger the next action
         return ReturnMethods.returnSuccess(DevConfig.NEXT_ACTION_STRING)
-
     }
 
     /**
@@ -212,6 +212,7 @@ class AnswerHandler{
                             })
                                 .then((resolve) => {
                                     let errorMsg = config.phrases.answerValidation.invalidOption[participant.parameters.language]
+                                    if(!errorMsg) throw "AHandler: error message/participant language not found - single choice"
                                     return ReturnMethods.returnPartialFailure(errorMsg, DevConfig.REPEAT_QUESTION_STRING)
                                 })
                                 .catch((err) => {
@@ -245,6 +246,7 @@ class AnswerHandler{
                                 // Repeat the question
                                 await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                                 let errorMsg = config.phrases.answerValidation.noOptions[participant.parameters.language]
+                                if(!errorMsg) throw "AHandler: error message/participant language not found - multi choice"
                                 return ReturnMethods.returnPartialFailure(errorMsg, DevConfig.REPEAT_QUESTION_STRING)
                             }
                             // If participant is finished answering
@@ -258,6 +260,7 @@ class AnswerHandler{
                             // // console.time("failing multi choice")
                             await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                             let errorMsg = config.phrases.answerValidation.invalidOption[participant.parameters.language];
+                            if(!errorMsg) throw "AHandler: error message/participant language not found - multi choice"
                             // // console.timeEnd("failing multi choice")
                             return ReturnMethods.returnPartialFailure(errorMsg, DevConfig.REPEAT_QUESTION_STRING)
                         }

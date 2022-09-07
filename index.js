@@ -203,7 +203,7 @@ bot.command('delete_me', async ctx => {
     await ScheduleHandler.removeAllJobsForParticipant(uniqueId);
 
     // Cancel current reminders
-    await ReminderHandler.cancelCurrentReminder(uniqueId);
+    await ReminderHandler.cancelCurrentReminder(participant);
 
     // Remove participant from database
     await participants.remove(uniqueId);

@@ -62,7 +62,6 @@ let processNextSteps = async(bot, uniqueId) => {
     }
     participant["firstName"] = userInfo.first_name;
 
-    console.time("getting replies")
     // Get all reply messages and send
     let replyMessagesObj = this.getNextReplies(participant, currentQuestion);
     if(replyMessagesObj.returnCode === DevConfig.FAILURE_CODE){
@@ -71,9 +70,7 @@ let processNextSteps = async(bot, uniqueId) => {
             + "\n"+ replyMessagesObj.data
         );
     }
-    console.timeEnd("getting replies")
 
-    console.time("sending replies")
     // Try to send replies
     for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
         try{
@@ -86,7 +83,6 @@ let processNextSteps = async(bot, uniqueId) => {
             }
         }
     }
-    console.timeEnd("sending replies")
 
 
 
@@ -106,7 +102,6 @@ let processNextSteps = async(bot, uniqueId) => {
     }
 
     // Get all next actions
-    console.time("getting actions")
     let actionsObj = this.getNextActions(participant, currentQuestion);
     if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
         return ReturnMethods.returnFailure(
@@ -114,12 +109,10 @@ let processNextSteps = async(bot, uniqueId) => {
             + "\n"+ actionsObj.data
         );
     }
-    console.timeEnd("getting actions")
     let nextActions = actionsObj.data;
 
     let failedActions = [];
 
-    console.time("processing actions")
     // Process all next actions, if any
     for(let i = 0; i < nextActions.length; i++){
         let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i], currentQuestion.qId);
@@ -134,7 +127,6 @@ let processNextSteps = async(bot, uniqueId) => {
             if(!participant) throw "Participant not found"
 
             // Save result of action for debug purposes
-            console.time("next steps: saving debug info")
             let saveActionObj = {
                 infoType: "actionResult",
                 scheduledOperations: participant.scheduledOperations,
@@ -144,7 +136,6 @@ let processNextSteps = async(bot, uniqueId) => {
                 timeStamp: moment.tz(participant.parameters.timezone).format(),
                 from: "LHandler"
             }
-            console.timeEnd("next steps: saving debug info")
             await participants.addDebugInfo(participant.uniqueId, saveActionObj);
 
         } catch(err){
@@ -153,7 +144,6 @@ let processNextSteps = async(bot, uniqueId) => {
         participant["firstName"] = userInfo.first_name;
 
     }
-    console.timeEnd("processing actions")
 
     // If question is not selected first, select and construct it after participant parameters are updated
     if(!currentQuestion.selectQFirst){
@@ -169,7 +159,6 @@ let processNextSteps = async(bot, uniqueId) => {
 
     // If a constructed question has been stored in next question obj
     if(!!nextQuestionObj.data){
-        console.time("sending next question")
         let returnObj = await this.sendQuestion(bot, participant, secretMap.chatId, nextQuestionObj.data,
             false, !config.debug.messageDelay, "nextQuestion");
         if(returnObj.returnCode === DevConfig.FAILURE_CODE){
@@ -178,7 +167,6 @@ let processNextSteps = async(bot, uniqueId) => {
                 + "\n"+ returnObj.data
             );
         }
-        console.timeEnd("sending next question")
     }
     if(failedActions.length === 0){
         return ReturnMethods.returnSuccess("");
@@ -240,11 +228,8 @@ module.exports.getAndConstructNextQuestion = (participant, currentQuestion) => {
  */
 module.exports.sendQuestion = async (bot, participant, chatId, question, scheduled=false, debugExp, from=undefined) => {
 
-
     // Cancel any outstanding reminder messages
-    console.time("Sending question: Cancelling reminder")
     let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant);
-    console.timeEnd("Sending question: Cancelling reminder")
     if(cancelReminderObj.returnCode === DevConfig.FAILURE_CODE){
         return ReturnMethods.returnFailure(
             "LHandler (SQ):Failure cancelling reminder:"
@@ -252,7 +237,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         );
     }
     // TODO: Debug info does not save updated participant with cancelled reminders
-    console.time("Sending question: Saving debug info")
     // Save question that will be sent (for debug purposes)
     let saveQuestionObj = {
         infoType: "question",
@@ -263,18 +247,16 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         timeStamp: moment.tz(participant.parameters.timezone).format(),
         from: from
     }
+    let newPart;
     try{
-        await participants.addDebugInfo(participant.uniqueId, saveQuestionObj);
+        newPart = await participants.addDebugInfo(participant.uniqueId, saveQuestionObj);
     } catch(e){
         return ReturnMethods.returnFailure("LHandler: could not add save question obj");
     }
-    console.timeEnd("Sending question: Saving debug info")
-
-    console.time("Sending question: Handling no response")
     // Handle any outstanding questions before sending next question.
     await AnswerHandler.handleNoResponse(participant.uniqueId);
-    console.timeEnd("Sending question: Handling no response")
 
+    // TODO: Doesn't use updated participant after handleNoResponse
     // Don't send the question if it is a dummy
     // Dummies are used to either just send messages or to conditionally
     //  select next questions/actions which are not preceded by another question already
@@ -290,7 +272,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         return this.processNextSteps(bot, participant.uniqueId);
     }
 
-    console.time("Sending question: sending question itself")
     for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
         try{
             await Communicator.sendQuestion(bot, participant, chatId, question, debugExp);
@@ -300,19 +281,15 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
             + e.message + "\n" + e.stack)
         }
     }
-    console.timeEnd("Sending question: sending question itself")
 
-    console.time("Sending question: updating parameters")
     // Update participant state parameters
     question.askTimeStamp = moment.tz(participant.parameters.timezone).format();
     let newState = scheduled ? "awaitingAnswerScheduled" : "awaitingAnswer";
-    await participants.updateFields(participant.uniqueId,{
+    participant = await participants.updateFields(participant.uniqueId,{
         currentState: newState,
         currentAnswer: [],
         currentQuestion: question
     });
-    console.timeEnd("Sending question: updating parameters")
-    console.time("Sending question: setting reminders")
     // Set reminders, if any
     if(question.reminder && question.reminder["freqMins"]){
         let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,
@@ -322,7 +299,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
             console.log(reminderObj.data);
         }
     }
-    console.timeEnd("Sending question: setting reminders")
 
     return ReturnMethods.returnSuccess("");
 }

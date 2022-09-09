@@ -87,7 +87,6 @@ class AnswerHandler{
      *          if failure, return error message
      */
     static async finishAnswering(participant, currentQuestion, fullAnswer){
-        // console.time("cancelling reminder")
         let cancelReminderObj = await ReminderHandler.cancelCurrentReminder(participant);
         if(cancelReminderObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure(
@@ -95,7 +94,6 @@ class AnswerHandler{
             );
         }
         // TODO: participant is not up to date because of cancelled reminder, but perhaps it doesn't matter?
-        // console.timeEnd("cancelling reminder")
         try{
             let tz = participant.parameters.timezone;
             // Add the answer to the list of answers in the database
@@ -104,7 +102,6 @@ class AnswerHandler{
             let timeStamp = moment.tz(tz);
 
             let timeString = timeStamp.format();
-            // console.time("finishing answer: adding answer")
             const answer = {
                 qId: currentQuestion.qId,
                 text: currentQuestion.text,
@@ -115,7 +112,6 @@ class AnswerHandler{
                 stageDay: participant.stages.stageDay,
             };
             await participants.addAnswer(participant.uniqueId, answer, answerConv);
-            // console.timeEnd("finishing answer: adding answer")
         } catch(e){
             return ReturnMethods.returnFailure("AHandler: unable to add answer\n" +
             e.message + "\n" + e.stack)
@@ -123,9 +119,7 @@ class AnswerHandler{
 
         try{
             // Update that answer is no longer being expected
-            // console.time("finishing answer: update current state")
             await participants.updateField(participant.uniqueId, "currentState", "answerReceived");
-            // console.timeEnd("finishing answer: update current state")
         } catch(e){
             return ReturnMethods.returnFailure("AHandler: unable to save participant")
         }
@@ -199,13 +193,10 @@ class AnswerHandler{
                     try{
                         if(currentQuestion.options.includes(answerText)){
                             // Complete answering
-                            // // // console.time("Finish Single choice")
                             let finishObj = await this.finishAnswering(participant, currentQuestion, answerText);
-                            // // // console.timeEnd("Finish Single choice")
                             // Return failure or trigger the next action
                             return finishObj;
                         } else {
-                            // // console.time("Fail Single choice")
                             return participants.updateFields(participant.uniqueId,{
                                 currentState: "invalidAnswer",
                                 currentAnswer: [answerText]
@@ -220,7 +211,6 @@ class AnswerHandler{
                                     + err.message + "\n" + err.stack;
                                     return ReturnMethods.returnFailure(errorMsg);
                                 })
-                            // // console.timeEnd("Fail Single choice")
 
                         }
                     } catch(e){
@@ -234,13 +224,10 @@ class AnswerHandler{
                     try{
                         if(currentQuestion.options.includes(answerText)){
                             // Save the answer to participant's current answer
-                            // // // console.time("adding multi choice")
                             await participants.addToCurrentAnswer(participant.uniqueId, answerText);
-                            // // // console.timeEnd("adding multi choice")
                             return ReturnMethods.returnSuccess(DevConfig.NO_RESPONSE_STRING);
 
                         } else if(answerText === config.phrases.keyboards.terminateAnswer[participant.parameters.language]) {
-                            // // console.time("finishing multi choice")
                             // If participant terminates without providing answer
                             if(participant.currentAnswer.length === 0){
                                 // Repeat the question
@@ -251,17 +238,14 @@ class AnswerHandler{
                             }
                             // If participant is finished answering
                             let finishObj = await this.finishAnswering(participant, currentQuestion, participant.currentAnswer);
-                            // // console.timeEnd("finishing multi choice")
                             // Return failure or trigger the next action
                             return finishObj;
 
                         } else {
                             // Repeat the question
-                            // // console.time("failing multi choice")
                             await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                             let errorMsg = config.phrases.answerValidation.invalidOption[participant.parameters.language];
                             if(!errorMsg) throw "AHandler: error message/participant language not found - multi choice"
-                            // // console.timeEnd("failing multi choice")
                             return ReturnMethods.returnPartialFailure(errorMsg, DevConfig.REPEAT_QUESTION_STRING)
                         }
                     } catch(e){
@@ -275,7 +259,6 @@ class AnswerHandler{
 
                     // Check minimum length requirement
 
-                    // // console.time("freeform")
                     let ansLenChars = answerText.length;
                     let errorString = "", minLength;
                     if(currentQuestion.minLengthChars && ansLenChars < currentQuestion.minLengthChars){
@@ -300,12 +283,10 @@ class AnswerHandler{
                     if(meetsMinLen && answerConforms){
                         // Complete answering
                         let finishObj = await this.finishAnswering(participant, currentQuestion, answerText);
-                        // // console.timeEnd("freeform")
                         // Return failure or trigger the next action
                         return finishObj;
                     } else if(!meetsMinLen) {
                         // Repeat the question if not long enough
-                        // // console.time("failing freeform")
                         await participants.updateFields(participant.uniqueId,{
                             currentState: "invalidAnswer",
                             currentAnswer: [answerText]
@@ -313,7 +294,6 @@ class AnswerHandler{
                         let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
                             {"MinLength" : minLength})
                         if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
-                        // // console.timeEnd("failing freeform")
                         return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING)
                     } else {
                         // Suggest the top closest required answers if it is supposed to be one from a set of answers
@@ -370,19 +350,15 @@ class AnswerHandler{
                         }
                         if(meetsMinLen){
                             // If participant is finished answering
-                            // // console.time("finishing freeform multi")
                             let finishObj = await this.finishAnswering(participant, currentQuestion, participant.currentAnswer);
-                            // // console.timeEnd("finishing freeform multi")
                             // Return failure or trigger the next action
                             return finishObj;
                         } else {
                             // Repeat the question
-                            // // console.time("failing freeform multi")
                             await participants.updateField(participant.uniqueId, "currentState", "invalidAnswer")
                             let replaceVarObj = ConfigParser.replaceSpecificVariablesInString(errorString,
                                 {"MinLength" : minLength})
                             if(replaceVarObj.returnCode === DevConfig.SUCCESS_CODE) errorString = replaceVarObj.data
-                            // // console.timeEnd("failing freeform multi")
                             return ReturnMethods.returnPartialFailure(errorString, DevConfig.REPEAT_QUESTION_STRING)
                         }
 

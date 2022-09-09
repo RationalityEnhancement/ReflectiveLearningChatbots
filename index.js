@@ -811,7 +811,6 @@ bot.start(async ctx => {
 bot.on('text', async ctx => {
   const messageText = ctx.message.text;
   // Get the participants unique ID
-    console.time("Received message - Getting participant")
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
         console.log("Unable to find participant unique ID!");
@@ -828,7 +827,6 @@ bot.on('text', async ctx => {
       await ctx.replyWithHTML("Send /start to begin interacting with me!")
       return;
   }
-    console.timeEnd("Received message - Getting participant")
 
     // Ignore commands
     if(messageText.charAt[0] === '/') return;
@@ -939,9 +937,11 @@ bot.on('text', async ctx => {
   const answerText = ctx.message.text;
 
   // Handle the answer and respond appropriately
-    // console.time("Processing Answer")
+    console.time("Processing Answer")
   AnswerHandler.processAnswer(participant, answerText)
       .then((answerHandlerObj) => {
+          console.timeEnd("Processing Answer")
+          console.time("Handling answer return")
           switch(answerHandlerObj.returnCode){
               // Answer was valid
               case DevConfig.SUCCESS_CODE:
@@ -955,6 +955,7 @@ bot.on('text', async ctx => {
                       // Process the next steps
                       LogicHandler.processNextSteps(bot, uniqueId)
                           .then((result) => {
+                              console.timeEnd("Handling answer return")
                               if(result.returnCode === DevConfig.FAILURE_CODE){
                                   handleError(participant, result.data);
                                   throw result.data;
@@ -972,6 +973,7 @@ bot.on('text', async ctx => {
                       LogicHandler.sendQuestion(bot, participant, ctx.from.id,
                           participant.currentQuestion, false, !config.debug.messageDelay, "invalid")
                           .then(returnObj => {
+                              console.timeEnd("Handling answer return")
                               if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                                   handleError(participant, returnObj.data);
                                   throw returnObj.data;
@@ -984,6 +986,7 @@ bot.on('text', async ctx => {
               case DevConfig.FAILURE_CODE:
                   handleError(participant, answerHandlerObj.data)
                       .then(() => {
+                          console.timeEnd("Handling answer return")
                           throw "ERROR: " + answerHandlerObj.data;
                       });
                   break;
@@ -991,15 +994,12 @@ bot.on('text', async ctx => {
               default:
                   handleError(participant, "Answer Handler did not respond appropriately")
                       .then(() => {
+                          console.timeEnd("Handling answer return")
                           throw "ERROR: Answer Handler did not respond appropriately"
                       });
                   break;
           }
       })
-    // console.timeEnd("Processing Answer")
-    // console.time("Handling answer return")
-
-    // console.timeEnd("Handling answer return")
   
 });
 
@@ -1010,11 +1010,10 @@ if(!!local && local === "-l"){
     bot.launch().then(() => {
 
         console.log('Listening to humans');
-        let start = Date.now();
         console.log("Starting rescheduling now")
+        console.time("Rescheduling all participants")
         ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
-            let end = Date.now();
-            console.log("Finished rescheduling: time taken = " + ((end - start)/1000));
+            console.timeEnd("Rescheduling all participants")
         });
     });
 } else {
@@ -1026,11 +1025,10 @@ if(!!local && local === "-l"){
         }
     }).then(() => {
         console.log('Listening to humans');
-        let start = Date.now();
         console.log("Starting rescheduling now")
+        console.time("Rescheduling all participants")
         ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
-            let end = Date.now();
-            console.log("Finished rescheduling: time taken = " + ((end - start)/1000));
+            console.timeEnd("Rescheduling all participants")
         }).catch(err => {
             console.log(err.message + "\n" + err.stack);
             throw err

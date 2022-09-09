@@ -168,7 +168,6 @@ class ReminderHandler{
 
         let dbJobs = [];
 
-        // console.time(participant.uniqueId + " - setting reminder - creating all jobs")
         // Create a new scheduled job for each reminder, calculating the time offset each time
         for(let i = 0; i < numRepeats; i++){
             let newTime = this.addMins(currentTime, (i + 1) * freqMins);
@@ -188,12 +187,9 @@ class ReminderHandler{
                 });
             }
         }
-        // console.timeEnd(participant.uniqueId + " - setting reminder - creating all jobs")
 
         // Write all these jobs to database
-        // console.time(participant.uniqueId + " - setting reminder - writing all to DB")
         let writeObj = await this.writeRemindersToDB(participant.uniqueId, dbJobs);
-        // console.timeEnd(participant.uniqueId + " - setting reminder - writing all to DB")
         if(writeObj.returnCode === DevConfig.FAILURE_CODE){
             for(const [jobId, job] of Object.entries(this.scheduledReminders)){
                 job.cancel();
@@ -314,18 +310,14 @@ class ReminderHandler{
      */
     static async cancelCurrentReminder(participant){
 
-        // console.time(uniqueId + " - cancelling reminder jobs")
         let cancelObj = this.cancelJobsForId(participant.uniqueId);
-        // console.timeEnd(uniqueId + " - cancelling reminder jobs")
         if(cancelObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
             return ReturnMethods.returnFailure(cancelObj.failData);
         } else if(cancelObj.returnCode === DevConfig.FAILURE_CODE){
             return cancelObj;
         }
 
-        // console.time(uniqueId + " - removing reminder jobs")
         let deleteObj = await this.removeJobsForId(participant);
-        // console.timeEnd(uniqueId + " - removing reminder jobs")
         if(deleteObj.returnCode === DevConfig.FAILURE_CODE){
             return deleteObj;
         }

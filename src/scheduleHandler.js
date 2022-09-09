@@ -265,9 +265,7 @@ class ScheduleHandler{
                 if: jobInfo.if,
                 tz: participant.parameters.timezone
             }
-            console.time("Scheduling question: " + questionInfo.qId)
             let returnObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, questionInfo, config,false);
-            console.timeEnd("Scheduling question: " + questionInfo.qId)
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedOperations.push(returnObj.data);
             } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
@@ -285,9 +283,7 @@ class ScheduleHandler{
                 if: jobInfo.if,
                 tz: participant.parameters.timezone
             }
-            console.time("Scheduling action: " + actionInfo.aType)
             let returnObj = await this.scheduleOneAction(bot, uniqueId, actionInfo, config,false);
-            console.timeEnd("Scheduling action: " + actionInfo.aType)
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedOperations.push(returnObj.data);
             } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){

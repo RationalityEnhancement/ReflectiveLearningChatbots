@@ -197,19 +197,12 @@ exports.clearParamValue = async (uniqueId, param) => {
 // If updateAnswer is not undefined, then set current answer to that
 exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
   try{
-    // console.time(uniqueId + " adding answer - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
-    // console.timeEnd(uniqueId + " adding answer - getting the participant")
-    // console.time(uniqueId + " adding answer - pushing answer")
     participant.answers.push(answer);
     if(updateAnswer){
       participant.currentAnswer = updateAnswer
     }
-    // console.timeEnd(uniqueId + " adding answer - pushing answer")
-    // console.time(uniqueId + " adding answer - saving participant")
-    let newP = await participant.save();
-    // console.timeEnd(uniqueId + " adding answer - saving participant")
-    return newP;
+    return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
     console.error(err);
@@ -219,15 +212,9 @@ exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
 // Add debug information to the chronological list
 exports.addDebugInfo = async (uniqueId, infoObj) => {
   try{
-    // console.time(uniqueId + " adding debug - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
-    // console.timeEnd(uniqueId + " adding debug - getting the participant")
-    // console.time(uniqueId + " adding debug - pushing debug")
     participant.debugInfo.push(infoObj);
-    // console.timeEnd(uniqueId + " adding debug - pushing debug")
-    // console.time(uniqueId + " adding debug - saving participant")
-    let newP = await participant.save();
-    // console.timeEnd(uniqueId + " adding debug - saving participant")
+    return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
     console.error(err);
@@ -303,18 +290,12 @@ exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
 
 exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
-    // console.time(uniqueId + " adding SO - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
-    // console.timeEnd(uniqueId + " adding SO - getting the participant")
-    // console.time(uniqueId + " adding SO - checking if has SO")
     let hasOAlready = exports.hasScheduledOperationObject(participant, type, jobInfo)
-    // console.timeEnd(uniqueId + " adding SO - checking if has SO")
     if(!hasOAlready){
       participant.scheduledOperations[type].push(jobInfo);
     }
-    // console.time(uniqueId + " adding SO - saving participant")
     let newP = await participant.save();
-    // console.timeEnd(uniqueId + " adding SO - saving participant")
     return newP;
   }
   catch(err){

@@ -205,7 +205,7 @@ class ScheduleHandler{
 
             // Call the function to reschedule all operations for a given participant
             console.time("Rescheduling participant: " + curPart.uniqueId)
-            let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.uniqueId, config);
+            let returnObj = await this.rescheduleAllOperationsForIDAtOnce(bot, curPart.uniqueId, config);
             console.timeEnd("Rescheduling participant: " + curPart.uniqueId)
             if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
                 // Append returned jobs to array of succeeded jobs

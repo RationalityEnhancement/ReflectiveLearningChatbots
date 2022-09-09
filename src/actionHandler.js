@@ -136,7 +136,15 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                     "ActHandler:Unable to schedule all operations:\n"+returnObj.failData
                 );
             }
-            return returnObj;
+            let newPartS;
+            try{
+                newPartS = await participants.get(participant.uniqueId)
+            } catch(err){
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to fetch participant again after schedule all:\n" +
+                    err.message + "\n" + err.stack);
+            }
+            return ReturnMethods.returnSuccess(newPartS);
         // Assign participant to condition based on assignment scheme specified in config file
         case "assignToCondition":
             let experiment;
@@ -169,9 +177,12 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) You have been assigned to condition: " + conditionName, !config.debug.messageDelay);
             }
+            let newPartC;
             try{
-                await participants.updateField(participant.uniqueId, "conditionIdx", assignedConditionIdx);
-                await participants.updateField(participant.uniqueId, "conditionName", conditionName);
+                newPartC = await participants.updateFields(participant.uniqueId, {
+                    conditionIdx: assignedConditionIdx,
+                    conditionName: conditionName
+                });
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: Unable to update condition fields");
             }
@@ -182,7 +193,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: Unable to update experiment condition numbers");
             }
-            return ReturnMethods.returnSuccess(conditionName);
+            return ReturnMethods.returnSuccess(newPartC);
         // Save current answer to a variable
         case "saveAnswerTo" :
             // First argument is name of the variable to save to
@@ -203,7 +214,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: parameterTypes field not present in participant obj");
             }
-            let returnVal;
+            let returnVal, newPartSave;
 
             if(DevConfig.RESERVED_VARIABLES.includes(varName)){
                 return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Cannot update reserved variable!");
@@ -213,19 +224,19 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 // For string and string array, no conversion required, since current Answer is already string array
                 case DevConfig.OPERAND_TYPES.STRING:
                     try{
-                        await participants.updateParameter(participant.uniqueId, varName, participant.currentAnswer[0]);
+                        newPartSave = await participants.updateParameter(participant.uniqueId, varName, participant.currentAnswer[0]);
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler - saveAnswerTo(str): could not update participant params");
                     }
-                    returnVal = participant.currentAnswer[0];
+                    returnVal = newPartSave;
                     break;
                 case DevConfig.OPERAND_TYPES.STRING_ARRAY:
                     try{
-                        await participants.updateParameter(participant.uniqueId, varName, participant.currentAnswer);
+                        newPartSave = await participants.updateParameter(participant.uniqueId, varName, participant.currentAnswer);
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler - saveAnswerTo(strArr): could not update participant params");
                     }
-                    returnVal = participant.currentAnswer;
+                    returnVal = newPartSave;
                     break;
                 // Save to number variable if first entry can be parsed to number
                 case DevConfig.OPERAND_TYPES.NUMBER:
@@ -236,11 +247,11 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                         );
                     }
                     try{
-                        await participants.updateParameter(participant.uniqueId, varName, conversionObj.data);
+                        newPartSave = await participants.updateParameter(participant.uniqueId, varName, conversionObj.data);
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler - saveAnswerTo(num): could not update participant params");
                     }
-                    returnVal = conversionObj.data;
+                    returnVal = newPartSave;
                     break;
                 default:
                     return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Cannot save to var of type " + paramType);
@@ -266,6 +277,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             }
             let aParamType;
             let aReturnVal;
+            let newPartAdd;
             try{
                 aParamType = participant.parameterTypes[aVarName];
             } catch(err){
@@ -287,22 +299,22 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                     }
                     // Update the array parameter
                     try{
-                        await participants.addToArrParameter(participant.uniqueId, aVarName, conversionObj.data);
+                        newPartAdd = await participants.addToArrParameter(participant.uniqueId, aVarName, conversionObj.data);
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler - addAnswerTo(numArr): could not add to participant params");
                     }
-                    aReturnVal = conversionObj.data;
+                    aReturnVal = newPartAdd;
                     break;
                 case DevConfig.OPERAND_TYPES.STRING_ARRAY:
                     // Update the array parameter
                     try{
                         for(const el of participant.currentAnswer) {
-                            await participants.addToArrParameter(participant.uniqueId, aVarName, el);
+                            newPartAdd = await participants.addToArrParameter(participant.uniqueId, aVarName, el);
                         }
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler - addAnswerTo(strArr): could not add to participant params");
                     }
-                    aReturnVal = participant.currentAnswer;
+                    aReturnVal = newPartAdd;
                     break;
                 default:
                     return ReturnMethods.returnFailure("ActHandler: Cannot add to var of type " + aParamType);
@@ -337,6 +349,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             let options = participant.currentQuestion.options;
 
             let oParamType;
+            let newPartSaveOpt;
             try{
                 oParamType = participant.parameterTypes[oVarName];
             } catch(err){
@@ -354,11 +367,11 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                     let answer = participant.currentAnswer[0];
                     let idx = options.indexOf(answer)
                     try{
-                        await participants.updateParameter(participant.uniqueId, oVarName, idx);
+                        newPartSaveOpt = await participants.updateParameter(participant.uniqueId, oVarName, idx);
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo(num): could not update participant params");
                     }
-                    oReturnVal = idx;
+                    oReturnVal = newPartSaveOpt;
                     break;
                 case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
                     let idxArr = []
@@ -366,11 +379,11 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                         idxArr.push(options.indexOf(answer))
                     }
                     try{
-                        await participants.updateParameter(participant.uniqueId, oVarName, idxArr);
+                        newPartSaveOpt = await participants.updateParameter(participant.uniqueId, oVarName, idxArr);
                     } catch(err){
                         return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo(numArr): could not update participant params");
                     }
-                    oReturnVal = idxArr;
+                    oReturnVal = newPartSaveOpt;
                     break;
                 default:
                     return ReturnMethods.returnFailure(
@@ -394,7 +407,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             if(typeof newVal !== "string"){
                 return ReturnMethods.returnFailure("ActHandler: Boolean token (arg2) must be string");
             }
-            let bParamType;
+            let bParamType, newPartSetBool;
             try{
                 bParamType = participant.parameterTypes[bVarName];
             } catch(err){
@@ -421,7 +434,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
 
             // Update the parameter with the new value
             try{
-                await participants.updateParameter(participant.uniqueId, bVarName, boolVal);
+                newPartSetBool = await participants.updateParameter(participant.uniqueId, bVarName, boolVal);
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler - setBooleanVar: could not update participant params");
             }
@@ -429,7 +442,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Var "
                     + bVarName + " set to " + boolVal, true);
             }
-            return ReturnMethods.returnSuccess(boolVal);
+            return ReturnMethods.returnSuccess(newPartSetBool);
         // Clear the value of an array parameter
         case "clearVar" :
             // First argument must be name of target variable
@@ -438,7 +451,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 return ReturnMethods.returnFailure("ActHandler - clearVar: Variable name must be string: " + cVarName);
             }
 
-            let cParamType;
+            let cParamType, newPartClear;
             try{
                 cParamType = participant.parameterTypes[cVarName];
             } catch(err){
@@ -455,6 +468,8 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             // Clear the parameter value
             try{
                 await participants.clearParamValue(participant.uniqueId, cVarName);
+                // Have to fetch the participant again to update parameter from undefined in returned document
+                newPartClear = await participants.get(participant.uniqueId)
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler: could not clear participant parameter " + cVarName);
             }
@@ -462,7 +477,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Variable "
                     + cVarName + " cleared", true);
             }
-            return ReturnMethods.returnSuccess([]);
+            return ReturnMethods.returnSuccess(newPartClear);
         // Add a value to a number variable
         case "addValueTo" :
             // First argument must be the name of the variable
@@ -475,7 +490,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             if(typeof addVal !== "string"){
                 return ReturnMethods.returnFailure("ActHandler - addValueTo: Number token (arg2) must be string");
             }
-            let addParamType;
+            let addParamType, newPartAddVal;
             try{
                 addParamType = participant.parameterTypes[addVarName];
             } catch(err){
@@ -507,7 +522,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
 
             // Update the parameter with the new value
             try{
-                await participants.updateParameter(participant.uniqueId, addVarName, newNumVal);
+                newPartAddVal = await participants.updateParameter(participant.uniqueId, addVarName, newNumVal);
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler - addValueTo: could not update participant params");
             }
@@ -515,7 +530,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
                     + newNumVal + " added to " + addVarName, true);
             }
-            return ReturnMethods.returnSuccess(newNumVal);
+            return ReturnMethods.returnSuccess(newPartAddVal);
         case "startStage" :
             // First argument must be the name of the stage
             let startStage = actionObj.args[0];
@@ -523,6 +538,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 return ReturnMethods.returnFailure("ActHandler: Stage name (arg1) must be string");
             }
 
+            let newPartStage;
             // Start the given stage
             let startStageObj = await StageHandler.startStage(participant, startStage);
             if(startStageObj.returnCode === DevConfig.FAILURE_CODE){
@@ -534,7 +550,15 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
                     + startStageObj.data + " stage started.", true);
             }
-            return startStageObj;
+            try{
+                newPartStage = await participants.get(participant.uniqueId)
+            } catch(err){
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to fetch participant again after starting stage:\n" +
+                    err.message + "\n" + err.stack);
+            }
+            return ReturnMethods.returnSuccess(newPartStage);
+
         case "incrementStageDay" :
             // No arguments
 
@@ -570,7 +594,15 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                     }
                 }
             }
-            return incStageObj;
+            let newPartInc;
+            try{
+                newPartInc = await participants.get(participant.uniqueId)
+            } catch(err){
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to fetch participant again after incrementing stage day:\n" +
+                    err.message + "\n" + err.stack);
+            }
+            return ReturnMethods.returnSuccess(newPartInc);
         // End the experiment simply by updating the state and cancelling all operations
         case "endExperiment" :
             let endReturnObj = await StageHandler.endExperiment(participant.uniqueId);
@@ -597,7 +629,15 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 }
             }
 
-            return endReturnObj;
+            let newPartEnd;
+            try{
+                newPartEnd = await participants.get(participant.uniqueId)
+            } catch(err){
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to fetch participant again after incrementing stage day:\n" +
+                    err.message + "\n" + err.stack);
+            }
+            return ReturnMethods.returnSuccess(newPartEnd);
 
         default:
             return ReturnMethods.returnFailure("LHandler: aType not recognized");

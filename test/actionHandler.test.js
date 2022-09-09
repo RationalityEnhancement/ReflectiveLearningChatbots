@@ -172,7 +172,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(outString)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
             })
             it('Should have added the number to participant parameter', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -193,7 +193,7 @@ describe('Processing actions', ()=>{
                 expect(participant.parameters.testNum).to.equal(3);
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(outString)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
             })
             it('Should have added the number to participant parameter', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -287,7 +287,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal("Europe/Berlin")
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal("Europe/Berlin")
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -309,7 +309,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql(outString)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(outString)
             })
             it('Should have saved the parameter as string array in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -331,7 +331,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(expectedOut)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(expectedOut)
             })
             it('Should have saved the parameter as number in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -429,9 +429,8 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 participant.currentQuestion = question;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                console.log(returnObj)
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(question.options.indexOf(outString))
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(question.options.indexOf(outString))
             })
             it('Should have saved the parameter as number in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -462,7 +461,7 @@ describe('Processing actions', ()=>{
                 participant.currentQuestion = question;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql(expectedAns)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(expectedAns)
             })
             it('Should have saved the parameter as number array in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -489,9 +488,8 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 participant.currentQuestion = question;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                console.log(returnObj)
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(question.options.indexOf(outString[0]))
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(question.options.indexOf(outString[0]))
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -522,7 +520,7 @@ describe('Processing actions', ()=>{
                 participant.currentQuestion = question;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql(expectedAns)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(expectedAns)
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -668,7 +666,7 @@ describe('Processing actions', ()=>{
                 participant.parameters.testBool = false;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(outString)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -689,7 +687,7 @@ describe('Processing actions', ()=>{
                 participant.parameters.testBool = true;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(outString)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -776,7 +774,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql([outString])
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql([outString])
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -798,7 +796,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql([outString])
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(["ans1", outString])
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -820,7 +818,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql(outString)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(["ans1", "ans2"].concat(outString))
             })
             it('Should have saved the parameter as string in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -844,7 +842,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(expectedAns)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql([expectedAns])
             })
             it('Should have saved the parameter as number in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -867,7 +865,7 @@ describe('Processing actions', ()=>{
                 participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.equal(expectedAns)
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql([1,expectedAns])
             })
             it('Should have saved the parameter as number in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -980,7 +978,7 @@ describe('Processing actions', ()=>{
                 assert(participant.parameters[actionObj.args[0]].length > 0);
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql([])
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql([])
             })
             it('Should have cleared the string array in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -1000,7 +998,7 @@ describe('Processing actions', ()=>{
                 assert(participant.parameters[actionObj.args[0]].length > 0);
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql([])
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql([])
             })
             it('Should have cleared the num array in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -1020,7 +1018,7 @@ describe('Processing actions', ()=>{
                 expect(participant.parameters[actionObj.args[0]]).to.not.be.undefined;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql([])
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(0)
             })
             it('Should have cleared the num to default in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -1040,7 +1038,7 @@ describe('Processing actions', ()=>{
                 expect(participant.parameters[actionObj.args[0]]).to.not.be.undefined;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql([])
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql("")
             })
             it('Should have cleared the string to default in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
@@ -1060,7 +1058,7 @@ describe('Processing actions', ()=>{
                 expect(participant.parameters[actionObj.args[0]]).to.not.be.undefined;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data).to.eql([])
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(false)
             })
             it('Should have cleared the boolean to default in the participant', async ()=>{
                 let participant = await participants.get(testPartId);

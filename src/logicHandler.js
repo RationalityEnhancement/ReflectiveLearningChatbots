@@ -130,7 +130,7 @@ let processNextSteps = async(bot, uniqueId) => {
 
         // Get updated participant for next action:
         try{
-            participant = await participants.get(uniqueId)
+            participant = pActionObj.data;
             if(!participant) throw "Participant not found"
 
             // Save result of action for debug purposes

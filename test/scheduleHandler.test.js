@@ -1310,7 +1310,6 @@ describe('Cancelling + removing ', () => {
         let cancelAllReturnObj;
         it('Should return success', async() => {
             cancelAllReturnObj = await ScheduleHandler.cancelAllJobsForParticipant(testId3);
-            console.log(cancelAllReturnObj)
             expect(cancelAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(cancelAllReturnObj.data.length).to.equal(8)
         })
@@ -1638,12 +1637,10 @@ describe('Rescheduling', () => {
         let rescheduleReturnObj;
         it('Should return success and a list of scheduled jobs', async () => {
             rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperations(testBot, testConfig);
-            console.log(rescheduleReturnObj.failData)
             expect(rescheduleReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of rescheduled jobs', () => {
             assert(Array.isArray(rescheduleReturnObj.data));
-            console.log(rescheduleReturnObj);
             expect(rescheduleReturnObj.data.length).to.equal(10);
         })
         it('Should have added jobs to scheduled operations',  () => {

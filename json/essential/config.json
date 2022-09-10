@@ -50,7 +50,7 @@
     "testNumArr" : "numArr"
   },
   "debug" : {
-    "experimenter" : false,
+    "experimenter" : true,
     "actionMessages" : false,
     "enableNext" : true,
     "messageDelay" : true,

@@ -21,6 +21,8 @@ const ScheduleHandler = require('../src/scheduleHandler')
 
 const testId = "123";
 const testId2 = "321";
+const testId3 = "43210";
+const testChatId = "abcdefg"
 const testBot = {
     telegram: {
         sendMessage: () => {
@@ -287,13 +289,15 @@ describe('Scheduling one Operation', () => {
 
             await idMaps.addIDMapping(testConfig.experimentId, "12455", testId)
             await idMaps.addIDMapping(testConfig.experimentId, "12345", testId2)
+            await idMaps.addIDMapping(testConfig.experimentId, "12346", testId3)
+
             // await idMaps.addIDMapping(failConfig.experimentId, "12355", testId)
             // await idMaps.addIDMapping(failConfig.experimentId, "12345", testId2)
 
             let exp1 = await idMaps.getExperiment(testConfig.experimentId)
             // let exp2 = await idMaps.getExperiment(failConfig.experimentId)
 
-            expect(exp1.IDMappings.length).to.equal(2)
+            expect(exp1.IDMappings.length).to.equal(3)
             // expect(exp2.IDMappings.length).to.equal(2)
         })
         it('Should add and update participant parameter', async () => {
@@ -324,12 +328,37 @@ describe('Scheduling one Operation', () => {
 
 
         });
+        it('Should add and update participant parameter 3', async () => {
+
+            await participants.add(testId3);
+            await participants.initializeParticipant(testId3, testConfig);
+            await participants.updateParameter(testId3, "timezone", "Europe/Berlin")
+            var participant = await participants.get(testId3);
+            expect(participant).to.not.be.null;
+            expect(participant.uniqueId).to.equal(testId3);
+            expect(participant.parameters.language).to.equal("English");
+            expect(participant.experimentId).to.equal(testConfig.experimentId)
+            expect(participant.parameters.timezone).to.equal("Europe/Berlin");
+
+
+        });
     })
+
+    let DBHasJob = (jobArray, jobId) => {
+        let foundJob = false;
+        for(let i = 0; i < jobArray.length; i++){
+            if(jobArray[i]["jobId"] === jobId){
+                foundJob = true;
+                break;
+            }
+        }
+        return foundJob;
+    }
 
     const hours = 17;
     const mins = 0;
     const days = [1, 2]
-    describe('Scheduling new question correctly', () => {
+    describe('Scheduling one new question correctly', () => {
         const questionInfo = {
             qId: 'morningQuestions.addGoal',
             atTime: '17:00',
@@ -373,7 +402,7 @@ describe('Scheduling one Operation', () => {
         });
     });
 
-    describe('Scheduling new question correctly - participant 2', () => {
+    describe('Scheduling one new question correctly - participant 2', () => {
         const questionInfo = {
             qId: 'morningQuestions.addGoal',
             atTime: '17:00',
@@ -416,7 +445,116 @@ describe('Scheduling one Operation', () => {
         });
     });
 
-    describe('Scheduling old question correctly', () => {
+    describe('Scheduling multiple new questions correctly - participant 3', () => {
+        let newHours = [15,16]
+        const questionInfos = [
+            {
+                qId: 'morningQuestions.mainGoal',
+                atTime: '15:00',
+                onDays: ["Mon", "Tue"],
+                tz : "Europe/Berlin"
+            },
+            {
+                qId: 'morningQuestions.mainGoal',
+                atTime: '16:00',
+                onDays: ["Mon", "Tue"],
+                tz : "Europe/Berlin"
+            }
+        ];
+
+        let returnObj, returnJobs;
+        it('Should succeed', async () => {
+            let part = await participants.get(testId3);
+            returnObj = await ScheduleHandler.scheduleMultipleQuestions(testBot, part, testChatId, qHandler, questionInfos, testConfig, true)
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        });
+        it('Should return list of jobId and job', () => {
+            returnJobs = returnObj.data;
+            returnJobs.forEach(job => {
+                assert("jobId" in job);
+                assert("job" in job);
+            })
+        });
+        it('Should have jobs with correct times', () => {
+            for(let i = 0; i < returnJobs.length; i++){
+                let recObj = returnJobs[i].job.pendingInvocations[0].recurrenceRule;
+                expect(recObj.dayOfWeek).to.eql(days);
+                expect(recObj.hour).to.equal(newHours[i]);
+                expect(recObj.minute).to.equal(mins);
+                expect(recObj.tz).to.equal(questionInfos[0].tz);
+            }
+        });
+        it('Should save job to scheduledOperations', () => {
+            for(let i = 0; i < returnJobs.length; i++){
+                let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobs[i].jobId];
+                expect(savedJob).to.eql(returnJobs[i].job);
+            }
+        });
+        it('Should write job to database', async () => {
+            let participant = await participants.get(testId3);
+            let scheduledQs = participant.scheduledOperations["questions"];
+
+            returnJobs.forEach(job => {
+                console.log(job.jobId)
+                assert(DBHasJob(scheduledQs, job.jobId))
+            })
+        });
+    });
+    describe('Scheduling multiple old questions correctly - participant 3', () => {
+        let newHours = [15,16]
+        const questionInfos = [
+            {
+                qId: 'morningQuestions.addGoal',
+                atTime: '15:00',
+                onDays: ["Mon", "Tue"],
+                tz : "Europe/Berlin"
+            },
+            {
+                qId: 'morningQuestions.addGoal',
+                atTime: '16:00',
+                onDays: ["Mon", "Tue"],
+                tz : "Europe/Berlin"
+            }
+        ];
+
+        let returnObj, returnJobs;
+        it('Should succeed', async () => {
+            let part = await participants.get(testId3);
+            returnObj = await ScheduleHandler.scheduleMultipleQuestions(testBot, part, testChatId, qHandler, questionInfos, testConfig, false)
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        });
+        it('Should return list of jobId and job', () => {
+            returnJobs = returnObj.data;
+            returnJobs.forEach(job => {
+                assert("jobId" in job);
+                assert("job" in job);
+            })
+        });
+        it('Should have jobs with correct times', () => {
+            for(let i = 0; i < returnJobs.length; i++){
+                let recObj = returnJobs[i].job.pendingInvocations[0].recurrenceRule;
+                expect(recObj.dayOfWeek).to.eql(days);
+                expect(recObj.hour).to.equal(newHours[i]);
+                expect(recObj.minute).to.equal(mins);
+                expect(recObj.tz).to.equal(questionInfos[0].tz);
+            }
+        });
+        it('Should save job to scheduledOperations', () => {
+            for(let i = 0; i < returnJobs.length; i++){
+                let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobs[i].jobId];
+                expect(savedJob).to.eql(returnJobs[i].job);
+            }
+        });
+        it('Should not write job to database', async () => {
+            let participant = await participants.get(testId3);
+            let scheduledQs = participant.scheduledOperations["questions"];
+
+            returnJobs.forEach(job => {
+                assert(!DBHasJob(scheduledQs, job.jobId))
+            })
+        });
+    });
+    describe('Scheduling one old question correctly', () => {
         const questionInfo = {
             qId: 'eveningQuestions.focus',
             atTime: '17:00',
@@ -458,7 +596,7 @@ describe('Scheduling one Operation', () => {
         });
     });
 
-    describe('Scheduling new action correctly', () => {
+    describe('Scheduling one new action correctly', () => {
         const actionInfo = {
             aType: 'clearVar',
             args: ["testStr"],
@@ -504,7 +642,7 @@ describe('Scheduling one Operation', () => {
         });
     });
 
-    describe('Scheduling new action correctly - participant 2', () => {
+    describe('Scheduling one new action correctly - participant 2', () => {
         const actionInfo = {
             aType: 'clearVar',
             args: ["testStr"],
@@ -550,7 +688,7 @@ describe('Scheduling one Operation', () => {
         });
     });
 
-    describe('Scheduling old action correctly', () => {
+    describe('Scheduling one old action correctly', () => {
         const actionInfo = {
             aType: 'clearVar',
             args: ["testNum"],
@@ -594,6 +732,121 @@ describe('Scheduling one Operation', () => {
         });
     });
 
+    describe('Scheduling multiple new actions correctly - participant 3', () => {
+        let newHours = [15,16]
+
+        const actionInfos = [
+            {
+                aType: 'clearVar',
+                args: ["testStr"],
+                atTime: '15:00',
+                onDays: ["Mon", "Tue"],
+                tz : "Europe/Berlin"
+            },
+            {
+                aType: 'clearVar',
+                args: ["testStr"],
+                atTime: '16:00',
+                onDays: ["Mon", "Tue"],
+                tz : "Europe/Berlin"
+            }
+        ];
+
+        let returnObj, returnJobs;
+        it('Should succeed', async () => {
+            returnObj = await ScheduleHandler.scheduleMultipleActions(testBot, testId3, testChatId, actionInfos, testConfig, true)
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        });
+        it('Should return list of jobId and job', () => {
+            returnJobs = returnObj.data;
+            returnJobs.forEach(job => {
+                assert("jobId" in job);
+                assert("job" in job);
+            })
+        });
+        it('Should have jobs with correct times', () => {
+            for(let i = 0; i < returnJobs.length; i++){
+                let recObj = returnJobs[i].job.pendingInvocations[0].recurrenceRule;
+                expect(recObj.dayOfWeek).to.eql(days);
+                expect(recObj.hour).to.equal(newHours[i]);
+                expect(recObj.minute).to.equal(mins);
+                expect(recObj.tz).to.equal(actionInfos[0].tz);
+            }
+        });
+        it('Should save job to scheduledOperations', () => {
+            for(let i = 0; i < returnJobs.length; i++){
+                let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobs[i].jobId];
+                expect(savedJob).to.eql(returnJobs[i].job);
+            }
+        });
+        it('Should write job to database', async () => {
+            let participant = await participants.get(testId3);
+            let scheduledQs = participant.scheduledOperations["actions"];
+
+            returnJobs.forEach(job => {
+                console.log(job.jobId)
+                assert(DBHasJob(scheduledQs, job.jobId))
+            })
+        });
+    });
+    describe('Scheduling multiple old actions correctly - participant 3', () => {
+        let newHours = [15,16]
+
+        const actionInfos = [
+            {
+                aType: 'clearVar',
+                args: ["testNum"],
+                atTime: '15:00',
+                onDays: ["Mon", "Tue"],
+                tz : "Europe/Berlin"
+            },
+            {
+                aType: 'clearVar',
+                args: ["testNum"],
+                atTime: '16:00',
+                onDays: ["Mon", "Tue"],
+                tz : "Europe/Berlin"
+            }
+        ];
+
+        let returnObj, returnJobs;
+        it('Should succeed', async () => {
+            returnObj = await ScheduleHandler.scheduleMultipleActions(
+                testBot, testId3, testChatId, actionInfos, testConfig, false)
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        });
+        it('Should return list of jobId and job', () => {
+            returnJobs = returnObj.data;
+            returnJobs.forEach(job => {
+                assert("jobId" in job);
+                assert("job" in job);
+            })
+        });
+        it('Should have jobs with correct times', () => {
+            for(let i = 0; i < returnJobs.length; i++){
+                let recObj = returnJobs[i].job.pendingInvocations[0].recurrenceRule;
+                expect(recObj.dayOfWeek).to.eql(days);
+                expect(recObj.hour).to.equal(newHours[i]);
+                expect(recObj.minute).to.equal(mins);
+                expect(recObj.tz).to.equal(actionInfos[0].tz);
+            }
+        });
+        it('Should save job to scheduledOperations', () => {
+            for(let i = 0; i < returnJobs.length; i++){
+                let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobs[i].jobId];
+                expect(savedJob).to.eql(returnJobs[i].job);
+            }
+        });
+        it('Should write job to database', async () => {
+            let participant = await participants.get(testId3);
+            let scheduledQs = participant.scheduledOperations["actions"];
+
+            returnJobs.forEach(job => {
+                assert(!DBHasJob(scheduledQs, job.jobId))
+            })
+        });
+    });
+
 
     /**
      * Questions
@@ -604,12 +857,21 @@ describe('Scheduling one Operation', () => {
      *      Participant 2:
      *          morningQuestions.addGoal (independently, new question)
      *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *
      *  ScheduleJobs:
      *      Participant 1:
      *          morningQuestions.addGoal (independently, new question)
      *          eveningQuestions.focus (independently, old question)
      *      Participant 2:
      *          morningQuestions.addGoal (independently, new question)
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *          morningQuestions.addGoal 15 (old question, multiple)
+     *          morningQuestions.addGoal 16 (old question, multiple)
      *
      * Actions:
      *  DB:
@@ -619,12 +881,22 @@ describe('Scheduling one Operation', () => {
      *      Participant 2:
      *          clearVar testStr (independently, new question)
      *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
+     *
      *  ScheduleJobs:
      *      Participant 1:
      *          clearVar testStr (independently, new question)
      *          clearVar testNum (independently, old question)
      *      Participant 2:
      *          clearVar testStr (independently, new question)
+     *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
+     *          clearVar testNum 15 (old action, multiple)
+     *          clearVar testNum 16 (old action, multiple)
      */
 
     describe('Scheduling question incorrectly', () => {
@@ -779,13 +1051,22 @@ describe('Scheduling one Operation', () => {
      *      Participant 2:
      *          morningQuestions.addGoal (independently, new question)
      *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *
      *  ScheduleJobs:
      *      Participant 1:
      *          morningQuestions.addGoal (independently, new question)
      *          eveningQuestions.focus (independently, old question)
      *      Participant 2:
      *          morningQuestions.addGoal (independently, new question)
-     *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *          morningQuestions.addGoal 15 (old question, multiple)
+     *          morningQuestions.addGoal 16 (old question, multiple)
+
      * Actions:
      *  DB:
      *      Participant 1:
@@ -794,12 +1075,22 @@ describe('Scheduling one Operation', () => {
      *      Participant 2:
      *          clearVar testStr (independently, new action)
      *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
      *  ScheduleJobs:
      *      Participant 1:
      *          clearVar testStr (independently, new action)
      *          clearVar testNum (independently, old action)
      *      Participant 2:
      *          clearVar testStr (independently, new action)
+     *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
+     *          clearVar testNum 15 (old action, multiple)
+     *          clearVar testNum 16 (old action, multiple)
+
      */
 
     let scheduleAllReturnObj;
@@ -898,6 +1189,10 @@ describe('Scheduling all', () => {
      *      Participant 2:
      *          morningQuestions.addGoal (independently, new question)
      *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *
      *  ScheduleJobs:
      *      Participant 1:
      *          morningQuestions.addGoal (independently, new question)
@@ -906,6 +1201,13 @@ describe('Scheduling all', () => {
      *          eveningQuestions.numGoals (scheduleAll, new question)
      *      Participant 2:
      *          morningQuestions.addGoal (independently, new question)
+     *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *          morningQuestions.addGoal 15 (old question, multiple)
+     *          morningQuestions.addGoal 16 (old question, multiple)
+
      *
      * Actions:
      *  DB:
@@ -917,6 +1219,10 @@ describe('Scheduling all', () => {
      *      Participant 2:
      *          clearVar testStr (independently, new action)
      *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
+     *
      *  ScheduleJobs:
      *      Participant 1:
      *          clearVar testStr (independently, new action)
@@ -926,6 +1232,13 @@ describe('Scheduling all', () => {
      *
      *      Participant 2:
      *          clearVar testStr (independently, new action)
+     *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
+     *          clearVar testNum 15 (old action, multiple)
+     *          clearVar testNum 16 (old action, multiple)
+
      */
 
 })
@@ -992,6 +1305,31 @@ describe('Cancelling + removing ', () => {
             assert(DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
     });
+    describe('Cancelling all jobs for a participant', () => {
+        // Cancelling all the jobs scheduled for participant 3
+        let cancelAllReturnObj;
+        it('Should return success', async() => {
+            cancelAllReturnObj = await ScheduleHandler.cancelAllJobsForParticipant(testId3);
+            expect(cancelAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(cancelAllReturnObj.data.length).to.equal(8)
+        })
+        it('Should cancel + delete all jobs from local store', async () => {
+            for(let i = 0; i < cancelAllReturnObj.data.length; i++){
+                assert(
+                    !(
+                        cancelAllReturnObj.data[i] in ScheduleHandler.scheduledOperations["questions"]
+                        || cancelAllReturnObj.data[i] in ScheduleHandler.scheduledOperations["actions"]
+                    )
+                )
+            }
+        })
+        it('Should not have removed jobs from DB', async () => {
+            let participant = await participants.get(testId3)
+            expect(participant.scheduledOperations.questions.length).to.equal(2)
+            expect(participant.scheduledOperations.actions.length).to.equal(2)
+        })
+
+    });
 
     /**
      * Questions
@@ -1003,12 +1341,18 @@ describe('Cancelling + removing ', () => {
      *      Participant 2:
      *          morningQuestions.addGoal (independently, new question)
      *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *
      *  ScheduleJobs:
      *      Participant 1:
      *          morningQuestions.addGoal (independently, new question)
      *          eveningQuestions.focus (independently, old question)
      *
      *      Participant 2:
+     *
+     *      Participant 3:
      *
      * Actions:
      *  DB:
@@ -1020,6 +1364,11 @@ describe('Cancelling + removing ', () => {
      *      Participant 2:
      *          clearVar testStr (independently, new action)
      *
+     *      Participant 3:
+     *           clearVar testStr 15 (new action, multiple)
+     *           clearVar testStr 16 (new action, multiple)
+     *
+     *
      *  ScheduleJobs:
      *      Participant 1:
      *          clearVar testStr (independently, new action)
@@ -1027,6 +1376,7 @@ describe('Cancelling + removing ', () => {
      *
      *      Participant 2:
      *
+     *      Participant 3:
      */
 
     describe('Removing jobs', () => {
@@ -1105,10 +1455,17 @@ describe('Cancelling + removing ', () => {
      *      Participant 2:
      *          morningQuestions.addGoal (independently, new question)
      *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+
      *  ScheduleJobs:
      *      Participant 1:
      *
      *      Participant 2:
+     *
+     *      Participant 3:
+     *
      *
      * Actions:
      *  DB:
@@ -1119,10 +1476,15 @@ describe('Cancelling + removing ', () => {
      *      Participant 2:
      *          clearVar testStr (independently, new action)
      *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
      *  ScheduleJobs:
      *      Participant 1:
      *
      *      Participant 2:
+     *
+     *      Participant 3:
      *
      */
 describe('Rescheduling', () => {
@@ -1175,6 +1537,54 @@ describe('Rescheduling', () => {
         });
 
     })
+    describe('Rescheduling jobs for single participant at once', () => {
+        let rescheduleReturnObj;
+        it('Should return success and a list of scheduled jobs', async () => {
+            rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperationsForIDAtOnce(testBot, testId3, testConfig);
+            expect(rescheduleReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        });
+        it('Should return list of rescheduled jobs', () => {
+            assert(Array.isArray(rescheduleReturnObj.data));
+            expect(rescheduleReturnObj.data.length).to.equal(4);
+        })
+        it('Should have added jobs to scheduled operations',  () => {
+            for(let i = 0; i < rescheduleReturnObj.data.length; i++){
+                let jobId = rescheduleReturnObj.data[i]["jobId"];
+                let job = rescheduleReturnObj.data[i]["job"];
+                // If not in questions, should be in actions
+                try{
+                    assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+                    expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
+                } catch(err){
+                    assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+                    expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
+                }
+
+            }
+        });
+        it('Should have retained jobs in database with the same jobIds', async () => {
+
+            let participant = await participants.get(testId3);
+            let scheduledQs = participant.scheduledOperations.questions;
+            let scheduledAs = participant.scheduledOperations.actions;
+            for(let i = 0; i < rescheduleReturnObj.data.length; i++){
+                let jobId = rescheduleReturnObj.data[i]["jobId"];
+                // If not in questions, should be in actions
+                try{
+                    assert(DBHasJob(scheduledQs,jobId));
+                } catch(err){
+                    assert(DBHasJob(scheduledAs,jobId));
+                }
+            }
+        });
+        it('Should have added jobs to debug list', async () => {
+            assert(testId in ScheduleHandler.debugQueue);
+            assert(testId in ScheduleHandler.debugQueueAdjusted)
+            assert(Array.isArray(ScheduleHandler.debugQueue[testId]));
+            assert(typeof ScheduleHandler.debugQueueAdjusted[testId] === "boolean");
+        });
+
+    })
     /**
      * Questions:
      *  DB:
@@ -1184,11 +1594,20 @@ describe('Rescheduling', () => {
      *      Participant 2:
      *          morningQuestions.addGoal (independently, new question)
      *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *
      *  ScheduleJobs:
      *      Participant 1:
      *          morningQuestions.mainGoal (scheduleAll, new question)
      *          eveningQuestions.numGoals (scheduleAll, new question)
      *      Participant 2:
+     *
+     *     Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *
      * Actions:
      *  DB:
      *      Participant 1:
@@ -1198,6 +1617,10 @@ describe('Rescheduling', () => {
      *      Participant 2:
      *          clearVar testStr (independently, new action)
      *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
+     *
      *  ScheduleJobs:
      *      Participant 1:
      *          incrementStageDay (scheduleAll, new action)
@@ -1205,6 +1628,9 @@ describe('Rescheduling', () => {
      *
      *      Participant 2:
      *
+     *     Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
      */
 
     describe('Rescheduling jobs for all participants', () => {
@@ -1215,7 +1641,7 @@ describe('Rescheduling', () => {
         });
         it('Should return list of rescheduled jobs', () => {
             assert(Array.isArray(rescheduleReturnObj.data));
-            expect(rescheduleReturnObj.data.length).to.equal(6);
+            expect(rescheduleReturnObj.data.length).to.equal(10);
         })
         it('Should have added jobs to scheduled operations',  () => {
             for(let i = 0; i < rescheduleReturnObj.data.length; i++){
@@ -1228,7 +1654,6 @@ describe('Rescheduling', () => {
                     assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
                     expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
                 }
-
             }
         });
 
@@ -1252,8 +1677,22 @@ describe('Rescheduling', () => {
             let jobId = rescheduleReturnObj.data[4]["jobId"];
             assert(DBHasJob(scheduledQs2,jobId));
 
-            jobId = rescheduleReturnObj.data[rescheduleReturnObj.data.length-1]["jobId"];
+            jobId = rescheduleReturnObj.data[5]["jobId"];
             assert(DBHasJob(scheduledAs2,jobId));
+
+            let participant3 = await participants.get(testId3);
+            let scheduledQs3 = participant3.scheduledOperations.questions;
+            let scheduledAs3 = participant3.scheduledOperations.actions;
+
+            for(let i = 6; i < 8; i++){
+                let jobId = rescheduleReturnObj.data[i]["jobId"];
+                assert(DBHasJob(scheduledQs3,jobId));
+            }
+            for(let i = 8; i < 10; i++){
+                let jobId = rescheduleReturnObj.data[i]["jobId"];
+                console.log(jobId)
+                assert(DBHasJob(scheduledAs3,jobId));
+            }
 
 
         });

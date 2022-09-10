@@ -440,6 +440,16 @@ describe('Participant Controller API: ', () =>{
 		participant = await participants.get(testId)
 		expect(participant.scheduledOperations["questions"].length).to.equal(1);
 	});
+	let DBHasJob = (jobArray, jobId) => {
+		let foundJob = false;
+		for(let i = 0; i < jobArray.length; i++){
+			if(jobArray[i]["jobId"] === jobId){
+				foundJob = true;
+				break;
+			}
+		}
+		return foundJob;
+	}
 	it('Should return normally if removed question doesnt exist', async () => {
 		let DBHasJob = (jobArray, jobId) => {
 			let foundJob = false;
@@ -525,6 +535,7 @@ describe('Participant Controller API: ', () =>{
 		let scheduledQs = participant["scheduledOperations"]["actions"];
 		assert(DBHasJob(scheduledQs, testAJob.jobId));
 	});
+
 	it('Should remove a scheduled action', async () => {
 		let DBHasJob = (jobArray, jobId) => {
 			let foundJob = false;
@@ -540,6 +551,94 @@ describe('Participant Controller API: ', () =>{
 		let participant = await participants.get(testId)
 		let scheduledQs = participant["scheduledOperations"]["actions"];
 		assert(!DBHasJob(scheduledQs, testAJob.jobId));
+	});
+	it('Should add multiple scheduled operations', async () => {
+		let numOps = 3;
+		let operations = [];
+
+		for(let i = 0; i < numOps; i++){
+			operations.push({
+				type: "reminders",
+				jobInfo: {
+					jobId: "testReminder" + i,
+					minutes: i,
+					hours: i
+				}
+			});
+		}
+		await participants.addScheduledOperations(testId, operations);
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["reminders"];
+		for(let i = 0; i < numOps; i++){
+			expect(scheduledQs[i]['jobId']).to.eql(operations[i].jobInfo.jobId);
+			expect(scheduledQs[i]['minutes']).to.eql(operations[i].jobInfo.minutes);
+			expect(scheduledQs[i]['hours']).to.eql(operations[i].jobInfo.hours);
+		}
+	});
+	it('Should not add one of multiple scheduled operations that already exists', async () => {
+		let operations = [
+			{
+				type: "reminders",
+				jobInfo: {
+					jobId: "testReminder2",
+					minutes: 2,
+					hours: 2
+				}
+			},
+			{
+				type: "reminders",
+				jobInfo: {
+					jobId: "testReminder3",
+					minutes: 3,
+					hours: 3
+				}
+			}
+
+		]
+
+		await participants.addScheduledOperations(testId, operations);
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["reminders"];
+		expect(scheduledQs.length).to.equal(4)
+		expect(scheduledQs[scheduledQs.length-1]['jobId']).to.eql(operations[operations.length-1].jobInfo.jobId);
+		expect(scheduledQs[scheduledQs.length-1]['minutes']).to.eql(operations[operations.length-1].jobInfo.minutes);
+		expect(scheduledQs[scheduledQs.length-1]['hours']).to.eql(operations[operations.length-1].jobInfo.hours);
+	});
+	it('Should remove multiple scheduled operations', async () => {
+		let removeJobs = [
+			{
+				type: "reminders",
+				jobId: "testReminder0"
+			},
+			{
+				type: "reminders",
+				jobId: "testReminder1"
+			}
+		]
+		await participants.removeScheduledOperations(testId, removeJobs);
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["reminders"];
+		expect(scheduledQs.length).to.equal(2)
+		for(let i = 0; i < removeJobs.length; i++){
+			assert(!DBHasJob(scheduledQs, removeJobs[i].jobId));
+		}
+	});
+	it('Should not remove jobs that dont exist', async () => {
+		let removeJobs = [
+			{
+				type: "reminders",
+				jobId: "testFakeReminder"
+			},
+			{
+				type: "reminders",
+				jobId: "testReminder2"
+			}
+		]
+		await participants.removeScheduledOperations(testId, removeJobs);
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["reminders"];
+		expect(scheduledQs.length).to.equal(1)
+		assert(!DBHasJob(scheduledQs, removeJobs[1].jobId));
 	});
 	it('Should add an answer to current answer', async () => {
 

@@ -12,6 +12,25 @@ const config = ConfigReader.getExpConfig();
 const AnswerHandler = require('../src/answerHandler');
 
 const testId = "123";
+const partTemplate = {
+    parameters: {language: "English"},
+    uniqueId: testId,
+    currentState: "awaitingAnswer",
+    currentQuestion: {
+        "qId" : "template",
+        "qType" : "freeform"
+    },
+    currentAnswer: [],
+    stages: {
+        stageName: "",
+        stageDay: 0
+    },
+    scheduledOperations: {
+        "questions" : [],
+        "actions" : [],
+        "reminders" : []
+    }
+}
 
 describe('DB Connection', () => {
 
@@ -66,7 +85,8 @@ describe('Finish answer', () => {
         it('Should return success with next action string', async () => {
             await participants.updateStageParameter(testPart.uniqueId, "stageDay", testPart.stages.stageDay)
             await participants.updateStageParameter(testPart.uniqueId, "stageName", testPart.stages.stageName)
-            returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, addedAnswer);
+            let part = await participants.get(testPart.uniqueId)
+            returnObj = await AnswerHandler.finishAnswering(part, testQuestion, addedAnswer);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
         });
@@ -90,7 +110,8 @@ describe('Finish answer', () => {
         let returnObj, participant;
         let curAns = ["ans1", "ans2"];
         it('Should return success with next action string', async () => {
-            returnObj = await AnswerHandler.finishAnswering(testPart.uniqueId, testQuestion, curAns);
+            let part = await participants.get(testPart.uniqueId)
+            returnObj = await AnswerHandler.finishAnswering(part, testQuestion, curAns);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
         });
@@ -170,13 +191,11 @@ describe('Process answer', () =>{
                 options: ["SC", "bye"],
                 qType: "singleChoice"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
+
             it('Should return success and next action', async () => {
+                await participants.eraseCurrentAnswer(part.uniqueId);
                 returnObj = await AnswerHandler.processAnswer(part, "SC")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
@@ -199,12 +218,8 @@ describe('Process answer', () =>{
                 options: ["SC", "bye"],
                 qType: "singleChoice"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "toast")
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
@@ -222,12 +237,8 @@ describe('Process answer', () =>{
                 text: "questionText",
                 qType: "singleChoice"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return failure', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "toast")
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
@@ -238,13 +249,12 @@ describe('Process answer', () =>{
             const question = {
                 qId: "test2",
                 text: "questionText",
-                qType: "singleChoice"
+                qType: "singleChoice",
+                options: ["SC", "bye"],
             };
-            const part = {
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
+            delete part["parameters"]["language"];
             it('Should return failure', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "toast")
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
@@ -259,12 +269,8 @@ describe('Process answer', () =>{
                 text: "questionText",
                 qType: "qualtrics"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question
             describe('String exactly equal expected', () => {
                 let returnObj;
                 let ansString = "Done";
@@ -349,12 +355,8 @@ describe('Process answer', () =>{
                 qType: "qualtrics",
                 continueStrings : ["Continue1", "Continue2"]
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question
             describe('String exactly equal expected', () => {
                 let returnObj;
                 let ansString = "Continue2";
@@ -433,12 +435,8 @@ describe('Process answer', () =>{
                 options: ["MC1", "MC2"],
                 qType: "multiChoice"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question
             it('Should return success and no response', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "MC1")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -457,12 +455,8 @@ describe('Process answer', () =>{
                 options: ["MC1", "MC2"],
                 qType: "multiChoice"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "toast")
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
@@ -477,13 +471,9 @@ describe('Process answer', () =>{
                 options: ["MC1", "MC2"],
                 qType: "multiChoice"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentAnswer : ["MC1"],
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question
+            part.currentAnswer = ["MC1"]
             it('Should return success and next action', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, config.phrases.keyboards.terminateAnswer[part.parameters.language])
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -508,13 +498,8 @@ describe('Process answer', () =>{
                 options: ["MC1", "MC2"],
                 qType: "multiChoice"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentAnswer : [],
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, config.phrases.keyboards.terminateAnswer[part.parameters.language])
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
@@ -528,12 +513,8 @@ describe('Process answer', () =>{
                 text: "questionText",
                 qType: "multiChoice"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question
             it('Should return failure', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "toast")
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
@@ -544,13 +525,12 @@ describe('Process answer', () =>{
             const question = {
                 qId: "testMC",
                 text: "questionText",
-                qType: "multiChoice"
+                qType: "multiChoice",
+                options: ["MC1", "MC2"],
             };
-            const part = {
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
+            delete part["parameters"]["language"];
             it('Should return failure', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "toast")
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
@@ -568,12 +548,8 @@ describe('Process answer', () =>{
                 text: "questionText",
                 qType: "freeform"
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return success and next action', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "Freeform test")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -601,12 +577,8 @@ describe('Process answer', () =>{
                 qType: "freeform",
                 minLengthChars : 10
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "<10")
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
@@ -621,12 +593,8 @@ describe('Process answer', () =>{
                 qType: "freeform",
                 minLengthChars : 10
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "not less than 10")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -641,12 +609,8 @@ describe('Process answer', () =>{
                 qType: "freeform",
                 minLengthWords : 5
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "these are four words")
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
@@ -661,12 +625,8 @@ describe('Process answer', () =>{
                 qType: "freeform",
                 minLengthWords : 5
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "these are more than five words")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -682,12 +642,8 @@ describe('Process answer', () =>{
                 answerShouldBe : ["test1", "test2"]
 
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "test2")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -703,12 +659,8 @@ describe('Process answer', () =>{
                 answerShouldBe : ["test1", "test2"]
 
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "tast2")
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
@@ -724,13 +676,8 @@ describe('Process answer', () =>{
             text: "questionText",
             qType: "freeformMulti"
         };
-        const part = {
-            parameters: {language: "English"},
-            uniqueId: testId,
-            currentState: "awaitingAnswer",
-            currentQuestion: question,
-            currentAnswer: []
-        }
+        const part = JSON.parse(JSON.stringify(partTemplate));
+        part.currentQuestion = question;
         describe('First message', () => {
 
             it('Should return success and no response', async () => {
@@ -784,13 +731,9 @@ describe('Process answer', () =>{
                 qType: "freeformMulti",
                 minLengthChars : 10
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-                currentAnswer : ["less", "10"]
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
+            part.currentAnswer = ["less", "10"]
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "done")
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
@@ -805,13 +748,9 @@ describe('Process answer', () =>{
                 qType: "freeformMulti",
                 minLengthChars : 10
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-                currentAnswer : ["not", "less than", "10"]
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
+            part.currentAnswer = ["not", "less than", "10"];
             it('Should return success and next action', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "done")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -826,13 +765,10 @@ describe('Process answer', () =>{
                 qType: "freeformMulti",
                 minLengthWords : 5
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-                currentAnswer : ["less", "than", "five words"]
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
+            part.currentAnswer = ["less", "than", "five words"];
+
             it('Should return partial failure and repeat question', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "done")
                 expect(returnObj.returnCode).to.equal(DevConfig.PARTIAL_FAILURE_CODE);
@@ -847,13 +783,10 @@ describe('Process answer', () =>{
                 qType: "freeformMulti",
                 minLengthWords : 5
             };
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-                currentAnswer : ["not", "less than", "five words", "this time"]
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
+            part.currentAnswer = ["not", "less than", "five words", "this time"];
+
             it('Should return success and next action', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "done")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -880,12 +813,8 @@ describe('Process answer', () =>{
                 qId : "test",
                 qType : "number"
             }
-            const part = {
-                parameters: {language: "English"},
-                uniqueId: testId,
-                currentState: "awaitingAnswer",
-                currentQuestion: question,
-            }
+            const part = JSON.parse(JSON.stringify(partTemplate));
+            part.currentQuestion = question;
             it('Should return success on integer number', async () => {
                 returnObj = await AnswerHandler.processAnswer(part, "234")
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -916,12 +845,8 @@ describe('Process answer', () =>{
                         lower: -10
                     }
                 }
-                const part = {
-                    parameters: {language: "English"},
-                    uniqueId: testId,
-                    currentState: "awaitingAnswer",
-                    currentQuestion: question,
-                }
+                const part = JSON.parse(JSON.stringify(partTemplate));
+                part.currentQuestion = question;
                 it('Should return success on integer number above lb', async () => {
                     returnObj = await AnswerHandler.processAnswer(part, "-5")
                     expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -948,12 +873,8 @@ describe('Process answer', () =>{
                         upper: 10.434
                     }
                 }
-                const part = {
-                    parameters: {language: "English"},
-                    uniqueId: testId,
-                    currentState: "awaitingAnswer",
-                    currentQuestion: question,
-                }
+                const part = JSON.parse(JSON.stringify(partTemplate));
+                part.currentQuestion = question;
                 it('Should return success on integer number below ub', async () => {
                     returnObj = await AnswerHandler.processAnswer(part, "10")
                     expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -1011,7 +932,9 @@ describe('Handling no answer', () => {
         expect(participant.currentState).to.equal("answerReceived");
     });
     it('Should update answer with invalid answer', async () => {
+        let testCurrentAnswer = ["hello"]
         await participants.updateField(testId, "currentState", "invalidAnswer");
+        await participants.updateField(testId, "currentAnswer", testCurrentAnswer);
         await participants.eraseCurrentAnswer(testId);
         await participants.updateField(testId, "currentQuestion", testQuestion);
         let returnObj = await AnswerHandler.handleNoResponse(testId);
@@ -1020,7 +943,8 @@ describe('Handling no answer', () => {
 
         let participant = await participants.get(testId);
         let lastAnswer = participant.answers[participant.answers.length-1];
-        expect(lastAnswer.answer).to.eql([DevConfig.INVALID_ANSWER_STRING]);
+        assert(lastAnswer.answer[0].startsWith(DevConfig.INVALID_ANSWER_STRING));
+        assert(lastAnswer.answer[0].includes(DevConfig.INVALID_ANSWER_STRING));
         expect(lastAnswer.qId).to.equal(testQuestion.qId);
         expect(lastAnswer.text).to.equal(testQuestion.text);
         expect(participant.currentState).to.equal("answerReceived");

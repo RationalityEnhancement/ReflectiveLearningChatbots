@@ -197,19 +197,12 @@ exports.clearParamValue = async (uniqueId, param) => {
 // If updateAnswer is not undefined, then set current answer to that
 exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
   try{
-    console.time(uniqueId + " adding answer - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
-    console.timeEnd(uniqueId + " adding answer - getting the participant")
-    console.time(uniqueId + " adding answer - pushing answer")
     participant.answers.push(answer);
     if(updateAnswer){
       participant.currentAnswer = updateAnswer
     }
-    console.timeEnd(uniqueId + " adding answer - pushing answer")
-    console.time(uniqueId + " adding answer - saving participant")
-    let newP = await participant.save();
-    console.timeEnd(uniqueId + " adding answer - saving participant")
-    return newP;
+    return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
     console.error(err);
@@ -219,15 +212,9 @@ exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
 // Add debug information to the chronological list
 exports.addDebugInfo = async (uniqueId, infoObj) => {
   try{
-    console.time(uniqueId + " adding debug - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
-    console.timeEnd(uniqueId + " adding debug - getting the participant")
-    console.time(uniqueId + " adding debug - pushing debug")
     participant.debugInfo.push(infoObj);
-    console.timeEnd(uniqueId + " adding debug - pushing debug")
-    console.time(uniqueId + " adding debug - saving participant")
-    let newP = await participant.save();
-    console.timeEnd(uniqueId + " adding debug - saving participant")
+    return participant.save();
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
     console.error(err);
@@ -247,7 +234,6 @@ exports.addStageActivity = async (uniqueId, activity) => {
 }
 
 // Pass participant object to check if it has scheduled operation
-// TODO: test
 exports.hasScheduledOperationObject = (participant, type, jobInfo) => {
   try{
     let exists = false;
@@ -304,18 +290,12 @@ exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
 
 exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
-    console.time(uniqueId + " adding SO - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
-    console.timeEnd(uniqueId + " adding SO - getting the participant")
-    console.time(uniqueId + " adding SO - checking if has SO")
     let hasOAlready = exports.hasScheduledOperationObject(participant, type, jobInfo)
-    console.timeEnd(uniqueId + " adding SO - checking if has SO")
     if(!hasOAlready){
       participant.scheduledOperations[type].push(jobInfo);
     }
-    console.time(uniqueId + " adding SO - saving participant")
     let newP = await participant.save();
-    console.timeEnd(uniqueId + " adding SO - saving participant")
     return newP;
   }
   catch(err){
@@ -323,12 +303,27 @@ exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
     console.error(err);
   }
 }
+exports.addScheduledOperations = async (uniqueId, operations) => {
+  try{
+    if(operations.length === 0) return;
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
+    for(let i = 0; i < operations.length; i++) {
+      let currentOp = operations[i];
+      let hasOAlready = exports.hasScheduledOperationObject(participant, currentOp.type, currentOp.jobInfo)
+      if(!hasOAlready){
+        participant.scheduledOperations[currentOp.type].push(currentOp.jobInfo);
+      }
+    }
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to add scheduled operations');
+    console.error(err);
+  }
+}
 exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
   try{
-    console.time(uniqueId + " removing SO - getting the participant")
     let participant = await Participant.findOne({ uniqueId: uniqueId });
-    console.timeEnd(uniqueId + " removing SO - getting the participant")
-    console.time(uniqueId + " removing SO - removing stuff")
     let scheduledQs = participant.scheduledOperations[type];
     let jobIdx = -1;
     for(let i = 0; i < scheduledQs.length; i++){
@@ -338,16 +333,37 @@ exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
         break;
       }
     }
-    if(jobIdx != -1) participant.scheduledOperations[type].splice(jobIdx,1);
-    console.timeEnd(uniqueId + " removing SO - removing stuff")
+    if(jobIdx !== -1) participant.scheduledOperations[type].splice(jobIdx,1);
     // TODO: Change this to update at some point? Can't do it now, apparently
-    console.time(uniqueId + " removing SO - saving participant")
-    let newP = await participant.save();
-    console.timeEnd(uniqueId + " removing SO - saving participant")
-    return newP;
+    return participant.save();
   }
   catch(err){
-    console.log('Participant API Controller: Unable to add scheduled question');
+    console.log('Participant API Controller: Unable to remove scheduled operation');
+    console.error(err);
+  }
+}
+
+exports.removeScheduledOperations = async (uniqueId, operations) => {
+  try{
+    if(operations.length === 0) return;
+    let participant = await Participant.findOne({ uniqueId: uniqueId });
+    for(let i = 0; i < operations.length; i++){
+      let currentOp = operations[i];
+      let scheduledQs = participant.scheduledOperations[currentOp.type];
+      let jobIdx = -1;
+      for(let i = 0; i < scheduledQs.length; i++){
+        let scheduledQ = scheduledQs[i];
+        if(scheduledQ.jobId === currentOp.jobId){
+          jobIdx = i;
+          break;
+        }
+      }
+      if(jobIdx !== -1) participant.scheduledOperations[currentOp.type].splice(jobIdx,1);
+    }
+    return participant.save();
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to remove scheduled operations');
     console.error(err);
   }
 }

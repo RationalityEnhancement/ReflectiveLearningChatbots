@@ -430,7 +430,7 @@ describe('Removing reminders', () => {
             expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(7);
         })
         it('Should return success', async () => {
-            returnObj = await ReminderHandler.removeJobsForId(testId);
+            returnObj = await ReminderHandler.removeJobsForId(participant);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(Array.isArray(returnObj.data))
             expect(returnObj.data.length).to.equal(4);
@@ -461,7 +461,7 @@ describe('Removing reminders', () => {
             expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(7);
         })
         it('Should return success and empty array', async () => {
-            returnObj = await ReminderHandler.removeJobsForId(testId);
+            returnObj = await ReminderHandler.removeJobsForId(participant);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(Array.isArray(returnObj.data))
             expect(returnObj.data.length).to.equal(0);
@@ -480,6 +480,22 @@ describe('Removing reminders', () => {
         let participant, newPart, returnObj;
         it('Should fail when participant is invalid', async () => {
             returnObj = await ReminderHandler.removeJobsForId("abcd");
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when participant does not have scheduled operations', async () => {
+            participant = await participants.get(testId);
+            participant["scheduledOperations"] = undefined;
+            returnObj = await ReminderHandler.removeJobsForId(participant);
+            console.log(returnObj.data)
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when participant does not have scheduled reminders', async () => {
+            participant = await participants.get(testId);
+            participant["scheduledOperations"]["reminders"] = undefined;
+            returnObj = await ReminderHandler.removeJobsForId(participant);
+            console.log(returnObj.data)
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
 
         })

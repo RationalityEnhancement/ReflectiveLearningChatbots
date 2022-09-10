@@ -13,6 +13,8 @@ const ExperimentUtils = require('./experimentUtils')
 const moment = require('moment-timezone');
 const ReminderHandler = require('./reminderHandler')
 const sizeof = require('object-sizeof');
+const lodash = require('lodash')
+const {processAction} = require("./actionHandler");
 
 class ScheduleHandler{
     static scheduledOperations = {
@@ -203,13 +205,13 @@ class ScheduleHandler{
 
             // Call the function to reschedule all operations for a given participant
             console.time("Rescheduling participant: " + curPart.uniqueId)
-            let returnObj = await this.rescheduleAllOperationsForID(bot, curPart.uniqueId, config);
+            let returnObj = await this.rescheduleAllOperationsForIDAtOnce(bot, curPart.uniqueId, config);
             console.timeEnd("Rescheduling participant: " + curPart.uniqueId)
             if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
                 // Append returned jobs to array of succeeded jobs
                 succeededParticipants.push(...returnObj.data);
             } else {
-                failedParticipants.push(curPart.uniqueId);
+                failedParticipants.push(curPart.uniqueId + "\n" + returnObj.data);
             }
         }
 
@@ -263,9 +265,7 @@ class ScheduleHandler{
                 if: jobInfo.if,
                 tz: participant.parameters.timezone
             }
-            console.time("Scheduling question: " + questionInfo.qId)
             let returnObj = await this.scheduleOneQuestion(bot, uniqueId, qHandler, questionInfo, config,false);
-            console.timeEnd("Scheduling question: " + questionInfo.qId)
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedOperations.push(returnObj.data);
             } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
@@ -283,9 +283,7 @@ class ScheduleHandler{
                 if: jobInfo.if,
                 tz: participant.parameters.timezone
             }
-            console.time("Scheduling action: " + actionInfo.aType)
             let returnObj = await this.scheduleOneAction(bot, uniqueId, actionInfo, config,false);
-            console.timeEnd("Scheduling action: " + actionInfo.aType)
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 failedOperations.push(returnObj.data);
             } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
@@ -300,6 +298,114 @@ class ScheduleHandler{
             return ReturnMethods.returnFailure("Scheduler (Re): Cannot find participant chat ID");
         }
         let chatId = secretMap.chatId;
+
+        let reminderObj = await ReminderHandler.rescheduleReminders(config, bot, participant, chatId);
+        if(reminderObj.returnCode === DevConfig.FAILURE_CODE){
+            failedOperations.push(reminderObj.data);
+        } else if(reminderObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
+            failedOperations.push(reminderObj.failData);
+        } else {
+            succeededOperations = succeededOperations.concat(reminderObj.data);
+        }
+
+        if(failedOperations.length > 0) {
+            if(succeededOperations.length === 0){
+                return ReturnMethods.returnFailure("Scheduler: failed to reschedule the following questions:\n"+
+                    failedOperations.join('\n'));
+            }
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to reschedule the following questions:\n"+
+                failedOperations.join('\n'), succeededOperations);
+        }
+
+
+        // Add temporally ordered scheduled operations to participant's debug queue:
+        let scheduledOps = scheduledQuestions.concat(scheduledActions);
+        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+        this.debugQueueAdjusted[uniqueId] = false;
+
+        return ReturnMethods.returnSuccess(succeededOperations)
+    }
+
+    /**
+     *
+     * Reschedule all the operations for a single participant by fetching
+     * their scheduled jobs from the DB
+     *
+     * Reschedules operations one by one - too many unnecessary DB reads and writes
+     *
+     * @param bot Telegram bot instance
+     * @param uniqueId uniqueID of the participant whose jobs are to be rescheduled
+     * @param config loaded config file of experiment
+     * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
+     */
+    static async rescheduleAllOperationsForIDAtOnce(bot, uniqueId, config){
+
+        // Get the participant from DB and read all scheduled operations
+        let participant;
+        try{
+            participant = await participants.get(uniqueId);
+            if(!participant) throw "Participant not found"
+        } catch(e){
+            return ReturnMethods.returnFailure("Scheduler: Cannot fetch participant for rescheduling");
+        }
+
+        // Get telegram chatId
+        let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
+        if(!secretMap){
+            return ReturnMethods.returnFailure("Scheduler (Re): Cannot find participant chat ID");
+        }
+        let chatId = secretMap.chatId;
+
+        let scheduledOperations = participant.scheduledOperations;
+        let scheduledQuestions = scheduledOperations["questions"];
+        let scheduledActions = scheduledOperations["actions"];
+        const qHandler = new QuestionHandler(config);
+        let failedOperations = [];
+        let succeededOperations = [];
+
+        // Compile all questions to be scheduled
+        let qsToSchedule = [];
+        for(let i = 0; i < scheduledQuestions.length; i++){
+            let jobInfo = scheduledQuestions[i];
+            // Construct the proper object and call the function to schedule
+            let questionInfo = {
+                qId : jobInfo.qId,
+                atTime : jobInfo.atTime,
+                onDays : jobInfo.onDays,
+                if: jobInfo.if,
+                tz: participant.parameters.timezone
+            }
+            qsToSchedule.push(questionInfo)
+        }
+
+        // Compile all actions to be scheduled
+        let asToSchedule = []
+        for(let i =0; i < scheduledActions.length; i++){
+            let jobInfo = scheduledActions[i];
+            let actionInfo = {
+                aType : jobInfo.aType,
+                args : jobInfo.args,
+                atTime : jobInfo.atTime,
+                onDays : jobInfo.onDays,
+                if: jobInfo.if,
+                tz: participant.parameters.timezone
+            }
+            asToSchedule.push(actionInfo);
+        }
+        // Schedule all questions
+        let returnObj = await this.scheduleMultipleQuestions(bot, participant, chatId, qHandler, qsToSchedule, config,false);
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            failedOperations = failedOperations.concat(returnObj.data);
+        } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
+            succeededOperations = succeededOperations.concat(returnObj.data);
+        }
+
+        returnObj = await this.scheduleMultipleActions(bot, uniqueId, chatId, asToSchedule, config,false);
+        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+            failedOperations = failedOperations.concat(returnObj.data);
+        } else if(returnObj.returnCode === DevConfig.SUCCESS_CODE){
+            succeededOperations = succeededOperations.concat(returnObj.data);
+        }
 
         let reminderObj = await ReminderHandler.rescheduleReminders(config, bot, participant, chatId);
         if(reminderObj.returnCode === DevConfig.FAILURE_CODE){
@@ -581,6 +687,53 @@ class ScheduleHandler{
 
     /**
      *
+     * Write multiple question infos to database, if not already present in database
+     *
+     * @param uniqueId uniqueId of the participant for whom job is being scheduled
+     * @param questionInfos array Info about the question that has been scheduled
+     *                      each contains jobId, job, and questionInfos.
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
+    static async writeMultipleQuestionInfosToDB(uniqueId, questionInfos){
+        if(!Array.isArray(questionInfos)){
+            return ReturnMethods.returnFailure("Scheduler: questionInfos must be array to write to DB");
+        }
+        if(!questionInfos.every(question => {
+            let isObj = (typeof question === "object") && (!Array.isArray(question));
+            return isObj
+                && ("questionInfo" in question)
+                && ("jobId" in question)
+                && lodash.intersection(["qId", "atTime", "onDays"], Object.keys(question.questionInfo)).length === 3
+        })){
+            return ReturnMethods.returnFailure("Scheduler: every element of questionInfos must have job ID and info about the question");
+        }
+        let writeQuestions = []
+        for(let i = 0; i < questionInfos.length; i++){
+            let currentQ = questionInfos[i];
+            let jobInfo = {
+                jobId: currentQ.jobId,
+                qId: currentQ.questionInfo.qId,
+                atTime: currentQ.questionInfo.atTime,
+                onDays: currentQ.questionInfo.onDays,
+                if: currentQ.questionInfo.if,
+                tz: currentQ.questionInfo.tz
+            }
+            writeQuestions.push({
+                type: "questions",
+                jobInfo: jobInfo
+            })
+        }
+        try{
+            await participants.addScheduledOperations(uniqueId, writeQuestions);
+            return ReturnMethods.returnSuccess(writeQuestions.map(q => q.jobInfo));
+        } catch(err){
+            return ReturnMethods.returnFailure("Scheduler: Unable to write jobs to DB\n" + err)
+        }
+
+    }
+
+    /**
+     *
      * Write action info to database, if not already present in database
      *
      * @param uniqueId uniqueId of the participant for whom job is being scheduled
@@ -609,12 +762,60 @@ class ScheduleHandler{
 
     /**
      *
+     * Write multiple action infos to database, if not already present in database
+     *
+     * @param uniqueId uniqueId of the participant for whom job is being scheduled
+     * @param actionInfos array Info about the question that has been scheduled
+     *                      each contains jobId, job, and actionInfo.
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
+    static async writeMultipleActionInfosToDB(uniqueId, actionInfos){
+        if(!Array.isArray(actionInfos)){
+            return ReturnMethods.returnFailure("Scheduler: questionInfos must be array to write to DB");
+        }
+        if(!actionInfos.every(action => {
+            let isObj = (typeof action === "object") && (!Array.isArray(action));
+            return isObj
+                && ("actionInfo" in action)
+                && ("jobId" in action)
+                && lodash.intersection(["aType", "atTime", "onDays"], Object.keys(action.actionInfo)).length === 3
+        })){
+            return ReturnMethods.returnFailure("Scheduler: every element of actionInfos must have job ID and info about the question");
+        }
+        let writeActions = []
+        for(let i = 0; i < actionInfos.length; i++){
+            let currentA = actionInfos[i];
+            let jobInfo = {
+                jobId: currentA.jobId,
+                aType: currentA.actionInfo.aType,
+                args: currentA.actionInfo.args,
+                atTime: currentA.actionInfo.atTime,
+                onDays: currentA.actionInfo.onDays,
+                if: currentA.actionInfo.if,
+                tz: currentA.actionInfo.tz
+            }
+            writeActions.push({
+                type: "actions",
+                jobInfo: jobInfo
+            })
+        }
+        try{
+            await participants.addScheduledOperations(uniqueId, writeActions);
+            return ReturnMethods.returnSuccess(writeActions.map(q => q.jobInfo));
+        } catch(err){
+            return ReturnMethods.returnFailure("Scheduler: Unable to write jobs to DB\n" + err)
+        }
+
+    }
+
+    /**
+     *
      * Schedule a single question for a participant
      *
      * @param bot Telegram bot instance
      * @param uniqueId uniqueID of participant for whom q is to be scheduled
      * @param qHandler QuestionHandler instance with loaded expt config file
-     * @param questionInfo info of question to be scheduled - must contain qId, onDays, atTime, tz (if optional)
+     * @param questionInfo info of question to be scheduled - must contain qId, onDays, atTime, tz[, if]
      * @param config loaded expt config file
      * @param isNew flag whether question is new or not (i.e., already present in DB or not)
      * @returns {Promise<{returnCode: *, data: *}>}
@@ -624,135 +825,42 @@ class ScheduleHandler{
             return ReturnMethods.returnFailure("Scheduler: Question ID not specified")
         }
 
-        // Build the recurrence rule
-        console.time(uniqueId + " - " + questionInfo.qId + " - Building recurrence rule")
-        let recurrenceRuleObj = this.buildRecurrenceRule(questionInfo);
-        console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Building recurrence rule")
-        if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
-            return ReturnMethods.returnFailure(
-                "Scheduler: Failure to build recurrence rule in scheduleOne"
-                + "\n"+ recurrenceRuleObj.data
-            );
-        }
-        console.time(uniqueId + " - " + questionInfo.qId + " - Constructing job Id")
-        let recRule = recurrenceRuleObj.data;
-
-        // Construct the jobID for the job
-        let jobId = uniqueId + "_" + questionInfo.qId + "_"  + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
-        console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Constructing job Id")
-        console.time(uniqueId + " - " + questionInfo.qId + " - Getting participant")
-        let participant;
+        let participant, secretMap;
         try{
             participant = await participants.get(uniqueId);
             if(!participant) throw "Participant not found"
+
+            // Get the telegram chatID of the participant
+            secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
+            if(!secretMap) throw "Secret Map not found"
         } catch(err){
             return ReturnMethods.returnFailure("Scheduler: Unable to fetch participant " + uniqueId + "\n"+err)
         }
-        console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Getting participant")
+        let chatId = secretMap.chatId;
 
-        // Get the assigned condition and preferred language of the participant
-        let partLang = participant.parameters.language;
-        let partCond = participant["conditionName"];
-
-        console.time(uniqueId + " - " + questionInfo.qId + " - Constructing the question")
-        // Construct the question based on the assigned condition and preferred language
-        let questionObj = qHandler.constructQuestionByID(partCond, questionInfo.qId, partLang);
-        console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Constructing the question")
-        if(questionObj.returnCode === DevConfig.FAILURE_CODE) {
-            return ReturnMethods.returnFailure(
-                "Scheduler: Failure to get construct question in scheduleOne"
-                + "\n"+ questionObj.data
-            );
+        let jobReturnObject = this.createScheduleQuestionJob(bot, participant, chatId, questionInfo, qHandler, config);
+        if(jobReturnObject.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure("Scheduler: Unable to create schedule job for question "
+                + questionInfo.qId + " and participant " + participant.uniqueId + "\n" + jobReturnObject.data)
         }
-        let question = questionObj.data;
+        let jobId = jobReturnObject.data.jobId;
+        let job = jobReturnObject.data.job;
 
-        let job;
-
-        try{
-            // Get the telegram chatID of the participant
-            let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
-            if(!secretMap){
-                return ReturnMethods.returnFailure("Scheduler (SOQ): Cannot find participant chat ID");
+        // Add to DB if necessary
+        if(isNew) {
+            let writeReturn = await this.writeQuestionInfoToDB(uniqueId, jobId, questionInfo);
+            if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
+                job.cancel()
+                return ReturnMethods.returnFailure(
+                    "Scheduler: Failure to write info to DB from scheduleOne"
+                    + "\n"+ writeReturn.data
+                );
             }
-            let chatId = secretMap.chatId;
-            console.time(uniqueId + " - " + questionInfo.qId + " - Scheduling the job")
-            // Schedule the question to be sent
-            job = scheduler.scheduleJob(recRule, async function(){
-                // Get the updated participant
-                let newParticipant;
-                try {
-                    newParticipant = await participants.get(uniqueId);
-                    if(!newParticipant) throw "Participant not found"
-                } catch(err){
-                    console.log(err);
-                }
-
-                // Check if there is a condition to display the scheduled question
-                // if yes, evaluate that condition and get the truth value
-                let evaluation = true;
-                if(questionInfo.if){
-                    let userInfo;
-                    // Try again if getChat fails, usually due to "socket hang up"
-                    let numAttempts;
-                    for(numAttempts = 0; numAttempts < DevConfig.SEND_MESSAGE_ATTEMPTS; numAttempts++){
-                        try{
-                            if(numAttempts > 0){
-                                console.log("Trying question " +
-                                    questionInfo.qId + " again for participant " + newParticipant.uniqueId);
-                            }
-                            userInfo = await bot.telegram.getChat(chatId);
-                            break;
-                        } catch(e) {
-                            console.log("Scheduler: Unable to find participant "
-                                + newParticipant.uniqueId +
-                                " chat while sending scheduled question " + questionInfo.qId+ "\n"
-                                + e.message + "\n" + e.stack);
-                            // Wait before trying again
-                            await new Promise(resolve => setTimeout(resolve, DevConfig.REPEAT_ATTEMPT_WAIT_MS));
-                            continue;
-                        }
-                    }
-                    if(numAttempts >= DevConfig.SEND_MESSAGE_ATTEMPTS){
-                        return;
-                    }
-
-                    newParticipant["firstName"] = userInfo["first_name"];
-                    let evaluationObj = ConfigParser.evaluateConditionString(newParticipant, questionInfo.if);
-                    if(evaluationObj.returnCode === DevConfig.SUCCESS_CODE){
-                        evaluation = evaluationObj.data.value;
-                    } else {
-                        // If failure to evaluate, don't show question
-                        evaluation = false;
-                    }
-                }
-                if(evaluation){
-                   let returnObj = await sendQuestion(bot, newParticipant, chatId, question, true,
-                       !config.debug.messageDelay, "scheduled");
-                   if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                       console.log("Scheduler: Error sending question:\n" + returnObj.data);
-                   }
-                }
-            })
-            console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Scheduling the job")
-            // Add to local store and if necessary, to DB
-            console.time(uniqueId + " - " + questionInfo.qId + " - Adding to local store")
-            this.scheduledOperations["questions"][jobId] = job;
-            console.timeEnd(uniqueId + " - " + questionInfo.qId + " - Adding to local store")
-            if(isNew) {
-                let writeReturn = await this.writeQuestionInfoToDB(uniqueId, jobId, questionInfo);
-                if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
-                    return ReturnMethods.returnFailure(
-                        "Scheduler: Failure to write info to DB from scheduleOne"
-                        + "\n"+ writeReturn.data
-                    );
-                }
-            }
-        } catch(err){
-            let errorMsg = "Scheduler: Unable to schedule with given param: " + jobId;
-            console.log("\n" + err + "\n");
-
-            return ReturnMethods.returnFailure(errorMsg);
         }
+
+        // Add to local store
+        this.scheduledOperations["questions"][jobId] = job;
+
         return ReturnMethods.returnSuccess({
             jobId: jobId,
             job: job
@@ -761,29 +869,215 @@ class ScheduleHandler{
 
     /**
      *
-     * Schedule a single action for a participant
+     * Create the job for a particular scheduled question
+     *
+     * @param bot telegram bot instance
+     * @param participant participant object
+     * @param chatId telegram chat Id
+     * @param questionInfo info of the question to be scheduled - must contain qId, onDays, atTime, tz[, if]
+     * @param qHandler QuestionHandler instance with loaded expt config file
+     * @param config loaded expt config file
+     * @returns {{returnCode: number, data: *}}
+     *          data: {
+     *              jobId: jobId,
+     *              job: active node-schedule job object
+     *          }
+     */
+    static createScheduleQuestionJob(bot, participant, chatId, questionInfo, qHandler, config) {
+        if (lodash.intersection(["qId", "atTime", "onDays"], Object.keys(questionInfo)).length !== 3) {
+            return ReturnMethods.returnFailure("Scheduler: questionInfo must have qId, atTime, onDays, tz")
+        }
+        if(!("parameters" in participant)){
+            return ReturnMethods.returnFailure("Scheduler: participant must have parameters object")
+        }
+        // Build the recurrence rule
+        let recurrenceRuleObj = this.buildRecurrenceRule(questionInfo);
+        if (recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
+            return ReturnMethods.returnFailure(
+                "Scheduler: Failure to build recurrence rule for question"
+                + "\n" + recurrenceRuleObj.data
+            );
+        }
+        let recRule = recurrenceRuleObj.data;
+
+        let uniqueId = participant.uniqueId;
+        let jobId = uniqueId + "_" + questionInfo.qId + "_" + recRule.hour
+            + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
+
+        // Get the assigned condition and preferred language of the participant
+        let partLang = participant.parameters.language;
+        let partCond = participant["conditionName"];
+
+        // Construct the question based on the assigned condition and preferred language
+        let questionObj = qHandler.constructQuestionByID(partCond, questionInfo.qId, partLang);
+        if (questionObj.returnCode === DevConfig.FAILURE_CODE) {
+            return ReturnMethods.returnFailure(
+                "Scheduler: Failure to get construct question "
+                + "\n" + questionObj.data
+            );
+        }
+        let question = questionObj.data;
+
+        let job;
+
+        try {
+            // Schedule the question to be sent
+            job = scheduler.scheduleJob(recRule, async function () {
+                // Get the updated participant
+                let newParticipant;
+                try {
+                    newParticipant = await participants.get(uniqueId);
+                    if (!newParticipant) throw "Participant not found"
+                } catch (err) {
+                    console.log(err);
+                }
+
+                // Check if there is a condition to display the scheduled question
+                // if yes, evaluate that condition and get the truth value
+                let evaluation = true;
+                if (questionInfo.if) {
+                    let userInfo;
+                    // Try again if getChat fails, usually due to "socket hang up"
+                    let numAttempts;
+                    for (numAttempts = 0; numAttempts < DevConfig.SEND_MESSAGE_ATTEMPTS; numAttempts++) {
+                        try {
+                            if (numAttempts > 0) {
+                                console.log("Trying question " +
+                                    questionInfo.qId + " again for participant " + newParticipant.uniqueId);
+                            }
+                            userInfo = await bot.telegram.getChat(chatId);
+                            break;
+                        } catch (e) {
+                            console.log("Scheduler: Unable to find participant "
+                                + newParticipant.uniqueId +
+                                " chat while sending scheduled question " + questionInfo.qId + "\n"
+                                + e.message + "\n" + e.stack);
+                            // Wait before trying again
+                            await new Promise(resolve => setTimeout(resolve, DevConfig.REPEAT_ATTEMPT_WAIT_MS));
+                            continue;
+                        }
+                    }
+                    if (numAttempts >= DevConfig.SEND_MESSAGE_ATTEMPTS) {
+                        return;
+                    }
+
+                    newParticipant["firstName"] = userInfo["first_name"];
+                    let evaluationObj = ConfigParser.evaluateConditionString(newParticipant, questionInfo.if);
+                    if (evaluationObj.returnCode === DevConfig.SUCCESS_CODE) {
+                        evaluation = evaluationObj.data.value;
+                    } else {
+                        // If failure to evaluate, don't show question
+                        evaluation = false;
+                    }
+                }
+                if (evaluation) {
+                    let returnObj = await sendQuestion(bot, newParticipant, chatId, question, true,
+                        !config.debug.messageDelay, "scheduled");
+                    if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
+                        console.log("Scheduler: Error sending question:\n" + returnObj.data);
+                    }
+                }
+            })
+        } catch (err) {
+            let errorMsg = "Scheduler: Unable to schedule with given param: " + jobId;
+            console.log("\n" + err + "\n");
+            return ReturnMethods.returnFailure(errorMsg);
+        }
+        return ReturnMethods.returnSuccess({
+            job: job,
+            jobId: jobId
+        })
+    }
+
+    /**
+     *
+     * Schedule multiple questions for a single participant
      *
      * @param bot Telegram bot instance
-     * @param uniqueId uniqueID of participant for whom q is to be scheduled
-     * @param actionInfo info of action to be scheduled - must contain aType, onDays, atTime, tz (args, if optional)
+     * @param participant object of the participant for whom they are to be scheduled
+     * @param chatId telegram chatId of the participant
+     * @param qHandler QuestionHandler instance with loaded expt config file
+     * @param questionInfos array of info of question to be scheduled - each
+     *                      must contain qId, onDays, atTime, tz, [if ]
      * @param config loaded expt config file
      * @param isNew flag whether question is new or not (i.e., already present in DB or not)
      * @returns {Promise<{returnCode: *, data: *}>}
      */
-    static async scheduleOneAction(bot, uniqueId, actionInfo, config, isNew = true){
+    static async scheduleMultipleQuestions(bot, participant, chatId, qHandler, questionInfos, config, isNew = true){
+        if(!questionInfos.every(questionInfo => ("qId" in questionInfo))){
+            return ReturnMethods.returnFailure("Scheduler: At least one question ID not specified")
+        }
+
+        let scheduledJobs = []
+        for(let i = 0; i < questionInfos.length; i++) {
+            let questionInfo = questionInfos[i];
+            let jobObject = this.createScheduleQuestionJob(bot, participant, chatId, questionInfo, qHandler, config);
+            if (jobObject.returnCode === DevConfig.FAILURE_CODE) {
+                scheduledJobs.forEach(jobInfo => {
+                    jobInfo.job.cancel()
+                });
+                return ReturnMethods.returnFailure("Scheduler: Unable to schedule one or more questions:\n"
+                    + jobObject.data)
+            }
+            // Add questionInfo to the received job object
+            jobObject.data.questionInfo = questionInfo;
+            scheduledJobs.push(jobObject.data)
+        }
+
+        // Add to DB if not rescheduling
+        if(isNew) {
+            let writeReturn = await this.writeMultipleQuestionInfosToDB(participant.uniqueId, scheduledJobs);
+            if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
+                scheduledJobs.forEach(jobInfo => {
+                    jobInfo.job.cancel()
+                });
+                return ReturnMethods.returnFailure(
+                    "Scheduler: Failure to write info to DB from scheduleOne"
+                    + "\n"+ writeReturn.data
+                );
+            }
+        }
+
+        // Add all jobs to local store
+        scheduledJobs.forEach(jobInfo => {
+            this.scheduledOperations["questions"][jobInfo.jobId] = jobInfo.job;
+        })
+        return ReturnMethods.returnSuccess(scheduledJobs.map(jobInfo => {
+            return {
+                job: jobInfo.job,
+                jobId: jobInfo.jobId
+            }
+        }));
+    }
+
+    /**
+     *
+     * Create the job for a particular scheduled action
+     *
+     * @param bot telegram bot instance
+     * @param uniqueId participant uniqueId
+     * @param chatId telegram chat Id
+     * @param actionInfo info of the action to be scheduled - must contain qId, onDays, atTime, tz[, if]
+     * @param qHandler QuestionHandler instance with loaded expt config file
+     * @param config loaded expt config file
+     * @returns {{returnCode: number, data: *}}
+     *          data: {
+     *              jobId: jobId,
+     *              job: active node-schedule job object
+     *          }
+     */
+    static createScheduleActionJob(bot, uniqueId, chatId, actionInfo, config) {
         const { processAction } = require('./actionHandler');
-        if(!("aType" in actionInfo)){
-            return ReturnMethods.returnFailure("Scheduler: Action type not specified")
+        if (lodash.intersection(["aType", "atTime", "onDays"], Object.keys(actionInfo)).length !== 3) {
+            return ReturnMethods.returnFailure("Scheduler: questionInfo must have aType, atTime, onDays")
         }
 
         // Build the recurrence rule
-        console.time(uniqueId + " - " + actionInfo.aType + " - " + "Building recurrence rule")
         let recurrenceRuleObj = this.buildRecurrenceRule(actionInfo);
-        console.timeEnd(uniqueId + " - " + actionInfo.aType + " - " +"Building recurrence rule")
-        if(recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
+        if (recurrenceRuleObj.returnCode === DevConfig.FAILURE_CODE) {
             return ReturnMethods.returnFailure(
                 "Scheduler: Failure to build recurrence rule in scheduleAction"
-                + "\n"+ recurrenceRuleObj.data
+                + "\n" + recurrenceRuleObj.data
             );
         }
         let recRule = recurrenceRuleObj.data;
@@ -800,16 +1094,8 @@ class ScheduleHandler{
         };
 
         let job;
-        try{
-            // Get the telegram chatID of the participant
-            let secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
-            if(!secretMap){
-                return ReturnMethods.returnFailure("Scheduler (SOA): Cannot find participant chat ID");
-            }
-            let chatId = secretMap.chatId;
-
-            console.time(uniqueId + " - " + actionInfo.aType + " - " +"Scheduling the job")
-            // Schedule the question to be sent
+        try {
+            // Schedule the action to be sent
             job = scheduler.scheduleJob(recRule, async function(){
                 // Get the updated participant
                 let newParticipant;
@@ -837,9 +1123,9 @@ class ScheduleHandler{
                             break;
                         } catch(e) {
                             console.log("Scheduler: Unable to find participant "
-                                    + newParticipant.uniqueId +
-                                    " chat while performing scheduled action " + actionInfo.aType + "\n"
-                                    + e.message + "\n" + e.stack);
+                                + newParticipant.uniqueId +
+                                " chat while performing scheduled action " + actionInfo.aType + "\n"
+                                + e.message + "\n" + e.stack);
                             // Wait before trying again
                             await new Promise(resolve => setTimeout(resolve, DevConfig.REPEAT_ATTEMPT_WAIT_MS));
                             continue;
@@ -880,32 +1166,133 @@ class ScheduleHandler{
                     await participants.addDebugInfo(uniqueId, saveActionObj);
                 }
             })
-            console.timeEnd(uniqueId + " - " + actionInfo.aType + " - " +"Scheduling the job")
-            // Add to local store and if necessary, to DB
-            this.scheduledOperations["actions"][jobId] = job;
-            if(isNew) {
-                console.time(uniqueId + " - " + actionInfo.aType + " - " +"Writing to the database")
-                let writeReturn = await this.writeActionInfoToDB(uniqueId, jobId, actionInfo);
-                console.timeEnd(uniqueId + " - " + actionInfo.aType + " - " +"Writing to the database")
-                if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
-                    return ReturnMethods.returnFailure(
-                        "Scheduler: Failure to write action info to DB"
-                        + "\n"+ writeReturn.data
-                    );
-                }
-            }
-        } catch(err){
-            let errorMsg = "Scheduler: Unable to schedule with given params: " + jobId
-            console.log(recRule);
-            console.log("\n" + err + "\n")
+        } catch (err) {
+            let errorMsg = "Scheduler: Unable to schedule with given param: " + jobId;
+            console.log("\n" + err + "\n");
             return ReturnMethods.returnFailure(errorMsg);
         }
+        return ReturnMethods.returnSuccess({
+            job: job,
+            jobId: jobId
+        })
+    }
+
+    /**
+     *
+     * Schedule a single action for a participant
+     *
+     * @param bot Telegram bot instance
+     * @param uniqueId uniqueID of participant for whom action is to be scheduled
+     * @param actionInfo info of action to be scheduled - must contain aType, onDays, atTime, tz (args, if optional)
+     * @param config loaded expt config file
+     * @param isNew flag whether question is new or not (i.e., already present in DB or not)
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
+    static async scheduleOneAction(bot, uniqueId, actionInfo, config, isNew = true){
+        if(!("aType" in actionInfo)){
+            return ReturnMethods.returnFailure("Scheduler: Action type not specified")
+        }
+        let secretMap;
+        try{
+            secretMap = await idMaps.getByUniqueId(config.experimentId, uniqueId);
+            if(!secretMap){
+                throw "Secret map is empty!"
+            }
+        } catch(err) {
+            return ReturnMethods.returnFailure("Scheduler (SOA): Cannot find participant " + uniqueId +" chat ID\n"
+            + err.message + "\n" + err.stack);
+        }
+        let chatId = secretMap.chatId;
+
+        // Get the scheduled action job
+        let jobReturnObject = this.createScheduleActionJob(bot, uniqueId, chatId, actionInfo, config);
+        if(jobReturnObject.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure("Scheduler: Unable to create schedule job for action "
+                + actionInfo.aType + " and participant " + uniqueId + "\n" + jobReturnObject.data)
+        }
+        let jobId = jobReturnObject.data.jobId;
+        let job = jobReturnObject.data.job;
+
+        // Add to DB if necessary
+        if(isNew) {
+            let writeReturn = await this.writeActionInfoToDB(uniqueId, jobId, actionInfo);
+            if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
+                job.cancel()
+                return ReturnMethods.returnFailure(
+                    "Scheduler: Failure to write action info to DB from scheduleOne"
+                    + "\n"+ writeReturn.data
+                );
+            }
+        }
+
+        // Add to local store
+        this.scheduledOperations["actions"][jobId] = job;
+
         return ReturnMethods.returnSuccess({
             jobId: jobId,
             job: job
         });
     }
 
+    /**
+     *
+     * Schedule multiple actions for a single participant
+     *
+     * @param bot Telegram bot instance
+     * @param uniqueId uniqueID of participant for whom actions are to be scheduled
+     * @param chatId telegram chatId of the participant
+     * @param actionInfos array of info of actions to be scheduled - each
+     *                      must contain aType, onDays, atTime, tz, [args, if ]
+     * @param config loaded expt config file
+     * @param isNew flag whether question is new or not (i.e., already present in DB or not)
+     * @returns {Promise<{returnCode: *, data: *}>}
+     */
+    static async scheduleMultipleActions(bot, uniqueId, chatId, actionInfos, config, isNew = true){
+        if(!actionInfos.every(actionInfo => ("aType" in actionInfo))){
+            return ReturnMethods.returnFailure("Scheduler: At least one action ID not specified")
+        }
+
+        let scheduledJobs = []
+        for(let i = 0; i < actionInfos.length; i++) {
+            let actionInfo = actionInfos[i];
+            let jobObject = this.createScheduleActionJob(bot, uniqueId, chatId, actionInfo, config);
+            if (jobObject.returnCode === DevConfig.FAILURE_CODE) {
+                scheduledJobs.forEach(jobInfo => {
+                    jobInfo.job.cancel()
+                });
+                return ReturnMethods.returnFailure("Scheduler: Unable to schedule one or more questions:\n"
+                    + jobObject.data)
+            }
+            // Add questionInfo to the received job object
+            jobObject.data.actionInfo = actionInfo;
+            scheduledJobs.push(jobObject.data)
+        }
+
+        // Add to DB if not rescheduling
+        if(isNew) {
+            let writeReturn = await this.writeMultipleActionInfosToDB(uniqueId, scheduledJobs);
+            if(writeReturn.returnCode === DevConfig.FAILURE_CODE){
+                scheduledJobs.forEach(jobInfo => {
+                    jobInfo.job.cancel()
+                });
+                return ReturnMethods.returnFailure(
+                    "Scheduler: Failure to write info to DB from schedule multiple actions"
+                    + "\n"+ writeReturn.data
+                );
+            }
+        }
+
+        // Add all jobs to local store
+        scheduledJobs.forEach(jobInfo => {
+            this.scheduledOperations["actions"][jobInfo.jobId] = jobInfo.job;
+        })
+        return ReturnMethods.returnSuccess(scheduledJobs.map(jobInfo => {
+            return {
+                job: jobInfo.job,
+                jobId: jobInfo.jobId
+            }
+        }));
+    }
     /**
      *
      * Takes a list of questions that occur on the same day and

@@ -1,0 +1,15 @@
+[
+  {
+    "qId" : "checkComplete",
+    "qType" : "dummy",
+    "cNextActions" : [
+      {
+        "if": "${setupComplete} == $B{true}",
+        "then" : [{
+          "aType" : "startStage",
+          "args" : ["Intervention"]
+        }]
+      }
+    ]
+  }
+]

@@ -189,7 +189,7 @@ class ScheduleHandler{
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
      */
     static async rescheduleAllOperations(bot, config){
-        let allParticipants = await participants.getAll();
+        let allParticipants = await participants.getByExperimentId(config.experimentId);
         let failedParticipants = [];
         let succeededParticipants = [];
         // Loop through all participants

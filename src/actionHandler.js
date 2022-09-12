@@ -72,11 +72,13 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
     }
 
     // Get chat ID
+    console.time("Processing action " + actionObj.aType + ": getting secretMap")
     let secretMap = await getByUniqueId(config.experimentId, participant.uniqueId);
     if(!secretMap){
         return ReturnMethods.returnFailure("ActHandler: Unable to find participant " + participant.uniqueId
             + " chat ID while processing action");
     }
+    console.timeEnd("Processing action " + actionObj.aType + ": getting secretMap")
     let userInfo;
     try{
         userInfo = await bot.telegram.getChat(secretMap.chatId);
@@ -87,6 +89,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
     }
     participant["firstName"] = userInfo.first_name;
 
+    console.time("Processing action " + actionObj.aType + ": saving action Obj")
     // Save action that will be performed
     let saveActionObj = {
         infoType: "action",
@@ -102,6 +105,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
     } catch(e){
         return ReturnMethods.returnFailure("ActHandler: could not add save action obj");
     }
+    console.timeEnd("Processing action " + actionObj.aType + ": saving action Obj")
     switch(actionObj.aType){
         // Schedule all questions specified for given condition in config file
         case "scheduleQuestions":
@@ -214,12 +218,13 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: parameterTypes field not present in participant obj");
             }
-            let returnVal, newPartSave;
+            let returnVal, newPartSave, savedVal;
 
             if(DevConfig.RESERVED_VARIABLES.includes(varName)){
                 return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Cannot update reserved variable!");
             }
             // Check which data type the target parameter is
+            console.time("Processing action " + actionObj.aType + ": updating parameter")
             switch(paramType){
                 // For string and string array, no conversion required, since current Answer is already string array
                 case DevConfig.OPERAND_TYPES.STRING:
@@ -229,6 +234,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                         return ReturnMethods.returnFailure("ActHandler - saveAnswerTo(str): could not update participant params");
                     }
                     returnVal = newPartSave;
+                    savedVal = participant.currentAnswer[0];
                     break;
                 case DevConfig.OPERAND_TYPES.STRING_ARRAY:
                     try{
@@ -237,6 +243,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                         return ReturnMethods.returnFailure("ActHandler - saveAnswerTo(strArr): could not update participant params");
                     }
                     returnVal = newPartSave;
+                    savedVal = participant.currentAnswer;
                     break;
                 // Save to number variable if first entry can be parsed to number
                 case DevConfig.OPERAND_TYPES.NUMBER:
@@ -252,13 +259,15 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                         return ReturnMethods.returnFailure("ActHandler - saveAnswerTo(num): could not update participant params");
                     }
                     returnVal = newPartSave;
+                    savedVal = conversionObj.data;
                     break;
                 default:
                     return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Cannot save to var of type " + paramType);
             }
+            console.timeEnd("Processing action " + actionObj.aType + ": updating parameter")
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Answer "
-                    + returnVal.toString() + " saved to " + varName, true);
+                    + savedVal.toString() + " saved to " + varName, true);
             }
             return ReturnMethods.returnSuccess(returnVal);
         // Add current answer (string, number) to array variable (strArr, numArr)
@@ -276,7 +285,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 return ReturnMethods.returnFailure("ActHandler - addAnswerTo: Current answer not available to save");
             }
             let aParamType;
-            let aReturnVal;
+            let aReturnVal, aSavedVal;
             let newPartAdd;
             try{
                 aParamType = participant.parameterTypes[aVarName];
@@ -304,6 +313,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                         return ReturnMethods.returnFailure("ActHandler - addAnswerTo(numArr): could not add to participant params");
                     }
                     aReturnVal = newPartAdd;
+                    aSavedVal = conversionObj.data;
                     break;
                 case DevConfig.OPERAND_TYPES.STRING_ARRAY:
                     // Update the array parameter
@@ -315,13 +325,14 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                         return ReturnMethods.returnFailure("ActHandler - addAnswerTo(strArr): could not add to participant params");
                     }
                     aReturnVal = newPartAdd;
+                    aSavedVal = participant.currentAnswer;
                     break;
                 default:
                     return ReturnMethods.returnFailure("ActHandler: Cannot add to var of type " + aParamType);
             }
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Answer "
-                    + aReturnVal.toString() + " added to " + aVarName, true);
+                    + aSavedVal.toString() + " added to " + aVarName, true);
             }
             return ReturnMethods.returnSuccess(aReturnVal);
         // Save current answer to a variable
@@ -348,7 +359,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             }
             let options = participant.currentQuestion.options;
 
-            let oParamType;
+            let oParamType, oSavedVal;
             let newPartSaveOpt;
             try{
                 oParamType = participant.parameterTypes[oVarName];
@@ -372,6 +383,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                         return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo(num): could not update participant params");
                     }
                     oReturnVal = newPartSaveOpt;
+                    oSavedVal = idx
                     break;
                 case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
                     let idxArr = []
@@ -384,6 +396,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                         return ReturnMethods.returnFailure("ActHandler - saveOptionIdxTo(numArr): could not update participant params");
                     }
                     oReturnVal = newPartSaveOpt;
+                    oSavedVal = idxArr;
                     break;
                 default:
                     return ReturnMethods.returnFailure(
@@ -392,7 +405,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             }
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Idx "
-                    + oReturnVal.toString() + " saved to " + oVarName, true);
+                    + oSavedVal.toString() + " saved to " + oVarName, true);
             }
             return ReturnMethods.returnSuccess(oReturnVal);
         // Set the value of a boolean variable to true or false
@@ -433,11 +446,13 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             let boolVal = boolValObj.data;
 
             // Update the parameter with the new value
+            console.time("Processing action " + actionObj.aType + ": updating parameter")
             try{
                 newPartSetBool = await participants.updateParameter(participant.uniqueId, bVarName, boolVal);
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler - setBooleanVar: could not update participant params");
             }
+            console.timeEnd("Processing action " + actionObj.aType + ": updating parameter")
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Var "
                     + bVarName + " set to " + boolVal, true);

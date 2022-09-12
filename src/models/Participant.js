@@ -35,7 +35,10 @@ let schemaObject = {
     }
   },
   parameterTypes : {},
-  currentAnswer: [String],
+  currentAnswer: {
+    type: [String],
+    default: []
+  },
   currentQuestion: {
     qId: String,
     text: String,

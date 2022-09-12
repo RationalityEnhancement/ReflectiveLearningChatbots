@@ -50,24 +50,32 @@ exports.add = async (uniqueId) => {
 // Initialize the experiment document with some basic essential information
 exports.initializeParticipant = async (uniqueId, config) => {
   try{
-    const participant = await Participant.findOne({ uniqueId: uniqueId });
-    participant['experimentId'] = config.experimentId;
-    participant['parameters'] = {
-      "language" : config.defaultLanguage
-    };
-    participant['currentState'] = "starting";
-    participant["parameterTypes"] = {};
+
+    let paramTypes = {};
     for(const[key, value] of Object.entries(config.customParameters)){
       if(key in ParticipantSchemaObject.parameters){
-        participant["parameterTypes"][key] = value;
+        paramTypes[key] = value;
       }
     }
     for(const[key, value] of Object.entries(config.mandatoryParameters)){
       if(key in ParticipantSchemaObject.parameters){
-        participant["parameterTypes"][key] = value;
+        paramTypes[key] = value;
       }
     }
-    return participant.save();
+    return Participant.findOneAndUpdate(
+        {
+            uniqueId : uniqueId
+          },
+        {
+          experimentId: config.experimentId,
+          currentState: "starting",
+          parameters: {
+            language: config.defaultLanguage
+          },
+          parameterTypes: paramTypes
+        },
+        {new: true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to initializeParticipant');
     console.error(err);

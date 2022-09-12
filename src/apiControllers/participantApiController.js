@@ -38,9 +38,10 @@ exports.getByExperimentId = async (experimentId) => {
 // Add a new document with a given chat ID
 exports.add = async (uniqueId) => {
   try {
-    const participant = new Participant();
-    participant.uniqueId = uniqueId;
-    return participant.save();
+
+    return Participant.create({
+      uniqueId: uniqueId
+    });
   } catch (err) {
     console.error(err);
   }

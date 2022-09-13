@@ -75,11 +75,11 @@ exports.getByUniqueId = getByUniqueId;
 // Add a new experiment for mappings
 exports.addExperiment = async (experimentId) => {
   try {
-    experimentId = ""+experimentId;
-
-    const idMapping = new IDMap();
-    idMapping.experimentId = experimentId;
-    return idMapping.save();
+    return IDMap.create(
+        {
+          experimentId: experimentId
+        }
+    )
   } catch (err) {
     console.error(err);
   }
@@ -129,24 +129,26 @@ let generateUniqueId = async (experimentId) => {
 }
 exports.generateUniqueId = generateUniqueId;
 
-// Add a new Id Mapping
-// If it already exists, update
+// Add a new Id Mapping if it doesn't already exist
 let addIDMapping = async (experimentId, chatId, uniqueId) => {
   try {
-    experimentId = ""+experimentId;
-    uniqueId = ""+uniqueId;
-    let experiment = await IDMap.findOne({ experimentId: experimentId});
-    if(!experiment) return;
-    let presentMap = hasChatId(experiment.IDMappings);
-    if(presentMap){
-      return updateUniqueId(experimentId, chatId, uniqueId);
-    }
-
-    experiment.IDMappings.push({
-      chatId : chatId,
-      uniqueId : uniqueId
-    });
-    return experiment.save();
+    return IDMap.findOneAndUpdate(
+        {
+          experimentId: experimentId,
+          "IDMappings.chatId" : {
+            $ne: chatId
+          }
+        },
+        {
+          $push : {
+            IDMappings: {
+              chatId : chatId,
+              uniqueId : uniqueId
+            }
+          }
+        },
+        { new: true }
+    )
 
   } catch (err) {
     console.error(err);
@@ -156,6 +158,7 @@ let addIDMapping = async (experimentId, chatId, uniqueId) => {
 exports.addIDMapping = addIDMapping;
 
 // Update the uniqueId based on the telegram chatID
+// Not updated to findOneAndUpdate because this isn't used.
 let updateUniqueId = async (experimentId, chatId, uniqueId) => {
   
   try{
@@ -185,21 +188,17 @@ exports.updateUniqueId = updateUniqueId;
 // If it doesn't exist, do nothing
 let deleteByChatId = async(experimentId, chatId) => {
   try{
-    experimentId = ""+experimentId;
-    let experiment = await IDMap.findOne({ experimentId: experimentId });
-    if(!experiment) return;
-    let delIdx = -1;
-    for(let i = 0; i < experiment.IDMappings.length; i++){
-      let curMap = experiment.IDMappings[i];
-      if(curMap.chatId === chatId){
-        delIdx = i;
-        break;
-      }
-    }
-    if(delIdx >= 0) {
-      experiment.IDMappings.splice(delIdx, 1);
-    }
-    return experiment.save();
+    return IDMap.findOneAndUpdate(
+        {experimentId: experimentId},
+        {
+          $pull : {
+            IDMappings: {
+              chatId: chatId
+            }
+          }
+        },
+        { new: true }
+    )
   } catch (err) {
     console.error(err);
   }
@@ -210,22 +209,17 @@ exports.deleteByChatId = deleteByChatId;
 // If it doesn't exist, do nothing.
 let deleteByUniqueId = async(experimentId, uniqueId) => {
   try{
-    experimentId = ""+experimentId;
-    uniqueId = ""+uniqueId;
-    let experiment = await IDMap.findOne({ experimentId: experimentId });
-    if(!experiment) return;
-    let delIdx = -1;
-    for(let i = 0; i < experiment.IDMappings.length; i++){
-      let curMap = experiment.IDMappings[i];
-      if(curMap.uniqueId === uniqueId){
-        delIdx = i;
-        break;
-      }
-    }
-    if(delIdx >= 0) {
-      experiment.IDMappings.splice(delIdx, 1);
-    }
-    return experiment.save();
+    return IDMap.findOneAndUpdate(
+        {experimentId: experimentId},
+        {
+          $pull : {
+            IDMappings: {
+              uniqueId: uniqueId
+            }
+          }
+        },
+        { new: true }
+    )
   } catch (err) {
     console.error(err);
   }

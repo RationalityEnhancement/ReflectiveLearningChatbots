@@ -1,0 +1,77 @@
+{
+  "experimentName" : "Reflective Learning in Organizations - Sample",
+  "experimentId" : "RL-Orgs-Sample",
+  "experimentConditions" : ["MC"],
+  "conditionAssignments" : [1],
+  "assignmentScheme" : "balanced",
+  "experimentLengthWeeks" : 2,
+  "msPerCharacterDelay" : 5,
+  "experimentStages" : {
+    "MC" : "$F{json/experiments/RL-Orgs-Sample/allCondsStages.json}"
+  },
+  "mandatoryParameters" : {
+    "language" : "string",
+    "timezone" : "string",
+    "PID" : "string"
+  },
+  "customParameters" : {
+    "onboardingComplete" : "boolean",
+    "postTestComplete" : "boolean",
+    "remindWorkIntention" : "boolean",
+    "workIntention" : "string",
+    "relIntention" : "string",
+    "remindRelIntention" : "boolean",
+    "inRelReflection" : "boolean",
+    "taskGoals" : "strArr",
+    "relGoals" : "strArr",
+    "taskGoalsSetToday" : "boolean",
+    "relGoalsSetToday" : "boolean",
+    "lastReportedTaskProgress" : "number",
+    "taskProgressReportedOnce" : "boolean",
+    "lastReportedRelProgress" : "number",
+    "relProgressReportedOnce" : "boolean",
+    "goalsMoreRelevant" : "boolean",
+    "reflectionStartedToday" : "boolean",
+    "goalsEquallyRelevant" : "boolean",
+    "dontAskInfoAgain" : "boolean",
+    "dontAskExampleAgain" : "boolean",
+    "relGoalsSetBefore" : "boolean",
+    "firstRelGoalDay" : "boolean",
+    "firstWorkGoalDay" : "boolean",
+    "workGoalsSetBefore" : "boolean",
+    "warningGiven" : "boolean",
+    "morningTime" : "string",
+    "eveningTime" : "string",
+    "setupComplete" : "boolean",
+    "testStrArr" : "strArr",
+    "testBool" : "boolean",
+    "testNum" : "number",
+    "testNumArr" : "numArr"
+  },
+  "debug" : {
+    "experimenter" : true,
+    "actionMessages" : true,
+    "enableNext" : true,
+    "messageDelay" : false,
+    "developer" : false
+  },
+  "languages" : ["English"],
+  "defaultLanguage" : "English",
+  "phrases" : "$F{json/experiments/RL-Orgs-Sample/phrases.json}",
+  "instructionText" : "$F{json/experiments/RL-Orgs-Sample/instructions.json}",
+  "questionCategories": {
+    "setupQuestions": "$F{json/experiments/RL-Orgs-Sample/setupQuestions.json}"
+  },
+  "conditionQuestions" : {
+    "MC" : {
+      "questionCategories" : {
+        "Intermediate" : "$F{json/experiments/RL-Orgs-Sample/intermediate.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Sample/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Sample/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Sample/MCIntervention.json}"
+      },
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Sample/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Sample/allCondsUserPromptQs.json}"
+    }
+  }
+}

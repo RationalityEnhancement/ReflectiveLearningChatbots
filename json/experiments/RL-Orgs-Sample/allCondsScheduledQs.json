@@ -1,0 +1,20 @@
+[
+  {
+    "qId" : "Intermediate.checkComplete",
+    "atTime" : "05:30",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Intermediate}"
+  },
+  {
+    "qId" : "Morning-Goals-All.initiateContact",
+    "atTime" : "${morningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Intervention}"
+  },
+  {
+    "qId" : "Pre-Reflection.initiateContact",
+    "atTime" : "${eveningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Intervention}"
+  }
+]

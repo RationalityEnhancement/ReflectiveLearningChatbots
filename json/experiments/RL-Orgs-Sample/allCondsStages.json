@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Intermediate",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri","Sat", "Sun"]
+  },
+  {
+    "name" : "Intervention",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "lengthDays" : 3
+  }
+]

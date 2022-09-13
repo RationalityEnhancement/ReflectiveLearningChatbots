@@ -1,0 +1,187 @@
+[
+  {
+    "qId" : "langQuestion",
+    "text" : {
+      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, and I can help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)",
+      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, and I can help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["English"],
+      "Deutsch" : ["English"]
+    },
+    "nextActions" : [{
+      "aType" : "saveAnswerTo",
+      "args" : ["language"]
+    }],
+    "nextQuestion" : "setupQuestions.introduceInstructions",
+    "replyMessages" : {
+      "English" : ["Thank you for choosing a language"],
+      "Deutsch": ["Danke, dass Sie eine Sprache ausgewählt haben."]
+    },
+    "start" : true
+  },
+  {
+    "qId" : "introduceInstructions",
+    "qType" : "dummy",
+    "nextQuestion" : "setupQuestions.displayInstructions",
+    "replyMessages" : {
+      "English" : ["Before we move on, let me explain how you can interact with me!"],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
+    }
+  },
+  {
+    "qId" : "displayInstructions",
+    "qType" : "dummy",
+    "nextQuestion" : "setupQuestions.continueFromInstructions",
+    "replyMessages" : "$F{json/experiments/RL-Orgs-Prepilot-2/instructions.json}"
+  },
+  {
+    "qId" : "continueFromInstructions",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Click <i>Continue</i> when you are ready to move on!",
+      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
+    },
+    "inputPrompt" : {
+      "English" : "(Hint: send /repeat if the <i>Continue</i> button is no longer visible.)",
+      "Deutsch" : "(Tipp: senden Sie /repeat, wenn die <i>Weiter</i>-Taste nicht mehr sichtbar ist.)"
+    },
+    "nextQuestion" : "setupQuestions.timezoneQuestion",
+    "options": {
+      "English" : ["Continue"],
+      "Deutsch" : ["Weiter"]
+    }
+  },
+  {
+    "qId": "timezoneQuestion",
+    "text": {
+      "English": "Which time zone are you in?",
+      "Deutsch": "In welcher Zeitzone befinden Sie sich jetzt?"
+    },
+    "qType": "singleChoice",
+    "options": {
+      "English": "$F{json/static/common_timezones.json}",
+      "Deutsch": "$F{json/static/common_timezones.json}"
+    },
+    "buttonLayoutCols" : 2,
+    "cReplyMessages": [
+      {
+        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "then" : {
+          "English": [
+            "Thank you, your time zone has been registered."
+          ],
+          "Deutsch": [
+            "Danke, Zeitzone ist erfasst worden"
+          ]
+        }
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "then" : [
+          {
+            "aType" : "saveAnswerTo",
+            "args" : ["timezone"]
+          }
+        ]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "then" : "setupQuestions.goalSetTime",
+        "else" : "setupQuestions.moreTimezones"
+      }
+    ]
+  },
+  {
+    "qId" : "moreTimezones",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Select your timezone from the following list.",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "options" : {
+      "English" : "$F{json/static/more_timezones_2.json}",
+      "Deutsch" : "$F{json/static/more_timezones_2.json}"
+    },
+    "buttonLayoutCols" : 2,
+    "nextQuestion" : "setupQuestions.goalSetTime",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["timezone"]
+      }
+    ],
+    "replyMessages" : {
+      "English": [
+        "Thank you, time zone has been registered."
+      ],
+      "Deutsch": [
+        "Danke, Zeitzone ist erfasst worden"
+      ]
+    }
+  },
+  {
+    "qId" : "goalSetTime",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nWhen would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
+      "Deutsch" : "In einigen Phasen des Experiments, werden Sie morgens vor der Arbeit danach gefragt, sich Ziele zu setzen. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
+    },
+    "options" : {
+      "English" : "$F{json/static/morningTimeOptions.json}",
+      "Deutsch" : "$F{json/static/morningTimeOptions.json}"
+    },
+    "buttonLayoutCols" : 4,
+    "replyMessages" : {
+      "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
+      "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["morningTime"]
+      }
+    ],
+    "nextQuestion" : "setupQuestions.reflectionTime"
+  },
+  {
+    "qId" : "reflectionTime",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set that same morning.\n\nWhen would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
+      "Deutsch" : "In einigen Phasen des Experiments, werden Sie abends nach der Arbeit dazu aufgefordert, über Ihre Ziele zu reflektieren, die Sie sich am selben Morgen gesetzt haben. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
+    },
+    "options" : {
+      "English" : "$F{json/static/eveningTimeOptions.json}",
+      "Deutsch" : "$F{json/static/eveningTimeOptions.json}"
+    },
+    "buttonLayoutCols" : 4,
+    "replyMessages" : {
+      "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}.", "That’s all for today. On the next weekday, we will start the daily routine of setting goals in the morning and then reflecting on them in the evening. This will last three days.", "See you later!"],
+      "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["eveningTime"]
+      },
+      {
+        "aType" : "assignToCondition"
+      },
+      { "aType" : "scheduleQuestions" },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["setupComplete", "$B{true}"]
+      },
+      {
+        "aType" : "startStage",
+        "args" : ["Intermediate"]
+      }
+    ]
+  }
+]

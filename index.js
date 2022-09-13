@@ -937,10 +937,10 @@ bot.on('text', async ctx => {
   const answerText = ctx.message.text;
 
   // Handle the answer and respond appropriately
-    console.time("Processing Answer")
+    console.time("\nProcessing Answer")
   AnswerHandler.processAnswer(participant, answerText)
       .then((answerHandlerObj) => {
-          console.timeEnd("Processing Answer")
+          console.timeEnd("\nProcessing Answer")
           console.time("Handling answer return")
           switch(answerHandlerObj.returnCode){
               // Answer was valid
@@ -958,7 +958,7 @@ bot.on('text', async ctx => {
                               console.timeEnd("Handling answer return")
                               if(result.returnCode === DevConfig.FAILURE_CODE){
                                   handleError(participant, result.data);
-                                  throw result.data;
+                                  console.log(result.data)
                               }
                           });
                   }
@@ -976,7 +976,7 @@ bot.on('text', async ctx => {
                               console.timeEnd("Handling answer return")
                               if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                                   handleError(participant, returnObj.data);
-                                  throw returnObj.data;
+                                  console.log(returnObj.data);
                               }
                           })
                   }
@@ -987,7 +987,7 @@ bot.on('text', async ctx => {
                   handleError(participant, answerHandlerObj.data)
                       .then(() => {
                           console.timeEnd("Handling answer return")
-                          throw "ERROR: " + answerHandlerObj.data;
+                          console.log("ERROR: " + answerHandlerObj.data);
                       });
                   break;
 
@@ -995,7 +995,7 @@ bot.on('text', async ctx => {
                   handleError(participant, "Answer Handler did not respond appropriately")
                       .then(() => {
                           console.timeEnd("Handling answer return")
-                          throw "ERROR: Answer Handler did not respond appropriately"
+                          console.log("ERROR: Answer Handler did not respond appropriately");
                       });
                   break;
           }
@@ -1035,7 +1035,6 @@ if(!!local && local === "-l"){
         });
     }).catch((err) => {
         console.log(err.message + "\n" + err.stack);
-        throw err
     });
 }
 

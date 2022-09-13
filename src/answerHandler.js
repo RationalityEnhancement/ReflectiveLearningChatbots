@@ -111,6 +111,7 @@ class AnswerHandler{
                 stageName: participant.stages.stageName,
                 stageDay: participant.stages.stageDay,
             };
+            // TODO: don't wait for this
             await participants.addAnswer(participant.uniqueId, answer, answerConv);
         } catch(e){
             return ReturnMethods.returnFailure("AHandler: unable to add answer\n" +

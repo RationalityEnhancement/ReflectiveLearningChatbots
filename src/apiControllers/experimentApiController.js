@@ -32,12 +32,9 @@ exports.get = async (experimentId) => {
 // Add a new document with a given experiment ID
 exports.add = async (experimentId) => {
   try {
-    const experiment = new Experiment();
-    // console.log(experiment);
-    experiment.experimentId = experimentId;
-    
-
-    return experiment.save();
+    return Experiment.create({
+      experimentId : experimentId
+    })
   } catch (err) {
     console.error(err);
   }
@@ -47,10 +44,18 @@ exports.add = async (experimentId) => {
 exports.updateField = async (experimentId, field, value) => {
   
   try{
-    let experiment = await Experiment.findOne({ experimentId });
-    experiment[field] = value;
-    let savedExp = await experiment.save();
-    return savedExp;
+    let update = {
+      $set : {
+
+      }
+    }
+    update["$set"][field] = value;
+    return Experiment.findOneAndUpdate(
+        {
+          experimentId : experimentId
+        },
+        update,
+        { new: true })
   } catch (err) {
     console.error(err);
   }
@@ -61,13 +66,19 @@ exports.initializeExperiment = async (experimentId, experimentName, experimentCo
   try{
     if (!experimentConditions) experimentConditions = [];
     if (!conditionAssignments) conditionAssignments = [];
-    let experiment = await Experiment.findOne({ experimentId });
-    experiment["experimentName"] = experimentName;
-    experiment["experimentConditions"] = experimentConditions;
-    experiment["conditionAssignments"] = conditionAssignments;
-    experiment["currentlyAssignedToCondition"] = new Array(experimentConditions.length).fill(0);
-    let savedExp = await experiment.save();
-    return savedExp;
+    return Experiment.findOneAndUpdate(
+        { experimentId: experimentId },
+        {
+          $set: {
+            experimentName: experimentName,
+            experimentConditions: experimentConditions,
+            conditionAssignments: conditionAssignments,
+            currentlyAssignedToCondition: new Array(experimentConditions.length).fill(0)
+          }
+        },
+        { new: true}
+        );
+
   } catch (err) {
     console.error(err);
   }
@@ -75,23 +86,37 @@ exports.initializeExperiment = async (experimentId, experimentName, experimentCo
 
 // Update the number of participants assigned to each condition (usually +1 or -1)
 // Condition is indexed by the index of that particular condition in the array
+// WARNING: For negative values that are greater than the number of current assignees, updates
+//          are rejected and no changes are made!
 exports.updateConditionAssignees = async (experimentId, conditionIdx, updateVal) => {
   try{
     const field = "currentlyAssignedToCondition";
-    let experiment = await Experiment.findOne({ experimentId });
-    let curAssigned = experiment[field];
-    
-    curAssigned[conditionIdx] += updateVal;
-    if(curAssigned[conditionIdx] < 0) curAssigned[conditionIdx] = 0;
-    experiment[field] = curAssigned;
-   
-    let savedExp = await experiment.save();
-    return savedExp;
+    let condition = {
+      experimentId : experimentId
+    }
+
+    condition[field+ "." + conditionIdx] = {
+      $gte: -updateVal
+    }
+    let update = {
+      $inc : {
+
+      }
+    }
+    update["$inc"][field + "." + conditionIdx] = updateVal;
+    return Experiment.findOneAndUpdate(
+        condition,
+        update,
+        {
+          new : true
+        }
+    )
 
   } catch (err) {
     console.error(err);
   }
 }
+
 
 // Remove all documents
 exports.removeAll = async () => {
@@ -114,9 +139,15 @@ exports.remove = async experimentId => {
 // Add an error object
 exports.addErrorObject = async (experimentId, errObj) => {
   try{
-    let experiment = await Experiment.findOne( { experimentId });
-    experiment["errorMessages"].push(errObj);
-    return experiment.save();
+    return Experiment.findOneAndUpdate(
+        { experimentId: experimentId },
+        {
+          $push: {
+            errorMessages: errObj
+          }
+        },
+        { new: true }
+    )
   } catch(err) {
     console.error(err);
   }
@@ -125,9 +156,15 @@ exports.addErrorObject = async (experimentId, errObj) => {
 // Add a feedback object
 exports.addFeedbackObject = async (experimentId, feedObj) => {
   try{
-    let experiment = await Experiment.findOne( { experimentId });
-    experiment["feedbackMessages"].push(feedObj);
-    return experiment.save();
+    return Experiment.findOneAndUpdate(
+        { experimentId: experimentId },
+        {
+          $push: {
+            feedbackMessages: feedObj
+          }
+        },
+        { new: true }
+    )
   } catch(err) {
     console.error(err);
   }

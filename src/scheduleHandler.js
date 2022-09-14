@@ -1,4 +1,5 @@
 const participants = require('./apiControllers/participantApiController');
+const debugs = require('./apiControllers/debugInfoApiController');
 const idMaps = require('./apiControllers/idMapApiController');
 const scheduler = require('node-schedule');
 const QuestionHandler = require('./questionHandler')
@@ -474,7 +475,7 @@ class ScheduleHandler{
             from: "SHandler"
         }
         try{
-            await participants.addDebugInfo(participant.uniqueId, saveActionObj);
+            await debugs.addDebugInfo(participant.uniqueId, saveActionObj);
         } catch(e){
             return ReturnMethods.returnFailure("ActHandler: could not add save action obj");
         }
@@ -1163,7 +1164,7 @@ class ScheduleHandler{
                         timeStamp: moment.tz(newParticipant.parameters.timezone).format(),
                         from: "LHandler"
                     }
-                    await participants.addDebugInfo(uniqueId, saveActionObj);
+                    await debugs.addDebugInfo(uniqueId, saveActionObj);
                 }
             })
         } catch (err) {

@@ -7,6 +7,7 @@ const moment = require('moment-timezone');
 const ConfigParser = require('./configParser')
 const ReminderHandler = require('./reminderHandler')
 const ExperimentUtils = require('./experimentUtils')
+const answers = require('./apiControllers/answerApiController');
 
 /**
  * Answer handler class that takes in a config as a parameter
@@ -112,7 +113,8 @@ class AnswerHandler{
                 stageDay: participant.stages.stageDay,
             };
             // TODO: don't wait for this
-            await participants.addAnswer(participant.uniqueId, answer, answerConv);
+            await answers.addAnswer(participant.uniqueId, answer);
+            await participants.updateField(participant.uniqueId, "currentAnswer", answerConv);
         } catch(e){
             return ReturnMethods.returnFailure("AHandler: unable to add answer\n" +
             e.message + "\n" + e.stack)

@@ -3,6 +3,8 @@ const mongo = require('mongoose');
 const fs = require('fs');
 const path = require('node:path');
 const participants = require('./apiControllers/participantApiController');
+const answers = require('./apiControllers/answerApiController');
+const debugs = require('./apiControllers/debugInfoApiController');
 const experiments = require('./apiControllers/experimentApiController');
 
 const ConfigReader = require('../src/configReader');
@@ -24,11 +26,15 @@ const config = ConfigReader.getExpConfig();
     console.log("Downloading data for experiment with id: " + config.experimentId);
 
     // Reading experiment and participants
-
     let experiment = await experiments.get(config.experimentId);
     if (!experiment) {
         throw "ERROR: Experiment for ExperimentID " + config.experimentId + " not found!";
     }
+
+    let debug = (process.argv[2] === "include-debug");
+    console.log(process.argv)
+    console.log(process.argv[2])
+    console.log(debug);
 
     let pList = await participants.getByExperimentId(config.experimentId)
     let currentPath = path.resolve('.');
@@ -50,6 +56,16 @@ const config = ConfigReader.getExpConfig();
         }
     } catch(error) {
         throw "ERROR: Unable to create experiment directory\n" + error;
+    }
+
+    // Add the answers and ggf. debugInfo to the participant JSON objects
+    for(let i = 0; i < pList.length; i++){
+        let pAnswerObj = await answers.get(pList[i].uniqueId);
+        pList[i].answers = pAnswerObj.answers;
+        if(debug){
+            let pDebugObj = await debugs.get(pList[i].uniqueId);
+            pList[i].debugInfo = pDebugObj.debugInfo;
+        }
     }
 
     // Write to JSON

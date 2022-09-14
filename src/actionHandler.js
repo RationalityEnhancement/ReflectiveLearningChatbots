@@ -11,6 +11,7 @@ const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = ConfigReader.getPIDCondMap();
 const StageHandler = require('./stageHandler')
 const moment = require('moment')
+const debugs = require('./apiControllers/debugInfoApiController');
 
 /**
  * Action handler deals with the processing of actions
@@ -101,7 +102,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
         from: from
     }
     try{
-        await participants.addDebugInfo(participant.uniqueId, saveActionObj);
+        await debugs.addDebugInfo(participant.uniqueId, saveActionObj);
     } catch(e){
         return ReturnMethods.returnFailure("ActHandler: could not add save action obj");
     }

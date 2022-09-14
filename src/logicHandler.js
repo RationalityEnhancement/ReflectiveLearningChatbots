@@ -1,4 +1,5 @@
 const participants = require("./apiControllers/participantApiController");
+const debugs = require('./apiControllers/debugInfoApiController');
 const ConfigReader = require('../src/configReader');
 const config = ConfigReader.getExpConfig();
 const DevConfig = ConfigReader.getDevConfig();
@@ -139,7 +140,7 @@ let processNextSteps = async(bot, uniqueId) => {
                 timeStamp: moment.tz(participant.parameters.timezone).format(),
                 from: "LHandler"
             }
-            await participants.addDebugInfo(participant.uniqueId, saveActionObj);
+            await debugs.addDebugInfo(participant.uniqueId, saveActionObj);
 
         } catch(err){
             return ReturnMethods.returnFailure("LHandler: Could not fetch participant again: " + uniqueId)
@@ -260,7 +261,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
 
     let newPart;
     try{
-        newPart = await participants.addDebugInfo(participant.uniqueId, saveQuestionObj);
+        newPart = await debugs.addDebugInfo(participant.uniqueId, saveQuestionObj);
     } catch(e){
         return ReturnMethods.returnFailure("LHandler: could not add save question obj");
     }

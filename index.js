@@ -955,7 +955,6 @@ bot.on('text', async ctx => {
       .then((answerHandlerObj) => {
           console.timeEnd("\nProcessing Answer")
           console.time("Handling answer return")
-          console.time("Handling answer return fail")
           switch(answerHandlerObj.returnCode){
               // Answer was valid
               case DevConfig.SUCCESS_CODE:
@@ -987,7 +986,6 @@ bot.on('text', async ctx => {
                       LogicHandler.sendQuestion(bot, participant, ctx.from.id,
                           participant.currentQuestion, false, !config.debug.messageDelay, "invalid")
                           .then(returnObj => {
-                              console.timeEnd("Handling answer return fail")
                               if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                                   handleError(participant, returnObj.data);
                                   console.log(returnObj.data);
@@ -1000,7 +998,6 @@ bot.on('text', async ctx => {
               case DevConfig.FAILURE_CODE:
                   handleError(participant, answerHandlerObj.data)
                       .then(() => {
-                          console.timeEnd("Handling answer return")
                           console.log("ERROR: " + answerHandlerObj.data);
                       });
                   break;
@@ -1008,7 +1005,6 @@ bot.on('text', async ctx => {
               default:
                   handleError(participant, "Answer Handler did not respond appropriately")
                       .then(() => {
-                          console.timeEnd("Handling answer return")
                           console.log("ERROR: Answer Handler did not respond appropriately");
                       });
                   break;

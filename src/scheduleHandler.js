@@ -474,11 +474,10 @@ class ScheduleHandler{
             timeStamp: moment.tz(participant.parameters.timezone).format(),
             from: "SHandler"
         }
-        try{
-            await debugs.addDebugInfo(participant.uniqueId, saveActionObj);
-        } catch(e){
-            return ReturnMethods.returnFailure("ActHandler: could not add save action obj");
-        }
+        debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
+            console.log("Scheduler: could not add save action obj - getScheduledQs - " + participant.uniqueId
+                + "\n" + err.message + "\n" + err.stack);
+        });
 
         let scheduledQuestionsList = schQObj.data;
         let failedOperations = [];
@@ -1164,7 +1163,10 @@ class ScheduleHandler{
                         timeStamp: moment.tz(newParticipant.parameters.timezone).format(),
                         from: "LHandler"
                     }
-                    await debugs.addDebugInfo(uniqueId, saveActionObj);
+                    debugs.addDebugInfo(uniqueId, saveActionObj).catch((err) => {
+                        console.log("Scheduler: could not add action result obj - " + participant.uniqueId
+                            + "\n" + err.message + "\n" + err.stack);
+                    });
                 }
             })
         } catch (err) {

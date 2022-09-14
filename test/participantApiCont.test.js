@@ -173,7 +173,8 @@ describe('Participant Controller API: ', () =>{
 		
 		await participants.updateParameter(testId, paramField, paramValue);
 		let part = await participants.get(testId);
-		expect(part.parameters[paramField]).to.equal(paramValue);	
+		expect(part.parameters[paramField]).to.equal(paramValue);
+		expect(part.parameters["language"]).to.equal("English")
 		
 	});
 	it('Should update number parameter', async () => {
@@ -184,6 +185,8 @@ describe('Participant Controller API: ', () =>{
 		await participants.updateParameter(testId, paramField, paramValue);
 		let part = await participants.get(testId);
 		expect(part.parameters[paramField]).to.equal(paramValue);
+		expect(part.parameters["language"]).to.equal("English")
+
 
 	});
 	it('Should update string stages parameter', async () => {
@@ -204,6 +207,8 @@ describe('Participant Controller API: ', () =>{
 		await participants.updateStageParameter(testId, paramField, paramValue);
 		let part = await participants.get(testId);
 		expect(part.stages[paramField]).to.equal(paramValue);
+		expect(part.stages["stageName"]).to.equal("zbeengo");
+
 
 	});
 	it('Should clear stage parameter (num)', async () => {
@@ -213,15 +218,18 @@ describe('Participant Controller API: ', () =>{
 		await participants.clearStageParam(testId, paramField);
 		let part = await participants.get(testId);
 		expect(part.stages[paramField]).to.equal(0);
+		expect(part.stages["stageName"]).to.equal("zbeengo");
 
 	});
 	it('Should clear stage parameter (str)', async () => {
 
 		const paramField = 'stageName';
 
+		await participants.updateStageParameter(testId, "stageDay", 3);
 		await participants.clearStageParam(testId, paramField);
 		let part = await participants.get(testId);
 		expect(part.stages[paramField]).to.equal("");
+		expect(part.stages["stageDay"]).to.equal(3);
 
 	});
 
@@ -249,7 +257,8 @@ describe('Participant Controller API: ', () =>{
 
 		const paramField = 'testStrArr';
 
-		await participants.clearParamValue(testId, paramField);
+		let part1 = await participants.clearParamValue(testId, paramField);
+		// console.log(part1)
 		let part = await participants.get(testId);
 		expect(part.parameters[paramField]).to.eql([]);
 
@@ -400,7 +409,7 @@ describe('Participant Controller API: ', () =>{
 	}
 	it('Should add a scheduled question', async () => {
 
-		await participants.addScheduledOperation(testId, "questions", testQJob);
+		let newPart = await participants.addScheduledOperation(testId, "questions", testQJob);
 		let participant = await participants.get(testId)
 		let scheduledQs = participant["scheduledOperations"]["questions"];
 		expect(scheduledQs[0]['jobId']).to.eql(testQJob.jobId);
@@ -436,7 +445,7 @@ describe('Participant Controller API: ', () =>{
 
 		let participant = await participants.get(testId);
 		expect(participant.scheduledOperations["questions"].length).to.equal(1);
-		await participants.addScheduledOperation(testId, "questions", testQJob);
+		let newPart = await participants.addScheduledOperation(testId, "questions", testQJob);
 		participant = await participants.get(testId)
 		expect(participant.scheduledOperations["questions"].length).to.equal(1);
 	});
@@ -566,7 +575,7 @@ describe('Participant Controller API: ', () =>{
 				}
 			});
 		}
-		await participants.addScheduledOperations(testId, operations);
+		let newPart = await participants.addScheduledOperations(testId, operations);
 		let participant = await participants.get(testId)
 		let scheduledQs = participant["scheduledOperations"]["reminders"];
 		for(let i = 0; i < numOps; i++){
@@ -596,7 +605,7 @@ describe('Participant Controller API: ', () =>{
 
 		]
 
-		await participants.addScheduledOperations(testId, operations);
+		let newPart = await participants.addScheduledOperations(testId, operations);
 		let participant = await participants.get(testId)
 		let scheduledQs = participant["scheduledOperations"]["reminders"];
 		expect(scheduledQs.length).to.equal(4)
@@ -662,7 +671,7 @@ describe('Participant Controller API: ', () =>{
 		let cAnswer = participant["currentAnswer"];
 		expect(cAnswer).to.eql(["answer1", "answer2"]);
 	});
-	it('Should add erase the current answer', async () => {
+	it('Should erase the current answer', async () => {
 
 		await participants.eraseCurrentAnswer(testId);
 		let participant = await participants.get(testId)

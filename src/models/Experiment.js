@@ -5,7 +5,11 @@ exports.ExperimentSchema = new Schema({
   experimentId: String,
   experimentConditions: [String],
   conditionAssignments: [Number],
-  currentlyAssignedToCondition: [Number],
+  currentlyAssignedToCondition: [{
+    type: Number,
+    min: 0,
+    default: 0
+  }],
   lastAssignedCondition: Number,
   errorMessages : [{
     message: String,

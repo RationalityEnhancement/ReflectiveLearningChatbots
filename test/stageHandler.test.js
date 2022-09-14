@@ -9,6 +9,7 @@ const StageHandler = require('../src/StageHandler');
 const {MongoMemoryServer} = require("mongodb-memory-server");
 const mongo = require("mongoose");
 const participants = require("../src/apiControllers/participantApiController");
+const answers = require("../src/apiControllers/answerApiController");
 const config = ConfigReader.getExpConfig();
 
 describe('Get stage list', () => {
@@ -225,8 +226,11 @@ describe('DB Connection', () => {
         it('Should add and update participant parameter', async () => {
 
             await participants.add(testPartId);
+            await answers.add(testPartId);
             await participants.initializeParticipant(testPartId, config)
+            await answers.initializeAnswer(testPartId, config.experimentId)
             let participant = await participants.get(testPartId);
+            let answerObj = await answers.get(testPartId);
             expect(participant).to.not.be.null;
             expect(participant.uniqueId).to.equal(testPartId);
             expect(participant.parameters.language).to.equal("English");
@@ -235,6 +239,10 @@ describe('DB Connection', () => {
             assert("activity" in participant.stages);
             assert("stageName" in participant.stages);
             assert("stageDay" in participant.stages);
+
+            expect(answerObj).to.not.be.null;
+            expect(answerObj.uniqueId).to.equal(testPartId);
+            expect(answerObj.experimentId).to.equal(config.experimentId);
         });
     })
 })
@@ -297,8 +305,8 @@ describe('End/Begin Stage', () => {
             expect(newPart.stages.stageName).to.equal("");
         })
         it('Should have added no response for outstanding quetsion', async () => {
-            let answers = newPart.answers;
-            let lastAnswer = answers[answers.length - 1];
+            let answerObj = await answers.get(testPartId);
+            let lastAnswer = answerObj.answers[answerObj.answers.length - 1];
             expect(lastAnswer.answer[0]).to.equal("[No Response]");
             expect(lastAnswer.qId).to.equal("test");
         })

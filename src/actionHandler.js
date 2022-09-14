@@ -11,6 +11,7 @@ const ExperimentUtils = require("./experimentUtils");
 const PIDtoConditionMap = ConfigReader.getPIDCondMap();
 const StageHandler = require('./stageHandler')
 const moment = require('moment')
+const debugs = require('./apiControllers/debugInfoApiController');
 
 /**
  * Action handler deals with the processing of actions
@@ -72,13 +73,11 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
     }
 
     // Get chat ID
-    console.time("Processing action " + actionObj.aType + ": getting secretMap")
     let secretMap = await getByUniqueId(config.experimentId, participant.uniqueId);
     if(!secretMap){
         return ReturnMethods.returnFailure("ActHandler: Unable to find participant " + participant.uniqueId
             + " chat ID while processing action");
     }
-    console.timeEnd("Processing action " + actionObj.aType + ": getting secretMap")
     let userInfo;
     try{
         userInfo = await bot.telegram.getChat(secretMap.chatId);
@@ -89,7 +88,6 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
     }
     participant["firstName"] = userInfo.first_name;
 
-    console.time("Processing action " + actionObj.aType + ": saving action Obj")
     // Save action that will be performed
     let saveActionObj = {
         infoType: "action",
@@ -100,12 +98,11 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
         timeStamp: moment.tz(participant.parameters.timezone).format(),
         from: from
     }
-    try{
-        await participants.addDebugInfo(participant.uniqueId, saveActionObj);
-    } catch(e){
-        return ReturnMethods.returnFailure("ActHandler: could not add save action obj");
-    }
-    console.timeEnd("Processing action " + actionObj.aType + ": saving action Obj")
+    debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
+        console.log("ActHandler: could not add save action obj - " + actionObj.aType + " - " + participant.uniqueId
+        + "\n" + err.message + "\n" + err.stack);
+    });
+
     switch(actionObj.aType){
         // Schedule all questions specified for given condition in config file
         case "scheduleQuestions":
@@ -224,7 +221,6 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Cannot update reserved variable!");
             }
             // Check which data type the target parameter is
-            console.time("Processing action " + actionObj.aType + ": updating parameter")
             switch(paramType){
                 // For string and string array, no conversion required, since current Answer is already string array
                 case DevConfig.OPERAND_TYPES.STRING:
@@ -264,7 +260,6 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 default:
                     return ReturnMethods.returnFailure("ActHandler - saveAnswerTo: Cannot save to var of type " + paramType);
             }
-            console.timeEnd("Processing action " + actionObj.aType + ": updating parameter")
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Answer "
                     + savedVal.toString() + " saved to " + varName, true);
@@ -446,13 +441,11 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             let boolVal = boolValObj.data;
 
             // Update the parameter with the new value
-            console.time("Processing action " + actionObj.aType + ": updating parameter")
             try{
                 newPartSetBool = await participants.updateParameter(participant.uniqueId, bVarName, boolVal);
             } catch(err){
                 return ReturnMethods.returnFailure("ActHandler - setBooleanVar: could not update participant params");
             }
-            console.timeEnd("Processing action " + actionObj.aType + ": updating parameter")
             if(config.debug.actionMessages){
                 await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Var "
                     + bVarName + " set to " + boolVal, true);

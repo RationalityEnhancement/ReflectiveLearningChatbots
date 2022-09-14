@@ -73,6 +73,17 @@ describe('ID Mappings API: ', () =>{
 			assert(idMaps.hasUniqueId(newMappings, curMap.uniqueId))
 
 		});
+		it('Should not add a duplicate mapping', async () => {
+			let curMap = testMappings[0];
+			await idMaps.addIDMapping(testExperimentId, curMap.chatId, "fakeId");
+
+			let experiment = await idMaps.getExperiment(testExperimentId);
+			let newMappings = experiment.IDMappings;
+			expect(newMappings.length).to.equal(1);
+			assert(idMaps.hasChatId(newMappings, curMap.chatId))
+			assert(idMaps.hasUniqueId(newMappings, curMap.uniqueId))
+
+		});
 	})
 
 	describe('Getting mappings', () => {
@@ -138,7 +149,6 @@ describe('ID Mappings API: ', () =>{
 
 			let experiment = await idMaps.getExperiment(testExperimentId);
 			let oldMap = await idMaps.getByChatId(testExperimentId, testMappings[0].chatId);
-
 			expect(experiment.IDMappings.length).to.equal(1);
 			expect(oldMap).to.be.undefined;
 			expect(!idMaps.hasChatId(experiment.IDMappings), testMappings[0].chatId);

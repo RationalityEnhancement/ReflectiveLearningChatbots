@@ -6,6 +6,8 @@ const config = ConfigReader.getExpConfig();
 const DevConfig = ConfigReader.getDevConfig()
 const participants = require('./src/apiControllers/participantApiController');
 const experiments = require('./src/apiControllers/experimentApiController');
+const answers = require('./src/apiControllers/answerApiController');
+const debugs = require('./src/apiControllers/debugInfoApiController');
 const idMaps = require('./src/apiControllers/idMapApiController');
 const Communicator = require('./src/communicator')
 const QuestionHandler = require('./src/questionHandler');
@@ -94,9 +96,11 @@ let getByChatId = async (experimentId, chatId) => {
 let handleError = async (participant, errorString) => {
     let timeStamp = moment.tz(participant.parameters.timezone).format();
     let message = timeStamp + "\n" + errorString;
-    delete participant["firstName"];
-    participant['debugInfo'] = undefined;
-    let participantJSON = JSON.stringify(participant);
+    let partCopy = JSON.parse(JSON.stringify(participant))
+    delete partCopy["firstName"];
+    let pAnswerObj = await answers.get(participant.uniqueId);
+    partCopy.answers = pAnswerObj.answers;
+    let participantJSON = JSON.stringify(partCopy);
     try{
         await experiments.addErrorObject(config.experimentId, {
             message : message,
@@ -111,8 +115,11 @@ let handleError = async (participant, errorString) => {
 let handleFeedback = async (participant, feedbackString) => {
     let timeStamp = moment.tz(participant.parameters.timezone).format();
     let message = timeStamp + "\n" + feedbackString;
-    delete participant["firstName"];
-    participant['debugInfo'] = undefined;
+    let partCopy = JSON.parse(JSON.stringify(participant))
+    delete partCopy["firstName"];
+    let pAnswerObj = await answers.get(participant.uniqueId);
+    // TODO Create separate field for answers in feedback and error object?
+    partCopy.answers = pAnswerObj.answers;
     let participantJSON = JSON.stringify(participant);
     try{
         await experiments.addFeedbackObject(config.experimentId, {
@@ -166,7 +173,7 @@ bot.command('log_exp', async ctx => {
     experiment["feedbackMessages"] = undefined;
     console.log(experiment);
     let experimentIds = await idMaps.getExperiment(config.experimentId);
-    console.log(experimentIds);
+    // console.log(experimentIds);
   } catch(err){
     console.log('Failed to log experiment');
     console.error(err);
@@ -196,8 +203,6 @@ bot.command('delete_me', async ctx => {
             return;
     }
 
-
-
     // Remove all jobs for participant
     let conditionIdx = participant["conditionIdx"];
     await ScheduleHandler.removeAllJobsForParticipant(uniqueId);
@@ -207,6 +212,8 @@ bot.command('delete_me', async ctx => {
 
     // Remove participant from database
     await participants.remove(uniqueId);
+    await answers.remove(uniqueId);
+    await debugs.remove(uniqueId);
 
     // Delete chatID mapping
     await idMaps.deleteByChatId(config.experimentId, ctx.from.id);
@@ -308,6 +315,7 @@ bot.command('cancel', async ctx =>{
     }
 })
 
+// TODO Debug this? Might not be working
 // Next command to pre-empt next scheduled question
 bot.command('next', async ctx => {
     if(!config.debug.enableNext) return;
@@ -769,6 +777,11 @@ bot.start(async ctx => {
       await participants.add(uniqueId);
       await participants.initializeParticipant(uniqueId, config);
 
+      await answers.add(uniqueId);
+      await answers.initializeAnswer(uniqueId, config.experimentId)
+
+        await debugs.add(uniqueId);
+        await debugs.initializeDebugInfo(uniqueId, config.experimentId)
       // Use the new participant henceforth
       participant = await participants.get(uniqueId);
     } catch(err){
@@ -973,7 +986,6 @@ bot.on('text', async ctx => {
                       LogicHandler.sendQuestion(bot, participant, ctx.from.id,
                           participant.currentQuestion, false, !config.debug.messageDelay, "invalid")
                           .then(returnObj => {
-                              console.timeEnd("Handling answer return")
                               if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                                   handleError(participant, returnObj.data);
                                   console.log(returnObj.data);
@@ -986,7 +998,6 @@ bot.on('text', async ctx => {
               case DevConfig.FAILURE_CODE:
                   handleError(participant, answerHandlerObj.data)
                       .then(() => {
-                          console.timeEnd("Handling answer return")
                           console.log("ERROR: " + answerHandlerObj.data);
                       });
                   break;
@@ -994,7 +1005,6 @@ bot.on('text', async ctx => {
               default:
                   handleError(participant, "Answer Handler did not respond appropriately")
                       .then(() => {
-                          console.timeEnd("Handling answer return")
                           console.log("ERROR: Answer Handler did not respond appropriately");
                       });
                   break;

@@ -78,9 +78,9 @@ describe('Experiment Controller API: ', () =>{
 	});
 	it('Should decrease assigned to condition - edge case 0', async () => {
 		const testCondIdx = 0;
-		await experiments.updateConditionAssignees(testId, testCondIdx, -2);
+		let newExp = await experiments.updateConditionAssignees(testId, testCondIdx, -2);
 		let experiment = await experiments.get(testId)
-		expect(experiment["currentlyAssignedToCondition"]).to.eql([0,3]);
+		expect(experiment["currentlyAssignedToCondition"]).to.eql([1,3]);
 	});
 	it('Should add an error', async () => {
 		let part = {

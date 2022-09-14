@@ -1,4 +1,5 @@
 const participants = require("./apiControllers/participantApiController");
+const debugs = require('./apiControllers/debugInfoApiController');
 const ConfigReader = require('../src/configReader');
 const config = ConfigReader.getExpConfig();
 const DevConfig = ConfigReader.getDevConfig();
@@ -84,8 +85,6 @@ let processNextSteps = async(bot, uniqueId) => {
         }
     }
 
-
-
     let nextQuestionObj;
 
     // Select and construct the question before actions are performed
@@ -116,7 +115,6 @@ let processNextSteps = async(bot, uniqueId) => {
     // Process all next actions, if any
     for(let i = 0; i < nextActions.length; i++){
         let pActionObj = await ActionHandler.processAction(bot, config, participant, nextActions[i], currentQuestion.qId);
-
         if(pActionObj.returnCode === DevConfig.FAILURE_CODE){
             failedActions.push(pActionObj.data);
         }
@@ -136,7 +134,10 @@ let processNextSteps = async(bot, uniqueId) => {
                 timeStamp: moment.tz(participant.parameters.timezone).format(),
                 from: "LHandler"
             }
-            await participants.addDebugInfo(participant.uniqueId, saveActionObj);
+            debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
+                console.log("LHandler: could not add save action obj - " + nextActions[i].aType + " - " + participant.uniqueId
+                    + "\n" + err.message + "\n" + err.stack);
+            });
 
         } catch(err){
             return ReturnMethods.returnFailure("LHandler: Could not fetch participant again: " + uniqueId)
@@ -144,7 +145,6 @@ let processNextSteps = async(bot, uniqueId) => {
         participant["firstName"] = userInfo.first_name;
 
     }
-
     // If question is not selected first, select and construct it after participant parameters are updated
     if(!currentQuestion.selectQFirst){
         // Get the next question
@@ -247,12 +247,12 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         timeStamp: moment.tz(participant.parameters.timezone).format(),
         from: from
     }
-    let newPart;
-    try{
-        newPart = await participants.addDebugInfo(participant.uniqueId, saveQuestionObj);
-    } catch(e){
-        return ReturnMethods.returnFailure("LHandler: could not add save question obj");
-    }
+
+    debugs.addDebugInfo(participant.uniqueId, saveQuestionObj).catch(err => {
+        console.log("LHandler: could not add save question obj - " + question.qId + " - " + participant.uniqueId
+            + "\n" + err.message + "\n" + err.stack);
+    });
+
     // Handle any outstanding questions before sending next question.
     await AnswerHandler.handleNoResponse(participant.uniqueId);
 
@@ -290,6 +290,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         currentAnswer: [],
         currentQuestion: question
     });
+
     // Set reminders, if any
     if(question.reminder && question.reminder["freqMins"]){
         let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,

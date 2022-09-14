@@ -38,9 +38,10 @@ exports.getByExperimentId = async (experimentId) => {
 // Add a new document with a given chat ID
 exports.add = async (uniqueId) => {
   try {
-    const participant = new Participant();
-    participant.uniqueId = uniqueId;
-    return participant.save();
+
+    return Participant.create({
+      uniqueId: uniqueId
+    });
   } catch (err) {
     console.error(err);
   }
@@ -50,24 +51,32 @@ exports.add = async (uniqueId) => {
 // Initialize the experiment document with some basic essential information
 exports.initializeParticipant = async (uniqueId, config) => {
   try{
-    const participant = await Participant.findOne({ uniqueId: uniqueId });
-    participant['experimentId'] = config.experimentId;
-    participant['parameters'] = {
-      "language" : config.defaultLanguage
-    };
-    participant['currentState'] = "starting";
-    participant["parameterTypes"] = {};
+
+    let paramTypes = {};
     for(const[key, value] of Object.entries(config.customParameters)){
       if(key in ParticipantSchemaObject.parameters){
-        participant["parameterTypes"][key] = value;
+        paramTypes[key] = value;
       }
     }
     for(const[key, value] of Object.entries(config.mandatoryParameters)){
       if(key in ParticipantSchemaObject.parameters){
-        participant["parameterTypes"][key] = value;
+        paramTypes[key] = value;
       }
     }
-    return participant.save();
+    return Participant.findOneAndUpdate(
+        {
+            uniqueId : uniqueId
+          },
+        {
+          experimentId: config.experimentId,
+          currentState: "starting",
+          parameters: {
+            language: config.defaultLanguage
+          },
+          parameterTypes: paramTypes
+        },
+        {new: true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to initializeParticipant');
     console.error(err);
@@ -77,9 +86,13 @@ exports.initializeParticipant = async (uniqueId, config) => {
 // Update the field of a document with a new value
 exports.updateField = async (uniqueId, field, value) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    participant[field] = value;
-    return participant.save();
+    let update = {}
+    update[field] = value;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to update field ' + field);
     console.error(err);
@@ -89,11 +102,15 @@ exports.updateField = async (uniqueId, field, value) => {
 // Update multiple fields
 exports.updateFields = async (uniqueId, newFields) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
+    let update = {}
     for(const [field, value] of Object.entries(newFields)){
-      participant[field] = value;
+      update[field] = value;
     }
-    return participant.save();
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to update field ' + field);
     console.error(err);
@@ -102,13 +119,18 @@ exports.updateFields = async (uniqueId, newFields) => {
 
 // Update the 'parameters' field of the participant with a new value
 exports.updateParameter = async (uniqueId, param, value) => {
-
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    let updatedParams = participant.parameters;
-    updatedParams[param] = value;
-    participant.parameters = updatedParams;
-    return participant.save();
+    let update = {
+      "$set":{
+
+      }
+    }
+    update["$set"]["parameters."+param] = value;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to update parameters ' + param);
     console.error(err);
@@ -119,11 +141,17 @@ exports.updateParameter = async (uniqueId, param, value) => {
 exports.updateStageParameter = async (uniqueId, param, value) => {
 
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    let updatedParams = participant.stages;
-    updatedParams[param] = value;
-    participant.stages = updatedParams;
-    return participant.save();
+    let update = {
+      "$set":{
+
+      }
+    }
+    update["$set"]["stages."+param] = value;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to update stage parameter ' + param);
     console.error(err);
@@ -134,11 +162,18 @@ exports.updateStageParameter = async (uniqueId, param, value) => {
 exports.clearStageParam = async (uniqueId, param) => {
 
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    if(param in participant.stages){
-      participant.stages[param] = undefined;
+    let defaultVal = Participant.schema.tree.stages[param].default;
+    let update = {
+      "$set":{
+
+      }
     }
-    return participant.save();
+    update["$set"]["stages."+param] = defaultVal;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to clear stage parameter ' + param);
     console.error(err);
@@ -149,11 +184,17 @@ exports.clearStageParam = async (uniqueId, param) => {
 exports.addToArrParameter = async (uniqueId, param, value) => {
 
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    let updatedParams = participant.parameters;
-    updatedParams[param].push(value);
-    participant.parameters = updatedParams;
-    return participant.save();
+    let update = {
+      "$push":{
+
+      }
+    }
+    update["$push"]["parameters."+param] = value;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to add value to array parameter');
     console.error(err);
@@ -163,12 +204,17 @@ exports.addToArrParameter = async (uniqueId, param, value) => {
 // Add a value to an array parameter
 exports.addToArrField = async (uniqueId, fieldName, value) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    let ans = participant[fieldName];
-    if(Array.isArray(ans)){
-      participant[fieldName].push(value);
+    let update = {
+      "$push":{
+
+      }
     }
-    return participant.save();
+    update["$push"][fieldName] = value;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   }
   catch(err){
     console.log('Participant API Controller: Unable to add to array field ' + fieldName);
@@ -180,11 +226,19 @@ exports.addToArrField = async (uniqueId, fieldName, value) => {
 exports.clearParamValue = async (uniqueId, param) => {
 
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    if(param in participant.parameters){
-      participant.parameters[param] = undefined;
+
+    let defaultVal = Participant.schema.tree.parameters[param].default;
+    let update = {
+      "$set":{
+
+      }
     }
-    return participant.save();
+    update["$set"]["parameters."+param] = defaultVal;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to clear parameter value');
     console.error(err);
@@ -197,12 +251,22 @@ exports.clearParamValue = async (uniqueId, param) => {
 // If updateAnswer is not undefined, then set current answer to that
 exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    participant.answers.push(answer);
-    if(updateAnswer){
-      participant.currentAnswer = updateAnswer
+    let update = {
+      "$push":{
+
+      }
     }
-    return participant.save();
+    update["$push"]["answers"] = answer;
+    if(updateAnswer){
+      update["$set"] = {
+        currentAnswer: updateAnswer
+      }
+    }
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
     console.error(err);
@@ -212,9 +276,17 @@ exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
 // Add debug information to the chronological list
 exports.addDebugInfo = async (uniqueId, infoObj) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    participant.debugInfo.push(infoObj);
-    return participant.save();
+    let update = {
+      "$push":{
+
+      }
+    }
+    update["$push"]["debugInfo"] = infoObj;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
     console.error(err);
@@ -224,9 +296,17 @@ exports.addDebugInfo = async (uniqueId, infoObj) => {
 // Adds an object to the stages.activity array
 exports.addStageActivity = async (uniqueId, activity) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    participant.stages.activity.push(activity);
-    return participant.save();
+    let update = {
+      "$push":{
+
+      }
+    }
+    update["$push"]["stages.activity"] = activity;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId },
+        update,
+        {new : true}
+    );
   } catch(err){
     console.log('Participant API Controller: Unable to add answer');
     console.error(err);
@@ -290,31 +370,71 @@ exports.hasScheduledOperation = async (uniqueId, type, jobInfo) => {
 
 exports.addScheduledOperation = async (uniqueId, type, jobInfo) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    let hasOAlready = exports.hasScheduledOperationObject(participant, type, jobInfo)
-    if(!hasOAlready){
-      participant.scheduledOperations[type].push(jobInfo);
+    let condition = {
+      uniqueId : uniqueId
     }
-    let newP = await participant.save();
-    return newP;
+    condition["scheduledOperations."+type+".jobId"] = {
+      $ne: jobInfo.jobId
+    }
+    let update = {
+      "$push":{
+
+      }
+    }
+    update["$push"]["scheduledOperations."+type] = jobInfo;
+    return Participant.findOneAndUpdate(
+        condition,
+        update,
+        {new : true}
+    );
   }
   catch(err){
     console.log('Participant API Controller: Unable to add scheduled question');
     console.error(err);
   }
 }
+/**
+ *  adds multiple scheduled operations as specified in operations
+ * @param uniqueId
+ * @param operations array of objects
+ *              {
+ *                  type: "questions", "actions", or "reminders",
+ *                  jobInfo: {
+ *                      jobId: string jobId,
+ *                      atTime: HH:MM
+ *                      onDays: Array of 3-letter day names
+ *                      if: string condition
+ *                  }
+ *              }
+ * @returns {Promise<BulkWriteResult>}
+ */
 exports.addScheduledOperations = async (uniqueId, operations) => {
   try{
-    if(operations.length === 0) return;
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    for(let i = 0; i < operations.length; i++) {
-      let currentOp = operations[i];
-      let hasOAlready = exports.hasScheduledOperationObject(participant, currentOp.type, currentOp.jobInfo)
-      if(!hasOAlready){
-        participant.scheduledOperations[currentOp.type].push(currentOp.jobInfo);
+    let writeOps = []
+    operations.forEach(op => {
+      let condition = {
+        uniqueId : uniqueId
       }
-    }
-    return participant.save();
+      condition["scheduledOperations."+op.type+".jobId"] = {
+        $ne: op.jobInfo.jobId
+      }
+      let update = {
+        "$push":{
+
+        }
+      }
+      update["$push"]["scheduledOperations."+op.type] = op.jobInfo;
+      writeOps.push({
+        updateOne: {
+          filter: condition,
+          update: update
+        }
+      })
+    })
+
+    return Participant.bulkWrite(
+        writeOps
+    );
   }
   catch(err){
     console.log('Participant API Controller: Unable to add scheduled operations');
@@ -323,19 +443,19 @@ exports.addScheduledOperations = async (uniqueId, operations) => {
 }
 exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    let scheduledQs = participant.scheduledOperations[type];
-    let jobIdx = -1;
-    for(let i = 0; i < scheduledQs.length; i++){
-      let scheduledQ = scheduledQs[i];
-      if(scheduledQ.jobId === jobId){
-        jobIdx = i;
-        break;
+    let update = {
+      "$pull" : {
+
       }
     }
-    if(jobIdx !== -1) participant.scheduledOperations[type].splice(jobIdx,1);
-    // TODO: Change this to update at some point? Can't do it now, apparently
-    return participant.save();
+    update["$pull"]["scheduledOperations."+type] = {
+      jobId: jobId
+    }
+    return Participant.findOneAndUpdate(
+        {uniqueId : uniqueId},
+        update,
+        {new : true}
+    );
   }
   catch(err){
     console.log('Participant API Controller: Unable to remove scheduled operation');
@@ -343,24 +463,39 @@ exports.removeScheduledOperation = async (uniqueId, type, jobId) => {
   }
 }
 
+/**
+ *  removes multiple scheduled operations as specified in operations
+ * @param uniqueId
+ * @param operations array of objects
+ *              {
+ *                  type: "questions", "actions", or "reminders",
+ *                  jobId: string jobId
+ *              }
+ * @returns {Promise<BulkWriteResult>}
+ */
 exports.removeScheduledOperations = async (uniqueId, operations) => {
   try{
-    if(operations.length === 0) return;
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    for(let i = 0; i < operations.length; i++){
-      let currentOp = operations[i];
-      let scheduledQs = participant.scheduledOperations[currentOp.type];
-      let jobIdx = -1;
-      for(let i = 0; i < scheduledQs.length; i++){
-        let scheduledQ = scheduledQs[i];
-        if(scheduledQ.jobId === currentOp.jobId){
-          jobIdx = i;
-          break;
+    let writeOps = []
+    operations.forEach(op => {
+      let update = {
+        "$pull" : {
+
         }
       }
-      if(jobIdx !== -1) participant.scheduledOperations[currentOp.type].splice(jobIdx,1);
-    }
-    return participant.save();
+      update["$pull"]["scheduledOperations."+op.type] = {
+        jobId: op.jobId
+      }
+      writeOps.push({
+        updateOne: {
+          filter: {uniqueId: uniqueId},
+          update: update
+        }
+      })
+    })
+
+    return Participant.bulkWrite(
+        writeOps
+    );
   }
   catch(err){
     console.log('Participant API Controller: Unable to remove scheduled operations');
@@ -370,12 +505,20 @@ exports.removeScheduledOperations = async (uniqueId, operations) => {
 
 exports.addToCurrentAnswer = async (uniqueId, answerPart) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    let ans = participant.currentAnswer;
-    if(!ans.includes(answerPart)){
-      participant.currentAnswer.push(answerPart);
-    }
-    return participant.save();
+    // Don't add to current answer if it's a duplicate answer
+    return Participant.findOneAndUpdate(
+        {
+          uniqueId: uniqueId,
+          currentAnswer : {
+            $nin: [answerPart]
+          }
+        },
+        {
+          $push: {
+            currentAnswer: answerPart
+          }
+        }
+    )
   }
   catch(err){
     console.log('Participant API Controller: Unable to add scheduled question');
@@ -385,9 +528,15 @@ exports.addToCurrentAnswer = async (uniqueId, answerPart) => {
 
 exports.eraseCurrentAnswer = async (uniqueId) => {
   try{
-    let participant = await Participant.findOne({ uniqueId: uniqueId });
-    participant.currentAnswer = [];
-    return participant.save();
+    let defaultVal = Participant.schema.tree.currentAnswer.default;
+    return Participant.findOneAndUpdate(
+        { uniqueId: uniqueId},
+        {
+          $set: {
+            currentAnswer: defaultVal
+          }
+        }
+    )
   }
   catch(err){
     console.log('Participant API Controller: Unable to add scheduled question');

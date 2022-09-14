@@ -4,10 +4,8 @@ const answers = require('../src/apiControllers/answerApiController');
 
 const mongo = require('mongoose');
 const moment = require("moment-timezone");
-const participants = require("../src/apiControllers/participantApiController");
 
 const expect = require('chai').expect;
-
 
 const testId = '123';
 const testId2 = '321';
@@ -28,7 +26,7 @@ describe('Answer Controller API: ', () =>{
 		expect(result).to.equal(1);
 	});
 	
-	it('Should add and get answer doc', async () => {
+	it('Should add and get debug doc', async () => {
 		
 		await answers.add(testId);
 		let experiment = await answers.get(testId);
@@ -37,12 +35,12 @@ describe('Answer Controller API: ', () =>{
 		
 		
 	});
-	it('Should initialize an answer doc', async() => {
+	it('Should initialize an debug doc', async() => {
 		let savedExp = await answers.initializeAnswer(testId, testExptId);
 		let newExp = await answers.get(testId);
 		expect(newExp['experimentId']).to.equal(testExptId);
 	})
-	it('Should add and get answer doc - 2', async () => {
+	it('Should add and get debug doc - 2', async () => {
 
 		await answers.add(testId2);
 		let experiment = await answers.get(testId2);
@@ -51,12 +49,12 @@ describe('Answer Controller API: ', () =>{
 
 
 	});
-	it('Should initialize an answer doc - 2', async() => {
+	it('Should initialize an debug doc - 2', async() => {
 		let savedExp = await answers.initializeAnswer(testId2, testExptId);
 		let newExp = await answers.get(testId2);
 		expect(newExp['experimentId']).to.equal(testExptId);
 	})
-	it('Should add an answer', async () => {
+	it('Should add a debug info', async () => {
 		const testAnswer = {
 			qId : "Zombotron",
 			text: "Are you a zombie please?",

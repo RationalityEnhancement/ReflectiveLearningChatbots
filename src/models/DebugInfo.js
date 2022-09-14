@@ -53,4 +53,4 @@ exports.DebugInfoSchemaObject = schemaObject;
 
 exports.DebugInfoSchema = new Schema(schemaObject);
 
-exports.DebugInfo = model('DebugInfo', exports.AnswerSchema, 'experiment3_debuginfo');
+exports.DebugInfo = model('DebugInfo', exports.DebugInfoSchema, 'experiment3_debuginfo');

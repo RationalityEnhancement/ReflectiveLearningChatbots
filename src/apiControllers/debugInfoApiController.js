@@ -49,7 +49,7 @@ exports.add = async (uniqueId) => {
 
 
 // Initialize the experiment document with some basic essential information
-exports.initializeDebugInfo = async (uniqueId, config) => {
+exports.initializeDebugInfo = async (uniqueId, experimentId) => {
   try{
 
     return DebugInfo.findOneAndUpdate(
@@ -58,13 +58,13 @@ exports.initializeDebugInfo = async (uniqueId, config) => {
           },
         {
           $set: {
-            experimentId: config.experimentId
+            experimentId: experimentId
           },
         },
         {new: true}
     );
   } catch(err){
-    console.log('Participant API Controller: Unable to initializeParticipant');
+    console.log('Debug API Controller: Unable to initializeDebug');
     console.error(err);
   }
 }
@@ -84,7 +84,7 @@ exports.addDebugInfo = async (uniqueId, infoObj) => {
         {new : true}
     );
   } catch(err){
-    console.log('Participant API Controller: Unable to add answer');
+    console.log('Debug API Controller: Unable to add debug info');
     console.error(err);
   }
 }

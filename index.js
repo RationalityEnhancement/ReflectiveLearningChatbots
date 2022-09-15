@@ -1051,12 +1051,13 @@ if(!!local && local === "-l"){
 
 // Enable graceful stop
 process.once('SIGINT', () => {
-    const jobNames = lodash.keys(scheduler.scheduledJobs);
-    for(let name of jobNames) scheduler.cancelJob(name);
-    bot.stop('SIGINT')
+    scheduler.gracefulShutdown().then(res => {
+        bot.stop('SIGINT')
+    });
+
 })
 process.once('SIGTERM', () => {
-    const jobNames = lodash.keys(scheduler.scheduledJobs);
-    for(let name of jobNames) scheduler.cancelJob(name);
-    bot.stop('SIGTERM')
+    scheduler.gracefulShutdown().then(res => {
+        bot.stop('SIGTERM')
+    });
 })

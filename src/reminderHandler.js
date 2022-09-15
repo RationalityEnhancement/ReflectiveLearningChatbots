@@ -87,7 +87,7 @@ class ReminderHandler{
             );
         }
         let job;
-        let jobId = participant.uniqueId + "_reminder_" + currentTime.hours + "_" + currentTime.minutes;
+        let jobId = participant.uniqueId + "_r_" + currentTime.hours + "_" + currentTime.minutes;
         // Get the reminder text from config and schedule the message
         try{
             let reminderTextLong = config.phrases.schedule.reminderTextLong[participant.parameters.language];
@@ -107,7 +107,10 @@ class ReminderHandler{
                     }
                 }
             })
-            if(!job) throw "Job is null"
+            if(!job) {
+                scheduler.scheduledJobs[jobId].cancel();
+                throw "Job is null"
+            }
         } catch(err){
             return ReturnMethods.returnFailure("RHandler: Unable to create reminder job:\n" + err);
         }
@@ -138,7 +141,7 @@ class ReminderHandler{
             return ReturnMethods.returnSuccess(jobList.map(job => job.jobId));
         } catch(e){
             return ReturnMethods.returnFailure(
-                "RHandler: Errors adding jobs to DB:\n" + e.message + "\n" + estack)
+                "RHandler: Errors adding jobs to DB:\n" + e.message + "\n" + e.stack)
         }
     }
 
@@ -181,7 +184,7 @@ class ReminderHandler{
                 failedJobs.push(curJobObj.data);
             } else {
                 succeededJobs.push(curJobObj.data);
-                this.scheduledReminders[curJobObj.data.jobId] = curJobObj.data.job;
+                // this.scheduledReminders[curJobObj.data.jobId] = curJobObj.data.job;
                 dbJobs.push({
                     jobId : curJobObj.data.jobId,
                     minutes : newTime.minutes,
@@ -192,9 +195,13 @@ class ReminderHandler{
 
         // Write all these jobs to database
         let writeObj = await this.writeRemindersToDB(participant.uniqueId, dbJobs);
+
+        // Cancel all set reminders in case of failure
         if(writeObj.returnCode === DevConfig.FAILURE_CODE){
-            for(const [jobId, job] of Object.entries(this.scheduledReminders)){
-                job.cancel();
+            for(const [jobId, job] of Object.entries(scheduler.scheduledJobs)){
+                if(jobId.startsWith(''+participant.uniqueId+'_r')) {
+                    job.cancel();
+                }
             }
             return writeObj;
         }
@@ -222,8 +229,8 @@ class ReminderHandler{
     static cancelJobsForId(uniqueId){
         // Get jobs for uniqueId
         let currentJobIds = [];
-        for(const [jobId, job] of Object.entries(this.scheduledReminders)){
-            if(jobId.startsWith(''+uniqueId)){
+        for(const [jobId, job] of Object.entries(scheduler.scheduledJobs)){
+            if(jobId.startsWith(''+uniqueId+'_r')) {
                 currentJobIds.push(jobId);
             }
         }
@@ -235,8 +242,7 @@ class ReminderHandler{
         for(let i = 0; i < currentJobIds.length; i++){
             let curJob = currentJobIds[i];
             try{
-                this.scheduledReminders[curJob].cancel();
-                delete this.scheduledReminders[curJob]
+                scheduler.scheduledJobs[curJob].cancel();
                 succeededJobs.push(curJob);
             } catch (err){
                 failedJobs.push(curJob)
@@ -285,7 +291,7 @@ class ReminderHandler{
                     jobId : schRems[i].jobId,
                     job: curJobObj.data.job
                 });
-                this.scheduledReminders[schRems[i].jobId] = curJobObj.data.job;
+                // this.scheduledReminders[schRems[i].jobId] = curJobObj.data.job;
             }
         }
 

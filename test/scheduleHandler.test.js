@@ -391,7 +391,9 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
             expect(savedJob).to.eql(returnJob);
         });
         it('Should write job to database', async () => {
@@ -434,7 +436,9 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
             expect(savedJob).to.eql(returnJob);
         });
         it('Should write job to database', async () => {
@@ -489,8 +493,10 @@ describe('Scheduling one Operation', () => {
             }
         });
         it('Should save job to scheduledOperations', () => {
+            let savedJobs = scheduler.scheduledJobs;
             for(let i = 0; i < returnJobs.length; i++){
-                let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobs[i].jobId];
+                assert(returnJobs[i].jobId in savedJobs)
+                let savedJob = savedJobs[returnJobs[i].jobId];
                 expect(savedJob).to.eql(returnJobs[i].job);
             }
         });
@@ -544,8 +550,10 @@ describe('Scheduling one Operation', () => {
             }
         });
         it('Should save job to scheduledOperations', () => {
+            let savedJobs = scheduler.scheduledJobs;
             for(let i = 0; i < returnJobs.length; i++){
-                let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobs[i].jobId];
+                assert(returnJobs[i].jobId in savedJobs)
+                let savedJob = savedJobs[returnJobs[i].jobId];
                 expect(savedJob).to.eql(returnJobs[i].job);
             }
         });
@@ -587,7 +595,10 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
+
             expect(savedJob).to.eql(returnJob);
         });
         it('Should not write job to database', async () => {
@@ -630,7 +641,10 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
+
             expect(savedJob).to.eql(returnJob);
         });
         it('Should write job to database', async () => {
@@ -676,7 +690,10 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
+
             expect(savedJob).to.eql(returnJob);
         });
         it('Should write job to database', async () => {
@@ -723,7 +740,10 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
+
             expect(savedJob).to.eql(returnJob);
         });
         it('Should not write job to database', async () => {
@@ -778,10 +798,13 @@ describe('Scheduling one Operation', () => {
             }
         });
         it('Should save job to scheduledOperations', () => {
+            let savedJobs = scheduler.scheduledJobs;
             for(let i = 0; i < returnJobs.length; i++){
-                let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobs[i].jobId];
+                assert(returnJobs[i].jobId in savedJobs)
+                let savedJob = savedJobs[returnJobs[i].jobId];
                 expect(savedJob).to.eql(returnJobs[i].job);
             }
+
         });
         it('Should write job to database', async () => {
             let participant = await participants.get(testId3);
@@ -836,10 +859,13 @@ describe('Scheduling one Operation', () => {
             }
         });
         it('Should save job to scheduledOperations', () => {
+            let savedJobs = scheduler.scheduledJobs;
             for(let i = 0; i < returnJobs.length; i++){
-                let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobs[i].jobId];
+                assert(returnJobs[i].jobId in savedJobs)
+                let savedJob = savedJobs[returnJobs[i].jobId];
                 expect(savedJob).to.eql(returnJobs[i].job);
             }
+
         });
         it('Should write job to database', async () => {
             let participant = await participants.get(testId3);
@@ -1149,15 +1175,17 @@ describe('Scheduling all', () => {
             for(let i = 0; i < scheduleAllReturnObj.data.length - actionList.length; i++){
                 let jobId = scheduleAllReturnObj.data[i]["jobId"];
                 let job = scheduleAllReturnObj.data[i]["job"];
-                assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-                expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
+                expect(job).to.eql(savedJobs[jobId]);
             }
             // Actions
             for(let i = scheduleAllReturnObj.data.length - actionList.length; i < scheduleAllReturnObj.data.length; i++){
                 let jobId = scheduleAllReturnObj.data[i]["jobId"];
                 let job = scheduleAllReturnObj.data[i]["job"];
-                assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
-                expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
+                expect(job).to.eql(savedJobs[jobId]);
             }
         });
         it('Should have added jobs to database', async () => {
@@ -1251,61 +1279,77 @@ describe('Cancelling + removing ', () => {
         // Cancelling the jobs scheduled through scheduleAll
         it('Should cancel + delete question job, but not from DB - 1', async () => {
             let jobId = scheduleAllReturnObj.data[0]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "questions");
 
             let participant = await participants.get(testId);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
         it('Should cancel + delete question job, but not from DB - 2', async () => {
             let jobId = scheduleAllReturnObj.data[1]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "questions");
+
             let participant = await participants.get(testId);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
         // Cancel second participant's independently scheduled job
         it('Should cancel + delete question job, but not from DB - 3', async () => {
             let jobId = indScheduledJobs[1]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "questions");
+
             let participant = await participants.get(testId2);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
         // Cancelling the action jobs scheduled through scheduleAll
         it('Should cancel + delete action job, but not from DB - 1', async () => {
             let jobId = scheduleAllReturnObj.data[2]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "actions");
 
             let participant = await participants.get(testId);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
         it('Should cancel + delete action job, but not from DB - 2', async () => {
             let jobId = scheduleAllReturnObj.data[3]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "actions");
+
             let participant = await participants.get(testId);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
         // Cancel second participant's independently scheduled job
         it('Should cancel + delete action job, but not from DB - 3', async () => {
             let jobId = indScheduledJobs[4]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "actions");
+
             let participant = await participants.get(testId2);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
     });
@@ -1321,8 +1365,7 @@ describe('Cancelling + removing ', () => {
             for(let i = 0; i < cancelAllReturnObj.data.length; i++){
                 assert(
                     !(
-                        cancelAllReturnObj.data[i] in ScheduleHandler.scheduledOperations["questions"]
-                        || cancelAllReturnObj.data[i] in ScheduleHandler.scheduledOperations["actions"]
+                        cancelAllReturnObj.data[i] in scheduler.scheduledJobs
                     )
                 )
             }
@@ -1390,15 +1433,17 @@ describe('Cancelling + removing ', () => {
         it('Should remove question job - 1', async () => {
             let jobId = indScheduledJobs[0]["jobId"];
             let participant = await participants.get(testId);
-
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
 
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId, "questions");
             participant = await participants.get(testId);
 
             expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
+
             assert(!DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
 
@@ -1407,14 +1452,17 @@ describe('Cancelling + removing ', () => {
             let jobId = indScheduledJobs[2]["jobId"];
             let participant = await participants.get(testId);
 
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             assert(!DBHasJob(participant.scheduledOperations["questions"], jobId));
 
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId, "questions");
             participant = await participants.get(testId);
 
             expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
+
             assert(!DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
         // This job should be in the DB
@@ -1422,14 +1470,17 @@ describe('Cancelling + removing ', () => {
             let jobId = indScheduledJobs[3]["jobId"];
             let participant = await participants.get(testId);
 
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             assert(DBHasJob(participant.scheduledOperations["actions"], jobId));
 
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId, "actions");
             participant = await participants.get(testId);
 
             expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
+
             assert(!DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
 
@@ -1437,15 +1488,17 @@ describe('Cancelling + removing ', () => {
         it('Should remove action job - 2', async () => {
             let jobId = indScheduledJobs[5]["jobId"];
             let participant = await participants.get(testId);
-
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             assert(!DBHasJob(participant.scheduledOperations["actions"], jobId));
 
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId, "actions");
             participant = await participants.get(testId);
 
             expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
+
             assert(!DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
     });
@@ -1508,13 +1561,8 @@ describe('Rescheduling', () => {
                 let jobId = rescheduleReturnObj.data[i]["jobId"];
                 let job = rescheduleReturnObj.data[i]["job"];
                 // If not in questions, should be in actions
-                try{
-                    assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
-                } catch(err){
-                    assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
-                }
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
 
             }
         });
@@ -1556,13 +1604,10 @@ describe('Rescheduling', () => {
                 let jobId = rescheduleReturnObj.data[i]["jobId"];
                 let job = rescheduleReturnObj.data[i]["job"];
                 // If not in questions, should be in actions
-                try{
-                    assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
-                } catch(err){
-                    assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
-                }
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs)
+                let savedJob = savedJobs[jobId];
+                expect(job).to.eql(savedJob)
 
             }
         });
@@ -1649,13 +1694,10 @@ describe('Rescheduling', () => {
             for(let i = 0; i < rescheduleReturnObj.data.length; i++){
                 let jobId = rescheduleReturnObj.data[i]["jobId"];
                 let job = rescheduleReturnObj.data[i]["job"];
-                try{
-                    assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
-                } catch(e){
-                    assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
-                }
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs)
+                let savedJob = savedJobs[jobId];
+                expect(job).to.eql(savedJob)
             }
         });
 
@@ -1764,8 +1806,10 @@ describe('Scheduling all 2', () => {
         it('Should have added one job to scheduled operations',  () => {
             let jobId = scheduleAllReturnObj.successData[0]["jobId"];
             let job = scheduleAllReturnObj.successData[0]["job"];
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-            expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs)
+            let savedJob = savedJobs[jobId];
+            expect(job).to.eql(savedJob)
         });
         it('Should have added succeeded jobs to database', async () => {
 
@@ -1819,18 +1863,17 @@ describe('Removing 2', () => {
     describe('Removing all jobs for a participant', () => {
         let removeAllReturnObj;
         it('Should have job IDs for that participant before', async () => {
-            let scheduledQs = ScheduleHandler.scheduledOperations["questions"];
-            let scheduledAs = ScheduleHandler.scheduledOperations["actions"];
+            let scheduledOs = scheduler.scheduledJobs;
             let foundChatIdQ = false;
             let foundChatIdA = false;
-            for(const [jobId, job] of Object.entries(scheduledQs)){
-                if(jobId.startsWith(''+testId)){
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId+'_q')){
                     foundChatIdQ = true;
                     break;
                 }
             }
-            for(const [jobId, job] of Object.entries(scheduledAs)){
-                if(jobId.startsWith(''+testId)){
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId+'_a')){
                     foundChatIdA = true;
                     break;
                 }
@@ -1864,18 +1907,17 @@ describe('Removing 2', () => {
             expect(removeAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should have no jobs with chat id in scheduled questions after',  () => {
-            let scheduledQs = ScheduleHandler.scheduledOperations["questions"];
-            let scheduledAs = ScheduleHandler.scheduledOperations["actions"];
+            let scheduledOs = scheduler.scheduledJobs;
             let foundChatIdQ = false;
             let foundChatIdA = false;
-            for(const [jobId, job] of Object.entries(scheduledQs)){
-                if(jobId.startsWith(''+testId)){
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId+'_q')){
                     foundChatIdQ = true;
                     break;
                 }
             }
-            for(const [jobId, job] of Object.entries(scheduledAs)){
-                if(jobId.startsWith(''+testId)){
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId+'_a')){
                     foundChatIdA = true;
                     break;
                 }

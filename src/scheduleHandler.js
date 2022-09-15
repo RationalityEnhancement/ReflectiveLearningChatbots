@@ -18,10 +18,12 @@ const lodash = require('lodash')
 const {processAction} = require("./actionHandler");
 
 class ScheduleHandler{
-    static scheduledOperations = {
-        "questions" : {},
-        "actions" : {}
-    };
+    // TODO: Remove all commented out code when sufficiently convinced that it will never be needed again
+    // (Commented out to avoid using global vars)
+    // static scheduledOperations = {
+    //     "questions" : {},
+    //     "actions" : {}
+    // };
     static debugQueue = {};
     static debugQueueAdjusted = {}
     /**
@@ -40,14 +42,17 @@ class ScheduleHandler{
 
         for(let i = 0; i < operationTypes.length; i++){
             let oType = operationTypes[i];
-            // Get all the scheduled operations from the local store
-            let scheduledOs = this.scheduledOperations[oType];
+            // Get all the scheduled operations from the local store (commented out to avoid using global vars)
+            // let scheduledOs = this.scheduledOperations[oType];
+            // Get all the scheduled operations from node scheduler
+            let scheduledOs = scheduler.scheduledJobs;
             let partJobIDList = [];
 
             // Find those operations which belong to the current participant
-            // based on the job ID (starts with participant ID)
+            // based on the job ID (starts with participant ID) and the operation type
+            // Job IDs of questions have format <uniqueId>_q_..., actions <uniqueId>_a_...
             for(const [jobId, job] of Object.entries(scheduledOs)){
-                if(jobId.startsWith(''+uniqueId)){
+                if(jobId.startsWith(''+uniqueId+'_'+oType[0])){
                     partJobIDList.push(jobId);
                 }
             }
@@ -97,15 +102,17 @@ class ScheduleHandler{
 
         for(let i = 0; i < operationTypes.length; i++){
             let oType = operationTypes[i];
-            // Get all the scheduled operations from the local store
-            let scheduledOs = this.scheduledOperations[oType];
-
+            // Get all the scheduled operations from the local store (commented out to avoid using global vars)
+            // let scheduledOs = this.scheduledOperations[oType];
+            // Get all the scheduled operations from node scheduler
+            let scheduledOs = scheduler.scheduledJobs;
             let partJobIDList = [];
 
             // Find those operations which belong to the current participant
-            // based on the job ID (starts with participant ID)
+            // based on the job ID (starts with participant ID) and the operation type
+            // Job IDs of questions have format <uniqueId>_q_..., actions <uniqueId>_a_...
             for(const [jobId, job] of Object.entries(scheduledOs)){
-                if(jobId.startsWith(''+uniqueId)){
+                if(jobId.startsWith(''+uniqueId+'_'+oType[0])){
                     partJobIDList.push(jobId);
                 }
             }
@@ -172,8 +179,10 @@ class ScheduleHandler{
     static cancelJobByID(jobId, type){
         try{
             // Get the job and cancel it, and then remove it from the local store entirely
-            this.scheduledOperations[type][jobId].cancel();
-            delete this.scheduledOperations[type][jobId];
+            // (commented out to avoid using global vars)
+            // this.scheduledOperations[type][jobId].cancel();
+            // delete this.scheduledOperations[type][jobId];
+            scheduler.scheduledJobs[jobId].cancel()
         } catch(err){
             return ReturnMethods.returnFailure("Scheduler: Failed to cancel job " + jobId);
         }
@@ -866,8 +875,8 @@ class ScheduleHandler{
             }
         }
 
-        // Add to local store
-        this.scheduledOperations["questions"][jobId] = job;
+        // Add to local store (commented out to avoid using global vars)
+        // this.scheduledOperations["questions"][jobId] = job;
 
         return ReturnMethods.returnSuccess({
             jobId: jobId,
@@ -909,7 +918,7 @@ class ScheduleHandler{
         let recRule = recurrenceRuleObj.data;
 
         let uniqueId = participant.uniqueId;
-        let jobId = uniqueId + "_" + questionInfo.qId + "_" + recRule.hour
+        let jobId = uniqueId + "_q_" + questionInfo.qId + "_" + recRule.hour
             + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
 
         // Get the assigned condition and preferred language of the participant
@@ -1046,10 +1055,10 @@ class ScheduleHandler{
             }
         }
 
-        // Add all jobs to local store
-        scheduledJobs.forEach(jobInfo => {
-            this.scheduledOperations["questions"][jobInfo.jobId] = jobInfo.job;
-        })
+        // Add all jobs to local store (commented out to avoid using global vars)
+        // scheduledJobs.forEach(jobInfo => {
+        //     this.scheduledOperations["questions"][jobInfo.jobId] = jobInfo.job;
+        // })
         return ReturnMethods.returnSuccess(scheduledJobs.map(jobInfo => {
             return {
                 job: jobInfo.job,
@@ -1092,7 +1101,7 @@ class ScheduleHandler{
 
         let argsStr = (actionInfo.args && actionInfo.args.length > 0) ? actionInfo.args.join("") + "_" : ""
         // Construct the jobID for the job
-        let jobId = uniqueId + "_" + actionInfo.aType + "_" + argsStr
+        let jobId = uniqueId + "_a_" + actionInfo.aType + "_" + argsStr
             + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
 
         // Create the action
@@ -1239,7 +1248,8 @@ class ScheduleHandler{
         }
 
         // Add to local store
-        this.scheduledOperations["actions"][jobId] = job;
+        // (Commented out to avoid using global vars)
+        // this.scheduledOperations["actions"][jobId] = job;
 
         return ReturnMethods.returnSuccess({
             jobId: jobId,
@@ -1295,10 +1305,10 @@ class ScheduleHandler{
             }
         }
 
-        // Add all jobs to local store
-        scheduledJobs.forEach(jobInfo => {
-            this.scheduledOperations["actions"][jobInfo.jobId] = jobInfo.job;
-        })
+        // Add all jobs to local store (commented out to avoid using global vars)
+        // scheduledJobs.forEach(jobInfo => {
+        //     this.scheduledOperations["actions"][jobInfo.jobId] = jobInfo.job;
+        // })
         return ReturnMethods.returnSuccess(scheduledJobs.map(jobInfo => {
             return {
                 job: jobInfo.job,

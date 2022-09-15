@@ -930,7 +930,7 @@ class ScheduleHandler{
 
         try {
             // Schedule the question to be sent
-            job = scheduler.scheduleJob(recRule, async function () {
+            job = scheduler.scheduleJob(jobId, recRule, async function () {
                 // Get the updated participant
                 let newParticipant;
                 try {
@@ -1104,7 +1104,7 @@ class ScheduleHandler{
         let job;
         try {
             // Schedule the action to be sent
-            job = scheduler.scheduleJob(recRule, async function(){
+            job = scheduler.scheduleJob(jobId, recRule, async function(){
                 // Get the updated participant
                 let newParticipant;
                 try {

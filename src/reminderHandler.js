@@ -87,6 +87,7 @@ class ReminderHandler{
             );
         }
         let job;
+        let jobId = participant.uniqueId + "_reminder_" + currentTime.hours + "_" + currentTime.minutes;
         // Get the reminder text from config and schedule the message
         try{
             let reminderTextLong = config.phrases.schedule.reminderTextLong[participant.parameters.language];
@@ -94,7 +95,7 @@ class ReminderHandler{
             if(!reminderTextLong) throw "Reminder text long is undefined"
             if(!reminderTextShort) throw "Reminder text short is undefined"
             let reminderText = long ? reminderTextLong : reminderTextShort;
-            job = scheduler.scheduleJob(recRuleObj.data, async function(){
+            job = scheduler.scheduleJob(jobId, recRuleObj.data, async function(){
                 for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
                     try{
                         await Communicator.sendMessage(bot, participant, chatId, reminderText,
@@ -110,7 +111,10 @@ class ReminderHandler{
         } catch(err){
             return ReturnMethods.returnFailure("RHandler: Unable to create reminder job:\n" + err);
         }
-        return ReturnMethods.returnSuccess(job);
+        return ReturnMethods.returnSuccess({
+            jobId: jobId,
+            job: job
+        });
     }
 
     /**
@@ -171,17 +175,15 @@ class ReminderHandler{
         // Create a new scheduled job for each reminder, calculating the time offset each time
         for(let i = 0; i < numRepeats; i++){
             let newTime = this.addMins(currentTime, (i + 1) * freqMins);
-            let jobId = participant.uniqueId + "_" + newTime.hours + "_" + newTime.minutes;
+
             let curJobObj = this.createReminderJob(config, bot, participant, chatId, newTime, i===0);
             if(curJobObj.returnCode === DevConfig.FAILURE_CODE){
                 failedJobs.push(curJobObj.data);
             } else {
-                succeededJobs.push({
-                    jobId : jobId, job: curJobObj.data
-                });
-                this.scheduledReminders[jobId] = curJobObj.data;
+                succeededJobs.push(curJobObj.data);
+                this.scheduledReminders[curJobObj.data.jobId] = curJobObj.data.job;
                 dbJobs.push({
-                    jobId : jobId,
+                    jobId : curJobObj.data.jobId,
                     minutes : newTime.minutes,
                     hours : newTime.hours
                 });
@@ -281,9 +283,9 @@ class ReminderHandler{
             } else {
                 succeededJobs.push({
                     jobId : schRems[i].jobId,
-                    job: curJobObj.data
+                    job: curJobObj.data.job
                 });
-                this.scheduledReminders[schRems[i].jobId] = curJobObj.data;
+                this.scheduledReminders[schRems[i].jobId] = curJobObj.data.job;
             }
         }
 

@@ -16,7 +16,7 @@ const ReminderHandler = require('../src/reminderHandler')
 
 const testId = "123";
 const testId2 = "321";
-
+const scheduler = require('node-schedule')
 const testBot = {
     telegram: {
         sendMessage: () => {
@@ -97,10 +97,11 @@ describe('Creating reminder job', () => {
         }
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        let recRule = returnObj.data.pendingInvocations[0].recurrenceRule;
+        let recRule = returnObj.data.job.pendingInvocations[0].recurrenceRule;
         expect(recRule.hour).to.equal(currentTime.hours)
         expect(recRule.minute).to.equal(currentTime.minutes)
         expect(recRule.tz).to.equal(participant.parameters.timezone)
+        console.log(scheduler.scheduledJobs)
     })
     it("Should succeed when timezone doesnt exist", () => {
         let currentTime = {
@@ -110,7 +111,7 @@ describe('Creating reminder job', () => {
         delete participant.parameters["timezone"];
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        let recRule = returnObj.data.pendingInvocations[0].recurrenceRule;
+        let recRule = returnObj.data.job.pendingInvocations[0].recurrenceRule;
         expect(recRule.hour).to.equal(currentTime.hours)
         expect(recRule.minute).to.equal(currentTime.minutes)
         expect(recRule.tz).to.be.undefined;

@@ -21,6 +21,8 @@ const qHandler = new QuestionHandler(testConfig);
 
 const ScheduleHandler = require('../src/scheduleHandler')
 
+const scheduler = require('node-schedule')
+
 const testId = "123";
 const testId2 = "321";
 const testId3 = "43210";

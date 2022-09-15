@@ -9,6 +9,8 @@ const mongo = require('mongoose');
 const { assert, expect } = require('chai');
 
 const testConfig = require('../json/test/scheduleHandlerTestConfig.json');
+const testConfigNoNext = JSON.parse(JSON.stringify(testConfig))
+testConfigNoNext.debug.enableNext = false;
 const ConfigReader = require('../src/configReader');
 const DevConfig = ConfigReader.getDevConfig();
 const failConfig = require('../json/test/scheduleHandlerTestConfigFail.json');
@@ -1540,7 +1542,7 @@ describe('Rescheduling', () => {
     describe('Rescheduling jobs for single participant at once', () => {
         let rescheduleReturnObj;
         it('Should return success and a list of scheduled jobs', async () => {
-            rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperationsForIDAtOnce(testBot, testId3, testConfig);
+            rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperationsForIDAtOnce(testBot, testId3, testConfigNoNext);
             expect(rescheduleReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of rescheduled jobs', () => {
@@ -1577,11 +1579,9 @@ describe('Rescheduling', () => {
                 }
             }
         });
-        it('Should have added jobs to debug list', async () => {
-            assert(testId in ScheduleHandler.debugQueue);
-            assert(testId in ScheduleHandler.debugQueueAdjusted)
-            assert(Array.isArray(ScheduleHandler.debugQueue[testId]));
-            assert(typeof ScheduleHandler.debugQueueAdjusted[testId] === "boolean");
+        it('Should have NOT added jobs to debug list', async () => {
+            assert(!(testId3 in ScheduleHandler.debugQueue));
+            assert(!(testId3 in ScheduleHandler.debugQueueAdjusted));
         });
 
     })

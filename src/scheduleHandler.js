@@ -319,10 +319,12 @@ class ScheduleHandler{
         }
 
 
-        // Add temporally ordered scheduled operations to participant's debug queue:
-        let scheduledOps = scheduledQuestions.concat(scheduledActions);
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
-        this.debugQueueAdjusted[uniqueId] = false;
+        if(config.debug.enableNext) {
+            // Add temporally ordered scheduled operations to participant's debug queue:
+            let scheduledOps = scheduledQuestions.concat(scheduledActions);
+            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+            this.debugQueueAdjusted[uniqueId] = false;
+        }
 
         return ReturnMethods.returnSuccess(succeededOperations)
     }
@@ -427,10 +429,12 @@ class ScheduleHandler{
         }
 
 
-        // Add temporally ordered scheduled operations to participant's debug queue:
-        let scheduledOps = scheduledQuestions.concat(scheduledActions);
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
-        this.debugQueueAdjusted[uniqueId] = false;
+        if(config.debug.enableNext) {
+            // Add temporally ordered scheduled operations to participant's debug queue:
+            let scheduledOps = scheduledQuestions.concat(scheduledActions);
+            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+            this.debugQueueAdjusted[uniqueId] = false;
+        }
 
         return ReturnMethods.returnSuccess(succeededOperations)
     }
@@ -551,10 +555,12 @@ class ScheduleHandler{
                 failedOperations.join('\n'), succeededOperations);
         }
 
-        // Add temporally ordered scheduled questions to participant's debug queue:
-        let scheduledOps = scheduledQuestionsList.concat(actionList);
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps,config.experimentLengthWeeks);
-        this.debugQueueAdjusted[uniqueId] = false;
+        if(config.debug.enableNext) {
+            // Add temporally ordered scheduled questions to participant's debug queue:
+            let scheduledOps = scheduledQuestionsList.concat(actionList);
+            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+            this.debugQueueAdjusted[uniqueId] = false;
+        }
 
         return ReturnMethods.returnSuccess(succeededOperations)
     }

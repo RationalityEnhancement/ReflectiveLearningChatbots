@@ -88,20 +88,29 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
     }
     participant["firstName"] = userInfo.first_name;
 
-    // Save action that will be performed
-    let saveActionObj = {
-        infoType: "action",
-        scheduledOperations: participant.scheduledOperations,
-        parameters: participant.parameters,
-        stages: participant.stages,
-        info: [actionObj.aType, ...actionObj.args],
-        timeStamp: moment.tz(participant.parameters.timezone).format(),
-        from: from
+
+    if(config.debug.saveDebugInfo){
+        // Save action that will be performed
+        let saveActionObj = {
+            infoType: "action",
+            scheduledOperations: participant.scheduledOperations,
+            parameters: participant.parameters,
+            stages: participant.stages,
+            info: [actionObj.aType, ...actionObj.args],
+            timeStamp: moment.tz(participant.parameters.timezone).format(),
+            from: from
+        }
+
+        debugs.addDebugInfo(participant.uniqueId, saveActionObj)
+            .then(res => {
+                console.log(Object.bsonsize(res))
+            })
+            .catch(err => {
+                console.log("ActHandler: could not add save action obj - " + actionObj.aType + " - " + participant.uniqueId
+                    + "\n" + err.message + "\n" + err.stack);
+            });
     }
-    debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
-        console.log("ActHandler: could not add save action obj - " + actionObj.aType + " - " + participant.uniqueId
-        + "\n" + err.message + "\n" + err.stack);
-    });
+
 
     switch(actionObj.aType){
         // Schedule all questions specified for given condition in config file

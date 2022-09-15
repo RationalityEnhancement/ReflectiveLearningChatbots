@@ -464,20 +464,22 @@ class ScheduleHandler{
             );
         }
 
-        // Save scheduled questions that were fetched
-        let saveActionObj = {
-            infoType: "getSchQs",
-            scheduledOperations: participant.scheduledOperations,
-            parameters: participant.parameters,
-            stages: participant.stages,
-            info: [JSON.stringify(schQObj.data)],
-            timeStamp: moment.tz(participant.parameters.timezone).format(),
-            from: "SHandler"
+        if(config.debug.saveDebugInfo) {
+            // Save scheduled questions that were fetched
+            let saveActionObj = {
+                infoType: "getSchQs",
+                scheduledOperations: participant.scheduledOperations,
+                parameters: participant.parameters,
+                stages: participant.stages,
+                info: [JSON.stringify(schQObj.data)],
+                timeStamp: moment.tz(participant.parameters.timezone).format(),
+                from: "SHandler"
+            }
+            debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
+                console.log("Scheduler: could not add save action obj - getScheduledQs - " + participant.uniqueId
+                    + "\n" + err.message + "\n" + err.stack);
+            });
         }
-        debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
-            console.log("Scheduler: could not add save action obj - getScheduledQs - " + participant.uniqueId
-                + "\n" + err.message + "\n" + err.stack);
-        });
 
         let scheduledQuestionsList = schQObj.data;
         let failedOperations = [];
@@ -1153,20 +1155,22 @@ class ScheduleHandler{
                         console.log(err);
                     }
 
-                    // Save result of action for debug purposes
-                    let saveActionObj = {
-                        infoType: "actionResult",
-                        scheduledOperations: newParticipant.scheduledOperations,
-                        parameters: newParticipant.parameters,
-                        stages: newParticipant.stages,
-                        info: [],
-                        timeStamp: moment.tz(newParticipant.parameters.timezone).format(),
-                        from: "LHandler"
+                    if(config.debug.saveDebugInfo) {
+                        // Save result of action for debug purposes
+                        let saveActionObj = {
+                            infoType: "actionResult",
+                            scheduledOperations: newParticipant.scheduledOperations,
+                            parameters: newParticipant.parameters,
+                            stages: newParticipant.stages,
+                            info: [],
+                            timeStamp: moment.tz(newParticipant.parameters.timezone).format(),
+                            from: "LHandler"
+                        }
+                        debugs.addDebugInfo(uniqueId, saveActionObj).catch((err) => {
+                            console.log("Scheduler: could not add action result obj - " + participant.uniqueId
+                                + "\n" + err.message + "\n" + err.stack);
+                        });
                     }
-                    debugs.addDebugInfo(uniqueId, saveActionObj).catch((err) => {
-                        console.log("Scheduler: could not add action result obj - " + participant.uniqueId
-                            + "\n" + err.message + "\n" + err.stack);
-                    });
                 }
             })
         } catch (err) {

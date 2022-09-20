@@ -32,9 +32,6 @@ const config = ConfigReader.getExpConfig();
     }
 
     let debug = (process.argv[2] === "include-debug");
-    console.log(process.argv)
-    console.log(process.argv[2])
-    console.log(debug);
 
     let pList = await participants.getByExperimentId(config.experimentId)
     let currentPath = path.resolve('.');
@@ -60,8 +57,8 @@ const config = ConfigReader.getExpConfig();
 
     // Add the answers and ggf. debugInfo to the participant JSON objects
     for(let i = 0; i < pList.length; i++){
-        let pAnswerObj = await answers.get(pList[i].uniqueId);
-        pList[i].answers = pAnswerObj.answers;
+        let pAnswerObj = await answers.getSingleList(pList[i].uniqueId);
+        pList[i].answers = pAnswerObj;
         if(debug){
             let pDebugObj = await debugs.getSingleList(pList[i].uniqueId);
             pList[i].debugInfo = pDebugObj;

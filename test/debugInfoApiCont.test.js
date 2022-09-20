@@ -28,7 +28,7 @@ describe('Debug Info Controller API: ', () =>{
 		expect(result).to.equal(1);
 	});
 	
-	it('Should add and get answer doc', async () => {
+	it('Should add and get debug doc', async () => {
 		
 		await debugs.add(testId);
 		let experiment = await debugs.getCurrent(testId);
@@ -37,7 +37,7 @@ describe('Debug Info Controller API: ', () =>{
 		
 		
 	});
-	it('Should initialize an answer doc', async() => {
+	it('Should initialize a debug doc', async() => {
 		let savedExp = await debugs.initializeDebugInfo(testId, testExptId);
 		let newExp = await debugs.getCurrent(testId);
 		expect(newExp['experimentId']).to.equal(testExptId);
@@ -46,7 +46,7 @@ describe('Debug Info Controller API: ', () =>{
 		expect(newExp['linkId']).to.not.be.undefined;
 		expect(newExp['lastLinkId']).to.be.undefined;
 	})
-	it('Should add and get answer doc - 2', async () => {
+	it('Should add and get debug doc - 2', async () => {
 
 		await debugs.add(testId2);
 		let experiment = await debugs.getCurrent(testId2);
@@ -55,7 +55,7 @@ describe('Debug Info Controller API: ', () =>{
 
 
 	});
-	it('Should initialize an answer doc - 2', async() => {
+	it('Should initialize a debug doc - 2', async() => {
 		let savedExp = await debugs.initializeDebugInfo(testId2, testExptId);
 		let newExp = await debugs.getCurrent(testId2);
 		expect(newExp['experimentId']).to.equal(testExptId);

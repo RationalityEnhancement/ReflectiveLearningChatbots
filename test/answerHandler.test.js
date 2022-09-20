@@ -54,7 +54,7 @@ describe('DB Connection', () => {
             await participants.updateParameter(testId, "language", "English")
             await answers.add(testId);
             let participant = await participants.get(testId);
-            let answerObj = await answers.get(testId);
+            let answerObj = await answers.getCurrent(testId);
             expect(participant).to.not.be.null;
             expect(participant.uniqueId).to.equal(testId);
             expect(participant.parameters.language).to.equal("English");
@@ -96,7 +96,7 @@ describe('Finish answer', () => {
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
         });
         it('Should have added answer to participant answer list',  async () => {
-            participant = await answers.get(testPart.uniqueId);
+            participant = await answers.getCurrent(testPart.uniqueId);
             let latestAns = participant.answers[participant.answers.length-1];
             expect(latestAns.qId).to.equal(testQuestion.qId);
             expect(latestAns.text).to.equal(testQuestion.text);
@@ -122,7 +122,7 @@ describe('Finish answer', () => {
             expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
         });
         it('Should have added answer to participant answer list',  async () => {
-            participant = await answers.get(testPart.uniqueId);
+            participant = await answers.getCurrent(testPart.uniqueId);
             let latestAns = participant.answers[participant.answers.length-1];
             expect(latestAns.qId).to.equal(testQuestion.qId);
             expect(latestAns.text).to.equal(testQuestion.text);
@@ -209,7 +209,7 @@ describe('Process answer', () =>{
             });
             let participant;
             it('Should have added to last anser', async () => {
-                participant = await answers.get(part.uniqueId);
+                participant = await answers.getCurrent(part.uniqueId);
                 let latestAns = participant.answers[participant.answers.length-1].answer;
                 expect(latestAns).to.eql(["SC"])
             })
@@ -289,7 +289,7 @@ describe('Process answer', () =>{
                 });
                 let participant;
                 it('Should have added answer to part answers', async () => {
-                    participant = await answers.get(part.uniqueId);
+                    participant = await answers.getCurrent(part.uniqueId);
                     let ans = participant.answers;
                     expect(ans[ans.length-1].answer[0]).to.equal(ansString)
                 });
@@ -308,7 +308,7 @@ describe('Process answer', () =>{
                 });
                 let participant;
                 it('Should have added answer to part answers', async () => {
-                    participant = await answers.get(part.uniqueId);
+                    participant = await answers.getCurrent(part.uniqueId);
                     let ans = participant.answers;
                     expect(ans[ans.length-1].answer[0]).to.equal(ansString)
                 });
@@ -327,7 +327,7 @@ describe('Process answer', () =>{
                 });
                 let participant;
                 it('Should have added answer to part answers', async () => {
-                    participant = await answers.get(part.uniqueId);
+                    participant = await answers.getCurrent(part.uniqueId);
                     let ans = participant.answers;
                     expect(ans[ans.length-1].answer[0]).to.equal(ansString)
                 });
@@ -378,7 +378,7 @@ describe('Process answer', () =>{
                 });
                 let participant;
                 it('Should have added answer to part answers', async () => {
-                    participant = await answers.get(part.uniqueId);
+                    participant = await answers.getCurrent(part.uniqueId);
                     let ans = participant.answers;
                     expect(ans[ans.length-1].answer[0]).to.equal(ansString)
                 });
@@ -397,7 +397,7 @@ describe('Process answer', () =>{
                 });
                 let participant;
                 it('Should have added answer to part answers', async () => {
-                    participant = await answers.get(part.uniqueId);
+                    participant = await answers.getCurrent(part.uniqueId);
                     let ans = participant.answers;
                     expect(ans[ans.length-1].answer[0]).to.equal(ansString)
                 });
@@ -416,7 +416,7 @@ describe('Process answer', () =>{
                 });
                 let participant;
                 it('Should have added answer to part answers', async () => {
-                    participant = await answers.get(part.uniqueId);
+                    participant = await answers.getCurrent(part.uniqueId);
                     let ans = participant.answers;
                     expect(ans[ans.length-1].answer[0]).to.equal(ansString)
                 });
@@ -495,7 +495,7 @@ describe('Process answer', () =>{
             });
             let participant;
             it('Should have added answers to participant answer and current answer', async () => {
-                let answerObj = await answers.get(part.uniqueId);
+                let answerObj = await answers.getCurrent(part.uniqueId);
                 participant = await participants.get(part.uniqueId);
                 let latestAns = answerObj.answers[answerObj.answers.length-1].answer;
                 expect(latestAns).to.eql(["MC1"]);
@@ -576,7 +576,7 @@ describe('Process answer', () =>{
                 expect(participant.currentAnswer).to.eql(["Freeform test"]);
             });
             it('Should have added to latest answer', async () => {
-                let answerObj = await answers.get(part.uniqueId);
+                let answerObj = await answers.getCurrent(part.uniqueId);
                 let latestAns = answerObj.answers[answerObj.answers.length-1].answer;
                 expect(latestAns).to.eql(["Freeform test"]);
                 await participants.eraseCurrentAnswer(part.uniqueId);
@@ -731,7 +731,7 @@ describe('Process answer', () =>{
             });
             let participant;
             it('Should have added list of answers to participants latest answer', async () => {
-                let answerObj = await answers.get(part.uniqueId);
+                let answerObj = await answers.getCurrent(part.uniqueId);
                 let latestAns = answerObj.answers[answerObj.answers.length-1].answer;
                 expect(latestAns).to.eql(["First message", "Second message"]);
             })
@@ -927,7 +927,7 @@ describe('Handling no answer', () => {
         expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
 
         let participant = await participants.get(testId);
-        let answerObj = await answers.get(testId);
+        let answerObj = await answers.getCurrent(testId);
         let lastAnswer = answerObj.answers[answerObj.answers.length-1];
         expect(lastAnswer.answer).to.eql([DevConfig.NO_RESPONSE_STRING]);
         expect(lastAnswer.qId).to.equal(testQuestion.qId);
@@ -943,7 +943,7 @@ describe('Handling no answer', () => {
         expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
 
         let participant = await participants.get(testId);
-        let answerObj = await answers.get(testId);
+        let answerObj = await answers.getCurrent(testId);
         let lastAnswer = answerObj.answers[answerObj.answers.length-1];
         expect(lastAnswer.answer).to.eql([DevConfig.NO_RESPONSE_STRING]);
         expect(lastAnswer.qId).to.equal(testQuestion.qId);
@@ -961,7 +961,7 @@ describe('Handling no answer', () => {
         expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
 
         let participant = await participants.get(testId);
-        let answerObj = await answers.get(testId);
+        let answerObj = await answers.getCurrent(testId);
         let lastAnswer = answerObj.answers[answerObj.answers.length-1];
         assert(lastAnswer.answer[0].startsWith(DevConfig.INVALID_ANSWER_STRING));
         assert(lastAnswer.answer[0].includes(DevConfig.INVALID_ANSWER_STRING));
@@ -978,7 +978,7 @@ describe('Handling no answer', () => {
         expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
 
         let participant = await participants.get(testId);
-        let answerObj = await answers.get(testId);
+        let answerObj = await answers.getCurrent(testId);
         let lastAnswer = answerObj.answers[answerObj.answers.length-1];
         expect(lastAnswer.answer).to.eql([DevConfig.REPEAT_QUESTION_STRING]);
         expect(lastAnswer.qId).to.equal(testQuestion.qId);
@@ -995,7 +995,7 @@ describe('Handling no answer', () => {
         expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
 
         let participant = await participants.get(testId);
-        let answerObj = await answers.get(testId);
+        let answerObj = await answers.getCurrent(testId);
         let lastAnswer = answerObj.answers[answerObj.answers.length-1];
         expect(lastAnswer.answer).to.eql(currentAnswer);
         expect(lastAnswer.qId).to.equal(testQuestion.qId);
@@ -1013,7 +1013,7 @@ describe('Handling no answer', () => {
         expect(returnObj.data).to.equal(DevConfig.NEXT_ACTION_STRING);
 
         let participant = await participants.get(testId);
-        let answerObj = await answers.get(testId);
+        let answerObj = await answers.getCurrent(testId);
         let lastAnswer = answerObj.answers[answerObj.answers.length-1];
         expect(lastAnswer.answer).to.eql(currentAnswer);
         expect(lastAnswer.qId).to.equal(testQuestion.qId);

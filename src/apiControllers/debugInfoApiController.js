@@ -27,6 +27,7 @@ exports.getCurrent = async (uniqueId) => {
   }
 }
 
+// Get all the linked list nodes for participant with uniqueId
 exports.getAllForId = async (uniqueId) => {
   try {
     return DebugInfo.find({ uniqueId: uniqueId });
@@ -157,6 +158,7 @@ exports.getSingleList = async (uniqueId) => {
   }
 
 }
+
 // Add debug information to the chronological list
 exports.addDebugInfo = async (uniqueId, infoObj) => {
   try{
@@ -188,7 +190,7 @@ exports.removeAllForExperiment = async experimentId => {
 // remove a single record by chat ID
 exports.removeAllForId = async uniqueId => {
   try {
-    return DebugInfo.deleteMany({ uniqueId });
+    return DebugInfo.deleteMany({ uniqueId: uniqueId });
   } catch (err) {
     console.error(err);
   }

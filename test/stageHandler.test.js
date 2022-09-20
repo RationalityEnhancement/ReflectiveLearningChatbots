@@ -230,7 +230,7 @@ describe('DB Connection', () => {
             await participants.initializeParticipant(testPartId, config)
             await answers.initializeAnswer(testPartId, config.experimentId)
             let participant = await participants.get(testPartId);
-            let answerObj = await answers.get(testPartId);
+            let answerObj = await answers.getCurrent(testPartId);
             expect(participant).to.not.be.null;
             expect(participant.uniqueId).to.equal(testPartId);
             expect(participant.parameters.language).to.equal("English");
@@ -305,7 +305,7 @@ describe('End/Begin Stage', () => {
             expect(newPart.stages.stageName).to.equal("");
         })
         it('Should have added no response for outstanding quetsion', async () => {
-            let answerObj = await answers.get(testPartId);
+            let answerObj = await answers.getCurrent(testPartId);
             let lastAnswer = answerObj.answers[answerObj.answers.length - 1];
             expect(lastAnswer.answer[0]).to.equal("[No Response]");
             expect(lastAnswer.qId).to.equal("test");

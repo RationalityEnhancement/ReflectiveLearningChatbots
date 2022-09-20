@@ -163,6 +163,28 @@ bot.command('log_part', async ctx => {
   
 });
 
+// Log the debug info of the current node for the current experiment
+bot.command('log_debug', async ctx => {
+    if(!config.debug.experimenter) return;
+    try{
+        let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+        if(!secretMap){
+            console.log("Unable to get participant unique id");
+            return;
+        }
+
+        console.log('Logging participant.');
+        let debug = await debugs.getCurrent(secretMap.uniqueId);
+        console.log(debug);
+        // console.log(await bot.telegram.getChat(ctx.from.id));
+
+    } catch (err){
+        console.log('Failed to log debugInfo');
+        console.error(err);
+    }
+
+});
+
 // Log the current experiment
 bot.command('log_exp', async ctx => {
     if(!config.debug.experimenter) return;
@@ -213,7 +235,7 @@ bot.command('delete_me', async ctx => {
     // Remove participant from database
     await participants.remove(uniqueId);
     await answers.remove(uniqueId);
-    await debugs.remove(uniqueId);
+    await debugs.removeAllForId(uniqueId);
 
     // Delete chatID mapping
     await idMaps.deleteByChatId(config.experimentId, ctx.from.id);

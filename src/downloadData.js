@@ -63,8 +63,8 @@ const config = ConfigReader.getExpConfig();
         let pAnswerObj = await answers.get(pList[i].uniqueId);
         pList[i].answers = pAnswerObj.answers;
         if(debug){
-            let pDebugObj = await debugs.get(pList[i].uniqueId);
-            pList[i].debugInfo = pDebugObj.debugInfo;
+            let pDebugObj = await debugs.getSingleList(pList[i].uniqueId);
+            pList[i].debugInfo = pDebugObj;
         }
     }
 

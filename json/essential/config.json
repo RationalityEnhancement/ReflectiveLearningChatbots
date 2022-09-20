@@ -54,7 +54,8 @@
     "actionMessages" : false,
     "enableNext" : true,
     "messageDelay" : true,
-    "developer" : false
+    "developer" : false,
+    "saveDebugInfo" : true
   },
   "languages" : ["English"],
   "defaultLanguage" : "English",

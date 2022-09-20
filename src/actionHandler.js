@@ -102,9 +102,6 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
         }
 
         debugs.addDebugInfo(participant.uniqueId, saveActionObj)
-            .then(res => {
-                console.log(Object.bsonsize(res))
-            })
             .catch(err => {
                 console.log("ActHandler: could not add save action obj - " + actionObj.aType + " - " + participant.uniqueId
                     + "\n" + err.message + "\n" + err.stack);
@@ -599,6 +596,8 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 // Send the participant a message that the experiment has ended.
 
             }
+            // Create a new node in the linked list for debug infos so that the list doesn't grow too large
+            await debugs.addNode(participant.uniqueId);
             if(incStageObj.data === -1){
                 for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
                     try{

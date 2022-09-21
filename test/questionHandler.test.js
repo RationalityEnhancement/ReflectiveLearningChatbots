@@ -168,10 +168,36 @@ describe('Getting scheduled questions, no condition', () => {
         expect(testConfigConds).to.eql(testConfigCondsOrig)
     })
     it('returns success and a list of scheduled questions', () => {
-        const result = qHandler.getScheduledQuestions(undefined);
+        const result = qHandler.getScheduledQuestions(undefined, participant);
+        expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(result.data.length).to.eql(2);
+        expect(result.data[0].qId).to.eql("chain1.q1");
+    })
+
+})
+
+describe('Getting scheduled questions for stage, no condition', () => {
+
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
+    it('returns success and a list of all scheduled questions', () => {
+        const result = qHandler.getStageScheduledQuestions("Stage2", undefined, participant);
+        expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(result.data.length).to.eql(2);
+        expect(result.data[0].qId).to.eql("chain1.q1");
+    })
+    it('returns success and a list of only one scheduled question', () => {
+        const result = qHandler.getStageScheduledQuestions("Stage1", undefined, participant);
         expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         expect(result.data.length).to.eql(1);
         expect(result.data[0].qId).to.eql("chain1.q1");
+    })
+    it('returns success and empty list when no stage matches', () => {
+        const result = qHandler.getStageScheduledQuestions("Stage4", undefined, participant);
+        expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(result.data.length).to.eql(0);
     })
 
 })
@@ -322,6 +348,59 @@ describe('Getting scheduled questions, yes condition', () => {
     })
     it('fails when condition has atTime undefined', () => {
         const result = qHandler2.getScheduledQuestions("FailCond2", participant);
+        expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+
+})
+
+describe('Getting scheduled questions for stage, yes condition', () => {
+
+    afterEach( () => {
+        expect(testConfig).to.eql(testConfigOrig);
+        expect(testConfigConds).to.eql(testConfigCondsOrig)
+    })
+    it('returns success and not return anything regardless of stage', () => {
+        const result1 = qHandler2.getStageScheduledQuestions("Stage1", "Cond1", participant);
+        const result2 = qHandler2.getStageScheduledQuestions("all", "Cond1", participant);
+        expect(result1.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(result1.data.length).to.eql(0);
+
+        expect(result2.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(result2.data.length).to.eql(0);
+    })
+    it('returns success return everything regardless of stage name', () => {
+        const result1 = qHandler2.getStageScheduledQuestions("Stage1", "VarCond", participant);
+        const result2 = qHandler2.getStageScheduledQuestions("all", "VarCond", participant);
+        expect(result1.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(result1.data.length).to.eql(2);
+        expect(result1.data[0].atTime).to.eql(participant.parameters.goalSetTime);
+        expect(result1.data[1].atTime).to.eql("10:00");
+
+        expect(result2.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(result2.data.length).to.eql(2);
+        expect(result2.data[0].atTime).to.eql(participant.parameters.goalSetTime);
+        expect(result2.data[1].atTime).to.eql("10:00");
+    })
+    it('returns empty list when no scheduled questions available', () => {
+        const result = qHandler2.getStageScheduledQuestions("anything","Cond2", participant);
+        expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        expect(result.data.length).to.eql(0);
+    })
+    it('fails when stageName not a string', () => {
+        const result = qHandler2.getStageScheduledQuestions(34, "Cond1", participant);
+        expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        console.log(result.data)
+    })
+    it('fails when condition doesnt exist', () => {
+        const result = qHandler2.getStageScheduledQuestions("anything", "Cond3", participant);
+        expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('fails when condition has atTime with variable that doesnt exist', () => {
+        const result = qHandler2.getStageScheduledQuestions("anything", "FailCond1", participant);
+        expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it('fails when condition has atTime undefined', () => {
+        const result = qHandler2.getScheduledQuestions("anything", "FailCond2", participant);
         expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
 

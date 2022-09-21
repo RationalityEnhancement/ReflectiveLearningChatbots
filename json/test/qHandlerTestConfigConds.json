@@ -61,7 +61,8 @@
       "scheduledQuestions" : [{
         "qId": "chain1.q1",
         "atTime" : "13:00",
-        "onDays" : ["Mon"]
+        "onDays" : ["Mon"],
+        "stages" : []
       }],
       "userPromptedQuestions" : [
         {

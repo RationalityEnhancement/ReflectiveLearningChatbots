@@ -16,6 +16,7 @@ const ReminderHandler = require('./reminderHandler')
 const sizeof = require('object-sizeof');
 const lodash = require('lodash')
 const {processAction} = require("./actionHandler");
+const StageHandler = require("./stageHandler");
 
 class ScheduleHandler{
     // TODO: Remove all commented out code when sufficiently convinced that it will never be needed again
@@ -57,6 +58,8 @@ class ScheduleHandler{
                 }
             }
 
+            // TODO: Don't do this one by one?
+            // TODO: Cancel current reminders here also?
             // Call the function to remove each selected job by jobID
             // register which were successes and which were failures
             for(let i = 0; i < partJobIDList.length; i++){
@@ -450,23 +453,31 @@ class ScheduleHandler{
 
     /**
      *
-     * Schedule all the questions for a given participant, as specified in the
+     * Schedule all the questions for all stages for a given participant, as specified in the
      * config file, based on the condition participant is assigned to
+     *
+     * Actions to update stages are also scheduled
      *
      * @param bot Telegram bot instance
      * @param participant
      * @param config loaded config file of experiment
-     * @param actionList A list of actions to be scheduled, if any
      * @param debug flag whether in debug mode or not
      * @returns {Promise<{returnCode: number, data}|{returnCode: *, data: *}|{returnCode: *, successData: *, failData: *}>}
      */
-    static async scheduleAllOperations(bot, participant, config, actionList, debug = false){
+    static async scheduleAllForId(bot, participant, config, debug = false){
         const qHandler = new QuestionHandler(config);
         let uniqueId = participant.uniqueId;
 
         // Get the assigned condition and preferred language of the participant
         let partCond = participant["conditionName"];
-        let partLang = participant.parameters.language;
+
+        // Schedule all questions and actions
+        let actionsObj = StageHandler.createStageUpdateActionList(config, partCond);
+        if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure(
+                "ActHandler: Unable to create stage update actions:\n" + actionsObj.data
+            );
+        }
 
         // Fetch all the scheduled questions for the particular condition
         let schQObj = qHandler.getScheduledQuestions(partCond, participant);
@@ -495,6 +506,90 @@ class ScheduleHandler{
         }
 
         let scheduledQuestionsList = schQObj.data;
+        let actionList = actionsObj.data;
+
+        // Schedule these operations
+        return this.scheduleOperations(bot, participant, qHandler, config, scheduledQuestionsList, actionList, debug);
+    }
+
+    /**
+     *
+     * Schedule all the questions for a given participant for a given stage, as specified in the
+     * config file, based on the condition participant is assigned to
+     *
+     * @param bot Telegram bot instance
+     * @param participant participant object
+     * @param stageName Name of the stage for which questions are to be scheduled
+     * @param config loaded config file of experiment
+     * @param actionList A list of actions to be scheduled, if any
+     * @param debug flag whether in debug mode or not
+     * @returns {Promise<{returnCode: number, data}|{returnCode: *, data: *}|{returnCode: *, successData: *, failData: *}>}
+     */
+    static async scheduleStageForId(bot, participant, stageName, config, debug = false){
+        const qHandler = new QuestionHandler(config);
+
+        // Get the assigned condition and preferred language of the participant
+        let partCond = participant["conditionName"];
+
+        // Schedule all questions and actions
+        let actionsObj = StageHandler.createUpdateActionListForStage(config, partCond, stageName);
+        if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure(
+                "ActHandler: Unable to create stage update actions:\n" + actionsObj.data
+            );
+        }
+
+        // Fetch all the scheduled questions for the particular condition
+        let schQObj = qHandler.getStageScheduledQuestions(stageName, partCond, participant);
+        if(schQObj.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure(
+                "Scheduler: Failure to get scheduled question in scheduleStage"
+                + "\n"+ schQObj.data
+            );
+        }
+
+
+        if(config.debug.saveDebugInfo) {
+            // Save scheduled questions that were fetched
+            let saveActionObj = {
+                infoType: "getStageSchQs",
+                scheduledOperations: participant.scheduledOperations,
+                parameters: participant.parameters,
+                stages: participant.stages,
+                info: [JSON.stringify(schQObj.data)],
+                timeStamp: moment.tz(participant.parameters.timezone).format(),
+                from: "SHandler"
+            }
+            debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
+                console.log("Scheduler: could not add save action obj - getStageScheduledQs - " + participant.uniqueId
+                    + "\n" + err.message + "\n" + err.stack);
+            });
+        }
+
+        let scheduledQuestionsList = schQObj.data;
+        let actionList = actionsObj.data;
+
+        // Schedule these operations
+        return this.scheduleOperations(bot, participant, qHandler, config, scheduledQuestionsList, actionList, debug);
+    }
+
+    /**
+     *
+     * Schedule all the actions passed in through question list and action list
+     *
+     * @param bot Telegram bot instance
+     * @param participant participant object
+     * @param qHandler QuestionHandler instance initialized with config
+     * @param config config file
+     * @param questionList list of questions to be scheduled
+     * @param actionList list of actions to be scheduled
+     * @param debug debug flag
+     * @returns {Promise<{returnCode: number, successData: *, failData: *}|{returnCode: number, data: *}>}
+     */
+    static async scheduleOperations(bot, participant, qHandler, config, questionList, actionList, debug = false){
+
+        let uniqueId = participant.uniqueId;
+        let scheduledQuestionsList = questionList;
         let failedOperations = [];
         let succeededOperations = [];
 
@@ -573,6 +668,7 @@ class ScheduleHandler{
 
         return ReturnMethods.returnSuccess(succeededOperations)
     }
+
 
     /**
      *

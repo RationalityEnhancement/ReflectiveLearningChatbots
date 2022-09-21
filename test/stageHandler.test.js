@@ -657,7 +657,7 @@ describe('Creating action list', () => {
         })
 
     })
-    describe('Creating action list', () => {
+    describe('Creating action list for all stages', () => {
         it('Should create one action', () => {
             let dayList = ["Mon", "Tue", "Wed", "Thu", "Fri"];
             let returnObj = StageHandler.createStageUpdateActionList(testConfigConds, "TestOneGroup");
@@ -699,6 +699,38 @@ describe('Creating action list', () => {
         })
         it('Should fail if days are invalid', () => {
             let returnObj = StageHandler.createStageUpdateActionList(testConfigConds, "Experimental");
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+    })
+    describe('Creating action list for single stages', () => {
+        it('Should create one action with the expected days', () => {
+            let dayList = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+            let returnObj = StageHandler.createUpdateActionListForStage(testConfigConds, "TestOneGroup", "1");
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.length).to.equal(1);
+            expect(returnObj.data[0].onDays.sort()).to.eql(dayList.sort());
+            expect(returnObj.data[0].if).to.equal("${STAGE_NAME} == $S{1}");
+            expect(returnObj.data[0].aType).to.equal("incrementStageDay");
+            expect(returnObj.data[0].atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
+        })
+        it('Should create one action with all days when days are not specified', () => {
+            let returnObj = StageHandler.createUpdateActionListForStage(testConfigConds, "Experimental", "Post");
+            let dayIdxOrd = JSON.parse(JSON.stringify(DevConfig.DAY_INDEX_ORDERING));
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data.length).to.equal(1);
+            expect(returnObj.data[0].onDays.sort()).to.eql(dayIdxOrd.sort());
+            expect(returnObj.data[0].if).to.equal("${STAGE_NAME} == $S{Post}");
+            expect(returnObj.data[0].aType).to.equal("incrementStageDay");
+            expect(returnObj.data[0].atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
+        })
+        it('Should fail if days are invalid', () => {
+            let returnObj = StageHandler.createUpdateActionListForStage(testConfigConds, "Experimental", "FailStage");
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+            console.log(returnObj.data)
+        })
+        it('Should fail if days are not array', () => {
+            let returnObj = StageHandler.createUpdateActionListForStage(testConfigConds, "Experimental", "FailStage2");
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data)
         })

@@ -18,6 +18,11 @@
     "messageDelay" : false,
     "developer" : true
   },
+  "experimentStages" : [
+    {
+      "name": "Fail"
+    }
+  ],
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
   "phrases" : {

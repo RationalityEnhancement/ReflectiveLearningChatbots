@@ -101,7 +101,6 @@ describe('Creating reminder job', () => {
         expect(recRule.hour).to.equal(currentTime.hours)
         expect(recRule.minute).to.equal(currentTime.minutes)
         expect(recRule.tz).to.equal(participant.parameters.timezone)
-        console.log(scheduler.scheduledJobs)
     })
     it("Should succeed when timezone doesnt exist", () => {
         let currentTime = {

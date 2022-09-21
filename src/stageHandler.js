@@ -487,6 +487,8 @@ module.exports.createOnDaysObj = (stageList) => {
  *          conjunction of stage name equality comparisons if not all stages occur on same days
  * }
  *
+ * NOTE: Might be obsolete after questions are scheduled at the start of every stage
+ *
  * @param config loaded config file with stages
  * @param conditionName name of the condition whose stages are to be served
  * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}|*}
@@ -551,6 +553,46 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
         }
         actionList.push(actionObj)
     }
+
+    return ReturnMethods.returnSuccess(actionList);
+}
+
+/**
+ *
+ * Creates a list with stage update actions for a given stage
+ *
+ * Should contain only one action to increment the stage day on the given days for the current stage
+ *
+ * @param config loaded config file with stages
+ * @param stageName Name of the stage for which the action list is to be fetched
+ * @param conditionName name of the condition whose stages are to be served
+ * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}|*}
+ *              if success, list with one or more action objects as described above
+ */
+module.exports.createUpdateActionListForStage = (config, conditionName, stageName) => {
+
+    // Get the days for which a stage should occur
+    let stageDaysListObj = this.getStageParam(config, conditionName, stageName, "onDays");
+    if(stageDaysListObj.returnCode === DevConfig.FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to get stage param onDays:"
+            + "\n"+ stageDaysListObj.data
+        );
+    }
+
+    let dayList = stageDaysListObj.data;
+    if(!Array.isArray(stageDaysListObj.data)){
+        let dayIdxOrd = JSON.parse(JSON.stringify(DevConfig.DAY_INDEX_ORDERING));
+        dayList = dayIdxOrd.sort()
+    }
+    // 'If' is redundant, but put it in there just in case
+    let actionList = [{
+        aType: "incrementStageDay",
+        args: [],
+        atTime: DevConfig.STAGE_UPDATE_TIME,
+        onDays: dayList,
+        if: "${STAGE_NAME} == $S{" + stageName + "}"
+    }];
 
     return ReturnMethods.returnSuccess(actionList);
 }

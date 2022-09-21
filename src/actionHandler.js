@@ -128,13 +128,6 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
               ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj, 1);
             }
 
-            // Schedule all questions and actions
-            let actionsObj = StageHandler.createStageUpdateActionList(config, participant.conditionName);
-            if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
-                return ReturnMethods.returnFailure(
-                    "ActHandler: Unable to create stage update actions:\n" + actionsObj.data
-                );
-            }
             let returnObj = await ScheduleHandler.scheduleAllOperations(bot, participant, config, actionsObj.data, config.debug.experimenter);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 return ReturnMethods.returnFailure(

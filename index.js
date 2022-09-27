@@ -94,7 +94,7 @@ let handleError = async (participant, errorString) => {
     let message = timeStamp + "\n" + errorString;
     let partCopy = JSON.parse(JSON.stringify(participant))
     delete partCopy["firstName"];
-    let pAnswerObj = await answers.get(participant.uniqueId);
+    let pAnswerObj = await answers.getCurrent(participant.uniqueId);
     partCopy.answers = pAnswerObj.answers;
     let participantJSON = JSON.stringify(partCopy);
     try{
@@ -113,7 +113,7 @@ let handleFeedback = async (participant, feedbackString) => {
     let message = timeStamp + "\n" + feedbackString;
     let partCopy = JSON.parse(JSON.stringify(participant))
     delete partCopy["firstName"];
-    let pAnswerObj = await answers.get(participant.uniqueId);
+    let pAnswerObj = await answers.getCurrent(participant.uniqueId);
     // TODO Create separate field for answers in feedback and error object?
     partCopy.answers = pAnswerObj.answers;
     let participantJSON = JSON.stringify(participant);

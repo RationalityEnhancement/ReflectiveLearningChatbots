@@ -6,11 +6,31 @@ const ConfigReader = require('../src/configReader');
 const DevConfig = ConfigReader.getDevConfig();
 
 const StageHandler = require('../src/StageHandler');
+const ScheduleHandler = require('../src/scheduleHandler');
+const scheduler = require('node-schedule');
 const {MongoMemoryServer} = require("mongodb-memory-server");
 const mongo = require("mongoose");
 const participants = require("../src/apiControllers/participantApiController");
 const answers = require("../src/apiControllers/answerApiController");
+const idMaps = require("../src/apiControllers/idMapApiController");
 const config = ConfigReader.getExpConfig();
+const testBot = {
+    telegram: {
+        sendMessage: () => {
+            return;
+        },
+        getChat: (chatId) => {
+            return {
+                first_name: "John"
+            }
+        },
+        sendChatAction : () =>{
+
+            return;
+        }
+    }
+};
+const testChatId = 98451
 
 describe('Get stage list', () => {
     describe('Fails', () => {
@@ -227,10 +247,14 @@ describe('DB Connection', () => {
 
             await participants.add(testPartId);
             await answers.add(testPartId);
+            await idMaps.addExperiment(testConfig.experimentId)
+            await idMaps.addIDMapping(testConfig.experimentId, testChatId, testPartId);
             await participants.initializeParticipant(testPartId, config)
             await answers.initializeAnswer(testPartId, config.experimentId)
             let participant = await participants.get(testPartId);
             let answerObj = await answers.getCurrent(testPartId);
+            let ids = await idMaps.getExperiment(testConfig.experimentId);
+
             expect(participant).to.not.be.null;
             expect(participant.uniqueId).to.equal(testPartId);
             expect(participant.parameters.language).to.equal("English");
@@ -243,6 +267,8 @@ describe('DB Connection', () => {
             expect(answerObj).to.not.be.null;
             expect(answerObj.uniqueId).to.equal(testPartId);
             expect(answerObj.experimentId).to.equal(config.experimentId);
+
+            expect(ids.IDMappings.length).to.equal(1);
         });
     })
 })
@@ -261,8 +287,7 @@ describe('End/Begin Stage', () => {
         let stageName = "Pre-Test";
         it('Should return success', async () => {
             let participant = await participants.get(testPartId);
-            returnObj = await StageHandler.startStage(participant, stageName);
-            console.log(returnObj);
+            returnObj = await StageHandler.startStage(testBot, participant, stageName, testConfig);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         })
         it('Should have added start to stage activity', async () => {
@@ -276,6 +301,18 @@ describe('End/Begin Stage', () => {
         it('Should have updated stage day and stage name', async () => {
             expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(stageName);
+        })
+        it('Should have scheduled jobs', async () => {
+            expect(newPart.scheduledOperations.questions.length).to.equal(1);
+            expect(newPart.scheduledOperations.questions[0].qId).to.equal("chain2.q1")
+            expect(newPart.scheduledOperations.actions.length).to.equal(1);
+            expect(newPart.scheduledOperations.actions[0].onDays.length).to.equal(7);
+            newPart.scheduledOperations.questions.forEach(job => {
+                assert(job.jobId in scheduler.scheduledJobs)
+            })
+            newPart.scheduledOperations.actions.forEach(job => {
+                assert(job.jobId in scheduler.scheduledJobs)
+            })
         })
     })
 
@@ -310,14 +347,22 @@ describe('End/Begin Stage', () => {
             expect(lastAnswer.answer[0]).to.equal("[No Response]");
             expect(lastAnswer.qId).to.equal("test");
         })
+        it('Should have cancelled scheduled jobs', async () => {
+            expect(newPart.scheduledOperations.questions.length).to.equal(0);
+            expect(newPart.scheduledOperations.actions.length).to.equal(0);
+            console.log(Object.keys(scheduler.scheduledJobs));
+            expect(Object.keys(scheduler.scheduledJobs).length).to.equal(0);
+
+        })
     })
 
+    let oldJobs;
     describe('No current stage - begin 2', () => {
         let returnObj, newPart;
         let stageName = "Test";
         it('Should return success', async () => {
             let participant = await participants.get(testPartId);
-            returnObj = await StageHandler.startStage(participant, stageName);
+            returnObj = await StageHandler.startStage(testBot, participant, stageName, testConfig);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         })
         it('Should have added start to stage activity', async () => {
@@ -332,14 +377,27 @@ describe('End/Begin Stage', () => {
             expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(stageName);
         })
+        it('Should have scheduled jobs', async () => {
+            expect(newPart.scheduledOperations.questions.length).to.equal(1);
+            expect(newPart.scheduledOperations.questions[0].qId).to.equal("chain1.q1")
+            oldJobs = newPart.scheduledOperations.questions;
+            expect(newPart.scheduledOperations.actions.length).to.equal(1);
+            expect(newPart.scheduledOperations.actions[0].onDays.length).to.equal(3);
+            newPart.scheduledOperations.questions.forEach(job => {
+                assert(job.jobId in scheduler.scheduledJobs)
+            })
+            newPart.scheduledOperations.actions.forEach(job => {
+                assert(job.jobId in scheduler.scheduledJobs)
+            })
+        })
     })
 
     describe('Yes current stage - begin', () => {
         let returnObj, newPart;
-        let stageName = "Post-Test";
+        let stageName = "Pre-Test";
         it('Should return success', async () => {
             let participant = await participants.get(testPartId);
-            returnObj = await StageHandler.startStage(participant, stageName);
+            returnObj = await StageHandler.startStage(testBot, participant, stageName, testConfig);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         })
         it('Should have added end of last stage to stage activity', async () => {
@@ -362,6 +420,25 @@ describe('End/Begin Stage', () => {
             expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(stageName);
         })
+        it('Should have cancelled old scheduled jobs', async () => {
+            oldJobs.forEach(job => {
+                assert(!(job.jobId in newPart.scheduledOperations.questions));
+                assert(!(job.jobId in scheduler.scheduledJobs));
+            })
+        })
+        it('Should have scheduled new jobs', async () => {
+            expect(newPart.scheduledOperations.questions.length).to.equal(1);
+            expect(newPart.scheduledOperations.questions[0].qId).to.equal("chain2.q1")
+            oldJobs = newPart.scheduledOperations.questions;
+            expect(newPart.scheduledOperations.actions.length).to.equal(1);
+            expect(newPart.scheduledOperations.actions[0].onDays.length).to.equal(7);
+            newPart.scheduledOperations.questions.forEach(job => {
+                assert(job.jobId in scheduler.scheduledJobs)
+            })
+            newPart.scheduledOperations.actions.forEach(job => {
+                assert(job.jobId in scheduler.scheduledJobs)
+            })
+        })
     })
 
     describe('Fail when stages not present - begin', () => {
@@ -371,7 +448,7 @@ describe('End/Begin Stage', () => {
             let participant = await participants.get(testPartId);
             let copyPart = JSON.parse(JSON.stringify(participant));
             delete copyPart["stages"]
-            returnObj = await StageHandler.startStage(copyPart, stageName);
+            returnObj = await StageHandler.startStage(testBot, copyPart, stageName, testConfig);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
             console.log(returnObj.data);
         })
@@ -397,14 +474,14 @@ describe('Update Stage Day', () => {
         let stageName = "Test";
         it('Should update participant to test stage', async () => {
             let participant = await participants.get(testPartId);
-            returnObj = await StageHandler.startStage(participant, stageName);
+            returnObj = await StageHandler.startStage(testBot, participant, stageName, testConfig);
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(newPart.stages.stageDay).to.equal(1);
             expect(newPart.stages.stageName).to.equal(stageName);
         })
         it('Should update stage day', async () => {
-            returnObj = await StageHandler.updateStageDay(testConfig, testPartId);
+            returnObj = await StageHandler.updateStageDay(testBot, testPartId, testConfig);
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(2);
@@ -424,7 +501,7 @@ describe('Update Stage Day', () => {
             expect(newPart.stages.stageName).to.equal(stageName);
         })
         it('Should update stage', async () => {
-            returnObj = await StageHandler.updateStageDay(testConfig, testPartId);
+            returnObj = await StageHandler.updateStageDay(testBot, testPartId, testConfig);
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(nextStageName);
@@ -453,7 +530,7 @@ describe('Update Stage Day', () => {
             expect(newPart.stages.stageName).to.equal(stageName);
         })
         it('Should end experiment', async () => {
-            returnObj = await StageHandler.updateStageDay(testConfig, testPartId);
+            returnObj = await StageHandler.updateStageDay(testBot, testPartId, testConfig);
             newPart = await participants.get(testPartId);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             expect(returnObj.data).to.equal(-1);
@@ -472,13 +549,13 @@ describe('Update Stage Day', () => {
     describe('Fails', () => {
         it('Should fail when stage day not present', async () => {
             await participants.updateStageParameter(testPartId, "stageDay", undefined);
-            let returnObj = await StageHandler.updateStageDay(config, testPartId);
+            let returnObj = await StageHandler.updateStageDay(testBot, testPartId, testConfig);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
         it('Should fail when stage name not present', async () => {
             await participants.updateStageParameter(testPartId, "stageDay", 3);
             await participants.updateStageParameter(testPartId, "stageName", undefined);
-            let returnObj = await StageHandler.updateStageDay(config, testPartId);
+            let returnObj = await StageHandler.updateStageDay(testBot, testPartId, testConfig);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
     })

@@ -13,9 +13,7 @@ const ConfigParser = require('./configParser');
 const ExperimentUtils = require('./experimentUtils')
 const moment = require('moment-timezone');
 const ReminderHandler = require('./reminderHandler')
-const sizeof = require('object-sizeof');
 const lodash = require('lodash')
-const {processAction} = require("./actionHandler");
 const StageHandler = require("./stageHandler");
 
 class ScheduleHandler{
@@ -36,10 +34,11 @@ class ScheduleHandler{
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
      */
     static async removeAllJobsForParticipant(uniqueId){
-
+        // TODO: Can simplify this function a lot
         let operationTypes = ["questions", "actions"];
         let failedRemovals = [];
         let succeededRemovals = [];
+
 
         for(let i = 0; i < operationTypes.length; i++){
             let oType = operationTypes[i];
@@ -47,6 +46,7 @@ class ScheduleHandler{
             // let scheduledOs = this.scheduledOperations[oType];
             // Get all the scheduled operations from node scheduler
             let scheduledOs = scheduler.scheduledJobs;
+            // console.log(Object.keys(scheduledOs).filter(jobId => jobId.startsWith(""+uniqueId)));
             let partJobIDList = [];
 
             // Find those operations which belong to the current participant
@@ -59,7 +59,6 @@ class ScheduleHandler{
             }
 
             // TODO: Don't do this one by one?
-            // TODO: Cancel current reminders here also?
             // Call the function to remove each selected job by jobID
             // register which were successes and which were failures
             for(let i = 0; i < partJobIDList.length; i++){
@@ -72,13 +71,28 @@ class ScheduleHandler{
             }
         }
 
+        // Cancel current reminders
+        try{
+            let participant = await participants.get(uniqueId)
+            await ReminderHandler.cancelCurrentReminder(participant);
+        } catch(e){
+            failedRemovals.push("reminders - " + e.message);
+        }
+
+        // Remove any other jobs that might be retained in the database
+        try{
+            await participants.removeAllScheduledOperations(uniqueId);
+        } catch(err) {
+            failedRemovals.push("remaining DB jobs - " + e.message)
+        }
+
         // Return the appropriate outcome (failure, partial failure, success)
         if(failedRemovals.length > 0) {
             if(succeededRemovals.length === 0){
-                return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                return ReturnMethods.returnFailure("Scheduler: failed to remove the following jobs:\n"+
                     failedRemovals.join('\n'));
             }
-            return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to remove the following jobs:\n"+
                 failedRemovals.join('\n'), succeededRemovals);
         }
         if(uniqueId in this.debugQueue) {
@@ -132,13 +146,20 @@ class ScheduleHandler{
             }
         }
 
+        // Cancel current reminders
+        try{
+            await ReminderHandler.cancelJobsForId(uniqueId);
+        } catch(e){
+            failedRemovals.push("reminders - " + e.message);
+        }
+
         // Return the appropriate outcome (failure, partial failure, success)
         if(failedRemovals.length > 0) {
             if(succeededRemovals.length === 0){
-                return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                return ReturnMethods.returnFailure("Scheduler: failed to cancel the following jobs:\n"+
                     failedRemovals.join('\n'));
             }
-            return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to cancel the following jobs:\n"+
                 failedRemovals.join('\n'), succeededRemovals);
         }
         return ReturnMethods.returnSuccess(succeededRemovals)

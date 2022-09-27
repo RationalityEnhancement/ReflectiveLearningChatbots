@@ -2374,6 +2374,12 @@ describe('Severing DB connection', () => {
         let participant = await participants.get(testId);
         expect(participant).to.be.null;
     });
+    it('Should cancel all remaining jobs', async () => {
+        Object.keys(scheduler.scheduledJobs).forEach(job => {
+            scheduler.cancelJob(job)
+        });
+        expect(Object.keys(scheduler.scheduledJobs).length).to.equal(0);
+    });
 
     it('Should close connection', async () => {
         try

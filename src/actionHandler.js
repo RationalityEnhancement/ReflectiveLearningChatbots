@@ -113,6 +113,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
 
     switch(actionObj.aType){
         // Schedule all questions specified for given condition in config file
+            // TODO: ScheduleQuestions is now obsolete - remove?
         case "scheduleQuestions":
             const ScheduleHandler = require("./scheduleHandler");
 
@@ -549,7 +550,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
 
             let newPartStage;
             // Start the given stage
-            let startStageObj = await StageHandler.startStage(participant, startStage);
+            let startStageObj = await StageHandler.startStage(bot, participant, startStage, config);
             if(startStageObj.returnCode === DevConfig.FAILURE_CODE){
                 return ReturnMethods.returnFailure(
                     "ActHandler:Unable to start stage:\n"+ startStageObj.data
@@ -571,7 +572,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
         case "incrementStageDay" :
             // No arguments
 
-            let incStageObj = await StageHandler.updateStageDay(config, participant.uniqueId);
+            let incStageObj = await StageHandler.updateStageDay(bot, participant.uniqueId, config);
             if(incStageObj.returnCode === DevConfig.FAILURE_CODE){
                 return ReturnMethods.returnFailure(
                     "ActHandler:Unable to update stage day:\n"+ incStageObj.data
@@ -591,7 +592,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 // Send the participant a message that the experiment has ended.
 
             }
-            // Create a new node in the linked list for debug infos so that the list doesn't grow too large
+            // Create a new node in the linked list for debug infos and answers so that the list doesn't grow too large
             await debugs.addNode(participant.uniqueId);
             await answers.addNode(participant.uniqueId);
             if(incStageObj.data === -1){

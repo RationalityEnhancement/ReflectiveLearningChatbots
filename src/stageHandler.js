@@ -6,6 +6,7 @@ const moment = require('moment-timezone')
 const ConfigParser = require('./configParser')
 const AnswerHandler = require('./answerHandler')
 const ScheduleHandler = require("./scheduleHandler");
+const ExperimentUtils = require('./experimentUtils')
 
 /**
  * Stage handler class that takes in a config as a parameter
@@ -534,7 +535,7 @@ module.exports.createOnDaysObj = (stageList) => {
  *
  * Each action object is of the form : {
  *     aType : incrementStageDay,
- *     atTime : DevConfig.STAGE_UPDATE_TIME,
+ *     atTime : ExperimentUtils.getStageUpdateTime(),
  *     onDays : taken from stage on days,
  *     if : undefined if all stages occur on the same days (no condition required)
  *          conjunction of stage name equality comparisons if not all stages occur on same days
@@ -601,7 +602,7 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
             aType : "incrementStageDay",
             args : [],
             onDays : onDaysList,
-            atTime : DevConfig.STAGE_UPDATE_TIME,
+            atTime : ExperimentUtils.getStageUpdateTime(),
             if: condition
         }
         actionList.push(actionObj)
@@ -642,7 +643,7 @@ module.exports.createUpdateActionListForStage = (config, conditionName, stageNam
     let actionList = [{
         aType: "incrementStageDay",
         args: [],
-        atTime: DevConfig.STAGE_UPDATE_TIME,
+        atTime: ExperimentUtils.getStageUpdateTime(),
         onDays: dayList,
         if: "${STAGE_NAME} == $S{" + stageName + "}"
     }];

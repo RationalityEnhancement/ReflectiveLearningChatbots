@@ -375,3 +375,15 @@ module.exports.getRandomTimeInWindow = (start, end) => {
   return ReturnMethods.returnSuccess(minsToHHMM(newMins));
 
 }
+
+module.exports.getStageUpdateTime = () => {
+  let start = DevConfig.STAGE_UPDATE_WINDOW.START
+  let end = DevConfig.STAGE_UPDATE_WINDOW.END
+
+  let returnObj = this.getRandomTimeInWindow(start, end);
+  if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+    return start;
+  } else {
+    return returnObj.data
+  }
+}

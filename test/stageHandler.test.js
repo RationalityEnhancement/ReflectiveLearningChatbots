@@ -5,6 +5,7 @@ const testConfigConds = require('../json/test/stageHandlerTestConfigConds.json')
 const ConfigReader = require('../src/configReader');
 const DevConfig = ConfigReader.getDevConfig();
 
+const ExperimentUtils = require('../src/experimentUtils')
 const StageHandler = require('../src/StageHandler');
 const ScheduleHandler = require('../src/scheduleHandler');
 const scheduler = require('node-schedule');
@@ -13,6 +14,7 @@ const mongo = require("mongoose");
 const participants = require("../src/apiControllers/participantApiController");
 const answers = require("../src/apiControllers/answerApiController");
 const idMaps = require("../src/apiControllers/idMapApiController");
+const experimentUtils = require("../src/experimentUtils");
 const config = ConfigReader.getExpConfig();
 const testBot = {
     telegram: {
@@ -743,7 +745,11 @@ describe('Creating action list', () => {
             expect(returnObj.data[0].onDays.sort()).to.eql(dayList.sort());
             expect(returnObj.data[0].if).to.equal("${STAGE_NAME} != $S{}");
             expect(returnObj.data[0].aType).to.equal("incrementStageDay");
-            expect(returnObj.data[0].atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
+            let startMins = experimentUtils.HHMMToMins(DevConfig.STAGE_UPDATE_WINDOW.START);
+            let endMins = experimentUtils.HHMMToMins(DevConfig.STAGE_UPDATE_WINDOW.END);
+            let returnMins = experimentUtils.HHMMToMins(returnObj.data[0].atTime);
+            assert(experimentUtils.validateTimeString(returnObj.data[0].atTime))
+            assert(startMins <= returnMins && returnMins <= endMins);
         })
         it('Should create multiple actions', () => {
             let dayList2 = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -754,7 +760,11 @@ describe('Creating action list', () => {
             expect(returnObj.data.length).to.equal(3);
             returnObj.data.forEach(actionObj => {
                 expect(actionObj.aType).to.equal("incrementStageDay");
-                expect(actionObj.atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
+                let startMins = experimentUtils.HHMMToMins(DevConfig.STAGE_UPDATE_WINDOW.START);
+                let endMins = experimentUtils.HHMMToMins(DevConfig.STAGE_UPDATE_WINDOW.END);
+                let returnMins = experimentUtils.HHMMToMins(actionObj.atTime);
+                assert(experimentUtils.validateTimeString(actionObj.atTime))
+                assert(startMins <= returnMins && returnMins <= endMins);
                 try{
                     expect(actionObj.onDays.sort()).to.eql(dayList2.sort());
                     expect(actionObj.if).to.equal("${STAGE_NAME} == $S{2}");
@@ -789,7 +799,11 @@ describe('Creating action list', () => {
             expect(returnObj.data[0].onDays.sort()).to.eql(dayList.sort());
             expect(returnObj.data[0].if).to.equal("${STAGE_NAME} == $S{1}");
             expect(returnObj.data[0].aType).to.equal("incrementStageDay");
-            expect(returnObj.data[0].atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
+            let startMins = experimentUtils.HHMMToMins(DevConfig.STAGE_UPDATE_WINDOW.START);
+            let endMins = experimentUtils.HHMMToMins(DevConfig.STAGE_UPDATE_WINDOW.END);
+            let returnMins = experimentUtils.HHMMToMins(returnObj.data[0].atTime);
+            assert(experimentUtils.validateTimeString(returnObj.data[0].atTime))
+            assert(startMins <= returnMins && returnMins <= endMins);
         })
         it('Should create one action with all days when days are not specified', () => {
             let returnObj = StageHandler.createUpdateActionListForStage(testConfigConds, "Experimental", "Post");
@@ -799,7 +813,11 @@ describe('Creating action list', () => {
             expect(returnObj.data[0].onDays.sort()).to.eql(dayIdxOrd.sort());
             expect(returnObj.data[0].if).to.equal("${STAGE_NAME} == $S{Post}");
             expect(returnObj.data[0].aType).to.equal("incrementStageDay");
-            expect(returnObj.data[0].atTime).to.equal(DevConfig.STAGE_UPDATE_TIME);
+            let startMins = experimentUtils.HHMMToMins(DevConfig.STAGE_UPDATE_WINDOW.START);
+            let endMins = experimentUtils.HHMMToMins(DevConfig.STAGE_UPDATE_WINDOW.END);
+            let returnMins = experimentUtils.HHMMToMins(returnObj.data[0].atTime);
+            assert(experimentUtils.validateTimeString(returnObj.data[0].atTime))
+            assert(startMins <= returnMins && returnMins <= endMins);
         })
         it('Should fail if days are invalid', () => {
             let returnObj = StageHandler.createUpdateActionListForStage(testConfigConds, "Experimental", "FailStage");

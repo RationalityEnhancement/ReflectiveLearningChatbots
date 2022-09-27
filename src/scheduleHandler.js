@@ -25,6 +25,7 @@ class ScheduleHandler{
     // };
     static debugQueue = {};
     static debugQueueAdjusted = {}
+    static debugQueueCurrent = {}
     /**
      *
      * Delete all jobs for a given participant from the local scheduling queue
@@ -553,7 +554,7 @@ class ScheduleHandler{
         let partCond = participant["conditionName"];
 
         // Schedule all questions and actions
-        let actionsObj = StageHandler.createUpdateActionListForStage(config, partCond, stageName);
+        let actionsObj = StageHandler.createUpdateActionListForStage(config, partCond, stageName, participant.uniqueId);
         if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure(
                 "ActHandler: Unable to create stage update actions:\n" + actionsObj.data
@@ -596,7 +597,7 @@ class ScheduleHandler{
 
     /**
      *
-     * Schedule all the actions passed in through question list and action list
+     * Schedule all the operations passed in through question list and action list
      *
      * @param bot Telegram bot instance
      * @param participant participant object
@@ -1517,25 +1518,19 @@ class ScheduleHandler{
      *
      * @param qInfoArray the array to be shifted (sorted in temporal order
      *                  of days of the week and time of the question)
-     * @param date moment timezone date
+     * @param dayObj object with the "current" day and time:
+     *      {
+     *          dayIndex = 0-6,
+     *          time: HH:MM
+     *      }
      *
      * @returns the array rotated so that the first in the list corresponds
      *          to the question in the list which would occurs next after the
      *          time/day mentioned in the given date
      */
-    static shiftTemporalOrderArray(qInfoArray, date){
+    static shiftTemporalOrderArray(qInfoArray, dayObj){
         if(!Array.isArray(qInfoArray)) return [];
         if(qInfoArray.length === 0) return qInfoArray;
-
-        let dateObjObj = ExperimentUtils.parseMomentDateString(date.format());
-        if(dateObjObj.returnCode === DevConfig.FAILURE_CODE){
-            return [];
-        }
-        let dateObj = dateObjObj.data;
-        let diffObj = {
-            dayIndex: dateObj.dayOfWeek,
-            time: (dateObj.hours < 10 ? '0' : '') + dateObj.hours + ":" + (dateObj.minutes < 10 ? '0' : '') + dateObj.minutes
-        };
 
         let closestQIdx = 0;
         let leastTimeDiff = 10080;
@@ -1544,7 +1539,7 @@ class ScheduleHandler{
             let curDay = qInfoArray[i].onDays[0];
             let curDayIdx = DevConfig.DAY_INDEX_ORDERING.indexOf(curDay);
             let curTime = qInfoArray[i].atTime;
-            let diff = ExperimentUtils.getMinutesDiff(diffObj,{
+            let diff = ExperimentUtils.getMinutesDiff(dayObj,{
                 dayIndex: curDayIdx,
                 time: curTime
             })
@@ -1574,7 +1569,10 @@ class ScheduleHandler{
 
         // Send the current question to the end of the queue to make prepare for the next /next call
         ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
-
+        this.debugQueueCurrent[uniqueId] = {
+            dayIndex: DevConfig.DAY_INDEX_ORDERING.indexOf(nextQ.onDays[0]),
+            time: nextQ.atTime
+        }
         return ReturnMethods.returnSuccess(nextQ);
 
     }
@@ -1597,10 +1595,24 @@ class ScheduleHandler{
         if(!timezone){
             return ReturnMethods.returnFailure("Participant timezone not set yet!");
         }
-        let now = moment.tz(timezone);
+        let currentTime;
+        if(!this.debugQueueCurrent[uniqueId]){
+            let now = moment.tz(timezone);
+            let dateObjObj = ExperimentUtils.parseMomentDateString(now.format());
+            if(dateObjObj.returnCode === DevConfig.FAILURE_CODE){
+                return dateObjObj;
+            }
+            let dateObj = dateObjObj.data;
+            currentTime = {
+                dayIndex: dateObj.dayOfWeek,
+                time: (dateObj.hours < 10 ? '0' : '') + dateObj.hours + ":" + (dateObj.minutes < 10 ? '0' : '') + dateObj.minutes
+            };
+        } else {
+            currentTime = this.debugQueueCurrent[uniqueId];
+        }
 
         if(!this.debugQueueAdjusted[uniqueId]) {
-            this.shiftTemporalOrderArray(this.debugQueue[uniqueId], now);
+            this.shiftTemporalOrderArray(this.debugQueue[uniqueId], currentTime);
             this.debugQueueAdjusted[uniqueId] = true;
         }
         return ReturnMethods.returnSuccess("");

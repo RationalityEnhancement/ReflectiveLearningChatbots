@@ -220,6 +220,44 @@ bot.command('log_exp', async ctx => {
   }
 });
 
+// Log the scheduled questions for the current participant
+bot.command('log_scheduled', async ctx => {
+    if(!config.debug.experimenter) return;
+    try{
+        console.log('Logging scheduled questions.');
+        let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+        if(!secretMap){
+            console.log("Unable to get participant unique id");
+            return;
+        }
+        console.log(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.startsWith(""+secretMap.uniqueId)));
+
+    } catch(err){
+        console.log('Failed to log experiment');
+        console.error(err);
+    }
+});
+
+// Log the scheduled questions debug queue
+bot.command('log_queue', async ctx => {
+    if(!config.debug.enableNext) return;
+    try{
+        console.log('Logging next questions queue');
+        let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+        if(!secretMap){
+            console.log("Unable to get participant unique id");
+            return;
+        }
+        console.log(ScheduleHandler.debugQueue[secretMap.uniqueId]);
+        console.log(ScheduleHandler.debugQueueCurrent[secretMap.uniqueId])
+        console.log(ScheduleHandler.debugQueueAdjusted[secretMap.uniqueId])
+
+    } catch(err){
+        console.log('Failed to log experiment');
+        console.error(err);
+    }
+});
+
 // Delete the participant
 bot.command('delete_me', async ctx => {
 
@@ -385,12 +423,6 @@ bot.command('next', async ctx => {
 
         participant["firstName"] = userInfo["first_name"];
 
-        // Shift the debug queue for the participant if it hasn't been done already
-        let shiftObj = ScheduleHandler.shiftDebugQueueToToday(uniqueId, participant.parameters.timezone);
-        if(shiftObj.returnCode === DevConfig.FAILURE_CODE){
-            console.log(shiftObj.data);
-            return;
-        }
 
         let partCond = participant.conditionName;
         let partLang = participant.parameters.language;
@@ -400,6 +432,12 @@ bot.command('next', async ctx => {
         let maxIterationCount = 1000;
 
         while(!nextQuestionFound && iterationCount <= maxIterationCount){
+            // Shift the debug queue for the participant if it hasn't been done already
+            let shiftObj = ScheduleHandler.shiftDebugQueueToToday(uniqueId, participant.parameters.timezone);
+            if(shiftObj.returnCode === DevConfig.FAILURE_CODE){
+                console.log(shiftObj.data);
+                return;
+            }
             iterationCount++;
 
             // Get the next temporally ordered scheduled question
@@ -487,6 +525,7 @@ bot.command('next', async ctx => {
                     participant = await getParticipant(uniqueId);
                     participant.firstName = firstName;
                 }
+
 
             }
 

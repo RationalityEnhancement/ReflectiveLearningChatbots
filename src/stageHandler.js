@@ -623,7 +623,7 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
  * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}|*}
  *              if success, list with one or more action objects as described above
  */
-module.exports.createUpdateActionListForStage = (config, conditionName, stageName) => {
+module.exports.createUpdateActionListForStage = (config, conditionName, stageName, uniqueId=undefined) => {
 
     // Get the days for which a stage should occur
     let stageDaysListObj = this.getStageParam(config, conditionName, stageName, "onDays");
@@ -643,7 +643,7 @@ module.exports.createUpdateActionListForStage = (config, conditionName, stageNam
     let actionList = [{
         aType: "incrementStageDay",
         args: [],
-        atTime: ExperimentUtils.getStageUpdateTime(),
+        atTime: ExperimentUtils.getStageUpdateTime(uniqueId),
         onDays: dayList,
         if: "${STAGE_NAME} == $S{" + stageName + "}"
     }];

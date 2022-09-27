@@ -355,12 +355,20 @@ module.exports.HHMMToMins = (str) => {
   return split[0] * 60 + split[1]
 }
 
+module.exports.minsToHHMM = (totalMins) => {
+  let hrs = Math.floor(totalMins / 60);
+  let mins = totalMins % 60;
+  return (hrs <= 9 ? "0"+hrs : hrs) + ":" + (mins <= 9 ? "0"+mins : mins)
+}
+/**
+ *
+ * Select a random time within a window
+ *
+ * @param start HH:MM start of time window
+ * @param end HH:MM end of time window
+ * @returns {{returnCode: number, data: *}}
+ */
 module.exports.getRandomTimeInWindow = (start, end) => {
-  let minsToHHMM = (totalMins) => {
-    let hrs = Math.floor(totalMins / 60);
-    let mins = totalMins % 60;
-    return (hrs <= 9 ? "0"+hrs : hrs) + ":" + (mins <= 9 ? "0"+mins : mins)
-  }
   if(!this.validateTimeString(start) || !this.validateTimeString(end)){
     return ReturnMethods.returnFailure("Expt.Utils: time strings must be HH:MM. Received: " + start + ", " + end);
   }
@@ -372,15 +380,63 @@ module.exports.getRandomTimeInWindow = (start, end) => {
   }
   let newMins = Math.floor(Math.random() * (endMins - startMins) + startMins)
 
-  return ReturnMethods.returnSuccess(minsToHHMM(newMins));
+  return ReturnMethods.returnSuccess(this.minsToHHMM(newMins));
 
 }
 
-module.exports.getStageUpdateTime = () => {
+/**
+ *
+ * Get a time in a given window based on the hashcode of a passed in string.
+ * Same string will return the same time each time.
+ *
+ *
+ * @param start HH:MM start of time window
+ * @param end HH:MM end of time window
+ * @param str string whose hashcode is to be used to get the time
+ *
+ * @returns {{returnCode: number, data: *}}
+ */
+module.exports.getHashedTimeInWindow = (start, end, str) => {
+  if(typeof str !== "string"){
+    return ReturnMethods.returnFailure("Expt.Utils: hash strings must be a string");
+  }
+  if(!this.validateTimeString(start) || !this.validateTimeString(end)){
+    return ReturnMethods.returnFailure("Expt.Utils: time strings must be HH:MM. Received: " + start + ", " + end);
+  }
+  let hashCode = function(str) {
+    var hash = 0,
+        i, chr;
+    if (str.length === 0) return hash;
+    for (i = 0; i < str.length; i++) {
+      chr = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  }
+  let startMins = this.HHMMToMins(start);
+  let endMins = this.HHMMToMins(end)
+  if(startMins > endMins){
+    return ReturnMethods.returnFailure("Expt. Utils: start time must be smaller than end time. Received: " + start + ", " + end)
+  }
+  let numOptions = endMins - startMins;
+  let selectedOption = Math.abs(hashCode(str)) % numOptions;
+  let newMins = startMins + selectedOption;
+
+  return ReturnMethods.returnSuccess(this.minsToHHMM(newMins));
+
+}
+
+module.exports.getStageUpdateTime = (hashString = undefined) => {
   let start = DevConfig.STAGE_UPDATE_WINDOW.START
   let end = DevConfig.STAGE_UPDATE_WINDOW.END
 
-  let returnObj = this.getRandomTimeInWindow(start, end);
+  let returnObj;
+  if(!hashString){
+    returnObj = this.getRandomTimeInWindow(start, end);
+  } else {
+    returnObj = this.getHashedTimeInWindow(start, end, hashString)
+  }
   if(returnObj.returnCode === DevConfig.FAILURE_CODE){
     return start;
   } else {

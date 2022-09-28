@@ -586,13 +586,7 @@ bot.command('repeat', async ctx => {
 
   // Repeat question only if there is an outstanding question
   if(participant.currentState.startsWith("awaitingAnswer")){
-      participants.updateField(uniqueId, "currentState", "repeatQuestion")
-          .catch((err) => {
-              handleError(participant, 'Unable to update participant state in repeat!\n'
-                  + err.message + '\n' + err.stack);
-              console.log('Unable to update participant state in repeat!');
-              console.error(err);
-          });
+
     let currentQuestion = participant.currentQuestion;
     LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion,
         false, !config.debug.messageDelay, "repeat")
@@ -608,8 +602,18 @@ bot.command('repeat', async ctx => {
                     });
                 throw returnObj.data;
             }
+            participants.updateField(uniqueId, "currentState", "repeatQuestion")
+                .catch((err) => {
+                    handleError(participant, 'Unable to update participant state in repeat!\n'
+                        + err.message + '\n' + err.stack);
+                    console.log('Unable to update participant state in repeat!');
+                    console.error(err);
+                });
+        })
+        .catch((err) => {
+            handleError(participant, 'Error while sending question!\n'
+                + err.message + '\n' + err.stack);
         });
-
   } else {
       let partLang = participant.parameters.language;
       Communicator.sendMessage(bot, participant,
@@ -1089,6 +1093,10 @@ bot.on('text', async ctx => {
                   break;
           }
       })
+      .catch((err) => {
+          handleError(participant, 'Error while processing answer!\n'
+              + err.message + '\n' + err.stack);
+      });
   
 });
 

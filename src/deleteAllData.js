@@ -4,8 +4,8 @@ const mongo = require('mongoose');
 const idMaps = require('./apiControllers/idMapApiController');
 const experiments = require('./apiControllers/experimentApiController');
 const participants = require('./apiControllers/participantApiController');
-const answers = require('./src/apiControllers/answerApiController');
-const debugs = require('./src/apiControllers/debugInfoApiController');
+const answers = require('./apiControllers/answerApiController');
+const debugs = require('./apiControllers/debugInfoApiController');
 const ConfigReader = require('../src/configReader');
 const config = ConfigReader.getExpConfig();
 

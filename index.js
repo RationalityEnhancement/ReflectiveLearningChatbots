@@ -9,6 +9,7 @@ const experiments = require('./src/apiControllers/experimentApiController');
 const answers = require('./src/apiControllers/answerApiController');
 const debugs = require('./src/apiControllers/debugInfoApiController');
 const idMaps = require('./src/apiControllers/idMapApiController');
+const transcripts = require('./src/apiControllers/transcriptApiController');
 const Communicator = require('./src/communicator')
 const QuestionHandler = require('./src/questionHandler');
 const AnswerHandler = require('./src/answerHandler');
@@ -292,6 +293,7 @@ bot.command('delete_me', async ctx => {
     await participants.remove(uniqueId);
     await answers.removeAllForId(uniqueId);
     await debugs.removeAllForId(uniqueId);
+    await transcripts.removeAllForId(uniqueId);
 
     // Delete chatID mapping
     await idMaps.deleteByChatId(config.experimentId, ctx.from.id);
@@ -350,23 +352,44 @@ bot.command('cancel', async ctx =>{
         console.log("Participant not found while cancelling!")
         return;
     }
+    let timeStamp = moment.tz(participant.parameters.timezone).format();
+    transcripts.addMessages(participant.uniqueId, [{
+        message: ctx.message.text,
+        from: ""+participant.uniqueId,
+        timeStamp: timeStamp
+    }])
+        .catch(err => {
+            let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
+                + timeStamp + "\n" + err.message + "\n" + err.stack;
+            handleError(participant, errMsg);
+            console.log(errMsg);
+        })
     let partLang = participant.parameters.language;
     if(SKIP_TO_STAGE[ctx.from.id]){
         SKIP_TO_STAGE[ctx.from.id] = false;
-        await ctx.replyWithHTML("Skipping stage has been cancelled. The experiment will continue as normal. Send <i>/repeat</i> to recall any outstanding question.")
+        let message = "Skipping stage has been cancelled. The experiment will continue as normal. Send <i>/repeat</i> to recall any outstanding question.";
+        Communicator.sendMessage(bot, participant, ctx.from.id, message, !config.debug.messageDelay)
+            .catch(e => {
+                handleError(participant, 'Unable to send cancel skip stage message!\n'
+                    + err.message + '\n' + err.stack);
+            })
     } else if(REPORT_FEEDBACK[ctx.from.id]){
         REPORT_FEEDBACK[ctx.from.id] = false;
-        try{
-            await Communicator.sendMessage(bot, participant,
-                ctx.from.id, config.phrases.experiment.reportFeedbackCancel[partLang], !config.debug.messageDelay);
-            await Communicator.sendMessage(bot, participant,
-                ctx.from.id, config.phrases.experiment.experimentContinue[partLang], !config.debug.messageDelay);
-        } catch(err){
-            await handleError(participant, 'Unable to send feedback cancel message!\n'
-                + err.message + '\n' + err.stack);
-            console.log('Unable to send feedback cancel message!');
-            console.error(err);
-        }
+        Communicator.sendMessage(bot, participant,
+            ctx.from.id, config.phrases.experiment.reportFeedbackCancel[partLang], !config.debug.messageDelay)
+            .then((ret) => {
+                Communicator.sendMessage(bot, participant,
+                    ctx.from.id, config.phrases.experiment.experimentContinue[partLang], !config.debug.messageDelay);
+            })
+            .catch(err => {
+                handleError(participant, 'Unable to send feedback cancel message!\n'
+                    + err.message + '\n' + err.stack)
+                    .then(ret => {
+                        console.log('Unable to send feedback cancel message!');
+                        console.error(err);
+                    })
+
+            })
     } else if(TALK[ctx.from.id]){
         TALK[ctx.from.id] = false;
         try{
@@ -547,6 +570,28 @@ bot.command('repeat', async ctx => {
     }
     let uniqueId = secretMap.uniqueId;
 
+
+    let participant = await getParticipant(uniqueId);
+    let partLang = participant.parameters.language;
+    if(!participant){
+        console.log("Participant not found while repeating!")
+        ctx.replyWithHTML("Send /start to begin interacting with me!")
+        return;
+    }
+
+    let timeStamp = moment.tz(participant.parameters.timezone).format();
+    transcripts.addMessages(participant.uniqueId, [{
+        message: ctx.message.text,
+        from: ""+participant.uniqueId,
+        timeStamp: timeStamp
+    }])
+        .catch(err => {
+            let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
+                + timeStamp + "\n" + err.message + "\n" + err.stack;
+            handleError(participant, errMsg);
+            console.log(errMsg);
+        })
+
     // Cancel any outstanding commands
     if(SKIP_TO_STAGE[ctx.from.id]){
         SKIP_TO_STAGE[ctx.from.id] = false;
@@ -564,13 +609,6 @@ bot.command('repeat', async ctx => {
             });
     }
 
-  let participant = await getParticipant(uniqueId);
-    let partLang = participant.parameters.language;
-    if(!participant){
-        console.log("Participant not found while repeating!")
-        ctx.replyWithHTML("Send /start to begin interacting with me!")
-        return;
-    }
 
     if(TALK[ctx.from.id]){
         TALK[ctx.from.id] = false;
@@ -675,6 +713,19 @@ bot.command('report', async ctx => {
         await ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
+    let timeStamp = moment.tz(participant.parameters.timezone).format();
+    transcripts.addMessages(participant.uniqueId, [{
+        message: ctx.message.text,
+        from: ""+participant.uniqueId,
+        timeStamp: timeStamp
+    }])
+        .catch(err => {
+            let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
+                + timeStamp + "\n" + err.message + "\n" + err.stack;
+            handleError(participant, errMsg);
+            console.log(errMsg);
+        })
+
 
     SKIP_TO_STAGE[ctx.from.id] = false;
     TALK[ctx.from.id] = false;
@@ -707,6 +758,19 @@ bot.command('talk', async ctx => {
         await ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
+
+    let timeStamp = moment.tz(participant.parameters.timezone).format();
+    transcripts.addMessages(participant.uniqueId, [{
+        message: ctx.message.text,
+        from: ""+participant.uniqueId,
+        timeStamp: timeStamp
+    }])
+        .catch(err => {
+            let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
+                + timeStamp + "\n" + err.message + "\n" + err.stack;
+            handleError(participant, errMsg);
+            console.log(errMsg);
+        })
 
     // Don't allow initiation of talking if there is an outstanding question
     if(participant.currentState.startsWith('awaitingAnswer')){
@@ -773,18 +837,43 @@ bot.command('help', async ctx => {
         await ctx.replyWithHTML("Send /start to begin interacting with me!")
         return;
     }
+    let timeStamp = moment.tz(participant.parameters.timezone).format();
+    transcripts.addMessages(participant.uniqueId, [{
+        message: ctx.message.text,
+        from: ""+participant.uniqueId,
+        timeStamp: timeStamp
+    }])
+        .catch(err => {
+            let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
+                + timeStamp + "\n" + err.message + "\n" + err.stack;
+            handleError(participant, errMsg);
+            console.log(errMsg);
+        })
+
     let instructionText = config.instructionText;
     try{
         let insMessages = instructionText[participant.parameters.language];
         for(let i = 0; i < insMessages.length; i++){
-            await Communicator.sendMessage(bot, participant, ctx.from.id, insMessages[i], !config.debug.messageDelay)
+            Communicator.sendMessage(bot, participant, ctx.from.id, insMessages[i], !config.debug.messageDelay)
+                .catch(err => {
+                    throw err;
+                })
         }
     } catch(err){
-        await ctx.replyWithHTML(config.phrases.experiment.cannotHelp[participant.parameters.language]);
-        await handleError(participant, 'Unable to send instructions!\n'
-            + err.message + '\n' + err.stack);
-        console.log('Unable to send instructions!');
-        console.error(err);
+        Communicator.sendMessage(config.phrases.experiment.cannotHelp[participant.parameters.language])
+            .then(ret => {
+                return handleError(participant, 'Unable to send instructions!\n'
+                    + err.message + '\n' + err.stack);
+            })
+            .then(ret => {
+                console.log('Unable to send instructions!');
+                console.error(err);
+            })
+            .catch(err => {
+                console.log("Unable to send can't send instructions message: " + participant.uniqueId + "\n"
+                + err.message + "\n" + err.stack)
+            })
+
     }
 })
 
@@ -863,6 +952,9 @@ bot.start(async ctx => {
       await answers.add(uniqueId);
       await answers.initializeAnswer(uniqueId, config.experimentId)
 
+        await transcripts.add(uniqueId);
+        await transcripts.initializeTranscript(uniqueId, config.experimentId)
+
         await debugs.add(uniqueId);
         await debugs.initializeDebugInfo(uniqueId, config.experimentId)
       // Use the new participant henceforth
@@ -907,6 +999,8 @@ bot.start(async ctx => {
 // Handling any answer
 bot.on('text', async ctx => {
   const messageText = ctx.message.text;
+
+
   // Get the participants unique ID
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
     if(!secretMap){
@@ -924,6 +1018,18 @@ bot.on('text', async ctx => {
       await ctx.replyWithHTML("Send /start to begin interacting with me!")
       return;
   }
+  let timeStamp = moment.tz(participant.parameters.timezone).format();
+    transcripts.addMessages(participant.uniqueId, [{
+        message: messageText,
+        from: ""+uniqueId,
+        timeStamp: timeStamp
+    }])
+        .catch(err => {
+            let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
+                + timeStamp + "\n" + err.message + "\n" + err.stack;
+            handleError(participant, errMsg);
+            console.log(errMsg);
+        })
 
     // Ignore commands
     if(messageText.charAt[0] === '/') return;

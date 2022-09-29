@@ -4,6 +4,7 @@ const answers = require('../src/apiControllers/answerApiController');
 
 const mongo = require('mongoose');
 const moment = require("moment-timezone");
+const transcripts = require("../src/apiControllers/transcriptApiController");
 
 const expect = require('chai').expect;
 
@@ -87,9 +88,10 @@ describe('Answer Controller API: ', () =>{
 		expect(participant["answers"].length).to.eql(0);
 	});
 
-
+	let startLinkId;
 	it('Should create a new node in the linked list with empty array', async () => {
 		let currentDebugInfo = await answers.getCurrent(testId);
+		startLinkId = currentDebugInfo.linkId
 		await answers.addNode(testId);
 		let oldDebugInfo = await answers.getByLinkId(testId, currentDebugInfo.linkId)
 		let newDebugInfo = await answers.getCurrent(testId);
@@ -146,6 +148,12 @@ describe('Answer Controller API: ', () =>{
 		expect(participant["answers"][1]['askTimeStamp']).to.eql(testAnswer3.askTimeStamp);
 		expect(participant["answers"][1]['answerTimeStamp']).to.eql(testAnswer3.answerTimeStamp);
 		expect(participant["answers"][1]['answer']).to.eql(testAnswer3.answer);
+	});
+	it('Should not have added anything to old document', async () => {
+
+		let answer = await answers.getByLinkId(testId, startLinkId);
+		expect(answer.answers.length).to.equal(1)
+		expect(answer.answers[0].qId).to.equal("Zombotron1")
 	});
 	it('Should build a single list of all debug infos from linked list', async () => {
 		let list = await answers.getSingleList(testId);

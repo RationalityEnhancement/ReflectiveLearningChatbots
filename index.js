@@ -588,32 +588,32 @@ bot.command('repeat', async ctx => {
   if(participant.currentState.startsWith("awaitingAnswer")){
 
     let currentQuestion = participant.currentQuestion;
-    LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion,
-        false, !config.debug.messageDelay, "repeat")
-        .then((returnObj) => {
-            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                handleError(participant, returnObj.data);
-                participants.updateField(uniqueId, "currentState", "awaitingAnswer")
-                    .catch((err) => {
-                        handleError(participant, 'Unable to update participant state after fail in repeat!\n'
-                            + err.message + '\n' + err.stack);
-                        console.log('Unable to update participant state after fail in repeat!');
-                        console.error(err);
-                    });
-                throw returnObj.data;
-            }
-            participants.updateField(uniqueId, "currentState", "repeatQuestion")
-                .catch((err) => {
-                    handleError(participant, 'Unable to update participant state in repeat!\n'
-                        + err.message + '\n' + err.stack);
-                    console.log('Unable to update participant state in repeat!');
-                    console.error(err);
-                });
-        })
-        .catch((err) => {
-            handleError(participant, 'Error while sending question!\n'
-                + err.message + '\n' + err.stack);
-        });
+    // Update state to repeat question
+      participants.updateField(uniqueId, "currentState", "repeatQuestion")
+          .then( (res) => {
+                  return LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion,
+                      false, !config.debug.messageDelay, "repeat")
+          })
+          .then((returnObj) => {
+              if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                  throw returnObj.data;
+              }
+          })
+          .catch((err) => {
+              participants.updateField(uniqueId, "currentState", "awaitingAnswer")
+                  .catch((err) => {
+                      handleError(participant,
+                          'Unable to update participant '+ uniqueId +' state after fail in repeat!\n'
+                          + err.message + '\n' + err.stack);
+                      console.log('Unable to update participant state after fail in repeat!');
+                      console.error(err);
+                  });
+              handleError(participant, 'Unable to send repeat question for participant ' + uniqueId + '!\n'
+                  + err.message + '\n' + err.stack);
+              console.log('Unable to send repeat question for participant ' + uniqueId + '!\n' + err);
+          });
+
+
   } else {
       let partLang = participant.parameters.language;
       Communicator.sendMessage(bot, participant,
@@ -887,20 +887,21 @@ bot.start(async ctx => {
     throw "ERROR: " + curQuestionObj.data;
   } else {
     let curQuestion = curQuestionObj.data;
-    try{
-      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion,
-          false, !config.debug.messageDelay, "firstQuestion");
-      if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-          await handleError(participant, returnObj.data)
-          throw returnObj.data;
-      }
-    } catch(err){
-        await handleError(participant, "Failed to send language question\n"
-            + err.message + '\n' + err.stack);
-      console.log('Failed to send language question');
-      console.error(err);
+    LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion,
+          false, !config.debug.messageDelay, "firstQuestion")
+        .then(returnObj => {
+            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                throw returnObj.data;
+            }
+        })
+        .catch(err => {
+            handleError(participant, "Failed to send language question\n"
+                + err.message + '\n' + err.stack);
+            console.log('Failed to send language question');
+            console.error(err);
+        })
+
     }
-  }
 });
 
 // Handling any answer
@@ -1042,12 +1043,6 @@ bot.on('text', async ctx => {
               // Answer was valid
               case DevConfig.SUCCESS_CODE:
                   if(answerHandlerObj.data === DevConfig.NEXT_ACTION_STRING){
-                      // Move on to the next actions
-                      // Send this message only if participant has finished choosing from multi-choice
-                      // if(participant.currentQuestion.qType === "multiChoice"){
-                      //   await Communicator.sendMessage(bot, participant, ctx.from.id,
-                      //       config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], !config.debug.messageDelay);
-                      // }
                       // Process the next steps
                       LogicHandler.processNextSteps(bot, uniqueId)
                           .then((result) => {
@@ -1094,7 +1089,7 @@ bot.on('text', async ctx => {
           }
       })
       .catch((err) => {
-          handleError(participant, 'Error while processing answer!\n'
+          handleError(participant, 'Error while processing answer for participant ' +uniqueId+'!\n'
               + err.message + '\n' + err.stack);
       });
   

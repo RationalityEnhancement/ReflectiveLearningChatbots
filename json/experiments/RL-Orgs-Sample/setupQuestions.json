@@ -173,7 +173,6 @@
       {
         "aType" : "assignToCondition"
       },
-      { "aType" : "scheduleQuestions" },
       {
         "aType" : "setBooleanVar",
         "args" : ["setupComplete", "$B{true}"]

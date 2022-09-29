@@ -13,6 +13,7 @@ const StageHandler = require('./stageHandler')
 const moment = require('moment')
 const debugs = require('./apiControllers/debugInfoApiController');
 const answers = require('./apiControllers/answerApiController');
+const transcripts = require('./apiControllers/transcriptApiController');
 
 
 /**
@@ -595,6 +596,8 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             // Create a new node in the linked list for debug infos and answers so that the list doesn't grow too large
             await debugs.addNode(participant.uniqueId);
             await answers.addNode(participant.uniqueId);
+            await transcripts.addNode(participant.uniqueId);
+
             if(incStageObj.data === -1){
                 for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
                     try{

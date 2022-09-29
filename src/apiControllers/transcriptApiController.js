@@ -1,27 +1,26 @@
 /**
- * Class to write data about the collected debug information to the
+ * Class to write data about the current participant interaction transcripts to the
  * MongoDB database.
  *
  * Primary identifier of a participant document is the
  * Telegram chat id
  */
 
-const { DebugInfo } = require('../models/DebugInfo');
-const lodash = require('lodash');
+const { Transcript } = require('../models/Transcript');
 
 // Get all documents
 exports.getAll = async () => {
   try {
-    return DebugInfo.find();
+    return Transcript.find();
   } catch (err) {
     console.error(err);
   }
 }
 
-// Get the current node of the linked list for participant with uniqueId
+// Get the current linked list node
 exports.getCurrent = async (uniqueId) => {
   try {
-    return DebugInfo.findOne({ uniqueId: uniqueId, current: true });
+    return Transcript.findOne({ uniqueId: uniqueId, current: true });
   } catch (err) {
     console.error(err);
   }
@@ -30,16 +29,7 @@ exports.getCurrent = async (uniqueId) => {
 // Get all the linked list nodes for participant with uniqueId
 exports.getAllForId = async (uniqueId) => {
   try {
-    return DebugInfo.find({ uniqueId: uniqueId });
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-// Get a single document by linkId
-exports.getByLinkId = async (uniqueId, linkId) => {
-  try {
-    return DebugInfo.findOne({ uniqueId: uniqueId, linkId: linkId });
+    return Transcript.find({ uniqueId: uniqueId });
   } catch (err) {
     console.error(err);
   }
@@ -47,8 +37,17 @@ exports.getByLinkId = async (uniqueId, linkId) => {
 
 exports.getByExperimentId = async (experimentId) => {
   try {
-    return DebugInfo.find({ experimentId: experimentId });
+    return Transcript.find({ experimentId: experimentId });
   } catch(err) {
+    console.error(err);
+  }
+}
+
+// Get a single document by linkId
+exports.getByLinkId = async (uniqueId, linkId) => {
+  try {
+    return Transcript.findOne({ uniqueId: uniqueId, linkId: linkId });
+  } catch (err) {
     console.error(err);
   }
 }
@@ -57,7 +56,8 @@ exports.getByExperimentId = async (experimentId) => {
 //  Starts a new linked list
 exports.add = async (uniqueId) => {
   try {
-    return DebugInfo.create({
+
+    return Transcript.create({
       uniqueId: uniqueId,
       current: true,
       start: true
@@ -73,11 +73,10 @@ exports.generateLinkId = (uniqueId) => {
 }
 
 // Initialize the experiment document with some basic essential information
-exports.initializeDebugInfo = async (uniqueId, experimentId) => {
+exports.initializeTranscript = async (uniqueId, experimentId) => {
   try{
     let linkId = this.generateLinkId(uniqueId);
-
-    return DebugInfo.findOneAndUpdate(
+    return Transcript.findOneAndUpdate(
         {
             uniqueId : uniqueId
           },
@@ -90,20 +89,44 @@ exports.initializeDebugInfo = async (uniqueId, experimentId) => {
         {new: true}
     );
   } catch(err){
-    console.log('Debug API Controller: Unable to initializeDebug');
+    console.log('Answer API Controller: Unable to initializeAnswers');
     console.error(err);
   }
 }
 
-// Creates a new node in the linked list of debug info for a given participant
+// Add multiple messages to the end of a chronological list of messages
+// exchanged between the participant and bot
+//  Adds to the current node of the linked list
+exports.addMessages = async (uniqueId, messages) => {
+  try{
+    let update = {
+      $push:{
+        "messages" : {
+          $each : messages
+        }
+      }
+    };
+
+    return Transcript.findOneAndUpdate(
+        { uniqueId: uniqueId, current: true },
+        update,
+        {new : true}
+    );
+  } catch(err){
+    console.log('Answer API Controller: Unable to add answer');
+    console.error(err);
+  }
+}
+
+// Creates a new node in the linked list of answers for a given participant
 //  and makes the new node current
 exports.addNode = async(uniqueId) => {
-  let currentDebugInfo = await DebugInfo.findOne({
+  let currentTranscript = await Transcript.findOne({
     uniqueId: uniqueId,
     current: true
   })
-  let currentLinkId = currentDebugInfo.linkId;
-  let currentExperimentId = currentDebugInfo.experimentId;
+  let currentLinkId = currentTranscript.linkId;
+  let currentExperimentId = currentTranscript.experimentId;
   let newLinkId = this.generateLinkId(uniqueId);
   let writeOps = [
     {
@@ -133,25 +156,25 @@ exports.addNode = async(uniqueId) => {
     }
   ]
 
-  return DebugInfo.bulkWrite(
+  return Transcript.bulkWrite(
       writeOps
   )
 
 }
 
-// Return a single list of debug info objects by re-constructing the linked list
+// Return a single list of transcript objects by re-constructing the linked list
 exports.getSingleList = async (uniqueId) => {
-  let allDocs = await DebugInfo.find({ uniqueId: uniqueId })
-  let debugInfoList = []
+  let allDocs = await Transcript.find({ uniqueId: uniqueId })
+  let messageList = []
   let currentDoc = allDocs.filter(doc => doc.start)[0]
   try{
     while(true){
-      debugInfoList = debugInfoList.concat(currentDoc.debugInfo)
+      messageList = messageList.concat(currentDoc.messages)
       let nextDocId = currentDoc.nextLinkId
       if(!nextDocId) break;
       currentDoc = allDocs.filter(doc => (doc.linkId === nextDocId))[0]
     }
-    return debugInfoList;
+    return messageList;
   } catch(e) {
     console.log("No single list created for participant " + uniqueId + "\n" + e.message + "\n" + e.stack);
     return []
@@ -159,29 +182,9 @@ exports.getSingleList = async (uniqueId) => {
 
 }
 
-// Add debug information to the chronological list
-exports.addDebugInfo = async (uniqueId, infoObj) => {
-  try{
-    let update = {
-      "$push":{
-
-      }
-    }
-    update["$push"]["debugInfo"] = infoObj;
-    return DebugInfo.findOneAndUpdate(
-        { uniqueId: uniqueId, current: true },
-        update,
-        {new : true}
-    );
-  } catch(err){
-    console.log('Debug API Controller: Unable to add debug info');
-    console.error(err);
-  }
-}
-
 exports.removeAllForExperiment = async experimentId => {
   try {
-    return DebugInfo.deleteMany({ experimentId : experimentId });
+    return Transcript.deleteMany({ experimentId : experimentId });
   } catch (err) {
     console.error(err);
   }
@@ -190,7 +193,7 @@ exports.removeAllForExperiment = async experimentId => {
 // remove a single record by chat ID
 exports.removeAllForId = async uniqueId => {
   try {
-    return DebugInfo.deleteMany({ uniqueId: uniqueId });
+    return Transcript.deleteMany({ uniqueId: uniqueId });
   } catch (err) {
     console.error(err);
   }

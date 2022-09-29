@@ -5,7 +5,9 @@ const InputOptions = require('./inputOptions');
 const ConfigParser = require('./configParser');
 const ExperimentUtils = require('./experimentUtils');
 const emoji = require('node-emoji');
+const moment = require('moment-timezone')
 const ReturnMethods = require("./returnMethods");
+const transcripts = require('./apiControllers/transcriptApiController')
 
 const msPerCharacter = config.msPerCharDelay || DevConfig.MS_PER_CHARACTER_DELAY;
 /**
@@ -48,6 +50,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
 
     let language = participant.parameters.language;
     let delayMs = 500;
+    let sentMessages = []
 
     if(!("firstName" in participant) || !participant["firstName"]){
         let userInfo;
@@ -61,6 +64,11 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
         }
         participant["firstName"] = userInfo.first_name;
     }
+    sentMessages.push({
+        message: question.text,
+        from: "bot",
+        timeStamp: moment.tz(participant.parameters.timezone).format()
+    })
 
     question.text = substituteVariables(participant, question.text, false);
 
@@ -210,16 +218,24 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
 
+
             // Send the link
             let linkRef = "\<a href='" + substituteVariables(participant, link, true) + "'\> " +
                 config.phrases.keyboards.linkToSurvey[language] + " </a>";
             await new Promise(res => {
                 setTimeout(res, delayMs * 2)
             });
+
             await bot.telegram.sendMessage(chatId, linkRef, {
                 parse_mode: "HTML",
                 reply_markup: InputOptions.removeKeyboard().reply_markup
             });
+
+            sentMessages.push({
+                message: linkRef,
+                from: "bot",
+                timeStamp: moment.tz(participant.parameters.timezone).format()
+            })
 
             // Send the instruction on how to continue
             // Send default message of "Done" if not overwritten
@@ -237,17 +253,26 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             setTimeout(res, delayMs)
         });
 
-        try{
-            // Send the question text
-            await bot.telegram.sendMessage(chatId, substituteVariables(participant, inputPrompt, true), {
-                parse_mode: "HTML",
-                reply_markup: keyboard
-            });
-        } catch(e) {
+        sentMessages.push({
+            message: inputPrompt,
+            from: "bot",
+            timeStamp: moment.tz(participant.parameters.timezone).format()
+        })
+        // Send the question text
+        bot.telegram.sendMessage(chatId, substituteVariables(participant, inputPrompt, true), {
+            parse_mode: "HTML",
+            reply_markup: keyboard
+        })
+        .catch(e => {
             console.log("Error sending message: \n" + e.message + "\n" + e.stack);
             return;
-        }
+        })
     }
+    transcripts.addMessages(participant.uniqueId, sentMessages)
+        .catch(e => {
+            console.log("Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
+                + sentMessages[0].timeStamp + "\n" + e.message + "\n" + e.stack)
+        });;
 }
 
 /**
@@ -276,6 +301,8 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
         participant["firstName"] = userInfo.first_name;
     }
 
+    let sentMessages = []
+
     // Send each reply message
     for(let i = 0; i < replyMessages.length; i++){
         const reply = replyMessages[i];
@@ -291,6 +318,11 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
                 setTimeout(res, delayMs)
             });
         }
+        sentMessages.push({
+            message: reply,
+            from: "bot",
+            timeStamp: moment.tz(participant.parameters.timezone).format()
+        })
 
         // Send the message
         try{
@@ -304,10 +336,11 @@ module.exports.sendReplies = async (bot, participant, chatId, replyMessages, noD
         }
 
     }
-
-    await new Promise(res => {
-        setTimeout(res, 300)
-    });
+    transcripts.addMessages(participant.uniqueId, sentMessages)
+        .catch(e => {
+            console.log("Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
+                + sentMessages[0].timeStamp + "\n" + e.message + "\n" + e.stack)
+        });
 }
 
 /**
@@ -349,6 +382,13 @@ module.exports.sendMessage = async (bot, participant, chatId, message, noDelay =
             setTimeout(res, delayMs)
         });
     }
+    let sentMessages = [
+        {
+            message: message,
+            from: "bot",
+            timeStamp: moment.tz(participant.parameters.timezone).format()
+        }
+    ]
     let finalMessage = noVarSub ? message : substituteVariables(participant, message, true)
     try{
         await bot.telegram.sendMessage(chatId, finalMessage, {
@@ -359,5 +399,10 @@ module.exports.sendMessage = async (bot, participant, chatId, message, noDelay =
         console.log("Error sending message: \n" + e.message + "\n" + e.stack);
         return;
     }
+    transcripts.addMessages(participant.uniqueId, sentMessages)
+        .catch(e => {
+            console.log("Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
+            + sentMessages[0].timeStamp + "\n" + e.message + "\n" + e.stack)
+        });
 
 }

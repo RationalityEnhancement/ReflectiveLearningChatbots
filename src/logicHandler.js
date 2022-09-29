@@ -124,20 +124,22 @@ let processNextSteps = async(bot, uniqueId) => {
             participant = pActionObj.data;
             if(!participant) throw "Participant not found"
 
-            // Save result of action for debug purposes
-            let saveActionObj = {
-                infoType: "actionResult",
-                scheduledOperations: participant.scheduledOperations,
-                parameters: participant.parameters,
-                stages: participant.stages,
-                info: [],
-                timeStamp: moment.tz(participant.parameters.timezone).format(),
-                from: "LHandler"
+            if(config.debug.saveDebugInfo){
+                // Save result of action for debug purposes
+                let saveActionObj = {
+                    infoType: "actionResult",
+                    scheduledOperations: participant.scheduledOperations,
+                    parameters: participant.parameters,
+                    stages: participant.stages,
+                    info: [],
+                    timeStamp: moment.tz(participant.parameters.timezone).format(),
+                    from: "LHandler"
+                }
+                debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
+                    console.log("LHandler: could not add save action obj - " + nextActions[i].aType + " - " + participant.uniqueId
+                        + "\n" + err.message + "\n" + err.stack);
+                });
             }
-            debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
-                console.log("LHandler: could not add save action obj - " + nextActions[i].aType + " - " + participant.uniqueId
-                    + "\n" + err.message + "\n" + err.stack);
-            });
 
         } catch(err){
             return ReturnMethods.returnFailure("LHandler: Could not fetch participant again: " + uniqueId)
@@ -237,21 +239,23 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
         );
     }
     // TODO: Debug info does not save updated participant with cancelled reminders
-    // Save question that will be sent (for debug purposes)
-    let saveQuestionObj = {
-        infoType: "question",
-        scheduledOperations: participant.scheduledOperations,
-        parameters: participant.parameters,
-        stages: participant.stages,
-        info: [question.qId, JSON.stringify(question)],
-        timeStamp: moment.tz(participant.parameters.timezone).format(),
-        from: from
-    }
+    if(config.debug.saveDebugInfo) {
+        // Save question that will be sent (for debug purposes)
+        let saveQuestionObj = {
+            infoType: "question",
+            scheduledOperations: participant.scheduledOperations,
+            parameters: participant.parameters,
+            stages: participant.stages,
+            info: [question.qId, JSON.stringify(question)],
+            timeStamp: moment.tz(participant.parameters.timezone).format(),
+            from: from
+        }
 
-    debugs.addDebugInfo(participant.uniqueId, saveQuestionObj).catch(err => {
-        console.log("LHandler: could not add save question obj - " + question.qId + " - " + participant.uniqueId
-            + "\n" + err.message + "\n" + err.stack);
-    });
+        debugs.addDebugInfo(participant.uniqueId, saveQuestionObj).catch(err => {
+            console.log("LHandler: could not add save question obj - " + question.qId + " - " + participant.uniqueId
+                + "\n" + err.message + "\n" + err.stack);
+        });
+    }
 
     // Handle any outstanding questions before sending next question.
     await AnswerHandler.handleNoResponse(participant.uniqueId);

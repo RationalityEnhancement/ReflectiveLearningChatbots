@@ -5,6 +5,10 @@ const { Schema, model } = require('mongoose');
 let schemaObject = {
   experimentId: String,
   uniqueId: String,
+    current: Boolean,
+    start: Boolean,
+    linkId: String,
+    nextLinkId: String,
   answers:
     [{
       qId: String,

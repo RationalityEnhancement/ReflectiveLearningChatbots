@@ -5,6 +5,8 @@ const participants = require('./apiControllers/participantApiController')
 const moment = require('moment-timezone')
 const ConfigParser = require('./configParser')
 const AnswerHandler = require('./answerHandler')
+const ScheduleHandler = require("./scheduleHandler");
+const ExperimentUtils = require('./experimentUtils')
 
 /**
  * Stage handler class that takes in a config as a parameter
@@ -31,7 +33,8 @@ module.exports.getStageList = (config, conditionName) => {
             return ReturnMethods.returnFailure("StageHandler: Condition " + conditionName + " doesn't exist")
         }
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Config experiment conditions missing")
+        return ReturnMethods.returnFailure("StageHandler: Config experiment conditions missing"
+            + "\n" + err.message + "\n" + err.stack)
     }
 
     let condition;
@@ -178,13 +181,14 @@ module.exports.getNextStageName = (config, conditionName, stageName) => {
  * @returns {Promise<{returnCode: *, data: *}|*>}
  */
 
-module.exports.updateStageDay = async (config, uniqueId) => {
+module.exports.updateStageDay = async (bot, uniqueId, config) => {
     let newStageDay, participant, returnVal;
     try{
         participant = await participants.get(uniqueId);
         if(!participant) throw "Participant not found"
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Unable to fetch participant to update stage day")
+        return ReturnMethods.returnFailure("StageHandler: Unable to fetch participant to update stage day"
+            + "\n" + err.message + "\n" + err.stack)
     }
 
     // Get the current stage information
@@ -193,7 +197,8 @@ module.exports.updateStageDay = async (config, uniqueId) => {
         currentStage = participant.stages.stageName;
         stageDay = participant.stages.stageDay;
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Stages object not found in participant");
+        return ReturnMethods.returnFailure("StageHandler (update): Stages object not found in participant"
+            + "\n" + err.message + "\n" + err.stack);
     }
 
     if(typeof currentStage === "undefined" || typeof stageDay === "undefined" || currentStage === ""){
@@ -241,7 +246,7 @@ module.exports.updateStageDay = async (config, uniqueId) => {
 
         } else {
             // Start the next stage (which includes ending the current stage)
-            let startObj = await this.startStage(participant, nextStageObj.data);
+            let startObj = await this.startStage(bot, participant, nextStageObj.data, config);
             if(startObj.returnCode === DevConfig.FAILURE_CODE){
                 return ReturnMethods.returnFailure(
                     "StageHandler: Failure to start next stage after updating stage day:"
@@ -272,6 +277,7 @@ module.exports.updateStageDay = async (config, uniqueId) => {
  *          When success, success code with no data
  */
 module.exports.endCurrentStage = async (participant) => {
+    const ScheduleHandler = require('./scheduleHandler');
 
     // get the current stage
     let currentStage, stageDay;
@@ -279,7 +285,8 @@ module.exports.endCurrentStage = async (participant) => {
         currentStage = participant.stages.stageName;
         stageDay = participant.stages.stageDay;
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Stages object not found in participant");
+        return ReturnMethods.returnFailure("StageHandler (end): Stages object not found in participant"
+            + "\n" + err.message + "\n" + err.stack);
     }
 
     // If there is no current stage, then it cannot be ended
@@ -308,7 +315,24 @@ module.exports.endCurrentStage = async (participant) => {
         await participants.clearStageParam(participant.uniqueId, "stageDay");
 
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Unable to update participant to end stage");
+        return ReturnMethods.returnFailure("StageHandler: Unable to update participant to end stage"
+            + "\n" + err.message + "\n" + err.stack);
+    }
+
+    // Remove all current jobs for the participant
+    let removeReturnObj = await ScheduleHandler.removeAllJobsForParticipant(participant.uniqueId);
+
+    // Remove all jobs for participant
+    if(removeReturnObj.returnCode === DevConfig.FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to remove old jobs when ending current stage"
+            + "\n"+ removeReturnObj.data
+        );
+    } else if(removeReturnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to remove some old jobs when ending current stage"
+            + "\n"+ removeReturnObj.failData
+        );
     }
     return ReturnMethods.returnSuccess("");
 }
@@ -320,21 +344,25 @@ module.exports.endCurrentStage = async (participant) => {
  * This involves setting certain stage variables and updating the activity
  * of beginning and ending of stages
  *
+ * @param bot tg bot instance
  * @param participant participant object, must contain stages object
  * @param nextStageName
+ * @param config
  * @returns {Promise<{returnCode: *, data: *}|*>}
  *          When failure, error code
  *          When success, success code with name of next stage
  */
-module.exports.startStage = async (participant, nextStageName) => {
+module.exports.startStage = async (bot, participant, nextStageName, config) => {
 
+    const ScheduleHandler = require('./scheduleHandler');
     // Get the current stage and day
     let currentStage, stageDay;
     try{
         currentStage = participant.stages.stageName;
         stageDay = participant.stages.stageDay;
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Stages object not found in participant");
+        return ReturnMethods.returnFailure("StageHandler (start): Stages object not found in participant"
+        + "\n" + err.message + "\n" + err.stack);
     }
 
     // If a stage is already running, end it
@@ -342,10 +370,15 @@ module.exports.startStage = async (participant, nextStageName) => {
         let endStageObj = await this.endCurrentStage(participant);
         if(endStageObj.returnCode === DevConfig.FAILURE_CODE){
             return ReturnMethods.returnFailure(
-                "StageHandler: Failure to end current stage " + currentStage + " while starting new stage "
+                "StageHandler (start): Failure to end current stage " + currentStage + " while starting new stage "
                 + nextStageName + "\n"+ endStageObj.data
             );
         }
+
+        // Get the new participant after ending the current stage
+        let firstName = participant.firstName;
+        participant = await participants.get(participant.uniqueId);
+        participant.firstName = firstName;
     }
 
     // Start the next stage
@@ -359,7 +392,24 @@ module.exports.startStage = async (participant, nextStageName) => {
         await participants.updateStageParameter(participant.uniqueId, "stageName", nextStageName);
         await participants.updateStageParameter(participant.uniqueId, "stageDay", 1);
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Unable to update participant parameters to start stage")
+        return ReturnMethods.returnFailure("StageHandler: Unable to update participant parameters to start stage"
+            + "\n" + err.message + "\n" + err.stack)
+    }
+
+    // Schedule new jobs for the currentStage
+    let scheduleAllReturnObj = await ScheduleHandler.scheduleStageForId(bot, participant, nextStageName, config);
+
+    // Remove all jobs for participant
+    if(scheduleAllReturnObj.returnCode === DevConfig.FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to schedule new jobs when starting new stage"
+            + "\n"+ scheduleAllReturnObj.data
+        );
+    } else if(scheduleAllReturnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to schedule some new jobs when starting new stage"
+            + "\n"+ scheduleAllReturnObj.failData
+        );
     }
     return ReturnMethods.returnSuccess(nextStageName);
 }
@@ -396,7 +446,8 @@ module.exports.endExperiment = async (uniqueId) => {
         participant = await participants.get(uniqueId);
         if(!participant) throw "Participant not found"
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Unable to fetch participant to update stage day")
+        return ReturnMethods.returnFailure("StageHandler (endExp): Unable to fetch participant to end experiment"
+            + "\n" + err.message + "\n" + err.stack)
     }
 
     // Get the current stage and day
@@ -404,7 +455,8 @@ module.exports.endExperiment = async (uniqueId) => {
     try{
         currentStage = participant.stages.stageName;
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Stages object not found in participant");
+        return ReturnMethods.returnFailure("StageHandler (endExp): Stages object not found in participant"
+            + "\n" + err.message + "\n" + err.stack);
     }
     // If a stage is already running, end it
     if(currentStage !== ""){
@@ -420,7 +472,8 @@ module.exports.endExperiment = async (uniqueId) => {
     try{
         await participants.updateField(uniqueId, "currentState", "experimentEnd");
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Unable to update participant state to end");
+        return ReturnMethods.returnFailure("StageHandler: Unable to update participant state to end"
+            + "\n" + err.message + "\n" + err.stack);
     }
     return ReturnMethods.returnSuccess(-1);
 }
@@ -463,7 +516,8 @@ module.exports.createOnDaysObj = (stageList) => {
             onDaysObj[keyString].push(stage.name);
         })
     } catch(err){
-        return ReturnMethods.returnFailure("StageHandler: Unable to create on days obj")
+        return ReturnMethods.returnFailure("StageHandler: Unable to create on days obj"
+            + "\n" + err.message + "\n" + err.stack)
     }
     return ReturnMethods.returnSuccess(onDaysObj);
 }
@@ -481,11 +535,13 @@ module.exports.createOnDaysObj = (stageList) => {
  *
  * Each action object is of the form : {
  *     aType : incrementStageDay,
- *     atTime : DevConfig.STAGE_UPDATE_TIME,
+ *     atTime : ExperimentUtils.getStageUpdateTime(),
  *     onDays : taken from stage on days,
  *     if : undefined if all stages occur on the same days (no condition required)
  *          conjunction of stage name equality comparisons if not all stages occur on same days
  * }
+ *
+ * NOTE: Might be obsolete after questions are scheduled at the start of every stage
  *
  * @param config loaded config file with stages
  * @param conditionName name of the condition whose stages are to be served
@@ -495,6 +551,7 @@ module.exports.createOnDaysObj = (stageList) => {
 module.exports.createStageUpdateActionList = (config, conditionName) => {
     // Need all stage names
     let stageNameObj = this.getStageList(config, conditionName);
+
     if(stageNameObj.returnCode === DevConfig.FAILURE_CODE){
         return ReturnMethods.returnFailure(
             "StageHandler: Failure to get stage list when creating actions for condition " + conditionName
@@ -515,7 +572,6 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
         return ReturnMethods.returnFailure("StageHandler: Could not create onDays object:\n" +
             onDaysObj.data);
     }
-
     let actionList = [];
 
     let multipleGroupings = (Object.keys(onDaysObj.data).length > 1);
@@ -546,11 +602,51 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
             aType : "incrementStageDay",
             args : [],
             onDays : onDaysList,
-            atTime : DevConfig.STAGE_UPDATE_TIME,
+            atTime : ExperimentUtils.getStageUpdateTime(),
             if: condition
         }
         actionList.push(actionObj)
     }
+
+    return ReturnMethods.returnSuccess(actionList);
+}
+
+/**
+ *
+ * Creates a list with stage update actions for a given stage
+ *
+ * Should contain only one action to increment the stage day on the given days for the current stage
+ *
+ * @param config loaded config file with stages
+ * @param stageName Name of the stage for which the action list is to be fetched
+ * @param conditionName name of the condition whose stages are to be served
+ * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}|*}
+ *              if success, list with one or more action objects as described above
+ */
+module.exports.createUpdateActionListForStage = (config, conditionName, stageName, uniqueId=undefined) => {
+
+    // Get the days for which a stage should occur
+    let stageDaysListObj = this.getStageParam(config, conditionName, stageName, "onDays");
+    if(stageDaysListObj.returnCode === DevConfig.FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to get stage param onDays:"
+            + "\n"+ stageDaysListObj.data
+        );
+    }
+
+    let dayList = stageDaysListObj.data;
+    if(!Array.isArray(stageDaysListObj.data)){
+        let dayIdxOrd = JSON.parse(JSON.stringify(DevConfig.DAY_INDEX_ORDERING));
+        dayList = dayIdxOrd.sort()
+    }
+    // 'If' is redundant, but put it in there just in case
+    let actionList = [{
+        aType: "incrementStageDay",
+        args: [],
+        atTime: ExperimentUtils.getStageUpdateTime(uniqueId),
+        onDays: dayList,
+        if: "${STAGE_NAME} == $S{" + stageName + "}"
+    }];
 
     return ReturnMethods.returnSuccess(actionList);
 }

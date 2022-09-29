@@ -173,7 +173,13 @@
   "scheduledQuestions" : [{
     "qId": "chain1.q1",
     "atTime" : "13:00",
-    "onDays" : ["Mon"]
+    "onDays" : ["Mon"],
+    "stages" : ["Test"]
+  },{
+    "qId": "chain2.q1",
+    "atTime" : "14:00",
+    "onDays" : ["Mon"],
+    "stages" : ["Pre-Test"]
   }],
   "phrases" : {
     "answerValidation": {

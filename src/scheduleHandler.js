@@ -13,17 +13,19 @@ const ConfigParser = require('./configParser');
 const ExperimentUtils = require('./experimentUtils')
 const moment = require('moment-timezone');
 const ReminderHandler = require('./reminderHandler')
-const sizeof = require('object-sizeof');
 const lodash = require('lodash')
-const {processAction} = require("./actionHandler");
+const StageHandler = require("./stageHandler");
 
 class ScheduleHandler{
-    static scheduledOperations = {
-        "questions" : {},
-        "actions" : {}
-    };
+    // TODO: Remove all commented out code when sufficiently convinced that it will never be needed again
+    // (Commented out to avoid using global vars)
+    // static scheduledOperations = {
+    //     "questions" : {},
+    //     "actions" : {}
+    // };
     static debugQueue = {};
     static debugQueueAdjusted = {}
+    static debugQueueCurrent = {}
     /**
      *
      * Delete all jobs for a given participant from the local scheduling queue
@@ -33,25 +35,31 @@ class ScheduleHandler{
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
      */
     static async removeAllJobsForParticipant(uniqueId){
-
+        // TODO: Can simplify this function a lot
         let operationTypes = ["questions", "actions"];
         let failedRemovals = [];
         let succeededRemovals = [];
 
+
         for(let i = 0; i < operationTypes.length; i++){
             let oType = operationTypes[i];
-            // Get all the scheduled operations from the local store
-            let scheduledOs = this.scheduledOperations[oType];
+            // Get all the scheduled operations from the local store (commented out to avoid using global vars)
+            // let scheduledOs = this.scheduledOperations[oType];
+            // Get all the scheduled operations from node scheduler
+            let scheduledOs = scheduler.scheduledJobs;
+            // console.log(Object.keys(scheduledOs).filter(jobId => jobId.startsWith(""+uniqueId)));
             let partJobIDList = [];
 
             // Find those operations which belong to the current participant
-            // based on the job ID (starts with participant ID)
+            // based on the job ID (starts with participant ID) and the operation type
+            // Job IDs of questions have format <uniqueId>_q_..., actions <uniqueId>_a_...
             for(const [jobId, job] of Object.entries(scheduledOs)){
-                if(jobId.startsWith(''+uniqueId)){
+                if(jobId.startsWith(''+uniqueId+'_'+oType[0])){
                     partJobIDList.push(jobId);
                 }
             }
 
+            // TODO: Don't do this one by one?
             // Call the function to remove each selected job by jobID
             // register which were successes and which were failures
             for(let i = 0; i < partJobIDList.length; i++){
@@ -64,13 +72,28 @@ class ScheduleHandler{
             }
         }
 
+        // Cancel current reminders
+        try{
+            let participant = await participants.get(uniqueId)
+            await ReminderHandler.cancelCurrentReminder(participant);
+        } catch(e){
+            failedRemovals.push("reminders - " + e.message);
+        }
+
+        // Remove any other jobs that might be retained in the database
+        try{
+            await participants.removeAllScheduledOperations(uniqueId);
+        } catch(err) {
+            failedRemovals.push("remaining DB jobs - " + e.message)
+        }
+
         // Return the appropriate outcome (failure, partial failure, success)
         if(failedRemovals.length > 0) {
             if(succeededRemovals.length === 0){
-                return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                return ReturnMethods.returnFailure("Scheduler: failed to remove the following jobs:\n"+
                     failedRemovals.join('\n'));
             }
-            return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to remove the following jobs:\n"+
                 failedRemovals.join('\n'), succeededRemovals);
         }
         if(uniqueId in this.debugQueue) {
@@ -97,15 +120,17 @@ class ScheduleHandler{
 
         for(let i = 0; i < operationTypes.length; i++){
             let oType = operationTypes[i];
-            // Get all the scheduled operations from the local store
-            let scheduledOs = this.scheduledOperations[oType];
-
+            // Get all the scheduled operations from the local store (commented out to avoid using global vars)
+            // let scheduledOs = this.scheduledOperations[oType];
+            // Get all the scheduled operations from node scheduler
+            let scheduledOs = scheduler.scheduledJobs;
             let partJobIDList = [];
 
             // Find those operations which belong to the current participant
-            // based on the job ID (starts with participant ID)
+            // based on the job ID (starts with participant ID) and the operation type
+            // Job IDs of questions have format <uniqueId>_q_..., actions <uniqueId>_a_...
             for(const [jobId, job] of Object.entries(scheduledOs)){
-                if(jobId.startsWith(''+uniqueId)){
+                if(jobId.startsWith(''+uniqueId+'_'+oType[0])){
                     partJobIDList.push(jobId);
                 }
             }
@@ -122,13 +147,20 @@ class ScheduleHandler{
             }
         }
 
+        // Cancel current reminders
+        try{
+            await ReminderHandler.cancelJobsForId(uniqueId);
+        } catch(e){
+            failedRemovals.push("reminders - " + e.message);
+        }
+
         // Return the appropriate outcome (failure, partial failure, success)
         if(failedRemovals.length > 0) {
             if(succeededRemovals.length === 0){
-                return ReturnMethods.returnFailure("Scheduler: failed to schedule the following questions:\n"+
+                return ReturnMethods.returnFailure("Scheduler: failed to cancel the following jobs:\n"+
                     failedRemovals.join('\n'));
             }
-            return ReturnMethods.returnPartialFailure("Scheduler: failed to schedule the following questions:\n"+
+            return ReturnMethods.returnPartialFailure("Scheduler: failed to cancel the following jobs:\n"+
                 failedRemovals.join('\n'), succeededRemovals);
         }
         return ReturnMethods.returnSuccess(succeededRemovals)
@@ -172,8 +204,10 @@ class ScheduleHandler{
     static cancelJobByID(jobId, type){
         try{
             // Get the job and cancel it, and then remove it from the local store entirely
-            this.scheduledOperations[type][jobId].cancel();
-            delete this.scheduledOperations[type][jobId];
+            // (commented out to avoid using global vars)
+            // this.scheduledOperations[type][jobId].cancel();
+            // delete this.scheduledOperations[type][jobId];
+            scheduler.scheduledJobs[jobId].cancel()
         } catch(err){
             return ReturnMethods.returnFailure("Scheduler: Failed to cancel job " + jobId);
         }
@@ -319,10 +353,12 @@ class ScheduleHandler{
         }
 
 
-        // Add temporally ordered scheduled operations to participant's debug queue:
-        let scheduledOps = scheduledQuestions.concat(scheduledActions);
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
-        this.debugQueueAdjusted[uniqueId] = false;
+        if(config.debug.enableNext) {
+            // Add temporally ordered scheduled operations to participant's debug queue:
+            let scheduledOps = scheduledQuestions.concat(scheduledActions);
+            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+            this.debugQueueAdjusted[uniqueId] = false;
+        }
 
         return ReturnMethods.returnSuccess(succeededOperations)
     }
@@ -427,33 +463,43 @@ class ScheduleHandler{
         }
 
 
-        // Add temporally ordered scheduled operations to participant's debug queue:
-        let scheduledOps = scheduledQuestions.concat(scheduledActions);
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
-        this.debugQueueAdjusted[uniqueId] = false;
+        if(config.debug.enableNext) {
+            // Add temporally ordered scheduled operations to participant's debug queue:
+            let scheduledOps = scheduledQuestions.concat(scheduledActions);
+            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+            this.debugQueueAdjusted[uniqueId] = false;
+        }
 
         return ReturnMethods.returnSuccess(succeededOperations)
     }
 
     /**
      *
-     * Schedule all the questions for a given participant, as specified in the
+     * Schedule all the questions for all stages for a given participant, as specified in the
      * config file, based on the condition participant is assigned to
+     *
+     * Actions to update stages are also scheduled
      *
      * @param bot Telegram bot instance
      * @param participant
      * @param config loaded config file of experiment
-     * @param actionList A list of actions to be scheduled, if any
      * @param debug flag whether in debug mode or not
      * @returns {Promise<{returnCode: number, data}|{returnCode: *, data: *}|{returnCode: *, successData: *, failData: *}>}
      */
-    static async scheduleAllOperations(bot, participant, config, actionList, debug = false){
+    static async scheduleAllForId(bot, participant, config, debug = false){
         const qHandler = new QuestionHandler(config);
         let uniqueId = participant.uniqueId;
 
         // Get the assigned condition and preferred language of the participant
         let partCond = participant["conditionName"];
-        let partLang = participant.parameters.language;
+
+        // Schedule all questions and actions
+        let actionsObj = StageHandler.createStageUpdateActionList(config, partCond);
+        if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure(
+                "ActHandler: Unable to create stage update actions:\n" + actionsObj.data
+            );
+        }
 
         // Fetch all the scheduled questions for the particular condition
         let schQObj = qHandler.getScheduledQuestions(partCond, participant);
@@ -464,22 +510,108 @@ class ScheduleHandler{
             );
         }
 
-        // Save scheduled questions that were fetched
-        let saveActionObj = {
-            infoType: "getSchQs",
-            scheduledOperations: participant.scheduledOperations,
-            parameters: participant.parameters,
-            stages: participant.stages,
-            info: [JSON.stringify(schQObj.data)],
-            timeStamp: moment.tz(participant.parameters.timezone).format(),
-            from: "SHandler"
+        if(config.debug.saveDebugInfo) {
+            // Save scheduled questions that were fetched
+            let saveActionObj = {
+                infoType: "getSchQs",
+                scheduledOperations: participant.scheduledOperations,
+                parameters: participant.parameters,
+                stages: participant.stages,
+                info: [JSON.stringify(schQObj.data)],
+                timeStamp: moment.tz(participant.parameters.timezone).format(),
+                from: "SHandler"
+            }
+            debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
+                console.log("Scheduler: could not add save action obj - getScheduledQs - " + participant.uniqueId
+                    + "\n" + err.message + "\n" + err.stack);
+            });
         }
-        debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
-            console.log("Scheduler: could not add save action obj - getScheduledQs - " + participant.uniqueId
-                + "\n" + err.message + "\n" + err.stack);
-        });
 
         let scheduledQuestionsList = schQObj.data;
+        let actionList = actionsObj.data;
+
+        // Schedule these operations
+        return this.scheduleOperations(bot, participant, qHandler, config, scheduledQuestionsList, actionList, debug);
+    }
+
+    /**
+     *
+     * Schedule all the questions for a given participant for a given stage, as specified in the
+     * config file, based on the condition participant is assigned to
+     *
+     * @param bot Telegram bot instance
+     * @param participant participant object
+     * @param stageName Name of the stage for which questions are to be scheduled
+     * @param config loaded config file of experiment
+     * @param actionList A list of actions to be scheduled, if any
+     * @param debug flag whether in debug mode or not
+     * @returns {Promise<{returnCode: number, data}|{returnCode: *, data: *}|{returnCode: *, successData: *, failData: *}>}
+     */
+    static async scheduleStageForId(bot, participant, stageName, config, debug = false){
+        const qHandler = new QuestionHandler(config);
+
+        // Get the assigned condition and preferred language of the participant
+        let partCond = participant["conditionName"];
+
+        // Schedule all questions and actions
+        let actionsObj = StageHandler.createUpdateActionListForStage(config, partCond, stageName, participant.uniqueId);
+        if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure(
+                "ActHandler: Unable to create stage update actions:\n" + actionsObj.data
+            );
+        }
+
+        // Fetch all the scheduled questions for the particular condition
+        let schQObj = qHandler.getStageScheduledQuestions(stageName, partCond, participant);
+        if(schQObj.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure(
+                "Scheduler: Failure to get scheduled question in scheduleStage"
+                + "\n"+ schQObj.data
+            );
+        }
+
+
+        if(config.debug.saveDebugInfo) {
+            // Save scheduled questions that were fetched
+            let saveActionObj = {
+                infoType: "getStageSchQs",
+                scheduledOperations: participant.scheduledOperations,
+                parameters: participant.parameters,
+                stages: participant.stages,
+                info: [JSON.stringify(schQObj.data)],
+                timeStamp: moment.tz(participant.parameters.timezone).format(),
+                from: "SHandler"
+            }
+            debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
+                console.log("Scheduler: could not add save action obj - getStageScheduledQs - " + participant.uniqueId
+                    + "\n" + err.message + "\n" + err.stack);
+            });
+        }
+
+        let scheduledQuestionsList = schQObj.data;
+        let actionList = actionsObj.data;
+
+        // Schedule these operations
+        return this.scheduleOperations(bot, participant, qHandler, config, scheduledQuestionsList, actionList, debug);
+    }
+
+    /**
+     *
+     * Schedule all the operations passed in through question list and action list
+     *
+     * @param bot Telegram bot instance
+     * @param participant participant object
+     * @param qHandler QuestionHandler instance initialized with config
+     * @param config config file
+     * @param questionList list of questions to be scheduled
+     * @param actionList list of actions to be scheduled
+     * @param debug debug flag
+     * @returns {Promise<{returnCode: number, successData: *, failData: *}|{returnCode: number, data: *}>}
+     */
+    static async scheduleOperations(bot, participant, qHandler, config, questionList, actionList, debug = false){
+
+        let uniqueId = participant.uniqueId;
+        let scheduledQuestionsList = questionList;
         let failedOperations = [];
         let succeededOperations = [];
 
@@ -549,13 +681,16 @@ class ScheduleHandler{
                 failedOperations.join('\n'), succeededOperations);
         }
 
-        // Add temporally ordered scheduled questions to participant's debug queue:
-        let scheduledOps = scheduledQuestionsList.concat(actionList);
-        this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps,config.experimentLengthWeeks);
-        this.debugQueueAdjusted[uniqueId] = false;
+        if(config.debug.enableNext) {
+            // Add temporally ordered scheduled questions to participant's debug queue:
+            let scheduledOps = scheduledQuestionsList.concat(actionList);
+            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+            this.debugQueueAdjusted[uniqueId] = false;
+        }
 
         return ReturnMethods.returnSuccess(succeededOperations)
     }
+
 
     /**
      *
@@ -858,8 +993,8 @@ class ScheduleHandler{
             }
         }
 
-        // Add to local store
-        this.scheduledOperations["questions"][jobId] = job;
+        // Add to local store (commented out to avoid using global vars)
+        // this.scheduledOperations["questions"][jobId] = job;
 
         return ReturnMethods.returnSuccess({
             jobId: jobId,
@@ -901,7 +1036,7 @@ class ScheduleHandler{
         let recRule = recurrenceRuleObj.data;
 
         let uniqueId = participant.uniqueId;
-        let jobId = uniqueId + "_" + questionInfo.qId + "_" + recRule.hour
+        let jobId = uniqueId + "_q_" + questionInfo.qId + "_" + recRule.hour
             + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
 
         // Get the assigned condition and preferred language of the participant
@@ -922,7 +1057,7 @@ class ScheduleHandler{
 
         try {
             // Schedule the question to be sent
-            job = scheduler.scheduleJob(recRule, async function () {
+            job = scheduler.scheduleJob(jobId, recRule, async function () {
                 // Get the updated participant
                 let newParticipant;
                 try {
@@ -1038,10 +1173,10 @@ class ScheduleHandler{
             }
         }
 
-        // Add all jobs to local store
-        scheduledJobs.forEach(jobInfo => {
-            this.scheduledOperations["questions"][jobInfo.jobId] = jobInfo.job;
-        })
+        // Add all jobs to local store (commented out to avoid using global vars)
+        // scheduledJobs.forEach(jobInfo => {
+        //     this.scheduledOperations["questions"][jobInfo.jobId] = jobInfo.job;
+        // })
         return ReturnMethods.returnSuccess(scheduledJobs.map(jobInfo => {
             return {
                 job: jobInfo.job,
@@ -1084,7 +1219,7 @@ class ScheduleHandler{
 
         let argsStr = (actionInfo.args && actionInfo.args.length > 0) ? actionInfo.args.join("") + "_" : ""
         // Construct the jobID for the job
-        let jobId = uniqueId + "_" + actionInfo.aType + "_" + argsStr
+        let jobId = uniqueId + "_a_" + actionInfo.aType + "_" + argsStr
             + recRule.hour + "" + recRule.minute + "_" + recRule.dayOfWeek.join("");
 
         // Create the action
@@ -1096,7 +1231,7 @@ class ScheduleHandler{
         let job;
         try {
             // Schedule the action to be sent
-            job = scheduler.scheduleJob(recRule, async function(){
+            job = scheduler.scheduleJob(jobId, recRule, async function(){
                 // Get the updated participant
                 let newParticipant;
                 try {
@@ -1153,20 +1288,22 @@ class ScheduleHandler{
                         console.log(err);
                     }
 
-                    // Save result of action for debug purposes
-                    let saveActionObj = {
-                        infoType: "actionResult",
-                        scheduledOperations: newParticipant.scheduledOperations,
-                        parameters: newParticipant.parameters,
-                        stages: newParticipant.stages,
-                        info: [],
-                        timeStamp: moment.tz(newParticipant.parameters.timezone).format(),
-                        from: "LHandler"
+                    if(config.debug.saveDebugInfo) {
+                        // Save result of action for debug purposes
+                        let saveActionObj = {
+                            infoType: "actionResult",
+                            scheduledOperations: newParticipant.scheduledOperations,
+                            parameters: newParticipant.parameters,
+                            stages: newParticipant.stages,
+                            info: [],
+                            timeStamp: moment.tz(newParticipant.parameters.timezone).format(),
+                            from: "LHandler"
+                        }
+                        debugs.addDebugInfo(uniqueId, saveActionObj).catch((err) => {
+                            console.log("Scheduler: could not add action result obj - " + participant.uniqueId
+                                + "\n" + err.message + "\n" + err.stack);
+                        });
                     }
-                    debugs.addDebugInfo(uniqueId, saveActionObj).catch((err) => {
-                        console.log("Scheduler: could not add action result obj - " + participant.uniqueId
-                            + "\n" + err.message + "\n" + err.stack);
-                    });
                 }
             })
         } catch (err) {
@@ -1229,7 +1366,8 @@ class ScheduleHandler{
         }
 
         // Add to local store
-        this.scheduledOperations["actions"][jobId] = job;
+        // (Commented out to avoid using global vars)
+        // this.scheduledOperations["actions"][jobId] = job;
 
         return ReturnMethods.returnSuccess({
             jobId: jobId,
@@ -1285,10 +1423,10 @@ class ScheduleHandler{
             }
         }
 
-        // Add all jobs to local store
-        scheduledJobs.forEach(jobInfo => {
-            this.scheduledOperations["actions"][jobInfo.jobId] = jobInfo.job;
-        })
+        // Add all jobs to local store (commented out to avoid using global vars)
+        // scheduledJobs.forEach(jobInfo => {
+        //     this.scheduledOperations["actions"][jobInfo.jobId] = jobInfo.job;
+        // })
         return ReturnMethods.returnSuccess(scheduledJobs.map(jobInfo => {
             return {
                 job: jobInfo.job,
@@ -1380,25 +1518,19 @@ class ScheduleHandler{
      *
      * @param qInfoArray the array to be shifted (sorted in temporal order
      *                  of days of the week and time of the question)
-     * @param date moment timezone date
+     * @param dayObj object with the "current" day and time:
+     *      {
+     *          dayIndex = 0-6,
+     *          time: HH:MM
+     *      }
      *
      * @returns the array rotated so that the first in the list corresponds
      *          to the question in the list which would occurs next after the
      *          time/day mentioned in the given date
      */
-    static shiftTemporalOrderArray(qInfoArray, date){
+    static shiftTemporalOrderArray(qInfoArray, dayObj){
         if(!Array.isArray(qInfoArray)) return [];
         if(qInfoArray.length === 0) return qInfoArray;
-
-        let dateObjObj = ExperimentUtils.parseMomentDateString(date.format());
-        if(dateObjObj.returnCode === DevConfig.FAILURE_CODE){
-            return [];
-        }
-        let dateObj = dateObjObj.data;
-        let diffObj = {
-            dayIndex: dateObj.dayOfWeek,
-            time: (dateObj.hours < 10 ? '0' : '') + dateObj.hours + ":" + (dateObj.minutes < 10 ? '0' : '') + dateObj.minutes
-        };
 
         let closestQIdx = 0;
         let leastTimeDiff = 10080;
@@ -1407,7 +1539,7 @@ class ScheduleHandler{
             let curDay = qInfoArray[i].onDays[0];
             let curDayIdx = DevConfig.DAY_INDEX_ORDERING.indexOf(curDay);
             let curTime = qInfoArray[i].atTime;
-            let diff = ExperimentUtils.getMinutesDiff(diffObj,{
+            let diff = ExperimentUtils.getMinutesDiff(dayObj,{
                 dayIndex: curDayIdx,
                 time: curTime
             })
@@ -1437,7 +1569,10 @@ class ScheduleHandler{
 
         // Send the current question to the end of the queue to make prepare for the next /next call
         ExperimentUtils.rotateLeftByOne(ScheduleHandler.debugQueue[uniqueId]);
-
+        this.debugQueueCurrent[uniqueId] = {
+            dayIndex: DevConfig.DAY_INDEX_ORDERING.indexOf(nextQ.onDays[0]),
+            time: nextQ.atTime
+        }
         return ReturnMethods.returnSuccess(nextQ);
 
     }
@@ -1460,10 +1595,24 @@ class ScheduleHandler{
         if(!timezone){
             return ReturnMethods.returnFailure("Participant timezone not set yet!");
         }
-        let now = moment.tz(timezone);
+        let currentTime;
+        if(!this.debugQueueCurrent[uniqueId]){
+            let now = moment.tz(timezone);
+            let dateObjObj = ExperimentUtils.parseMomentDateString(now.format());
+            if(dateObjObj.returnCode === DevConfig.FAILURE_CODE){
+                return dateObjObj;
+            }
+            let dateObj = dateObjObj.data;
+            currentTime = {
+                dayIndex: dateObj.dayOfWeek,
+                time: (dateObj.hours < 10 ? '0' : '') + dateObj.hours + ":" + (dateObj.minutes < 10 ? '0' : '') + dateObj.minutes
+            };
+        } else {
+            currentTime = this.debugQueueCurrent[uniqueId];
+        }
 
         if(!this.debugQueueAdjusted[uniqueId]) {
-            this.shiftTemporalOrderArray(this.debugQueue[uniqueId], now);
+            this.shiftTemporalOrderArray(this.debugQueue[uniqueId], currentTime);
             this.debugQueueAdjusted[uniqueId] = true;
         }
         return ReturnMethods.returnSuccess("");

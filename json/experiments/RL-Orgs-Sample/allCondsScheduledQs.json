@@ -3,18 +3,21 @@
     "qId" : "Intermediate.checkComplete",
     "atTime" : "05:30",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Intermediate}"
+    "if" : "${STAGE_NAME} == $S{Intermediate}",
+    "stages": ["Intermediate"]
   },
   {
     "qId" : "Morning-Goals-All.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Intervention}"
+    "if" : "${STAGE_NAME} == $S{Intervention}",
+    "stages" : ["Intervention"]
   },
   {
     "qId" : "Pre-Reflection.initiateContact",
     "atTime" : "${eveningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Intervention}"
+    "if" : "${STAGE_NAME} == $S{Intervention}",
+    "stages" : ["Intervention"]
   }
 ]

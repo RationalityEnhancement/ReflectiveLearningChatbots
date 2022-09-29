@@ -306,6 +306,39 @@ function QuestionHandler(config){
 
         return ReturnMethods.returnSuccess(schQList);
     }
+    /**
+     *
+     * Gets the scheduled questions for a given stage. Scheduled questions are scheduled for given stage using
+     * stage name array:
+     *
+     * {
+     *     qId: String,
+     *     atTime: "HH:MM",
+     *     onDays: ["Mon", ..., "Sun"],
+     *     stages: ["stage1", "stage2"]
+     * }
+     *
+     * If stages is not array (e.g., undefined), then schedules for all stages
+     * If stages is empty array, then schedules for no stages.
+     *
+     * @param stageName name of stage
+     * @param condition condition of participant
+     * @param participant
+     * @returns {{returnCode: number, data: *}}
+     */
+    this.getStageScheduledQuestions = (stageName, condition, participant) => {
+        if(!(typeof stageName === "string")){
+            return ReturnMethods.returnFailure("QHandler: stage name must be string, not " + stageName);
+        }
+        let allSchQsObj = this.getScheduledQuestions(condition, participant);
+        if(allSchQsObj.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure("QHandler: Cannot get scheduled questions for stage " + stageName
+                + "\n" + allSchQsObj.data);
+        }
+        let allSchQs = allSchQsObj.data;
+        let stageQuestions = allSchQs.filter(schQ => !Array.isArray(schQ.stages) || schQ.stages.includes(stageName));
+        return ReturnMethods.returnSuccess(stageQuestions);
+    }
 }
 
 module.exports = QuestionHandler;

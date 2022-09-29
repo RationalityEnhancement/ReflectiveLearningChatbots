@@ -6,8 +6,7 @@
  * Telegram chat id
  */
 
-const { AnswerSchemaObject, Answers } = require('../models/Answers');
-const lodash = require('lodash');
+const { Answers } = require('../models/Answers');
 
 // Get all documents
 exports.getAll = async () => {
@@ -18,10 +17,19 @@ exports.getAll = async () => {
   }
 }
 
-// Get a single document by chatID
-exports.get = async (uniqueId) => {
+// Get the current linked list node
+exports.getCurrent = async (uniqueId) => {
   try {
-    return Answers.findOne({ uniqueId: uniqueId });
+    return Answers.findOne({ uniqueId: uniqueId, current: true });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// Get all the linked list nodes for participant with uniqueId
+exports.getAllForId = async (uniqueId) => {
+  try {
+    return Answers.find({ uniqueId: uniqueId });
   } catch (err) {
     console.error(err);
   }
@@ -35,29 +43,47 @@ exports.getByExperimentId = async (experimentId) => {
   }
 }
 
+// Get a single document by linkId
+exports.getByLinkId = async (uniqueId, linkId) => {
+  try {
+    return Answers.findOne({ uniqueId: uniqueId, linkId: linkId });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 // Add a new document with a given chat ID
+//  Starts a new linked list
 exports.add = async (uniqueId) => {
   try {
 
     return Answers.create({
-      uniqueId: uniqueId
+      uniqueId: uniqueId,
+      current: true,
+      start: true
     });
   } catch (err) {
     console.error(err);
   }
 }
 
+exports.generateLinkId = (uniqueId) => {
+  let randInt = Math.floor(Math.random() * (99999999 - 10000000) + 10000000);
+  return uniqueId + "_" + randInt;
+}
 
 // Initialize the experiment document with some basic essential information
 exports.initializeAnswer = async (uniqueId, experimentId) => {
   try{
+    let linkId = this.generateLinkId(uniqueId);
     return Answers.findOneAndUpdate(
         {
             uniqueId : uniqueId
           },
         {
           $set: {
-            experimentId: experimentId
+            experimentId: experimentId,
+            linkId: linkId
           },
         },
         {new: true}
@@ -71,7 +97,8 @@ exports.initializeAnswer = async (uniqueId, experimentId) => {
 // Add an answer to the end of a chronological list of answers
 // given by the participants in response to question prompts
 // If updateAnswer is not undefined, then set current answer to that
-exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
+//  Adds to the current node of the linked list
+exports.addAnswer = async (uniqueId, answer) => {
   try{
     let update = {
       "$push":{
@@ -79,13 +106,8 @@ exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
       }
     }
     update["$push"]["answers"] = answer;
-    if(updateAnswer){
-      update["$set"] = {
-        currentAnswer: updateAnswer
-      }
-    }
     return Answers.findOneAndUpdate(
-        { uniqueId: uniqueId },
+        { uniqueId: uniqueId, current: true },
         update,
         {new : true}
     );
@@ -93,6 +115,70 @@ exports.addAnswer = async (uniqueId, answer, updateAnswer) => {
     console.log('Answer API Controller: Unable to add answer');
     console.error(err);
   }
+}
+
+// Creates a new node in the linked list of answers for a given participant
+//  and makes the new node current
+exports.addNode = async(uniqueId) => {
+  let currentAnswers = await Answers.findOne({
+    uniqueId: uniqueId,
+    current: true
+  })
+  let currentLinkId = currentAnswers.linkId;
+  let currentExperimentId = currentAnswers.experimentId;
+  let newLinkId = this.generateLinkId(uniqueId);
+  let writeOps = [
+    {
+      insertOne: {
+        "document" : {
+          "uniqueId": uniqueId,
+          "experimentId": currentExperimentId,
+          "current": true,
+          "start" : false,
+          "linkId": newLinkId,
+        }
+      }
+    },
+    {
+      updateOne: {
+        filter: {
+          "uniqueId": uniqueId,
+          "linkId": currentLinkId
+        },
+        update: {
+          $set: {
+            "current" : false,
+            "nextLinkId": newLinkId
+          }
+        }
+      }
+    }
+  ]
+
+  return Answers.bulkWrite(
+      writeOps
+  )
+
+}
+
+// Return a single list of answer objects by re-constructing the linked list
+exports.getSingleList = async (uniqueId) => {
+  let allDocs = await Answers.find({ uniqueId: uniqueId })
+  let answerList = []
+  let currentDoc = allDocs.filter(doc => doc.start)[0]
+  try{
+    while(true){
+      answerList = answerList.concat(currentDoc.answers)
+      let nextDocId = currentDoc.nextLinkId
+      if(!nextDocId) break;
+      currentDoc = allDocs.filter(doc => (doc.linkId === nextDocId))[0]
+    }
+    return answerList;
+  } catch(e) {
+    console.log("No single list created for participant " + uniqueId + "\n" + e.message + "\n" + e.stack);
+    return []
+  }
+
 }
 
 exports.removeAllForExperiment = async experimentId => {
@@ -104,9 +190,9 @@ exports.removeAllForExperiment = async experimentId => {
 }
 
 // remove a single record by chat ID
-exports.remove = async uniqueId => {
+exports.removeAllForId = async uniqueId => {
   try {
-    return Answers.deleteOne({ uniqueId });
+    return Answers.deleteMany({ uniqueId: uniqueId });
   } catch (err) {
     console.error(err);
   }

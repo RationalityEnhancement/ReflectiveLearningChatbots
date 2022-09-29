@@ -24,10 +24,6 @@ const ActionHandler = require('./src/actionHandler');
 const scheduler = require('node-schedule')
 const LogicHandler = require('./src/logicHandler')
 
-const ExperimentUtils = require("./src/experimentUtils");
-const {getByUniqueId} = require("./src/apiControllers/idMapApiController");
-const StageHandler = require("./src/stageHandler");
-
 const local = process.argv[2];
 
 const SKIP_TO_STAGE = {};
@@ -98,7 +94,7 @@ let handleError = async (participant, errorString) => {
     let message = timeStamp + "\n" + errorString;
     let partCopy = JSON.parse(JSON.stringify(participant))
     delete partCopy["firstName"];
-    let pAnswerObj = await answers.get(participant.uniqueId);
+    let pAnswerObj = await answers.getCurrent(participant.uniqueId);
     partCopy.answers = pAnswerObj.answers;
     let participantJSON = JSON.stringify(partCopy);
     try{
@@ -117,7 +113,7 @@ let handleFeedback = async (participant, feedbackString) => {
     let message = timeStamp + "\n" + feedbackString;
     let partCopy = JSON.parse(JSON.stringify(participant))
     delete partCopy["firstName"];
-    let pAnswerObj = await answers.get(participant.uniqueId);
+    let pAnswerObj = await answers.getCurrent(participant.uniqueId);
     // TODO Create separate field for answers in feedback and error object?
     partCopy.answers = pAnswerObj.answers;
     let participantJSON = JSON.stringify(participant);
@@ -163,6 +159,50 @@ bot.command('log_part', async ctx => {
   
 });
 
+// Log the debug info of the current node for the current experiment
+bot.command('log_debug', async ctx => {
+    if(!config.debug.experimenter) return;
+    try{
+        let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+        if(!secretMap){
+            console.log("Unable to get participant unique id");
+            return;
+        }
+
+        console.log('Logging participant.');
+        let debug = await debugs.getCurrent(secretMap.uniqueId);
+        console.log(debug);
+        // console.log(await bot.telegram.getChat(ctx.from.id));
+
+    } catch (err){
+        console.log('Failed to log debugInfo');
+        console.error(err);
+    }
+
+});
+
+// Log the answers of the current node for the current experiment
+bot.command('log_answers', async ctx => {
+    if(!config.debug.experimenter) return;
+    try{
+        let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+        if(!secretMap){
+            console.log("Unable to get participant unique id");
+            return;
+        }
+
+        console.log('Logging participant.');
+        let ans = await answers.getCurrent(secretMap.uniqueId);
+        console.log(ans);
+        // console.log(await bot.telegram.getChat(ctx.from.id));
+
+    } catch (err){
+        console.log('Failed to log debugInfo');
+        console.error(err);
+    }
+
+});
+
 // Log the current experiment
 bot.command('log_exp', async ctx => {
     if(!config.debug.experimenter) return;
@@ -178,6 +218,44 @@ bot.command('log_exp', async ctx => {
     console.log('Failed to log experiment');
     console.error(err);
   }
+});
+
+// Log the scheduled questions for the current participant
+bot.command('log_scheduled', async ctx => {
+    if(!config.debug.experimenter) return;
+    try{
+        console.log('Logging scheduled questions.');
+        let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+        if(!secretMap){
+            console.log("Unable to get participant unique id");
+            return;
+        }
+        console.log(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.startsWith(""+secretMap.uniqueId)));
+
+    } catch(err){
+        console.log('Failed to log experiment');
+        console.error(err);
+    }
+});
+
+// Log the scheduled questions debug queue
+bot.command('log_queue', async ctx => {
+    if(!config.debug.enableNext) return;
+    try{
+        console.log('Logging next questions queue');
+        let secretMap = await getByChatId(config.experimentId, ctx.from.id);
+        if(!secretMap){
+            console.log("Unable to get participant unique id");
+            return;
+        }
+        console.log(ScheduleHandler.debugQueue[secretMap.uniqueId]);
+        console.log(ScheduleHandler.debugQueueCurrent[secretMap.uniqueId])
+        console.log(ScheduleHandler.debugQueueAdjusted[secretMap.uniqueId])
+
+    } catch(err){
+        console.log('Failed to log experiment');
+        console.error(err);
+    }
 });
 
 // Delete the participant
@@ -212,8 +290,8 @@ bot.command('delete_me', async ctx => {
 
     // Remove participant from database
     await participants.remove(uniqueId);
-    await answers.remove(uniqueId);
-    await debugs.remove(uniqueId);
+    await answers.removeAllForId(uniqueId);
+    await debugs.removeAllForId(uniqueId);
 
     // Delete chatID mapping
     await idMaps.deleteByChatId(config.experimentId, ctx.from.id);
@@ -345,12 +423,6 @@ bot.command('next', async ctx => {
 
         participant["firstName"] = userInfo["first_name"];
 
-        // Shift the debug queue for the participant if it hasn't been done already
-        let shiftObj = ScheduleHandler.shiftDebugQueueToToday(uniqueId, participant.parameters.timezone);
-        if(shiftObj.returnCode === DevConfig.FAILURE_CODE){
-            console.log(shiftObj.data);
-            return;
-        }
 
         let partCond = participant.conditionName;
         let partLang = participant.parameters.language;
@@ -360,6 +432,12 @@ bot.command('next', async ctx => {
         let maxIterationCount = 1000;
 
         while(!nextQuestionFound && iterationCount <= maxIterationCount){
+            // Shift the debug queue for the participant if it hasn't been done already
+            let shiftObj = ScheduleHandler.shiftDebugQueueToToday(uniqueId, participant.parameters.timezone);
+            if(shiftObj.returnCode === DevConfig.FAILURE_CODE){
+                console.log(shiftObj.data);
+                return;
+            }
             iterationCount++;
 
             // Get the next temporally ordered scheduled question
@@ -448,6 +526,7 @@ bot.command('next', async ctx => {
                     participant.firstName = firstName;
                 }
 
+
             }
 
         }
@@ -507,29 +586,33 @@ bot.command('repeat', async ctx => {
 
   // Repeat question only if there is an outstanding question
   if(participant.currentState.startsWith("awaitingAnswer")){
-      participants.updateField(uniqueId, "currentState", "repeatQuestion")
-          .catch((err) => {
-              handleError(participant, 'Unable to update participant state in repeat!\n'
-                  + err.message + '\n' + err.stack);
-              console.log('Unable to update participant state in repeat!');
-              console.error(err);
-          });
+
     let currentQuestion = participant.currentQuestion;
-    LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion,
-        false, !config.debug.messageDelay, "repeat")
-        .then((returnObj) => {
-            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                handleError(participant, returnObj.data);
-                participants.updateField(uniqueId, "currentState", "awaitingAnswer")
-                    .catch((err) => {
-                        handleError(participant, 'Unable to update participant state after fail in repeat!\n'
-                            + err.message + '\n' + err.stack);
-                        console.log('Unable to update participant state after fail in repeat!');
-                        console.error(err);
-                    });
-                throw returnObj.data;
-            }
-        });
+    // Update state to repeat question
+      participants.updateField(uniqueId, "currentState", "repeatQuestion")
+          .then( (res) => {
+                  return LogicHandler.sendQuestion(bot, participant, ctx.from.id, currentQuestion,
+                      false, !config.debug.messageDelay, "repeat")
+          })
+          .then((returnObj) => {
+              if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                  throw returnObj.data;
+              }
+          })
+          .catch((err) => {
+              participants.updateField(uniqueId, "currentState", "awaitingAnswer")
+                  .catch((err) => {
+                      handleError(participant,
+                          'Unable to update participant '+ uniqueId +' state after fail in repeat!\n'
+                          + err.message + '\n' + err.stack);
+                      console.log('Unable to update participant state after fail in repeat!');
+                      console.error(err);
+                  });
+              handleError(participant, 'Unable to send repeat question for participant ' + uniqueId + '!\n'
+                  + err.message + '\n' + err.stack);
+              console.log('Unable to send repeat question for participant ' + uniqueId + '!\n' + err);
+          });
+
 
   } else {
       let partLang = participant.parameters.language;
@@ -804,20 +887,21 @@ bot.start(async ctx => {
     throw "ERROR: " + curQuestionObj.data;
   } else {
     let curQuestion = curQuestionObj.data;
-    try{
-      let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion,
-          false, !config.debug.messageDelay, "firstQuestion");
-      if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-          await handleError(participant, returnObj.data)
-          throw returnObj.data;
-      }
-    } catch(err){
-        await handleError(participant, "Failed to send language question\n"
-            + err.message + '\n' + err.stack);
-      console.log('Failed to send language question');
-      console.error(err);
+    LogicHandler.sendQuestion(bot, participant, ctx.from.id, curQuestion,
+          false, !config.debug.messageDelay, "firstQuestion")
+        .then(returnObj => {
+            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
+                throw returnObj.data;
+            }
+        })
+        .catch(err => {
+            handleError(participant, "Failed to send language question\n"
+                + err.message + '\n' + err.stack);
+            console.log('Failed to send language question');
+            console.error(err);
+        })
+
     }
-  }
 });
 
 // Handling any answer
@@ -959,12 +1043,6 @@ bot.on('text', async ctx => {
               // Answer was valid
               case DevConfig.SUCCESS_CODE:
                   if(answerHandlerObj.data === DevConfig.NEXT_ACTION_STRING){
-                      // Move on to the next actions
-                      // Send this message only if participant has finished choosing from multi-choice
-                      // if(participant.currentQuestion.qType === "multiChoice"){
-                      //   await Communicator.sendMessage(bot, participant, ctx.from.id,
-                      //       config.phrases.keyboards.finishedChoosingReply[participant.parameters.language], !config.debug.messageDelay);
-                      // }
                       // Process the next steps
                       LogicHandler.processNextSteps(bot, uniqueId)
                           .then((result) => {
@@ -1010,6 +1088,10 @@ bot.on('text', async ctx => {
                   break;
           }
       })
+      .catch((err) => {
+          handleError(participant, 'Error while processing answer for participant ' +uniqueId+'!\n'
+              + err.message + '\n' + err.stack);
+      });
   
 });
 
@@ -1051,12 +1133,13 @@ if(!!local && local === "-l"){
 
 // Enable graceful stop
 process.once('SIGINT', () => {
-    const jobNames = lodash.keys(scheduler.scheduledJobs);
-    for(let name of jobNames) scheduler.cancelJob(name);
-    bot.stop('SIGINT')
+    scheduler.gracefulShutdown().then(res => {
+        bot.stop('SIGINT')
+    });
+
 })
 process.once('SIGTERM', () => {
-    const jobNames = lodash.keys(scheduler.scheduledJobs);
-    for(let name of jobNames) scheduler.cancelJob(name);
-    bot.stop('SIGTERM')
+    scheduler.gracefulShutdown().then(res => {
+        bot.stop('SIGTERM')
+    });
 })

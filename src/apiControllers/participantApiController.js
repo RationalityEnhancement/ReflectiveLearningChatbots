@@ -503,6 +503,30 @@ exports.removeScheduledOperations = async (uniqueId, operations) => {
   }
 }
 
+exports.removeAllScheduledOperations = async (uniqueId) => {
+  let operations = ["questions", "actions", "reminders"];
+  try{
+    let writeOps = []
+    let update = {
+      "$set" : {
+        "scheduledOperations" : {}
+      }
+    }
+    operations.forEach(op => {
+      update["$set"]["scheduledOperations"][op] = []
+    })
+    return Participant.updateOne(
+        { uniqueId: uniqueId},
+        update,
+        { new: true }
+    );
+  }
+  catch(err){
+    console.log('Participant API Controller: Unable to remove scheduled operations');
+    console.error(err);
+  }
+}
+
 exports.addToCurrentAnswer = async (uniqueId, answerPart) => {
   try{
     // Don't add to current answer if it's a duplicate answer

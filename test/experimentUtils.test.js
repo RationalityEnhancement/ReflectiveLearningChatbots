@@ -1,5 +1,5 @@
 const experimentUtils = require('../src/experimentUtils');
-const expect = require('chai').expect
+const { expect, assert } = require('chai')
 const moment = require('moment-timezone');
 const {getNowDateObject} = require("../src/experimentUtils");
 const ConfigReader = require('../src/configReader');
@@ -518,6 +518,184 @@ describe('Image validation', () => {
 			}
 			let returnObj = await experimentUtils.validateImageSource(imageObj);
 			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+		})
+	})
+})
+describe('Time string operations', () => {
+	describe("Validating time string", () => {
+		it("Should validate normal time string", () => {
+			let testStr = "04:23";
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(returnVal)
+		})
+		it("Should validate normal time string - min", () => {
+			let testStr = "00:00";
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(returnVal)
+		})
+		it("Should validate normal time string - max", () => {
+			let testStr = "23:59";
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(returnVal)
+		})
+		it("Should fail when hours invalid", () => {
+			let testStr = "24:59";
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(!returnVal)
+		})
+		it("Should fail when mins invalid", () => {
+			let testStr = "23:60";
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(!returnVal)
+		})
+		it("Should fail when length incorrect", () => {
+			let testStr = "2459";
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(!returnVal)
+		})
+		it("Should fail when incorrect separator", () => {
+			let testStr = "24-59";
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(!returnVal)
+		})
+		it("Should fail when hours doesn't have numbers", () => {
+			let testStr = "ab:59";
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(!returnVal)
+		})
+		it("Should fail when mins doesn't have numbers", () => {
+			let testStr = "23:cd";
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(!returnVal)
+		})
+		it("Should fail when not string", () => {
+			let testStr = 23;
+			let returnVal = experimentUtils.validateTimeString(testStr)
+			assert(!returnVal)
+		})
+	})
+	describe("Converting string to mins", () => {
+		it("Should return normal time string - min", () => {
+			let testStr = "00:00";
+			let returnVal = experimentUtils.HHMMToMins(testStr)
+			expect(returnVal).to.equal(0)
+		})
+		it("Should return normal time string - max", () => {
+			let testStr = "23:59";
+			let returnVal = experimentUtils.HHMMToMins(testStr)
+			expect(returnVal).to.equal(23 * 60 + 59)
+		})
+		it("Should return normal time string - in between", () => {
+			let testStr = "12:24";
+			let returnVal = experimentUtils.HHMMToMins(testStr)
+			expect(returnVal).to.equal(12 * 60 + 24)
+		})
+	})
+	describe("Getting random time within range", () => {
+		it('Should succeed within same hour', () => {
+			let start = "04:12";
+			let end = "04:33";
+			let returnObj = experimentUtils.getRandomTimeInWindow(start, end);
+			expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			let startMins = experimentUtils.HHMMToMins(start);
+			let endMins = experimentUtils.HHMMToMins(end);
+			let returnMins = experimentUtils.HHMMToMins(returnObj.data);
+			assert(experimentUtils.validateTimeString(returnObj.data))
+			assert(startMins <= returnMins && returnMins <= endMins);
+		})
+		it('Should succeed with different hours', () => {
+			let start = "04:12";
+			let end = "05:33";
+			let returnObj = experimentUtils.getRandomTimeInWindow(start, end);
+			expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			let startMins = experimentUtils.HHMMToMins(start);
+			let endMins = experimentUtils.HHMMToMins(end);
+			let returnMins = experimentUtils.HHMMToMins(returnObj.data);
+			assert(experimentUtils.validateTimeString(returnObj.data))
+			assert(startMins <= returnMins && returnMins <= endMins);
+		})
+		it('Should succeed with start mins less than end mins', () => {
+			let start = "04:49";
+			let end = "05:33";
+			let returnObj = experimentUtils.getRandomTimeInWindow(start, end);
+			expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			let startMins = experimentUtils.HHMMToMins(start);
+			let endMins = experimentUtils.HHMMToMins(end);
+			let returnMins = experimentUtils.HHMMToMins(returnObj.data);
+			assert(experimentUtils.validateTimeString(returnObj.data))
+			assert(startMins <= returnMins && returnMins <= endMins);
+		})
+		it('Should fail when start time greater than end time', () => {
+			let start = "04:49";
+			let end = "04:33";
+			let returnObj = experimentUtils.getRandomTimeInWindow(start, end);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+		})
+	})
+	describe("Getting hashed time within range", () => {
+		it('Should return same time for same string', () => {
+			let testString = "123456"
+			let start = "04:12";
+			let end = "04:33";
+
+			let startMins = experimentUtils.HHMMToMins(start);
+			let endMins = experimentUtils.HHMMToMins(end);
+
+			let returnObj1 = experimentUtils.getHashedTimeInWindow(start, end, testString);
+			expect(returnObj1.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			let returnMins1 = experimentUtils.HHMMToMins(returnObj1.data);
+			console.log(returnObj1);
+			assert(experimentUtils.validateTimeString(returnObj1.data))
+			assert(startMins <= returnMins1 && returnMins1 <= endMins);
+
+			let returnObj2 = experimentUtils.getHashedTimeInWindow(start, end, testString);
+			expect(returnObj2.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			let returnMins2 = experimentUtils.HHMMToMins(returnObj2.data);
+			assert(experimentUtils.validateTimeString(returnObj2.data))
+			assert(startMins <= returnMins2 && returnMins2 <= endMins);
+
+			expect(returnMins1).to.equal(returnMins2);
+		})
+		it('Should return different time for different string', () => {
+			let testString1 = "123456"
+			let testString2 = "1234567"
+			let start = "04:12";
+			let end = "04:33";
+
+			let startMins = experimentUtils.HHMMToMins(start);
+			let endMins = experimentUtils.HHMMToMins(end);
+
+			let returnObj1 = experimentUtils.getHashedTimeInWindow(start, end, testString1);
+			expect(returnObj1.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			let returnMins1 = experimentUtils.HHMMToMins(returnObj1.data);
+			assert(experimentUtils.validateTimeString(returnObj1.data))
+			assert(startMins <= returnMins1 && returnMins1 <= endMins);
+
+			let returnObj2 = experimentUtils.getHashedTimeInWindow(start, end, testString2);
+			expect(returnObj2.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+			let returnMins2 = experimentUtils.HHMMToMins(returnObj2.data);
+			assert(experimentUtils.validateTimeString(returnObj2.data))
+			assert(startMins <= returnMins2 && returnMins2 <= endMins);
+
+			expect(returnMins1).to.not.equal(returnMins2);
+		})
+
+		it('Should fail when start time greater than end time', () => {
+			let start = "04:49";
+			let end = "04:33";
+			let returnObj = experimentUtils.getHashedTimeInWindow(start, end, "abcde");
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+			console.log(returnObj.data);
+
+		})
+		it('Should fail when hash string not a string', () => {
+			let start = "04:49";
+			let end = "05:33";
+			let returnObj = experimentUtils.getHashedTimeInWindow(start, end, 1234);
+			expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+			console.log(returnObj.data);
+
 		})
 	})
 })

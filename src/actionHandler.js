@@ -12,6 +12,8 @@ const PIDtoConditionMap = ConfigReader.getPIDCondMap();
 const StageHandler = require('./stageHandler')
 const moment = require('moment')
 const debugs = require('./apiControllers/debugInfoApiController');
+const answers = require('./apiControllers/answerApiController');
+
 
 /**
  * Action handler deals with the processing of actions
@@ -88,23 +90,30 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
     }
     participant["firstName"] = userInfo.first_name;
 
-    // Save action that will be performed
-    let saveActionObj = {
-        infoType: "action",
-        scheduledOperations: participant.scheduledOperations,
-        parameters: participant.parameters,
-        stages: participant.stages,
-        info: [actionObj.aType, ...actionObj.args],
-        timeStamp: moment.tz(participant.parameters.timezone).format(),
-        from: from
+
+    if(config.debug.saveDebugInfo){
+        // Save action that will be performed
+        let saveActionObj = {
+            infoType: "action",
+            scheduledOperations: participant.scheduledOperations,
+            parameters: participant.parameters,
+            stages: participant.stages,
+            info: [actionObj.aType, ...actionObj.args],
+            timeStamp: moment.tz(participant.parameters.timezone).format(),
+            from: from
+        }
+
+        debugs.addDebugInfo(participant.uniqueId, saveActionObj)
+            .catch(err => {
+                console.log("ActHandler: could not add save action obj - " + actionObj.aType + " - " + participant.uniqueId
+                    + "\n" + err.message + "\n" + err.stack);
+            });
     }
-    debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
-        console.log("ActHandler: could not add save action obj - " + actionObj.aType + " - " + participant.uniqueId
-        + "\n" + err.message + "\n" + err.stack);
-    });
+
 
     switch(actionObj.aType){
         // Schedule all questions specified for given condition in config file
+            // TODO: ScheduleQuestions is now obsolete - remove?
         case "scheduleQuestions":
             const ScheduleHandler = require("./scheduleHandler");
 
@@ -120,13 +129,6 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
               ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj, 1);
             }
 
-            // Schedule all questions and actions
-            let actionsObj = StageHandler.createStageUpdateActionList(config, participant.conditionName);
-            if(actionsObj.returnCode === DevConfig.FAILURE_CODE){
-                return ReturnMethods.returnFailure(
-                    "ActHandler: Unable to create stage update actions:\n" + actionsObj.data
-                );
-            }
             let returnObj = await ScheduleHandler.scheduleAllOperations(bot, participant, config, actionsObj.data, config.debug.experimenter);
             if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                 return ReturnMethods.returnFailure(
@@ -548,7 +550,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
 
             let newPartStage;
             // Start the given stage
-            let startStageObj = await StageHandler.startStage(participant, startStage);
+            let startStageObj = await StageHandler.startStage(bot, participant, startStage, config);
             if(startStageObj.returnCode === DevConfig.FAILURE_CODE){
                 return ReturnMethods.returnFailure(
                     "ActHandler:Unable to start stage:\n"+ startStageObj.data
@@ -570,7 +572,7 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
         case "incrementStageDay" :
             // No arguments
 
-            let incStageObj = await StageHandler.updateStageDay(config, participant.uniqueId);
+            let incStageObj = await StageHandler.updateStageDay(bot, participant.uniqueId, config);
             if(incStageObj.returnCode === DevConfig.FAILURE_CODE){
                 return ReturnMethods.returnFailure(
                     "ActHandler:Unable to update stage day:\n"+ incStageObj.data
@@ -590,6 +592,9 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 // Send the participant a message that the experiment has ended.
 
             }
+            // Create a new node in the linked list for debug infos and answers so that the list doesn't grow too large
+            await debugs.addNode(participant.uniqueId);
+            await answers.addNode(participant.uniqueId);
             if(incStageObj.data === -1){
                 for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
                     try{

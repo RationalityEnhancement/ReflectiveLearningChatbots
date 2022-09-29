@@ -9,6 +9,8 @@ const mongo = require('mongoose');
 const { assert, expect } = require('chai');
 
 const testConfig = require('../json/test/scheduleHandlerTestConfig.json');
+const testConfigNoNext = JSON.parse(JSON.stringify(testConfig))
+testConfigNoNext.debug.enableNext = false;
 const ConfigReader = require('../src/configReader');
 const DevConfig = ConfigReader.getDevConfig();
 const failConfig = require('../json/test/scheduleHandlerTestConfigFail.json');
@@ -18,6 +20,8 @@ const QuestionHandler = require('../src/questionHandler');
 const qHandler = new QuestionHandler(testConfig);
 
 const ScheduleHandler = require('../src/scheduleHandler')
+
+const scheduler = require('node-schedule')
 
 const testId = "123";
 const testId2 = "321";
@@ -387,7 +391,9 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
             expect(savedJob).to.eql(returnJob);
         });
         it('Should write job to database', async () => {
@@ -430,7 +436,9 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
             expect(savedJob).to.eql(returnJob);
         });
         it('Should write job to database', async () => {
@@ -485,8 +493,10 @@ describe('Scheduling one Operation', () => {
             }
         });
         it('Should save job to scheduledOperations', () => {
+            let savedJobs = scheduler.scheduledJobs;
             for(let i = 0; i < returnJobs.length; i++){
-                let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobs[i].jobId];
+                assert(returnJobs[i].jobId in savedJobs)
+                let savedJob = savedJobs[returnJobs[i].jobId];
                 expect(savedJob).to.eql(returnJobs[i].job);
             }
         });
@@ -540,8 +550,10 @@ describe('Scheduling one Operation', () => {
             }
         });
         it('Should save job to scheduledOperations', () => {
+            let savedJobs = scheduler.scheduledJobs;
             for(let i = 0; i < returnJobs.length; i++){
-                let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobs[i].jobId];
+                assert(returnJobs[i].jobId in savedJobs)
+                let savedJob = savedJobs[returnJobs[i].jobId];
                 expect(savedJob).to.eql(returnJobs[i].job);
             }
         });
@@ -583,7 +595,10 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["questions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
+
             expect(savedJob).to.eql(returnJob);
         });
         it('Should not write job to database', async () => {
@@ -626,7 +641,10 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
+
             expect(savedJob).to.eql(returnJob);
         });
         it('Should write job to database', async () => {
@@ -672,7 +690,10 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
+
             expect(savedJob).to.eql(returnJob);
         });
         it('Should write job to database', async () => {
@@ -719,7 +740,10 @@ describe('Scheduling one Operation', () => {
         });
         it('Should save job to scheduledOperations', () => {
             let returnJobId = returnObj.data.jobId;
-            let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobId];
+            let savedJobs = scheduler.scheduledJobs;
+            assert(returnJobId in savedJobs)
+            let savedJob = savedJobs[returnJobId];
+
             expect(savedJob).to.eql(returnJob);
         });
         it('Should not write job to database', async () => {
@@ -774,10 +798,13 @@ describe('Scheduling one Operation', () => {
             }
         });
         it('Should save job to scheduledOperations', () => {
+            let savedJobs = scheduler.scheduledJobs;
             for(let i = 0; i < returnJobs.length; i++){
-                let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobs[i].jobId];
+                assert(returnJobs[i].jobId in savedJobs)
+                let savedJob = savedJobs[returnJobs[i].jobId];
                 expect(savedJob).to.eql(returnJobs[i].job);
             }
+
         });
         it('Should write job to database', async () => {
             let participant = await participants.get(testId3);
@@ -832,10 +859,13 @@ describe('Scheduling one Operation', () => {
             }
         });
         it('Should save job to scheduledOperations', () => {
+            let savedJobs = scheduler.scheduledJobs;
             for(let i = 0; i < returnJobs.length; i++){
-                let savedJob = ScheduleHandler.scheduledOperations["actions"][returnJobs[i].jobId];
+                assert(returnJobs[i].jobId in savedJobs)
+                let savedJob = savedJobs[returnJobs[i].jobId];
                 expect(savedJob).to.eql(returnJobs[i].job);
             }
+
         });
         it('Should write job to database', async () => {
             let participant = await participants.get(testId3);
@@ -1118,21 +1148,12 @@ let testPart = {
 }
 describe('Scheduling all', () => {
     describe('Scheduling all questions normally', () => {
-        let actionList = [
-            {
-                aType : "incrementStageDay",
-                atTime : "21:00",
-                onDays : ["Mon", "Tue", "Wed"]
-            },
-            {
-                aType : "addValueToVar",
-                args : ["testNum", "$N{4}"],
-                atTime : "19:00",
-                onDays : ["Mon", "Tue", "Wed"]
-            }];
+        // Based on the test config file, two update actions are expected to be created
+        //  by the stageHandler
+        let numUpdateActions = 2
         it('Should return success', async () => {
-            scheduleAllReturnObj = await ScheduleHandler.scheduleAllOperations(
-                testBot, testPart, testConfig, actionList,false);
+            scheduleAllReturnObj = await ScheduleHandler.scheduleAllForId(
+                testBot, testPart, testConfig,false);
             expect(scheduleAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of scheduled jobs', () => {
@@ -1142,29 +1163,31 @@ describe('Scheduling all', () => {
         })
         it('Should have added jobs to scheduled operations',  () => {
             // Questions
-            for(let i = 0; i < scheduleAllReturnObj.data.length - actionList.length; i++){
+            for(let i = 0; i < scheduleAllReturnObj.data.length - numUpdateActions; i++){
                 let jobId = scheduleAllReturnObj.data[i]["jobId"];
                 let job = scheduleAllReturnObj.data[i]["job"];
-                assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-                expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
+                expect(job).to.eql(savedJobs[jobId]);
             }
             // Actions
-            for(let i = scheduleAllReturnObj.data.length - actionList.length; i < scheduleAllReturnObj.data.length; i++){
+            for(let i = scheduleAllReturnObj.data.length - numUpdateActions; i < scheduleAllReturnObj.data.length; i++){
                 let jobId = scheduleAllReturnObj.data[i]["jobId"];
                 let job = scheduleAllReturnObj.data[i]["job"];
-                assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
-                expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
+                expect(job).to.eql(savedJobs[jobId]);
             }
         });
         it('Should have added jobs to database', async () => {
             let participant = await participants.get(testId);
             let scheduledQs = participant.scheduledOperations.questions;
             let scheduledAs = participant.scheduledOperations.actions;
-            for(let i = 0; i < scheduleAllReturnObj.data.length - actionList.length; i++){
+            for(let i = 0; i < scheduleAllReturnObj.data.length - numUpdateActions; i++){
                 let jobId = scheduleAllReturnObj.data[i]["jobId"];
                 assert(DBHasJob(scheduledQs,jobId));
             }
-            for(let i = scheduleAllReturnObj.data.length - actionList.length; i < scheduleAllReturnObj.data.length; i++){
+            for(let i = scheduleAllReturnObj.data.length - numUpdateActions; i < scheduleAllReturnObj.data.length; i++){
                 let jobId = scheduleAllReturnObj.data[i]["jobId"];
                 assert(DBHasJob(scheduledAs,jobId));
             }
@@ -1214,7 +1237,7 @@ describe('Scheduling all', () => {
      *      Participant 1:
      *          clearVar testStr (independently, new action)
      *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
+     *          incrementStageDay 2 (scheduleAll, new action)
      *
      *      Participant 2:
      *          clearVar testStr (independently, new action)
@@ -1228,7 +1251,7 @@ describe('Scheduling all', () => {
      *          clearVar testStr (independently, new action)
      *          clearVar testNum (independently, old action)
      *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
+     *          incrementStageDay 2 (scheduleAll, new action)
      *
      *      Participant 2:
      *          clearVar testStr (independently, new action)
@@ -1247,61 +1270,77 @@ describe('Cancelling + removing ', () => {
         // Cancelling the jobs scheduled through scheduleAll
         it('Should cancel + delete question job, but not from DB - 1', async () => {
             let jobId = scheduleAllReturnObj.data[0]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "questions");
 
             let participant = await participants.get(testId);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
         it('Should cancel + delete question job, but not from DB - 2', async () => {
             let jobId = scheduleAllReturnObj.data[1]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "questions");
+
             let participant = await participants.get(testId);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
         // Cancel second participant's independently scheduled job
         it('Should cancel + delete question job, but not from DB - 3', async () => {
             let jobId = indScheduledJobs[1]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "questions");
+
             let participant = await participants.get(testId2);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
         // Cancelling the action jobs scheduled through scheduleAll
         it('Should cancel + delete action job, but not from DB - 1', async () => {
             let jobId = scheduleAllReturnObj.data[2]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "actions");
 
             let participant = await participants.get(testId);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
         it('Should cancel + delete action job, but not from DB - 2', async () => {
             let jobId = scheduleAllReturnObj.data[3]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "actions");
+
             let participant = await participants.get(testId);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
         // Cancel second participant's independently scheduled job
         it('Should cancel + delete action job, but not from DB - 3', async () => {
             let jobId = indScheduledJobs[4]["jobId"];
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             let cancelReturnObj = ScheduleHandler.cancelJobByID(jobId, "actions");
+
             let participant = await participants.get(testId2);
             expect(cancelReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
             assert(DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
     });
@@ -1317,8 +1356,7 @@ describe('Cancelling + removing ', () => {
             for(let i = 0; i < cancelAllReturnObj.data.length; i++){
                 assert(
                     !(
-                        cancelAllReturnObj.data[i] in ScheduleHandler.scheduledOperations["questions"]
-                        || cancelAllReturnObj.data[i] in ScheduleHandler.scheduledOperations["actions"]
+                        cancelAllReturnObj.data[i] in scheduler.scheduledJobs
                     )
                 )
             }
@@ -1359,7 +1397,7 @@ describe('Cancelling + removing ', () => {
      *      Participant 1:
      *          clearVar testStr (independently, new action)
      *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
+     *          incrementStageDay 2 (scheduleAll, new action)
      *
      *      Participant 2:
      *          clearVar testStr (independently, new action)
@@ -1386,15 +1424,17 @@ describe('Cancelling + removing ', () => {
         it('Should remove question job - 1', async () => {
             let jobId = indScheduledJobs[0]["jobId"];
             let participant = await participants.get(testId);
-
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             assert(DBHasJob(participant.scheduledOperations["questions"], jobId));
 
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId, "questions");
             participant = await participants.get(testId);
 
             expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
+
             assert(!DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
 
@@ -1403,14 +1443,17 @@ describe('Cancelling + removing ', () => {
             let jobId = indScheduledJobs[2]["jobId"];
             let participant = await participants.get(testId);
 
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             assert(!DBHasJob(participant.scheduledOperations["questions"], jobId));
 
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId, "questions");
             participant = await participants.get(testId);
 
             expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["questions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
+
             assert(!DBHasJob(participant.scheduledOperations["questions"], jobId));
         })
         // This job should be in the DB
@@ -1418,14 +1461,17 @@ describe('Cancelling + removing ', () => {
             let jobId = indScheduledJobs[3]["jobId"];
             let participant = await participants.get(testId);
 
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             assert(DBHasJob(participant.scheduledOperations["actions"], jobId));
 
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId, "actions");
             participant = await participants.get(testId);
 
             expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
+
             assert(!DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
 
@@ -1433,15 +1479,17 @@ describe('Cancelling + removing ', () => {
         it('Should remove action job - 2', async () => {
             let jobId = indScheduledJobs[5]["jobId"];
             let participant = await participants.get(testId);
-
-            assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
+            let savedJobs = scheduler.scheduledJobs;
+            assert(jobId in savedJobs);
             assert(!DBHasJob(participant.scheduledOperations["actions"], jobId));
 
             let removeReturnObj = await ScheduleHandler.removeJobByID(jobId, "actions");
             participant = await participants.get(testId);
 
             expect(removeReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-            assert(!(jobId in ScheduleHandler.scheduledOperations["actions"]));
+            savedJobs = scheduler.scheduledJobs;
+            assert(!(jobId in savedJobs));
+
             assert(!DBHasJob(participant.scheduledOperations["actions"], jobId));
         })
     });
@@ -1471,7 +1519,7 @@ describe('Cancelling + removing ', () => {
      *  DB:
      *      Participant 1:
      *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
+     *          incrementStageDay 2 (scheduleAll, new action)
      *
      *      Participant 2:
      *          clearVar testStr (independently, new action)
@@ -1504,13 +1552,8 @@ describe('Rescheduling', () => {
                 let jobId = rescheduleReturnObj.data[i]["jobId"];
                 let job = rescheduleReturnObj.data[i]["job"];
                 // If not in questions, should be in actions
-                try{
-                    assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
-                } catch(err){
-                    assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
-                }
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
 
             }
         });
@@ -1540,7 +1583,7 @@ describe('Rescheduling', () => {
     describe('Rescheduling jobs for single participant at once', () => {
         let rescheduleReturnObj;
         it('Should return success and a list of scheduled jobs', async () => {
-            rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperationsForIDAtOnce(testBot, testId3, testConfig);
+            rescheduleReturnObj = await ScheduleHandler.rescheduleAllOperationsForIDAtOnce(testBot, testId3, testConfigNoNext);
             expect(rescheduleReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should return list of rescheduled jobs', () => {
@@ -1552,13 +1595,10 @@ describe('Rescheduling', () => {
                 let jobId = rescheduleReturnObj.data[i]["jobId"];
                 let job = rescheduleReturnObj.data[i]["job"];
                 // If not in questions, should be in actions
-                try{
-                    assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
-                } catch(err){
-                    assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
-                }
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs)
+                let savedJob = savedJobs[jobId];
+                expect(job).to.eql(savedJob)
 
             }
         });
@@ -1577,11 +1617,9 @@ describe('Rescheduling', () => {
                 }
             }
         });
-        it('Should have added jobs to debug list', async () => {
-            assert(testId in ScheduleHandler.debugQueue);
-            assert(testId in ScheduleHandler.debugQueueAdjusted)
-            assert(Array.isArray(ScheduleHandler.debugQueue[testId]));
-            assert(typeof ScheduleHandler.debugQueueAdjusted[testId] === "boolean");
+        it('Should have NOT added jobs to debug list', async () => {
+            assert(!(testId3 in ScheduleHandler.debugQueue));
+            assert(!(testId3 in ScheduleHandler.debugQueueAdjusted));
         });
 
     })
@@ -1612,7 +1650,7 @@ describe('Rescheduling', () => {
      *  DB:
      *      Participant 1:
      *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
+     *          incrementStageDay 2 (scheduleAll, new action)
      *
      *      Participant 2:
      *          clearVar testStr (independently, new action)
@@ -1624,7 +1662,7 @@ describe('Rescheduling', () => {
      *  ScheduleJobs:
      *      Participant 1:
      *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
+     *          incrementStageDay 2 (scheduleAll, new action)
      *
      *      Participant 2:
      *
@@ -1647,13 +1685,10 @@ describe('Rescheduling', () => {
             for(let i = 0; i < rescheduleReturnObj.data.length; i++){
                 let jobId = rescheduleReturnObj.data[i]["jobId"];
                 let job = rescheduleReturnObj.data[i]["job"];
-                try{
-                    assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
-                } catch(e){
-                    assert(jobId in ScheduleHandler.scheduledOperations["actions"]);
-                    expect(job).to.eql(ScheduleHandler.scheduledOperations["actions"][jobId]);
-                }
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs)
+                let savedJob = savedJobs[jobId];
+                expect(job).to.eql(savedJob)
             }
         });
 
@@ -1712,123 +1747,160 @@ describe('Rescheduling', () => {
 
     });
 })
-    /**
-     * Questions
-     *  DB:
-     *      Participant 1:
-     *          morningQuestions.mainGoal (scheduleAll, new question)
-     *          eveningQuestions.numGoals (scheduleAll, new question)
-     *      Participant 2:
-     *          morningQuestions.addGoal (independently, new question)
-     *
-     *  ScheduleJobs:
-     *      Participant 1:
-     *          morningQuestions.mainGoal (scheduleAll, new question)
-     *          eveningQuestions.numGoals (scheduleAll, new question)
-     *      Participant 2:
-     *          morningQuestions.addGoal (independently, new question)
-     * Actions:
-     *  DB:
-     *      Participant 1:
-     *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
-     *
-     *      Participant 2:
-     *          clearVar testStr (independently, new action)
-     *
-     *  ScheduleJobs:
-     *      Participant 1:
-     *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
-     *
-     *      Participant 2:
-     *          clearVar testStr (independently, new action)
-     */
+
+/**
+ * Questions:
+ *  DB:
+ *      Participant 1:
+ *          morningQuestions.mainGoal (scheduleAll, new question)
+ *          eveningQuestions.numGoals (scheduleAll, new question)
+ *      Participant 2:
+ *          morningQuestions.addGoal (independently, new question)
+ *
+ *      Participant 3:
+ *          morningQuestions.mainGoal 15 (new question, multiple)
+ *          morningQuestions.mainGoal 16 (new question, multiple)
+ *
+ *  ScheduleJobs:
+ *      Participant 1:
+ *          morningQuestions.mainGoal (scheduleAll, new question)
+ *          eveningQuestions.numGoals (scheduleAll, new question)
+ *      Participant 2:
+ *          morningQuestions.addGoal (independently, new question)
+ *     Participant 3:
+ *          morningQuestions.mainGoal 15 (new question, multiple)
+ *          morningQuestions.mainGoal 16 (new question, multiple)
+ *
+ * Actions:
+ *  DB:
+ *      Participant 1:
+ *          incrementStageDay (scheduleAll, new action)
+ *          incrementStageDay 2 (scheduleAll, new action)
+ *
+ *      Participant 2:
+ *          clearVar testStr (independently, new action)
+ *
+ *      Participant 3:
+ *          clearVar testStr 15 (new action, multiple)
+ *          clearVar testStr 16 (new action, multiple)
+ *
+ *  ScheduleJobs:
+ *      Participant 1:
+ *          incrementStageDay (scheduleAll, new action)
+ *          incrementStageDay 2 (scheduleAll, new action)
+ *
+ *      Participant 2:
+ *          clearVar testStr (independently, new action)
+ *     Participant 3:
+ *          clearVar testStr 15 (new action, multiple)
+ *          clearVar testStr 16 (new action, multiple)
+ */
 
 describe('Scheduling all 2', () => {
     // No change to actions in this test
     describe('Scheduling all questions but with fails', () => {
 
         it('Should return partial failure', async () => {
-            scheduleAllReturnObj = await ScheduleHandler.scheduleAllOperations(testBot, testPart, failConfig,[],false);
+            scheduleAllReturnObj = await ScheduleHandler.scheduleAllForId(testBot, testPart, failConfig,false);
             expect(scheduleAllReturnObj.returnCode).to.equal(0);
             console.log(scheduleAllReturnObj.failData)
         });
         it('Should return list of successful jobs', async () => {
             assert(Array.isArray(scheduleAllReturnObj.successData));
-            expect(scheduleAllReturnObj.successData.length).to.equal(1);
+            expect(scheduleAllReturnObj.successData.length).to.equal(2);
         });
 
-        it('Should have added one job to scheduled operations',  () => {
-            let jobId = scheduleAllReturnObj.successData[0]["jobId"];
-            let job = scheduleAllReturnObj.successData[0]["job"];
-            assert(jobId in ScheduleHandler.scheduledOperations["questions"]);
-            expect(job).to.eql(ScheduleHandler.scheduledOperations["questions"][jobId]);
-        });
-        it('Should have added succeeded jobs to database', async () => {
-
-            let participant = await participants.get(testId);
-            let scheduledQs = participant.scheduledOperations.questions;
+        it('Should have added two jobs to scheduled operations',  () => {
             for(let i = 0; i < scheduleAllReturnObj.successData.length; i++){
                 let jobId = scheduleAllReturnObj.successData[i]["jobId"];
-                assert(DBHasJob(scheduledQs,jobId));
+                let job = scheduleAllReturnObj.successData[i]["job"];
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs)
+                let savedJob = savedJobs[jobId];
+                expect(job).to.eql(savedJob)
+            }
+        });
+        it('Should have added succeeded jobs to database', async () => {
+            let participant = await participants.get(testId);
+            let scheduledQs = participant.scheduledOperations.questions;
+            let scheduledAs = participant.scheduledOperations.actions;
+            for(let i = 0; i < scheduleAllReturnObj.successData.length; i++){
+                let jobId = scheduleAllReturnObj.successData[i]["jobId"];
+                assert(DBHasJob(scheduledQs,jobId) || DBHasJob(scheduledAs,jobId));
             }
 
         });
     })
 })
-    /**
-     * Questions
-     *  DB:
-     *      Participant 1:
-     *          morningQuestions.mainGoal (scheduleAll, new question)
-     *          eveningQuestions.numGoals (scheduleAll, new question)
-     *          eveningQuestions.focus (independently, new question, partial failure)
-     *      Participant 2:
-     *          morningQuestions.addGoal (independently, new question)
-     *
-     *  ScheduleJobs:
-     *      Participant 1:
-     *          morningQuestions.mainGoal (scheduleAll, new question)
-     *          eveningQuestions.numGoals (scheduleAll, new question)
-     *          eveningQuestions.focus (independently, new question, partial failure)
-     *
-     *      Participant 2:
-     *          morningQuestions.addGoal (independently, new question)
-     * Actions:
-     *  DB:
-     *      Participant 1:
-     *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
-     *
-     *      Participant 2:
-     *          clearVar testStr (independently, new action)
-     *
-     *  ScheduleJobs:
-     *      Participant 1:
-     *          incrementStageDay (scheduleAll, new action)
-     *          addValueToVar testNum $N{4} (scheduleAll, new action)
-     *
-     *      Participant 2:
-     *          clearVar testStr (independently, new action)
-     */
+
+/**
+ * Questions:
+ *  DB:
+ *      Participant 1:
+ *          morningQuestions.mainGoal (scheduleAll, new question)
+ *          eveningQuestions.numGoals (scheduleAll, new question)
+ *          eveningQuestions.focus (scheduleAll, new question, partial failure)
+ *      Participant 2:
+ *          morningQuestions.addGoal (independently, new question)
+ *
+ *      Participant 3:
+ *          morningQuestions.mainGoal 15 (new question, multiple)
+ *          morningQuestions.mainGoal 16 (new question, multiple)
+ *
+ *  ScheduleJobs:
+ *      Participant 1:
+ *          morningQuestions.mainGoal (scheduleAll, new question)
+ *          eveningQuestions.numGoals (scheduleAll, new question)
+ *          eveningQuestions.focus (scheduleAll, new question, partial failure)
+ *      Participant 2:
+ *          morningQuestions.addGoal (independently, new question)
+ *     Participant 3:
+ *          morningQuestions.mainGoal 15 (new question, multiple)
+ *          morningQuestions.mainGoal 16 (new question, multiple)
+ *
+ * Actions:
+ *  DB:
+ *      Participant 1:
+ *          incrementStageDay (scheduleAll, new action)
+ *          incrementStageDay 2 (scheduleAll, new action)
+ *          incrementStageDay 3 (scheduleAll, new question, partial failure)
+ *
+ *      Participant 2:
+ *          clearVar testStr (independently, new action)
+ *
+ *      Participant 3:
+ *          clearVar testStr 15 (new action, multiple)
+ *          clearVar testStr 16 (new action, multiple)
+ *
+ *  ScheduleJobs:
+ *      Participant 1:
+ *          incrementStageDay (scheduleAll, new action)
+ *          incrementStageDay 2 (scheduleAll, new action)
+ *          incrementStageDay 3 (scheduleAll, new question, partial failure)
+ *
+ *      Participant 2:
+ *          clearVar testStr (independently, new action)
+ *     Participant 3:
+ *          clearVar testStr 15 (new action, multiple)
+ *          clearVar testStr 16 (new action, multiple)
+ */
 
 describe('Removing 2', () => {
+    // Removing all jobs for testId1
     describe('Removing all jobs for a participant', () => {
         let removeAllReturnObj;
         it('Should have job IDs for that participant before', async () => {
-            let scheduledQs = ScheduleHandler.scheduledOperations["questions"];
-            let scheduledAs = ScheduleHandler.scheduledOperations["actions"];
+            let scheduledOs = scheduler.scheduledJobs;
             let foundChatIdQ = false;
             let foundChatIdA = false;
-            for(const [jobId, job] of Object.entries(scheduledQs)){
-                if(jobId.startsWith(''+testId)){
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId+'_q')){
                     foundChatIdQ = true;
                     break;
                 }
             }
-            for(const [jobId, job] of Object.entries(scheduledAs)){
-                if(jobId.startsWith(''+testId)){
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId+'_a')){
                     foundChatIdA = true;
                     break;
                 }
@@ -1862,18 +1934,17 @@ describe('Removing 2', () => {
             expect(removeAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
         });
         it('Should have no jobs with chat id in scheduled questions after',  () => {
-            let scheduledQs = ScheduleHandler.scheduledOperations["questions"];
-            let scheduledAs = ScheduleHandler.scheduledOperations["actions"];
+            let scheduledOs = scheduler.scheduledJobs;
             let foundChatIdQ = false;
             let foundChatIdA = false;
-            for(const [jobId, job] of Object.entries(scheduledQs)){
-                if(jobId.startsWith(''+testId)){
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId+'_q')){
                     foundChatIdQ = true;
                     break;
                 }
             }
-            for(const [jobId, job] of Object.entries(scheduledAs)){
-                if(jobId.startsWith(''+testId)){
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId+'_a')){
                     foundChatIdA = true;
                     break;
                 }
@@ -1906,35 +1977,395 @@ describe('Removing 2', () => {
             assert(!(testId in ScheduleHandler.debugQueue));
             assert(!(testId in ScheduleHandler.debugQueueAdjusted));
         })
+        it('Should have job IDs for other participant still', async () => {
+            let scheduledOs = scheduler.scheduledJobs;
+            let foundChatIdQ = false;
+            let foundChatIdA = false;
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId2+'_q')){
+                    foundChatIdQ = true;
+                    break;
+                }
+            }
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId2+'_a')){
+                    foundChatIdA = true;
+                    break;
+                }
+            }
+            assert(foundChatIdQ);
+            assert(foundChatIdA);
+        });
+        it('Should have job IDs in DB for other participant still', async () => {
+            let participant = await participants.get(testId2);
+            let scheduledQs = participant.scheduledOperations["questions"];
+            let scheduledAs = participant.scheduledOperations["actions"];
+            let foundChatIdQ = false;
+            let foundChatIdA = false;
+            for(let i=0; i < scheduledQs.length; i++){
+                if(scheduledQs[i].jobId.startsWith(''+testId2)){
+                    foundChatIdQ = true;
+                    break;
+                }
+            }
+            for(let i=0; i < scheduledAs.length; i++){
+                if(scheduledAs[i].jobId.startsWith(''+testId2)){
+                    foundChatIdA = true;
+                    break;
+                }
+            }
+            assert(foundChatIdQ);
+            assert(foundChatIdA);
+        });
     })
+
+    // Removing all jobs for testId2
+    describe('Removing all jobs for a participant - 2', () => {
+        let removeAllReturnObj;
+        it('Should have job IDs for that participant before', async () => {
+            let scheduledOs = scheduler.scheduledJobs;
+            let foundChatIdQ = false;
+            let foundChatIdA = false;
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId2+'_q')){
+                    foundChatIdQ = true;
+                    break;
+                }
+            }
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId2+'_a')){
+                    foundChatIdA = true;
+                    break;
+                }
+            }
+            assert(foundChatIdQ);
+            assert(foundChatIdA);
+        });
+        it('Should have job IDs in DB for that participant before', async () => {
+            let participant = await participants.get(testId2);
+            let scheduledQs = participant.scheduledOperations["questions"];
+            let scheduledAs = participant.scheduledOperations["actions"];
+            let foundChatIdQ = false;
+            let foundChatIdA = false;
+            for(let i=0; i < scheduledQs.length; i++){
+                if(scheduledQs[i].jobId.startsWith(''+testId2)){
+                    foundChatIdQ = true;
+                    break;
+                }
+            }
+            for(let i=0; i < scheduledAs.length; i++){
+                if(scheduledAs[i].jobId.startsWith(''+testId2)){
+                    foundChatIdA = true;
+                    break;
+                }
+            }
+            assert(foundChatIdQ);
+            assert(foundChatIdA);
+        });
+        it('Should remove all and return successful', async () => {
+            removeAllReturnObj = await ScheduleHandler.removeAllJobsForParticipant(testId2);
+            expect(removeAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        });
+        it('Should have no jobs with chat id in scheduled questions after',  () => {
+            let scheduledOs = scheduler.scheduledJobs;
+            let foundChatIdQ = false;
+            let foundChatIdA = false;
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId2+'_q')){
+                    foundChatIdQ = true;
+                    break;
+                }
+            }
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId2+'_a')){
+                    foundChatIdA = true;
+                    break;
+                }
+            }
+            assert(!foundChatIdQ);
+            assert(!foundChatIdA);
+        })
+        it('Should have no job IDs in DB for that participant after', async () => {
+            let participant = await participants.get(testId2);
+            let scheduledQs = participant.scheduledOperations["questions"];
+            let scheduledAs = participant.scheduledOperations["actions"];
+            let foundChatIdQ = false;
+            let foundChatIdA = false;
+            for(let i=0; i < scheduledQs.length; i++){
+                if(scheduledQs[i].jobId.startsWith(''+testId2)){
+                    foundChatIdQ = true;
+                    break;
+                }
+            }
+            for(let i=0; i < scheduledAs.length; i++){
+                if(scheduledAs[i].jobId.startsWith(''+testId2)){
+                    foundChatIdA = true;
+                    break;
+                }
+            }
+            assert(!foundChatIdQ);
+            assert(!foundChatIdA);
+        });
+        it('Should remove participant from debug queue', async () => {
+            assert(!(testId in ScheduleHandler.debugQueue));
+            assert(!(testId in ScheduleHandler.debugQueueAdjusted));
+        })
+        it('Should have job IDs for other participant still', async () => {
+            let scheduledOs = scheduler.scheduledJobs;
+            let foundChatIdQ = false;
+            let foundChatIdA = false;
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId3+'_q')){
+                    foundChatIdQ = true;
+                    break;
+                }
+            }
+            for(const [jobId, job] of Object.entries(scheduledOs)){
+                if(jobId.startsWith(''+testId3+'_a')){
+                    foundChatIdA = true;
+                    break;
+                }
+            }
+            assert(foundChatIdQ);
+            assert(foundChatIdA);
+        });
+        it('Should have job IDs in DB for other participant still', async () => {
+            let participant = await participants.get(testId3);
+            let scheduledQs = participant.scheduledOperations["questions"];
+            let scheduledAs = participant.scheduledOperations["actions"];
+            let foundChatIdQ = false;
+            let foundChatIdA = false;
+            for(let i=0; i < scheduledQs.length; i++){
+                if(scheduledQs[i].jobId.startsWith(''+testId3)){
+                    foundChatIdQ = true;
+                    break;
+                }
+            }
+            for(let i=0; i < scheduledAs.length; i++){
+                if(scheduledAs[i].jobId.startsWith(''+testId3)){
+                    foundChatIdA = true;
+                    break;
+                }
+            }
+            assert(foundChatIdQ);
+            assert(foundChatIdA);
+        });
+    })
+
+})
+
+/**
+ * Questions:
+ *  DB:
+ *      Participant 1:
+ *
+ *      Participant 2:
+ *
+ *
+ *      Participant 3:
+ *          morningQuestions.mainGoal 15 (new question, multiple)
+ *          morningQuestions.mainGoal 16 (new question, multiple)
+ *
+ *  ScheduleJobs:
+ *      Participant 1:
+ *
+ *      Participant 2:
+ *
+ *     Participant 3:
+ *          morningQuestions.mainGoal 15 (new question, multiple)
+ *          morningQuestions.mainGoal 16 (new question, multiple)
+ *
+ * Actions:
+ *  DB:
+ *      Participant 1:
+ *
+ *      Participant 2:
+ *
+ *
+ *      Participant 3:
+ *          clearVar testStr 15 (new action, multiple)
+ *          clearVar testStr 16 (new action, multiple)
+ *
+ *  ScheduleJobs:
+ *      Participant 1:
+ *
+ *      Participant 2:
+ *
+ *     Participant 3:
+ *          clearVar testStr 15 (new action, multiple)
+ *          clearVar testStr 16 (new action, multiple)
+ */
+describe('Scheduling all for stage', () => {
+    let firstStageUpdate;
+    // Scheduling Stage1 for participant 1
+    describe('Scheduling questions normally for one stage', () => {
+        // Based on the test config file, two update actions are expected to be created
+        //  by the stageHandler
+        let numUpdateActions = 1
+        it('Should return success', async () => {
+            scheduleAllReturnObj = await ScheduleHandler.scheduleStageForId(
+                testBot, testPart, "Stage1", testConfig,false);
+            expect(scheduleAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        });
+        it('Should return list of scheduled jobs', () => {
+            firstStageUpdate = scheduleAllReturnObj.data;
+            assert(Array.isArray(scheduleAllReturnObj.data));
+            expect(scheduleAllReturnObj.data.length).to.equal(2);
+
+        })
+        it('Should have added jobs to scheduled operations',  () => {
+            // Questions
+            for(let i = 0; i < scheduleAllReturnObj.data.length - numUpdateActions; i++){
+                let jobId = scheduleAllReturnObj.data[i]["jobId"];
+                let job = scheduleAllReturnObj.data[i]["job"];
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
+                expect(job).to.eql(savedJobs[jobId]);
+            }
+            // Actions
+            for(let i = scheduleAllReturnObj.data.length - numUpdateActions; i < scheduleAllReturnObj.data.length; i++){
+                let jobId = scheduleAllReturnObj.data[i]["jobId"];
+                let job = scheduleAllReturnObj.data[i]["job"];
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
+                expect(job).to.eql(savedJobs[jobId]);
+            }
+        });
+        it('Should have added jobs to database', async () => {
+            let participant = await participants.get(testId);
+            let scheduledQs = participant.scheduledOperations.questions;
+            let scheduledAs = participant.scheduledOperations.actions;
+            for(let i = 0; i < scheduleAllReturnObj.data.length - numUpdateActions; i++){
+                let jobId = scheduleAllReturnObj.data[i]["jobId"];
+                assert(DBHasJob(scheduledQs,jobId));
+            }
+            for(let i = scheduleAllReturnObj.data.length - numUpdateActions; i < scheduleAllReturnObj.data.length; i++){
+                let jobId = scheduleAllReturnObj.data[i]["jobId"];
+                assert(DBHasJob(scheduledAs,jobId));
+            }
+
+        });
+        it('Should have added jobs to debug list', async () => {
+            assert(testId in ScheduleHandler.debugQueue);
+            assert(testId in ScheduleHandler.debugQueueAdjusted)
+            assert(Array.isArray(ScheduleHandler.debugQueue[testId]));
+            assert(typeof ScheduleHandler.debugQueueAdjusted[testId] === "boolean");
+        });
+    })
+
+    // Scheduling Stage2 for participant 2
+    describe('Scheduling questions normally for one stage - 2', () => {
+        let testPart2 = JSON.parse(JSON.stringify(testPart))
+        testPart2.uniqueId = testId2
+        // Based on the test config file, two update actions are expected to be created
+        //  by the stageHandler
+        let numUpdateActions = 1
+        it('Should return success', async () => {
+            scheduleAllReturnObj = await ScheduleHandler.scheduleStageForId(
+                testBot, testPart2, "Stage2", testConfig,false);
+            expect(scheduleAllReturnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+        });
+        it('Should return list of scheduled jobs', () => {
+            assert(Array.isArray(scheduleAllReturnObj.data));
+            expect(scheduleAllReturnObj.data.length).to.equal(2);
+
+        })
+        it('Should not be the same job as a different stage', () => {
+            expect(scheduleAllReturnObj.data[0].jobId).to.not.equal(firstStageUpdate[0].jobId)
+        })
+        it('Should have added jobs to scheduled operations',  () => {
+            // Questions
+            for(let i = 0; i < scheduleAllReturnObj.data.length - numUpdateActions; i++){
+                let jobId = scheduleAllReturnObj.data[i]["jobId"];
+                let job = scheduleAllReturnObj.data[i]["job"];
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
+                expect(job).to.eql(savedJobs[jobId]);
+            }
+            // Actions
+            for(let i = scheduleAllReturnObj.data.length - numUpdateActions; i < scheduleAllReturnObj.data.length; i++){
+                let jobId = scheduleAllReturnObj.data[i]["jobId"];
+                let job = scheduleAllReturnObj.data[i]["job"];
+                let savedJobs = scheduler.scheduledJobs;
+                assert(jobId in savedJobs);
+                expect(job).to.eql(savedJobs[jobId]);
+            }
+        });
+        it('Should have added jobs to database', async () => {
+            let participant = await participants.get(testId2);
+            let scheduledQs = participant.scheduledOperations.questions;
+            let scheduledAs = participant.scheduledOperations.actions;
+            for(let i = 0; i < scheduleAllReturnObj.data.length - numUpdateActions; i++){
+                let jobId = scheduleAllReturnObj.data[i]["jobId"];
+                assert(DBHasJob(scheduledQs,jobId));
+            }
+            for(let i = scheduleAllReturnObj.data.length - numUpdateActions; i < scheduleAllReturnObj.data.length; i++){
+                let jobId = scheduleAllReturnObj.data[i]["jobId"];
+                assert(DBHasJob(scheduledAs,jobId));
+            }
+
+        });
+        it('Should have added jobs to debug list', async () => {
+            assert(testId2 in ScheduleHandler.debugQueue);
+            assert(testId2 in ScheduleHandler.debugQueueAdjusted)
+            assert(Array.isArray(ScheduleHandler.debugQueue[testId2]));
+            assert(typeof ScheduleHandler.debugQueueAdjusted[testId2] === "boolean");
+        });
+    })
+
     /**
      * Questions
      *  DB:
      *      Participant 1:
-     *
+     *          morningQuestions.mainGoal (scheduleStage, new question)
      *      Participant 2:
+     *          eveningQuestions.numGoals (scheduleStage, new question)
      *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
      *
      *  ScheduleJobs:
      *      Participant 1:
-     *
-     *
+     *          morningQuestions.mainGoal (scheduleStage, new question)
      *      Participant 2:
+     *          eveningQuestions.numGoals (scheduleStage, new question)
+     *
+     *      Participant 3:
+     *          morningQuestions.mainGoal 15 (new question, multiple)
+     *          morningQuestions.mainGoal 16 (new question, multiple)
+     *          morningQuestions.addGoal 15 (old question, multiple)
+     *          morningQuestions.addGoal 16 (old question, multiple)
+
      *
      * Actions:
      *  DB:
      *      Participant 1:
+     *          incrementStageDay (scheduleStage, new question)
      *
      *      Participant 2:
+     *          incrementStageDay (scheduleStage, new question)
      *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
      *
      *  ScheduleJobs:
      *      Participant 1:
+     *          incrementStageDay (scheduleStage, new question)
      *
      *      Participant 2:
-     */
-})
+     *          incrementStageDay (scheduleStage, new question)
+     *
+     *      Participant 3:
+     *          clearVar testStr 15 (new action, multiple)
+     *          clearVar testStr 16 (new action, multiple)
+     *          clearVar testNum 15 (old action, multiple)
+     *          clearVar testNum 16 (old action, multiple)
 
+     */
+
+})
 
     // TODO: Test failure/partial failure of removing all
 describe('Severing DB connection', () => {
@@ -1942,6 +2373,12 @@ describe('Severing DB connection', () => {
         await participants.remove(testId);
         let participant = await participants.get(testId);
         expect(participant).to.be.null;
+    });
+    it('Should cancel all remaining jobs', async () => {
+        Object.keys(scheduler.scheduledJobs).forEach(job => {
+            scheduler.cancelJob(job)
+        });
+        expect(Object.keys(scheduler.scheduledJobs).length).to.equal(0);
     });
 
     it('Should close connection', async () => {

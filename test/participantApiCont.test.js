@@ -562,6 +562,29 @@ describe('Participant Controller API: ', () =>{
 		assert(!DBHasJob(scheduledQs, testAJob.jobId));
 	});
 	it('Should add multiple scheduled operations', async () => {
+		let numOps = 2;
+		let operations = [];
+
+		for(let i = 0; i < numOps; i++){
+			operations.push({
+				type: "actions",
+				jobInfo: {
+					jobId: "testAction" + i,
+					aType: "fakeAction",
+					atTime: "23:00"
+				}
+			});
+		}
+		let newPart = await participants.addScheduledOperations(testId, operations);
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["actions"];
+		for(let i = 0; i < numOps; i++){
+			expect(scheduledQs[i]['jobId']).to.eql(operations[i].jobInfo.jobId);
+			expect(scheduledQs[i]['aType']).to.eql(operations[i].jobInfo.aType);
+			expect(scheduledQs[i]['atTime']).to.eql(operations[i].jobInfo.atTime);
+		}
+	})
+	it('Should add multiple scheduled operations - 2', async () => {
 		let numOps = 3;
 		let operations = [];
 
@@ -648,6 +671,25 @@ describe('Participant Controller API: ', () =>{
 		let scheduledQs = participant["scheduledOperations"]["reminders"];
 		expect(scheduledQs.length).to.equal(1)
 		assert(!DBHasJob(scheduledQs, removeJobs[1].jobId));
+	});
+	it('Should remove all scheduled operations', async () => {
+		let participant = await participants.get(testId)
+		let scheduledQs = participant["scheduledOperations"]["questions"];
+		let scheduledAs = participant["scheduledOperations"]["actions"];
+		let scheduledRs = participant["scheduledOperations"]["reminders"];
+		expect(scheduledRs.length).to.equal(1)
+		expect(scheduledAs.length).to.equal(2)
+		expect(scheduledQs.length).to.equal(0)
+
+		await participants.removeAllScheduledOperations(testId);
+		let newPart = await participants.get(testId)
+		scheduledQs = newPart["scheduledOperations"]["questions"];
+		scheduledAs = newPart["scheduledOperations"]["actions"];
+		scheduledRs = newPart["scheduledOperations"]["reminders"];
+		expect(scheduledRs.length).to.equal(0)
+		expect(scheduledAs.length).to.equal(0)
+		expect(scheduledQs.length).to.equal(0)
+
 	});
 	it('Should add an answer to current answer', async () => {
 

@@ -16,7 +16,7 @@ const ReminderHandler = require('../src/reminderHandler')
 
 const testId = "123";
 const testId2 = "321";
-
+const scheduler = require('node-schedule')
 const testBot = {
     telegram: {
         sendMessage: () => {
@@ -97,7 +97,7 @@ describe('Creating reminder job', () => {
         }
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        let recRule = returnObj.data.pendingInvocations[0].recurrenceRule;
+        let recRule = returnObj.data.job.pendingInvocations[0].recurrenceRule;
         expect(recRule.hour).to.equal(currentTime.hours)
         expect(recRule.minute).to.equal(currentTime.minutes)
         expect(recRule.tz).to.equal(participant.parameters.timezone)
@@ -110,7 +110,7 @@ describe('Creating reminder job', () => {
         delete participant.parameters["timezone"];
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-        let recRule = returnObj.data.pendingInvocations[0].recurrenceRule;
+        let recRule = returnObj.data.job.pendingInvocations[0].recurrenceRule;
         expect(recRule.hour).to.equal(currentTime.hours)
         expect(recRule.minute).to.equal(currentTime.minutes)
         expect(recRule.tz).to.be.undefined;
@@ -122,6 +122,7 @@ describe('Creating reminder job', () => {
         }
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        console.log(returnObj.data)
     })
     it("Should fail when minutes invalid", () => {
         let currentTime = {
@@ -130,6 +131,7 @@ describe('Creating reminder job', () => {
         }
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        console.log(returnObj.data)
     })
     it("Should fail when time not object", () => {
         let currentTime = "{"
@@ -224,6 +226,19 @@ describe('Connecting to DB', () => {
 describe('Setting reminders', () => {
     describe('Setting zero reminders', () => {
         let participant, newPart, returnObj;
+        it('Should cancel all pre-existing reminders', async () => {
+
+            for(const [jobId, job] of Object.entries(scheduler.scheduledJobs)){
+                job.cancel()
+            }
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(0);
+            participant = await participants.get(testId)
+            participant.firstName = "John";
+            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", 15, 0);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            assert(Array.isArray(returnObj.data))
+            expect(returnObj.data.length).to.equal(0);
+        })
         it('Should return success and list of jobs', async () => {
             participant = await participants.get(testId);
             participant.firstName = "John";
@@ -233,7 +248,7 @@ describe('Setting reminders', () => {
             expect(returnObj.data.length).to.equal(0);
         })
         it('Should have added no job to scheduledReminders', () => {
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(0);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(0);
         })
 
     })
@@ -248,8 +263,8 @@ describe('Setting reminders', () => {
             expect(returnObj.data.length).to.equal(1);
         })
         it('Should have added job to scheduledReminders', () => {
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(1);
-            assert(returnObj.data[0].jobId in ReminderHandler.scheduledReminders);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(1);
+            assert(returnObj.data[0].jobId in scheduler.scheduledJobs);
         })
         it('Should have added job to database', async () => {
             newPart = await participants.get(testId);
@@ -274,9 +289,9 @@ describe('Setting reminders', () => {
             }
         })
         it('Should have added new jobs to scheduledReminders', () => {
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(returnObj.data.length + 1);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(returnObj.data.length + 1);
             for(let i = 0; i < returnObj.data.length; i++){
-                assert(returnObj.data[i].jobId in ReminderHandler.scheduledReminders);
+                assert(returnObj.data[i].jobId in scheduler.scheduledJobs);
             }
         })
         it('Should have added jobs to database', async () => {
@@ -305,9 +320,9 @@ describe('Setting reminders', () => {
             }
         })
         it('Should have jobs for both participants in scheduledReminders', () => {
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(returnObj.data.length + 4);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(returnObj.data.length + 4);
             for(let i = 0; i < returnObj.data.length; i++){
-                assert(returnObj.data[i].jobId in ReminderHandler.scheduledReminders);
+                assert(returnObj.data[i].jobId in scheduler.scheduledJobs);
             }
         })
         it('Should have added jobs to database', async () => {
@@ -345,7 +360,7 @@ describe('Cancelling reminders', () => {
             participant = await participants.get(testId);
             participant.firstName = "John";
             expect(participant.scheduledOperations.reminders.length).to.equal(4);
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(7);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(7);
         })
         it('Should return success', async () => {
             returnObj = await ReminderHandler.cancelJobsForId(testId);
@@ -354,9 +369,9 @@ describe('Cancelling reminders', () => {
             expect(returnObj.data.length).to.equal(4);
         })
         it('Should have removed only jobs for part 1 from scheduled reminders', () => {
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(3);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(3);
             for(let i = 0; i < returnObj.data.length; i++){
-                assert(!(returnObj.data[i] in ReminderHandler.scheduledReminders));
+                assert(!(returnObj.data[i] in scheduler.scheduledJobs));
             }
         })
         it('Should have NOT removed jobs from database', async () => {
@@ -373,7 +388,7 @@ describe('Cancelling reminders', () => {
             participant = await participants.get(testId);
             participant.firstName = "John";
             expect(participant.scheduledOperations.reminders.length).to.equal(4);
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(3);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(3);
         })
         it('Should return success and empty array', async () => {
             returnObj = await ReminderHandler.cancelJobsForId(testId);
@@ -382,7 +397,7 @@ describe('Cancelling reminders', () => {
             expect(returnObj.data.length).to.equal(0);
         })
         it('Should not have anything for part 1 in scheduled Reminders', async () => {
-            assert(!Object.keys(ReminderHandler.scheduledReminders).some(jobId => jobId.startsWith(''+testId)));
+            assert(!Object.keys(scheduler.scheduledJobs).some(jobId => jobId.startsWith(''+testId+"_r_")));
         })
     })
 })
@@ -405,9 +420,9 @@ describe('Rescheduling reminders', () => {
             }
         })
         it('Should have re-added in scheduledReminders', () => {
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(returnObj.data.length + 3);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(returnObj.data.length + 3);
             for(let i = 0; i < returnObj.data.length; i++){
-                assert(returnObj.data[i].jobId in ReminderHandler.scheduledReminders);
+                assert(returnObj.data[i].jobId in scheduler.scheduledJobs);
             }
         })
         it('Should have retained jobs in database', async () => {
@@ -427,7 +442,7 @@ describe('Removing reminders', () => {
             participant = await participants.get(testId);
             participant.firstName = "John";
             expect(participant.scheduledOperations.reminders.length).to.equal(4);
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(7);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(7);
         })
         it('Should return success', async () => {
             returnObj = await ReminderHandler.removeJobsForId(participant);
@@ -436,9 +451,9 @@ describe('Removing reminders', () => {
             expect(returnObj.data.length).to.equal(4);
         })
         it('Should have not removed jobs from scheduled reminders', () => {
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(7);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(7);
             for(let i = 0; i < returnObj.data.length; i++){
-                assert((returnObj.data[i] in ReminderHandler.scheduledReminders));
+                assert((returnObj.data[i] in scheduler.scheduledJobs));
             }
         })
         it('Should have removed jobs from database', async () => {
@@ -458,7 +473,7 @@ describe('Removing reminders', () => {
             participant = await participants.get(testId);
             participant.firstName = "John";
             expect(participant.scheduledOperations.reminders.length).to.equal(0);
-            expect(Object.keys(ReminderHandler.scheduledReminders).length).to.equal(7);
+            expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(7);
         })
         it('Should return success and empty array', async () => {
             returnObj = await ReminderHandler.removeJobsForId(participant);

@@ -4,6 +4,8 @@ const mongo = require('mongoose');
 const idMaps = require('./apiControllers/idMapApiController');
 const experiments = require('./apiControllers/experimentApiController');
 const participants = require('./apiControllers/participantApiController');
+const answers = require('./src/apiControllers/answerApiController');
+const debugs = require('./src/apiControllers/debugInfoApiController');
 const ConfigReader = require('../src/configReader');
 const config = ConfigReader.getExpConfig();
 
@@ -26,6 +28,10 @@ let deleteSensitiveData = async () => {
     await idMaps.remove(config.experimentId);
     console.log("\nDeleting Participant Data for Experiment with ID: " + config.experimentId);
     await participants.removeAllForExperiment(config.experimentId);
+    console.log("\nDeleting Answer Data for Experiment with ID: " + config.experimentId);
+    await answers.removeAllForExperiment(config.experimentId);
+    console.log("\nDeleting Debug Data for Experiment with ID: " + config.experimentId);
+    await debugs.removeAllForExperiment(config.experimentId);
     console.log("\nDeleting Experiment Data for Experiment with ID: " + config.experimentId);
     await experiments.remove(config.experimentId);
     console.log("\nDeletion Complete\n")

@@ -158,8 +158,15 @@
   "scheduledQuestions" : [{
     "qId": "chain1.q1",
     "atTime" : "13:00",
-    "onDays" : ["Mon"]
-  }],
+    "onDays" : ["Mon"],
+    "stages" : ["Stage1", "Stage2"]
+  },
+    {
+      "qId": "chain1.q2",
+      "atTime" : "13:00",
+      "onDays" : ["Mon"],
+      "stages" : ["Stage2","Stage3"]
+    }],
   "userPromptedQuestions" : [
     {
       "keyword" : {

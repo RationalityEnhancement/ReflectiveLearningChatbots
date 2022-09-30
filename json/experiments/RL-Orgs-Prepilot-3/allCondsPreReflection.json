@@ -1,0 +1,192 @@
+[
+  {
+    "qId" : "initiateContact",
+    "qType" : "dummy",
+    "cReplyMessages" : [
+      {
+        "if" : "(${taskGoalsSetToday} == $B{true}) OR (${relGoalsSetToday} == $B{true})",
+        "then" : {
+          "English" : ["Good evening, ${FIRST_NAME}!"],
+          "Deutsch" : ["Guten Abend, ${FIRST_NAME}!"]
+        }
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if" : "(${taskGoalsSetToday} == $B{true}) OR (${relGoalsSetToday} == $B{true})",
+        "then" : "Pre-Reflection.readyToStart"
+      }
+    ],
+    "nextActions" : [
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["reflectionStartedToday", "$B{true}"]
+      }
+    ]
+  },
+  {
+    "qId" : "readyToStart",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Are you ready to reflect on today's goals?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "options" : {
+      "English" : ["Let's go!"],
+      "Deutsch" : ["Los geht's!"]
+    },
+    "nextQuestion" : "Pre-Reflection.listlessOrEnergetic",
+    "replyMessages" : {
+      "English" : ["Great! We will first start with how you are feeling."],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
+    },
+    "inputPrompt" : {
+      "English" : "(Hint: send /repeat if the button is no longer visible.)",
+      "Deutsch" : "(Tipp: senden Sie /repeat, wenn die Taste nicht mehr sichtbar ist.)"
+    },
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "listlessOrEnergetic",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Please indicate how you feel at the moment using the above picture.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "image" : {
+      "sourceType" : "local",
+      "source" : "data/images/LE-PANAVA/listless_energy.png"
+    },
+    "inputPrompt" : {
+      "English" : "Select the number that best represents your current feeling.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "options": {
+      "English" : ["1", "2", "3", "4", "5", "6", "7"],
+      "Deutsch" : ["1", "2", "3", "4", "5", "6", "7"]
+    },
+    "buttonLayoutCols" : 7,
+    "nextQuestion" : "Pre-Reflection.relaxedOrAngry",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "relaxedOrAngry",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Now, please indicate how you feel at the moment using the above picture.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "image" : {
+      "sourceType" : "local",
+      "source" : "data/images/LE-PANAVA/relaxed_angry.png"
+    },
+    "inputPrompt" : {
+      "English" : "Select the number that best represents your current feeling.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "options": {
+      "English" : ["1", "2", "3", "4", "5", "6", "7"],
+      "Deutsch" : ["1", "2", "3", "4", "5", "6", "7"]
+    },
+    "buttonLayoutCols" : 7,
+    "nextQuestion" : "Pre-Reflection.boredOrEnthusiastic",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "boredOrEnthusiastic",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Now, please indicate how you feel at the moment using the above picture.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "image" : {
+      "sourceType" : "local",
+      "source" : "data/images/LE-PANAVA/bored_enthusiastic.png"
+    },
+    "inputPrompt" : {
+      "English" : "Select the number that best represents your current feeling.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "options": {
+      "English" : ["1", "2", "3", "4", "5", "6", "7"],
+      "Deutsch" : ["1", "2", "3", "4", "5", "6", "7"]
+    },
+    "buttonLayoutCols" : 7,
+    "nextQuestion" : "Pre-Reflection.calmOrNervous",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "calmOrNervous",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Now, please indicate how you feel at the moment using the above picture.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "image" : {
+      "sourceType" : "local",
+      "source" : "data/images/LE-PANAVA/calm_nervous.png"
+    },
+    "inputPrompt" : {
+      "English" : "Select the number that best represents your current feeling.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "options": {
+      "English" : ["1", "2", "3", "4", "5", "6", "7"],
+      "Deutsch" : ["1", "2", "3", "4", "5", "6", "7"]
+    },
+    "buttonLayoutCols" : 7,
+    "nextQuestion" : "Pre-Reflection.happyOrUnhappy",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "happyOrUnhappy",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Finally, please indicate how you feel at the moment using the above picture.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "image" : {
+      "sourceType" : "local",
+      "source" : "data/images/LE-PANAVA/unhappy_happy.png"
+    },
+    "inputPrompt" : {
+      "English" : "Select the number that best represents your current feeling.",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "options": {
+      "English" : ["1", "2", "3", "4", "5", "6", "7"],
+      "Deutsch" : ["1", "2", "3", "4", "5", "6", "7"]
+    },
+    "buttonLayoutCols" : 7,
+    "cNextQuestions" : [
+      {
+        "if" : "${STAGE_NAME} == $S{Goal-Setting}",
+        "then" : "Goal-Setting.selectReflection",
+        "else" : "Int-Reflection.selectReflection"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["Great! We are done with the questions about your current feelings.", "Let's now move on to the goals you set today."],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    },
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  }
+]

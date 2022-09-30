@@ -1,7 +1,9 @@
 const DevConfig = require('../json/essential/devConfig.json')
 const fs = require('fs');
 const path = require('node:path');
-const config = require("../json/essential/config.json");
+const readConfig = require("../json/essential/config.json");
+let config = require('../json/essential/config.json');
+let replaced = false;
 
 /**
  *
@@ -105,9 +107,12 @@ module.exports.replaceFilenameDeeply = (targetObj, depth=0) => {
  * @returns {*}
  */
 module.exports.getExpConfig = () => {
-    let config = require('../json/essential/config.json');
-    let replaced = this.replaceFilenameDeeply(config);
-    return replaced;
+    if(!replaced){
+        console.log("Replaced");
+        config = this.replaceFilenameDeeply(readConfig);
+        replaced = true;
+    }
+    return config
 }
 
 /**

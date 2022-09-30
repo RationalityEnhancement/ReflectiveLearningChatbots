@@ -1,0 +1,37 @@
+[
+  {
+    "qId" : "Onboarding.checkComplete",
+    "atTime" : "05:30",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Onboarding}",
+    "stages" : ["Onboarding"]
+  },
+  {
+    "qId" : "Onboarding.initiateContact",
+    "atTime" : "${morningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "(${STAGE_NAME} == $S{Onboarding}) AND (${onboardingComplete} == $B{false})",
+    "stages" : ["Onboarding"]
+  },
+  {
+    "qId" : "Morning-Goals-All.initiateContact",
+    "atTime" : "${morningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Intervention}",
+    "stages" : ["Intervention"]
+  },
+  {
+    "qId" : "Pre-Reflection.initiateContact",
+    "atTime" : "${eveningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "${STAGE_NAME} == $S{Intervention}",
+    "stages" : ["Intervention"]
+  },
+  {
+    "qId" : "Post-Test.initiateContact",
+    "atTime" : "${morningTime}",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "if" : "(${STAGE_NAME} == $S{Post-Test}) AND (${postTestComplete} == $B{false})",
+    "stages" : ["Post-Test"]
+  }
+]

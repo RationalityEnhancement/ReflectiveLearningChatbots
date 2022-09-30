@@ -1,0 +1,144 @@
+[
+  {
+    "qId" : "startOnboarding",
+    "qType" : "dummy",
+    "replyMessages": {
+      "English" : ["Let's begin with the first questions!"],
+      "Deutsch" : ["Fangen wir schon mit den ersten Fragen an!"]
+    },
+    "nextQuestion" : "Onboarding.survey"
+  },
+  {
+    "qId" : "initiateContact",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if" : "(${STAGE_DAY} > $N{2}) AND (${warningGiven} != $B{true})",
+        "then" : "Onboarding.wantContinue"
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{2}) AND (${warningGiven} == $B{true})",
+        "then" : "Onboarding.endExperiment",
+        "else" : "Onboarding.survey"
+      }
+    ],
+    "selectQFirst" : true,
+    "cNextActions" : {
+      "if" : "(${STAGE_DAY} > $N{2}) AND (${warningGiven} != $B{true})",
+      "then" : [
+        {
+          "aType" : "setBooleanVar",
+          "args" : ["warningGiven", "$B{true}"]
+        }
+      ]
+    },
+    "replyMessages" : {
+      "English" : ["Good morning, ${FIRST_NAME}!"],
+      "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
+    }
+  },
+  {
+    "qId" : "wantContinue",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
+      "Deutsch" : "Übersetzung nicht verfügbar?"
+    },
+    "options" : {
+      "English" : ["Continue", "End Experiment"],
+      "Deutsch" : ["Continue", "End Experiment"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : "Onboarding.endExperiment",
+        "else" : "Onboarding.survey"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
+          "Deutsch" : ["Übersetzung nicht verfügbar."]
+        }
+      }
+    ]
+  },
+  {
+    "qId" : "endExperiment",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["The experiment has ended."],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    }
+  },
+  {
+    "qId" : "survey",
+    "qType" : "qualtrics",
+    "text" : {
+      "English" : "The first thing we need is some basic information. Please take the time to fill out the following survey thoughtfully and thoroughly.",
+      "Deutsch" : "Wir brauchen zuerst von Ihnen einige Basisinformationen. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+    },
+    "qualtricsLink" : "https://qfreeaccountssjc1.az1.qualtrics.com/jfe/form/SV_3JcinqV8RwZS8nA",
+    "qualtricsFields" : [
+      {
+        "field" : "uniqueId",
+        "value" : "${UNIQUE_ID}"
+      },
+      {
+        "field" : "condition",
+        "value" : "${CONDITION}"
+      },
+      {
+        "field" : "stage",
+        "value": "Onboarding"
+      },
+      {
+        "field" : "experiment",
+        "value" : "Pre-Pilot-2"
+      }
+    ],
+    "nextActions" : [
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["onboardingComplete", "$B{true}"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["warningGiven", "$B{false}"]
+      }
+    ],
+    "inputPrompt" : {
+      "English" : "Enter the survey code displayed at the end of the survey to continue.",
+      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren."
+    },
+    "continueStrings" : ["CK0JQL84"],
+    "replyMessages" : {
+      "English" : ["Thank you! Please remember to enter this code into Prolific as well, so that you can receive your first payment. The remaining payments will be given out as a bonus for completing further stages of the experiment.", "That’s all for today. On the next weekday, we will start the daily routine of setting goals in the morning and then reflecting on them in the evening. This will last three days.", "See you later!"],
+      "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
+    },
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "checkComplete",
+    "qType" : "dummy",
+    "cNextActions" : [
+      {
+        "if": "${onboardingComplete} == $B{true}",
+        "then" : [{
+          "aType" : "startStage",
+          "args" : ["Intervention"]
+        }]
+      }
+    ]
+  }
+]

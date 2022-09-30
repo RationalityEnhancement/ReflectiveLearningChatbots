@@ -1,0 +1,126 @@
+[
+  {
+    "qId" : "initiateContact",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if" : "(${STAGE_DAY} > $N{2}) AND (${warningGiven} != $B{true})",
+        "then" : "Post-Test.wantContinue"
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{2}) AND (${warningGiven} == $B{true})",
+        "then" : "Post-Test.endExperimentEarly",
+        "else" : "Post-Test.survey"
+      }
+    ],
+    "selectQFirst" : true,
+    "cNextActions" : {
+      "if" : "(${STAGE_DAY} > $N{2}) AND (${warningGiven} != $B{true})",
+      "then" : [
+        {
+          "aType" : "setBooleanVar",
+          "args" : ["warningGiven", "$B{true}"]
+        }
+      ]
+    },
+    "replyMessages" : {
+      "English" : ["Good morning, ${FIRST_NAME}!"],
+      "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
+    }
+  },
+  {
+    "qId" : "wantContinue",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
+      "Deutsch" : "Übersetzung nicht verfügbar?"
+    },
+    "options" : {
+      "English" : ["Continue", "End Experiment"],
+      "Deutsch" : ["Continue", "End Experiment"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : "Post-Test.endExperimentEarly",
+        "else" : "Post-Test.survey"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
+          "Deutsch" : ["Übersetzung nicht verfügbar."]
+        }
+      }
+    ]
+  },
+  {
+    "qId" : "endExperimentEarly",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["The experiment has ended."],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    }
+  },
+  {
+    "qId" : "endExperiment",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["And with that, we have finally come to the end of the experiment!", "It was great interacting with you, and I appreciate the effort you put into your responses."],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    }
+  },
+  {
+    "qId" : "survey",
+    "qType" : "qualtrics",
+    "text" : {
+      "English" : "This is the last stage of the experiment! Please take the time to fill out the following survey thoughtfully and thoroughly.",
+      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+    },
+    "qualtricsLink" : "https://qfreeaccountssjc1.az1.qualtrics.com/jfe/form/SV_803Ug4W3iiehAmW",
+    "qualtricsFields" : [
+      {
+        "field" : "uniqueId",
+        "value" : "${UNIQUE_ID}"
+      },
+      {
+        "field" : "condition",
+        "value" : "${CONDITION}"
+      },
+      {
+        "field" : "stage",
+        "value": "Post-Test"
+      },
+      {
+        "field" : "experiment",
+        "value" : "Pre-Pilot-2"
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    },
+    "inputPrompt" : {
+      "English" : "Enter the survey code that you receive at the end of the survey to continue.",
+      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren."
+    },
+    "continueStrings" : ["HEDGEHOG"],
+    "nextQuestion" : "Post-Test.endExperiment",
+    "replyMessages" : {
+      "English" : ["Thank you!"],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
+    }
+  }
+]

@@ -1,0 +1,8 @@
+{
+    "ConvincingWave-Leader" : 0,
+    "QuickMarble-Leader" : 1,
+    "TruthfulPin-Leader" : 2,
+    "ConvincingWave": 3,
+    "QuickMarble" : 4,
+    "TruthfulPin" : 5
+}

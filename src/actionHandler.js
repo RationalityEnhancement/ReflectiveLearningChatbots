@@ -8,7 +8,6 @@ const Communicator = require('./communicator')
 const QuestionHandler = require('./questionHandler');
 const {getByUniqueId} = require("./apiControllers/idMapApiController");
 const ExperimentUtils = require("./experimentUtils");
-const PIDtoConditionMap = ConfigReader.getPIDCondMap();
 const StageHandler = require('./stageHandler')
 const moment = require('moment')
 const debugs = require('./apiControllers/debugInfoApiController');
@@ -113,42 +112,6 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
 
 
     switch(actionObj.aType){
-        // Schedule all questions specified for given condition in config file
-            // TODO: ScheduleQuestions is now obsolete - remove?
-        case "scheduleQuestions":
-            const ScheduleHandler = require("./scheduleHandler");
-
-            // Debug to schedule all sets of scheduled questions in X minute intervals from now
-            if(config.debug.developer){
-              let nowDateObj = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-              let qHandler = new QuestionHandler(config);
-              let schQObj = qHandler.getScheduledQuestions(participant.conditionName, participant);
-              if(schQObj.returnCode === DevConfig.FAILURE_CODE){
-                return ReturnMethods.returnFailure("ActHandler: Failure while getting scheduled questions:" +
-                    "\n"+ schQObj.data);
-              }
-              ScheduleHandler.overrideScheduleForIntervals(schQObj.data, nowDateObj, 1);
-            }
-
-            let returnObj = await ScheduleHandler.scheduleAllOperations(bot, participant, config, actionsObj.data, config.debug.experimenter);
-            if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                return ReturnMethods.returnFailure(
-                    "ActHandler:Unable to schedule all operations:\n"+returnObj.data
-                );
-            } else if(returnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
-                return ReturnMethods.returnFailure(
-                    "ActHandler:Unable to schedule all operations:\n"+returnObj.failData
-                );
-            }
-            let newPartS;
-            try{
-                newPartS = await participants.get(participant.uniqueId)
-            } catch(err){
-                return ReturnMethods.returnFailure(
-                    "ActHandler:Unable to fetch participant again after schedule all:\n" +
-                    err.message + "\n" + err.stack);
-            }
-            return ReturnMethods.returnSuccess(newPartS);
         // Assign participant to condition based on assignment scheme specified in config file
         case "assignToCondition":
             let experiment;

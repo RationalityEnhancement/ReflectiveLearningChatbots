@@ -1,13 +1,9 @@
-const participants = require("./apiControllers/participantApiController");
-
 const ConfigReader = require('../src/configReader');
 const config = ConfigReader.getExpConfig();
 const DevConfig = ConfigReader.getDevConfig();
 const ReturnMethods = require('./returnMethods');
 const lodash = require('lodash');
-const moment = require('moment-timezone')
 const ExperimentUtils = require('./experimentUtils')
-const {relativeTimeRounding} = require("moment-timezone");
 
 /**
  *

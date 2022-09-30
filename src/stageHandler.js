@@ -5,7 +5,6 @@ const participants = require('./apiControllers/participantApiController')
 const moment = require('moment-timezone')
 const ConfigParser = require('./configParser')
 const AnswerHandler = require('./answerHandler')
-const ScheduleHandler = require("./scheduleHandler");
 const ExperimentUtils = require('./experimentUtils')
 
 /**

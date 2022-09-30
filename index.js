@@ -1154,9 +1154,15 @@ bot.on('text', async ctx => {
                           .then((result) => {
                               console.timeEnd("Handling answer return")
                               if(result.returnCode === DevConfig.FAILURE_CODE){
-                                  handleError(participant, result.data);
                                   console.log(result.data)
+                                  return handleError(participant, result.data);
                               }
+                          })
+                          .catch(err => {
+                              let errMsg = "Unable to process next actions for participant " + participant.uniqueId +
+                                  "\n" + err.message + "\n" + err.stack
+                              handleError(participant, errMsg);
+                              console.log(errMsg);
                           });
                   }
                   break;
@@ -1171,10 +1177,17 @@ bot.on('text', async ctx => {
                           participant.currentQuestion, false, !config.debug.messageDelay, "invalid")
                           .then(returnObj => {
                               if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-                                  handleError(participant, returnObj.data);
                                   console.log(returnObj.data);
+                                  return handleError(participant, returnObj.data);
+
                               }
                           })
+                          .catch(err => {
+                              let errMsg = "Unable to repeat question after invalid for participant " + participant.uniqueId +
+                                  "\n" + err.message + "\n" + err.stack
+                              handleError(participant, errMsg);
+                              console.log(errMsg);
+                          });
                   }
                   break;
 
@@ -1183,6 +1196,9 @@ bot.on('text', async ctx => {
                   handleError(participant, answerHandlerObj.data)
                       .then(() => {
                           console.log("ERROR: " + answerHandlerObj.data);
+                      })
+                      .catch(err => {
+                          console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
                       });
                   break;
 
@@ -1190,13 +1206,19 @@ bot.on('text', async ctx => {
                   handleError(participant, "Answer Handler did not respond appropriately")
                       .then(() => {
                           console.log("ERROR: Answer Handler did not respond appropriately");
+                      })
+                      .catch(err => {
+                          console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
                       });
                   break;
           }
       })
       .catch((err) => {
           handleError(participant, 'Error while processing answer for participant ' +uniqueId+'!\n'
-              + err.message + '\n' + err.stack);
+              + err.message + '\n' + err.stack)
+              .catch(err => {
+                  console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+              });
       });
   
 });

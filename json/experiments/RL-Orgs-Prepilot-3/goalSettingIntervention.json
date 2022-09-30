@@ -1,0 +1,191 @@
+[
+  {
+    "qId" : "selectReflection",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if" : "${relGoalsSetToday} == $B{true}",
+        "then" : "Int-Reflection.relGoalsRemind"
+      },
+      {
+        "if" : "${taskGoalsSetToday} == $B{true}",
+        "then" : "Int-Reflection.taskGoalsRemind"
+      }
+    ]
+  },
+  {
+    "qId": "relGoalsRemind",
+    "qType" : "dummy",
+    "replyMessages" : {
+      "English" : ["Today you set the following goal(s) for improving your working climate and/or your relationships with your colleagues: ", "${relGoals}"],
+      "Deutsch" : ["Heute haben Sie sich die folgenden beziehungsorienterten Ziele gesetzt: ", "${relGoals}"]
+    },
+    "nextQuestion" : "Int-Reflection.relGoalsProgress",
+    "nextActions" : [
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoals"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoalsSetToday"]
+      }
+    ]
+  },
+  {
+    "qId" : "relGoalsProgress",
+    "text" : {
+      "English" : "To what extent did you act according to these goals today, on a scale from 0 (not at all) to 100 (completely)?",
+      "Deutsch" : "Gefühlt wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
+    },
+    "qType" : "number",
+    "range" : {
+      "lower" : 0
+    },
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/relGoalProgressReplies.json}",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["lastReportedRelProgress"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["relProgressReportedOnce", "$B{true}"]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if" : "${taskGoalsSetToday} == $B{true}",
+        "then" : "Int-Reflection.askReflectTaskGoals",
+        "else" : "Int-Reflection.checkDone"
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "checkDone",
+    "qType" : "dummy",
+    "cReplyMessages" : [
+      {
+        "if" : "${STAGE_DAY} == $N{3}",
+        "then" : {
+          "English" : [
+            "Good job! You have reached the end of the second and final stage!",
+            "We will now start another round of questionnaires."
+          ],
+          "Deutsch" : ["Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!", "Jetzt haben wir noch eine Runde Umfragen."]
+        },
+        "else" : {
+          "English" : ["Thank you for sharing. See you tomorrow!"],
+          "Deutsch" : ["Danke fürs Mitteilen. Bis morgen!"]
+        }
+      }
+    ],
+    "selectQFirst" : true,
+    "cNextActions" : [
+      {
+        "if": "${STAGE_DAY} == $N{3}",
+        "then" : [
+          {
+            "aType" : "startStage",
+            "args" : ["Post-Test"]
+          }
+        ]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if": "${STAGE_DAY} == $N{3}",
+        "then" : "Post-Test.survey"
+      }
+    ]
+  },
+
+  {
+    "qId" : "askReflectTaskGoals",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you also like to report progress on your work-related goals today?",
+      "Deutsch" : "Möchten Sie heute Ihren Fortschritt in Bezug auf Ihre arbeitsbezogenen Ziele auch mitteilen?"
+    },
+    "options" : {
+      "English" : ["Yes", "No"],
+      "Deutsch" : ["Ja", "Nein"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : "Int-Reflection.taskGoalsRemind",
+        "else" : "Int-Reflection.checkDone"
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : [
+          {
+            "aType" : "clearVar",
+            "args" : ["taskGoals"]
+          },
+          {
+            "aType" : "clearVar",
+            "args" : ["taskGoalsSetToday"]
+          }
+        ]
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId": "taskGoalsRemind",
+    "qType" : "dummy",
+    "replyMessages" : {
+      "English" : ["Today, you set the following work-related goals: ", "${taskGoals}"],
+      "Deutsch" : ["Heute haben Sie sich die folgenden arbeitsbezogenen Ziele gesetzt: ", "${taskGoals}"]
+    },
+    "nextQuestion" : "Int-Reflection.taskGoalsProgress",
+    "nextActions" : [
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoals"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoalsSetToday"]
+      }
+    ]
+  },
+  {
+    "qId" : "taskGoalsProgress",
+    "text" : {
+      "English" : "Did you make progress toward your goals today? Rate it on a scale of 0 (no progress whatsoever) to 100 (everything complete). If you went above and beyond what you had planned, you can also enter a number above 100.",
+      "Deutsch" : "Wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
+    },
+    "qType" : "number",
+    "range" : {
+      "lower" : 0
+    },
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/taskGoalProgressReplies.json}",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["lastReportedTaskProgress"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["taskProgressReportedOnce", "$B{true}"]
+      }
+    ],
+    "nextQuestion" : "Int-Reflection.checkDone",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  }
+]

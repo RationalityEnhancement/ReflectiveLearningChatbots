@@ -1,0 +1,740 @@
+[
+  {
+    "qId" : "selectReflection",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if" : "${relGoalsSetToday} == $B{true}",
+        "then" : "Int-Reflection.relGoalsRemind"
+      },
+      {
+        "if" : "${taskGoalsSetToday} == $B{true}",
+        "then" : "Int-Reflection.taskGoalsRemind"
+      }
+    ]
+  },
+  {
+    "qId": "relGoalsRemind",
+    "qType" : "dummy",
+    "replyMessages" : {
+      "English" : ["Today you set the following goal(s) for improving your working climate and/or your relationships with your colleagues: ", "${relGoals}"],
+      "Deutsch" : ["Heute haben Sie sich die folgenden beziehungsorienterten Ziele gesetzt: ", "${relGoals}"]
+    },
+    "nextQuestion" : "Int-Reflection.relGoalsProgress",
+    "nextActions" : [
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoals"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["relGoalsSetToday"]
+      }
+    ]
+  },
+  {
+    "qId" : "relGoalsProgress",
+    "text" : {
+      "English" : "To what extent did you act according to these goals today, on a scale from 0 (not at all) to 100 (completely)?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "qType" : "number",
+    "range" : {
+      "lower" : 0
+    },
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/relGoalProgressReplies.json}",
+    "nextQuestion" : "Int-Reflection.relAnythingElse",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["lastReportedRelProgress"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["relProgressReportedOnce", "$B{true}"]
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "relAnythingElse",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Were there other interactions you had with your colleagues today that you would like to tell me about?",
+      "Deutsch": "Übersetzung nicht verfügbar"
+    },
+    "options" : {
+      "English" : ["Yes", "Not really."],
+      "Deutsch" : ["Ja", "Nicht wirklich."]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : "Int-Reflection.relMoreWork",
+        "else" : "Int-Reflection.relImpact"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : {
+          "English" : ["Okay, let's move on."],
+          "Deutsch" : ["Alles klar, machen wir weiter."]
+        }
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "relMoreWork",
+    "text" : {
+      "English" : "Interesting, please tell me more about what you have been up to today.",
+      "Deutsch" : "Interessant, sagen Sie mir was Sie heute gemacht haben."
+    },
+    "replyMessages" : {
+      "English" : ["Good to know!"],
+      "Deutsch" : ["Gut zu wissen!"]
+    },
+    "qType" : "freeformMulti",
+    "nextQuestion" : "Int-Reflection.relImpact",
+    "minLengthWords" : 4,
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "relImpact",
+    "text" : {
+      "English" : "Overall, how did your social interactions today impact the work atmosphere of your team?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Negatively", "Slightly negatively", "Neither positively nor negatively", "Slightly positively", "Positively", "Very positively"],
+      "Deutsch" : ["Nicht verfügbar"]
+    },
+    "cReplyMessages":  [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : {
+          "English" : ["I'm sorry to hear that."],
+          "Deutsch" : ["Das tut mir leid."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : {
+          "English" : ["Great going!"],
+          "Deutsch" : ["Schön!"]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : {
+          "English" : ["I see, that's interesting."],
+          "Deutsch" : ["Ich verstehe."]
+        }
+      }
+    ],
+    "nextQuestion" : "Int-Reflection.relEmotions",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "relEmotions",
+    "text" : {
+      "English" : "How do you feel about that, ${FIRST_NAME}? Please select any or all emotions you are experiencing at least a little bit.",
+      "Deutsch" : "Wie fühlen Sie sich darüber, ${FIRST_NAME}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
+    },
+    "qType" : "multiChoice",
+    "options" : {
+      "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
+      "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
+    },
+    "buttonLayoutCols" : 3,
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
+        "then" : {
+          "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
+          "Deutsch" : ["Das tut mir leid.", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6,7}",
+        "then" : {
+          "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
+          "Deutsch" : ["Das ist gut zu hören!", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
+        }
+      }
+    ],
+    "nextQuestion" : "Int-Reflection.relPursuit",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "relPursuit",
+    "text" : {
+      "English" : "Setting aside the outcomes and content of your goals to improve your workplace relationships/atmosphere for a moment, how satisfied are you with <b>the way in which you pursued those goals</b> today?",
+      "Deutsch" : "Abgesehen von den Ergebnissen und dem Inhalt Ihrer Ziele, wie zufrieden sind Sie mit <b>der Arbeitsweise, mit der Sie heute auf Ihre Ziele hingearbeitet haben</b>?"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
+      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+    },
+    "nextQuestion" : "Int-Reflection.relRelevance",
+    "cReplyMessages":  [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : {
+          "English" : ["That's alright."],
+          "Deutsch" : ["Das tut mir leid."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : {
+          "English" : ["I'm happy to hear that!"],
+          "Deutsch" : ["Es freut mich zu hören!"]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : {
+          "English" : ["I see."],
+          "Deutsch" : ["Ich verstehe."]
+        }
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "relRelevance",
+    "text" : {
+      "English" : "Now, setting aside how you pursued your goals and what the outcomes were, <b>how relevant were the goals you pursued today</b> to the improvement of your workplace relationships/atmosphere?",
+      "Deutsch" : "Übersetzung nicht verfügbar"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very relevant"],
+      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+    },
+    "nextQuestion" : "Int-Reflection.relPlan",
+    "cReplyMessages":  [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : {
+          "English" : ["Sorry to hear."],
+          "Deutsch" : ["Das tut mir leid."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : {
+          "English" : ["Awesome!"],
+          "Deutsch" : ["Großartig!"]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : {
+          "English" : ["Interesting."],
+          "Deutsch" : ["Interessant."]
+        }
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "relPlan",
+    "text" : {
+      "English" : "What is one small, concrete change you could make tomorrow to improve your goal-setting regarding workplace relationships/atmosphere?",
+      "Deutsch" : "Nennen Sie eine konkrete Änderung, die Ihre Zielsetzung morgen verbessern könnte."
+    },
+    "qType" : "freeform",
+    "nextQuestion" : "Int-Reflection.relPlanRemember",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["relIntention"]
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "relPlanRemember",
+    "text" : {
+      "English" : "Would you like me to remind you of this plan the next time you set a goal to improve the working atmosphere of your team or your relationships with your colleagues?",
+      "Deutsch" : "Möchten Sie, dass ich Sie morgen früh an diesen Plan erinnere?"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Yes", "No"],
+      "Deutsch" : ["Ja", "Nein"]
+    },
+    "cNextActions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["remindRelIntention", "$B{true}"]
+          }
+        ]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if" : "${taskGoalsSetToday} == $B{true}",
+        "then" : "Int-Reflection.askReflectTaskGoals",
+        "else" : "Int-Reflection.checkDone"
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "checkDone",
+    "qType" : "dummy",
+    "cReplyMessages" : [
+      {
+        "if" : "${STAGE_DAY} == $N{3}",
+        "then" : {
+          "English" : [
+            "Good job! You have reached the end of the second and final stage!",
+            "We will now start another round of questionnaires."
+          ],
+          "Deutsch" : ["Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!", "Jetzt haben wir noch eine Runde Umfragen."]
+        },
+        "else" : {
+          "English": ["Great job reflecting today! Thank you for such insightful answers. See you tomorrow!"],
+          "Deutsch" : ["Sie haben heute gut reflektiert! Danke für Ihre einsichtsvollen Antworten. Bis morgen!"]
+        }
+      }
+    ],
+    "selectQFirst" : true,
+    "cNextActions" : [
+      {
+        "if": "${STAGE_DAY} == $N{3}",
+        "then" : [
+          {
+            "aType" : "startStage",
+            "args" : ["Post-Test"]
+          }
+        ]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if": "${STAGE_DAY} == $N{3}",
+        "then" : "Post-Test.survey"
+      }
+    ]
+  },
+
+  {
+    "qId" : "askReflectTaskGoals",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you also like to reflect on your work-related goals today?",
+      "Deutsch" : "Möchten Sie heute Ihren Fortschritt in Bezug auf Ihre arbeitsbezogenen Ziele auch mitteilen?"
+    },
+    "options" : {
+      "English" : ["Yes", "No"],
+      "Deutsch" : ["Ja", "Nein"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : "Int-Reflection.taskGoalsRemind",
+        "else" : "Int-Reflection.checkDone"
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : [
+          {
+            "aType" : "clearVar",
+            "args" : ["taskGoals"]
+          },
+          {
+            "aType" : "clearVar",
+            "args" : ["taskGoalsSetToday"]
+          }
+        ]
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId": "taskGoalsRemind",
+    "qType" : "dummy",
+    "replyMessages" : {
+      "English" : ["Today, you set the following work-related goals: ", "${taskGoals}"],
+      "Deutsch" : ["Heute haben Sie sich die folgenden arbeitsbezogenen Ziele gesetzt: ", "${taskGoals}"]
+    },
+    "nextQuestion" : "Int-Reflection.taskGoalsProgress",
+    "nextActions" : [
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoals"]
+      },
+      {
+        "aType" : "clearVar",
+        "args" : ["taskGoalsSetToday"]
+      }
+    ]
+  },
+  {
+    "qId" : "taskGoalsProgress",
+    "text" : {
+      "English" : "Did you make progress toward your goals today? Rate it on a scale of 0 (no progress whatsoever) to 100 (everything complete). If you went above and beyond what you had planned, you can also enter a number above 100.",
+      "Deutsch" : "Wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
+    },
+    "qType" : "number",
+    "range" : {
+      "lower" : 0
+    },
+    "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/taskGoalProgressReplies.json}",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["lastReportedTaskProgress"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["taskProgressReportedOnce", "$B{true}"]
+      }
+    ],
+    "nextQuestion" : "Int-Reflection.anythingElse",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "anythingElse",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Were there any other major things you worked on today that you would like to tell me about?",
+      "Deutsch": "Haben Sie heute an sonst etwas Wichtigem gearbeitet, die Sie mir berichten wollen?"
+    },
+    "options" : {
+      "English" : ["Yes", "Not really."],
+      "Deutsch" : ["Ja", "Nicht wirklich."]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : "Int-Reflection.moreWork",
+        "else" : "Int-Reflection.impact"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : {
+          "English" : ["Very well, let's move on."],
+          "Deutsch" : ["Alles klar, machen wir weiter."]
+        }
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "moreWork",
+    "text" : {
+      "English" : "Interesting, please tell me more about what you have been up to today.",
+      "Deutsch" : "Interessant, sagen Sie mir was Sie heute gemacht haben."
+    },
+    "replyMessages" : {
+      "English" : ["Good to know!"],
+      "Deutsch" : ["Gut zu wissen!"]
+    },
+    "qType" : "freeformMulti",
+    "nextQuestion" : "Int-Reflection.impact",
+    "minLengthWords" : 4,
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "impact",
+    "text" : {
+      "English" : "All in all, the amount of value I created for my projects, my team, and my organization today was ...",
+      "Deutsch" : "Alles in allem, wie zufrieden sind Sie damit, was Sie heute erzielt haben?"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Negative", "Close to zero", "Small", "Medium", "Large"],
+      "Deutsch" : ["Not available"]
+    },
+    "cReplyMessages":  [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : {
+          "English" : ["That's okay."],
+          "Deutsch" : ["Das tut mir leid."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : {
+          "English" : ["Nice!"],
+          "Deutsch" : ["Schön!"]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : {
+          "English" : ["That's a good start!"],
+          "Deutsch" : ["Ich verstehe."]
+        }
+      }
+    ],
+    "nextQuestion" : "Int-Reflection.emotions",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "emotions",
+    "text" : {
+      "English" : "How do you feel about that, ${FIRST_NAME}? Please select any or all emotions you are experiencing at least a little bit.",
+      "Deutsch" : "Wie fühlen Sie sich darüber, ${FIRST_NAME}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
+    },
+    "qType" : "multiChoice",
+    "options" : {
+      "English" : ["Sad", "Frustrated", "Discontent", "Stressed","Content", "Happy", "Proud", "Excited"],
+      "Deutsch" : ["Traurig", "Frustriert", "Unzufrieden", "Gestresst","Zufrieden", "Froh", "Stolz", "Begeistert"]
+    },
+    "buttonLayoutCols" : 3,
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
+        "then" : {
+          "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
+          "Deutsch" : ["Das tut mir leid.", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6,7}",
+        "then" : {
+          "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
+          "Deutsch" : ["Das ist gut zu hören!", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
+        }
+      }
+    ],
+    "nextQuestion" : "Int-Reflection.pursuitSatisfaction",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "pursuitSatisfaction",
+    "text" : {
+      "English" : "Setting aside the outcomes and content of your goals for a moment, how satisfied are you with <b>the way you pursued your goals</b> today?",
+      "Deutsch" : "Abgesehen von den Ergebnissen und dem Inhalt Ihrer Ziele, wie zufrieden sind Sie mit <b>der Arbeitsweise, mit der Sie heute auf Ihre Ziele hingearbeitet haben</b>?"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
+      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+    },
+    "nextQuestion" : "Int-Reflection.goalsImportance",
+    "cReplyMessages":  [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : {
+          "English" : ["That's alright."],
+          "Deutsch" : ["Das tut mir leid."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : {
+          "English" : ["I'm happy to hear that!"],
+          "Deutsch" : ["Es freut mich zu hören!"]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : {
+          "English" : ["I see."],
+          "Deutsch" : ["Ich verstehe."]
+        }
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+
+  {
+    "qId" : "goalsImportance",
+    "text" : {
+      "English" : "How relevant were the goals you pursued today to the long-term goals of your project(s), your team, and your organization?",
+      "Deutsch" : "Wie wichtig waren Ihre heutigen Ziele für die Langzeitziel von Ihrem Projekt, Team, und Ihrer Organisation?"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
+      "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
+    },
+    "nextQuestion" : "Int-Reflection.plan",
+    "cReplyMessages":  [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : {
+          "English" : ["That's unfortunate. Don't worry, there's always room for improvement!"],
+          "Deutsch" : ["Das tut mir leid."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : {
+          "English" : ["Awesome!"],
+          "Deutsch" : ["Großartig!"]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : {
+          "English" : ["Interesting."],
+          "Deutsch" : ["Ich verstehe."]
+        }
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "plan",
+    "text" : {
+      "English" : "What is one small, concrete change that you could make tomorrow to improve on your goal-setting?",
+      "Deutsch" : "Nennen Sie eine konkrete Änderung, die Ihre Zielsetzung morgen verbessern könnte."
+    },
+    "qType" : "freeform",
+    "nextQuestion" : "Int-Reflection.planRemember",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["workIntention"]
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "planRemember",
+    "text" : {
+      "English" : "Would you like me to remind you of this plan tomorrow morning?",
+      "Deutsch" : "Möchten Sie, dass ich Sie morgen früh an diesen Plan erinnere?"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Yes", "No"],
+      "Deutsch" : ["Ja", "Nein"]
+    },
+    "cNextActions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["remindWorkIntention", "$B{true}"]
+          }
+        ]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if" : "${taskGoalsSetToday} == $B{true}",
+        "then" : "Int-Reflection.askReflectTaskGoals",
+        "else" : "Int-Reflection.checkDone"
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  },
+  {
+    "qId" : "decisionSatisfaction",
+    "text" : {
+      "English" : "Now, setting aside how you pursued your goals and what the outcomes were, how satisfied are you with your <b>decision about which goals to work on</b> today?",
+      "Deutsch" : "Also, abgesehen davon, wie Sie Ihren Zielen nachgegangen sind, wie zufrieden sind Sie mit <b>der Entscheidung dazu, an welchen Zielen Sie heute arbeiten</b>?"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Very dissatisfied", "Dissatisfied", "Neither satisfied nor dissatisfied", "Satisfied", "Very satisfied"],
+      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+    },
+    "nextQuestion" : "Int-Reflection.plan",
+    "cReplyMessages":  [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
+        "then" : {
+          "English" : ["Sorry to hear."],
+          "Deutsch" : ["Das tut mir leid."]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
+        "then" : {
+          "English" : ["Awesome!"],
+          "Deutsch" : ["Großartig!"]
+        }
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : {
+          "English" : ["Interesting."],
+          "Deutsch" : ["Interessant."]
+        }
+      }
+    ],
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  }
+]

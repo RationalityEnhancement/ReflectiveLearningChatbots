@@ -109,7 +109,7 @@ function QuestionHandler(config){
                 + "\n"+ selectedQuestionObj.data
             );
         } else {
-            selectedQuestion = selectedQuestionObj.data;
+            selectedQuestion = JSON.parse(JSON.stringify(selectedQuestionObj.data));
         }
         let constructedQuestion = {
             "qId" : qId,

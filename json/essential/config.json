@@ -1,15 +1,15 @@
 {
-  "experimentName" : "Reflective Learning in Organizations - Prepilot 2",
-  "experimentId" : "RL-Orgs-Prepilot-2",
+  "experimentName" : "Reflective Learning in Organizations - Prepilot 3",
+  "experimentId" : "RL-Orgs-Prepilot-3",
   "experimentConditions" : ["MC", "Shallow", "Control"],
   "conditionAssignments" : [1, 1, 1],
   "assignmentScheme" : "balanced",
-  "experimentLengthWeeks" : 2,
+  "experimentLengthWeeks" : 1,
   "msPerCharacterDelay" : 5,
   "experimentStages" : {
-    "MC" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsStages.json}",
-    "Shallow" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsStages.json}",
-    "Control" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsStages.json}"
+    "MC" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsStages.json}",
+    "Shallow" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsStages.json}",
+    "Control" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsStages.json}"
   },
   "mandatoryParameters" : {
     "language" : "string",
@@ -51,52 +51,52 @@
   },
   "debug" : {
     "experimenter" : true,
-    "actionMessages" : true,
+    "actionMessages" : false,
     "enableNext" : true,
     "messageDelay" : false,
     "developer" : false,
-    "saveDebugInfo": true
+    "saveDebugInfo" : true
   },
   "languages" : ["English"],
   "defaultLanguage" : "English",
-  "phrases" : "$F{json/experiments/RL-Orgs-Prepilot-2/phrases.json}",
-  "instructionText" : "$F{json/experiments/RL-Orgs-Prepilot-2/instructions.json}",
+  "phrases" : "$F{json/experiments/RL-Orgs-Prepilot-3/phrases.json}",
+  "instructionText" : "$F{json/experiments/RL-Orgs-Prepilot-3/instructions.json}",
   "questionCategories": {
-    "setupQuestions": "$F{json/experiments/RL-Orgs-Prepilot-2/setupQuestions.json}"
+    "setupQuestions": "$F{json/experiments/RL-Orgs-Prepilot-3/setupQuestions.json}"
   },
   "conditionQuestions" : {
     "Control" : {
       "questionCategories" : {
-        "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot-2/onboardingLeaders.json}",
-        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot-2/morningGoals.json}",
-        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsPreReflection.json}",
-        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-2/goalSettingIntervention.json}",
-        "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot-2/postTestLeaders.json}"
+        "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot-3/onboardingLeaders.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot-3/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/goalSettingIntervention.json}",
+        "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot-3/postTestLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsScheduledQs.json}",
-      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsUserPromptQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsUserPromptQs.json}"
     },
     "Shallow" : {
       "questionCategories" : {
-        "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot-2/onboardingLeaders.json}",
-        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot-2/morningGoals.json}",
-        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsPreReflection.json}",
-        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-2/shallowIntervention.json}",
-        "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot-2/postTestLeaders.json}"
+        "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot-3/onboardingLeaders.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot-3/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/shallowIntervention.json}",
+        "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot-3/postTestLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsScheduledQs.json}",
-      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsUserPromptQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsUserPromptQs.json}"
     },
     "MC" : {
       "questionCategories" : {
-        "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot-2/onboardingLeaders.json}",
-        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot-2/morningGoals.json}",
-        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsPreReflection.json}",
-        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-2/MCIntervention.json}",
-        "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot-2/postTestLeaders.json}"
+        "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot-3/onboardingLeaders.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot-3/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/MCIntervention.json}",
+        "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot-3/postTestLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsScheduledQs.json}",
-      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-2/allCondsUserPromptQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsUserPromptQs.json}"
     }
   }
 }

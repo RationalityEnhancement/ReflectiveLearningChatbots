@@ -1,3 +1,14 @@
+const local = process.argv[2];
+
+if(!local){
+    const { Appsignal } = require("@appsignal/nodejs");
+
+    const appsignal = new Appsignal({
+        active: true,
+        name: "RLChatbots"
+    });
+}
+
 require('dotenv').config();
 const mongo = require('mongoose');
 const { Telegraf } = require('telegraf');
@@ -24,8 +35,6 @@ const lodash = require('lodash');
 const ActionHandler = require('./src/actionHandler');
 const scheduler = require('node-schedule')
 const LogicHandler = require('./src/logicHandler')
-
-const local = process.argv[2];
 
 const SKIP_TO_STAGE = {};
 const REPORT_FEEDBACK = {};

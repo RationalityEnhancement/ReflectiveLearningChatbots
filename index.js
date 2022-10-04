@@ -949,6 +949,7 @@ bot.command('help', async ctx => {
 })
 
 bot.start(async ctx => {
+    console.time("Starting new participant");
   console.log('Starting');
   // Check if experiment has already been initialized
   let experiment = await getExperiment(config.experimentId);
@@ -966,6 +967,7 @@ bot.start(async ctx => {
       console.error(err);
     } 
   } else {
+      console.time("Recounting participants");
       // Recount number of participants assigned to each condition
       let allParticipants = await participants.getAll();
       let condCounts = Array(experiment.currentlyAssignedToCondition.length).fill(0);
@@ -976,10 +978,12 @@ bot.start(async ctx => {
               condCounts[curCondIdx] += 1;
           }
       }
+      console.timeEnd("Recounting participants");
       if(!lodash.isEqual(condCounts, experiment.currentlyAssignedToCondition)){
           await experiments.updateField(config.experimentId, "currentlyAssignedToCondition",condCounts);
       }
   }
+
 
   //Check if ID Mapping exists for experiment already
     let experimentIds = await idMaps.getExperiment(config.experimentId);
@@ -999,8 +1003,10 @@ bot.start(async ctx => {
     // if not, generate a new ID for the participant and add it
     if(!secretMap){
         try{
+            console.time("Creating IDMapping");
             uniqueId = await idMaps.generateUniqueId(config.experimentId);
             await idMaps.addIDMapping(config.experimentId, ctx.from.id, uniqueId);
+            console.timeEnd("Creating IDMapping");
         } catch(err){
             await handleError({}, 'Unable to generate a new ID for participant!\n'
                 + err.message + '\n' + err.stack)
@@ -1018,7 +1024,9 @@ bot.start(async ctx => {
   let participant = await getParticipant(uniqueId);
 
   // If not, add and initialize the participant with basic information
-  if(!participant){
+    console.time("Adding all participant documents");
+
+    if(!participant){
     try{
       await participants.add(uniqueId);
       await participants.initializeParticipant(uniqueId, config);
@@ -1033,6 +1041,7 @@ bot.start(async ctx => {
         await debugs.initializeDebugInfo(uniqueId, config.experimentId)
       // Use the new participant henceforth
       participant = await participants.get(uniqueId);
+        console.timeEnd("Adding all participant documents");
     } catch(err){
         await handleError({}, 'Failed to initialize new participant\n'
             + err.message + '\n' + err.stack)
@@ -1042,6 +1051,7 @@ bot.start(async ctx => {
       console.log('Failed to initialize new participant');
       console.error(err);
     }
+
   }
 
   if(participant.currentState !== "starting"){
@@ -1077,6 +1087,7 @@ bot.start(async ctx => {
         })
 
     }
+    console.timeEnd("Starting new participant");
 });
 
 // Handling any answer

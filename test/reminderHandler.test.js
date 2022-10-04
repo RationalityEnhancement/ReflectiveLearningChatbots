@@ -185,7 +185,6 @@ describe('Connecting to DB', () => {
         expect(result).to.equal(1);
     });
     it('Should add experiment ID mappings and add two subjects', async () => {
-        await idMaps.addExperiment(testConfig.experimentId);
 
         await idMaps.addIDMapping(testConfig.experimentId, "12455", testId)
         await idMaps.addIDMapping(testConfig.experimentId, "1241255", testId2)

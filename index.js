@@ -219,11 +219,15 @@ bot.command('log_exp', async ctx => {
     try{
     console.log('Logging experiment.');
     let experiment = await experiments.get(config.experimentId);
+    if(!experiment) {
+        console.log("Experiment doesn't exist!")
+        return;
+    }
     experiment["errorMessages"] = undefined;
     experiment["feedbackMessages"] = undefined;
     console.log(experiment);
     let experimentIds = await idMaps.getExperiment(config.experimentId);
-    // console.log(experimentIds);
+    console.log(experimentIds);
   } catch(err){
     console.log('Failed to log experiment');
     console.error(err);
@@ -339,7 +343,7 @@ bot.command('delete_exp', async ctx => {
           return;
       }
 
-      await idMaps.remove(config.experimentId);
+      await idMaps.removeAllForExperiment(config.experimentId);
 
     ctx.reply('Successfully deleted your experiment.');
     console.log(`Experiment ${config.experimentId} removed`);
@@ -967,40 +971,30 @@ bot.start(async ctx => {
     } 
   } else {
       // Recount number of participants assigned to each condition
-      let allParticipants = await participants.getAll();
-      let condCounts = Array(experiment.currentlyAssignedToCondition.length).fill(0);
-      for(let i = 0; i < allParticipants.length; i++){
-          let curExperiment = allParticipants[i].experimentId;
-          let curCondIdx = allParticipants[i].conditionIdx;
-          if(typeof curCondIdx !== "undefined" && curExperiment === config.experimentId){
-              condCounts[curCondIdx] += 1;
-          }
-      }
-      if(!lodash.isEqual(condCounts, experiment.currentlyAssignedToCondition)){
-          await experiments.updateField(config.experimentId, "currentlyAssignedToCondition",condCounts);
-      }
+      participants.getByExperimentId(config.experimentId)
+          .then(allParticipants => {
+              let condCounts = Array(experiment.currentlyAssignedToCondition.length).fill(0);
+              for(let i = 0; i < allParticipants.length; i++){
+                  let curExperiment = allParticipants[i].experimentId;
+                  let curCondIdx = allParticipants[i].conditionIdx;
+                  if(typeof curCondIdx !== "undefined" && curExperiment === config.experimentId){
+                      condCounts[curCondIdx] += 1;
+                  }
+              }
+              if(!lodash.isEqual(condCounts, experiment.currentlyAssignedToCondition)){
+                  return experiments.updateField(config.experimentId, "currentlyAssignedToCondition",condCounts);
+              }
+          })
   }
-
-  //Check if ID Mapping exists for experiment already
-    let experimentIds = await idMaps.getExperiment(config.experimentId);
-  // If not, add it
-    if(!experimentIds){
-        try{
-            await idMaps.addExperiment(config.experimentId);
-        }catch(err){
-            console.log('Failed to create new experiment for mapping');
-            console.error(err);
-        }
-    }
 
     // Check if participant is already present in the ID Mapping system
     let secretMap = await getByChatId(config.experimentId, ctx.from.id);
-    let uniqueId;
-    // if not, generate a new ID for the participant and add it
-    if(!secretMap){
+
+    // if not, generate a new unique ID for the participant and add it
+    while(!secretMap){
         try{
-            uniqueId = await idMaps.generateUniqueId(config.experimentId);
-            await idMaps.addIDMapping(config.experimentId, ctx.from.id, uniqueId);
+            let newId = idMaps.generateUniqueId();
+            secretMap = await idMaps.addIDMapping(config.experimentId, ctx.from.id, newId);
         } catch(err){
             await handleError({}, 'Unable to generate a new ID for participant!\n'
                 + err.message + '\n' + err.stack)
@@ -1010,9 +1004,8 @@ bot.start(async ctx => {
             console.log('Unable to generate a new ID for participant!');
             console.error(err);
         }
-    } else {
-        uniqueId = secretMap.uniqueId;
     }
+    let uniqueId = secretMap.uniqueId;
 
   // Check if the participant has already been added
   let participant = await getParticipant(uniqueId);

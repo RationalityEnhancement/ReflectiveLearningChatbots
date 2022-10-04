@@ -26,7 +26,7 @@ let deleteSensitiveData = async () => {
         }
     });
     console.log("\nDeleting Sensitive Data for Experiment with ID: " + config.experimentId);
-    await idMaps.remove(config.experimentId);
+    await idMaps.removeAllForExperiment(config.experimentId);
     console.log("\nDeleting Participant Data for Experiment with ID: " + config.experimentId);
     await participants.removeAllForExperiment(config.experimentId);
     console.log("\nDeleting Answer Data for Experiment with ID: " + config.experimentId);

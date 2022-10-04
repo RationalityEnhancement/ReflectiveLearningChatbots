@@ -33,15 +33,6 @@ describe('ID Mappings API: ', () =>{
 			expect(result).to.equal(1);
 		});
 
-		it('Should add and get experiment', async () => {
-
-			await idMaps.addExperiment(testExperimentId);
-			let experiment = await idMaps.getExperiment(testExperimentId);
-			expect(experiment).to.not.be.null;
-			expect(experiment.experimentId).to.equal(testExperimentId);
-
-
-		});
 	})
 
 	describe('Check if list of mappings has IDs', () => {
@@ -64,6 +55,17 @@ describe('ID Mappings API: ', () =>{
 	describe('Adding', () => {
 		it('Should add a new mapping', async () => {
 			let curMap = testMappings[0];
+			let idMap = await idMaps.addIDMapping(testExperimentId, curMap.chatId, "fakeId");
+			console.log(idMap)
+			let experiment = await idMaps.getExperiment(testExperimentId);
+			let newMappings = experiment.IDMappings;
+			expect(newMappings.length).to.equal(1);
+			assert(idMaps.hasChatId(newMappings, curMap.chatId))
+			assert(idMaps.hasUniqueId(newMappings, "fakeId"))
+
+		});
+		it('Should update a duplicate chatId', async () => {
+			let curMap = testMappings[0];
 			await idMaps.addIDMapping(testExperimentId, curMap.chatId, curMap.uniqueId);
 
 			let experiment = await idMaps.getExperiment(testExperimentId);
@@ -73,12 +75,13 @@ describe('ID Mappings API: ', () =>{
 			assert(idMaps.hasUniqueId(newMappings, curMap.uniqueId))
 
 		});
-		it('Should not add a duplicate mapping', async () => {
+		it('Should not add if uniqueId already exists', async () => {
 			let curMap = testMappings[0];
-			await idMaps.addIDMapping(testExperimentId, curMap.chatId, "fakeId");
+			let newMap = await idMaps.addIDMapping(testExperimentId, 98765, curMap.uniqueId);
 
 			let experiment = await idMaps.getExperiment(testExperimentId);
 			let newMappings = experiment.IDMappings;
+			expect(newMap).to.be.undefined;
 			expect(newMappings.length).to.equal(1);
 			assert(idMaps.hasChatId(newMappings, curMap.chatId))
 			assert(idMaps.hasUniqueId(newMappings, curMap.uniqueId))
@@ -90,6 +93,7 @@ describe('ID Mappings API: ', () =>{
 		let curMap = testMappings[0]
 		it('Should get by chatId', async () => {
 			let foundMap = await idMaps.getByChatId(testExperimentId, curMap.chatId);
+			console.log(foundMap)
 			expect(foundMap).to.not.be.undefined;
 			expect(foundMap.chatId).to.equal(curMap.chatId);
 			expect(foundMap.uniqueId).to.equal(curMap.uniqueId);
@@ -101,19 +105,28 @@ describe('ID Mappings API: ', () =>{
 			expect(foundMap.uniqueId).to.equal(curMap.uniqueId);
 		})
 		it('Should return undefined when chatId doesnt exist', async () => {
-			let foundMap = await idMaps.getByChatId(testExperimentId, "skeep");
+			let foundMap = await idMaps.getByChatId(testExperimentId, 54321);
+			expect(foundMap).to.be.null;
+
+		})
+		it('Should return undefined when chatId not a number', async () => {
+			let foundMap = await idMaps.getByChatId(testExperimentId, "54321");
 			expect(foundMap).to.be.undefined;
 
 		})
 		it('Should return undefined when uniqueId doesnt exist', async () => {
 			let foundMap = await idMaps.getByUniqueId(testExperimentId, "skeep");
+			expect(foundMap).to.be.null;
+		})
+		it('Should return undefined when uniqueId not a string', async () => {
+			let foundMap = await idMaps.getByUniqueId(testExperimentId, 12345);
 			expect(foundMap).to.be.undefined;
 		})
 	})
 	describe('Generating new IDs', () => {
 		it('Should generate a new unique id of proper length', async () => {
 
-			let newId = await idMaps.generateUniqueId(testExperimentId);
+			let newId = idMaps.generateUniqueId();
 			let experiment = await idMaps.getExperiment(testExperimentId);
 			let newMappings = experiment.IDMappings;
 			expect(newId.length).to.equal(8);
@@ -129,7 +142,9 @@ describe('ID Mappings API: ', () =>{
 			await idMaps.updateUniqueId(testExperimentId, curMap.chatId, "12345678");
 			let experiment = await idMaps.getExperiment(testExperimentId);
 			let newMap = await idMaps.getByChatId(testExperimentId, curMap.chatId);
+			console.log(experiment.IDMappings)
 			expect(experiment.IDMappings.length).to.equal(1);
+
 			expect(newMap).to.not.be.undefined;
 			expect(newMap.uniqueId).to.equal("12345678");
 		})
@@ -150,7 +165,7 @@ describe('ID Mappings API: ', () =>{
 			let experiment = await idMaps.getExperiment(testExperimentId);
 			let oldMap = await idMaps.getByChatId(testExperimentId, testMappings[0].chatId);
 			expect(experiment.IDMappings.length).to.equal(1);
-			expect(oldMap).to.be.undefined;
+			expect(oldMap).to.be.null;
 			expect(!idMaps.hasChatId(experiment.IDMappings), testMappings[0].chatId);
 		})
 		it('Should do nothing when chatId not present', async() => {
@@ -176,16 +191,16 @@ describe('ID Mappings API: ', () =>{
 			let oldMap = await idMaps.getByUniqueId(testExperimentId, testMappings[1].uniqueId);
 
 			expect(experiment.IDMappings.length).to.equal(0);
-			expect(oldMap).to.be.undefined;
+			expect(oldMap).to.be.null;
 			expect(!idMaps.hasUniqueId(experiment.IDMappings), testMappings[1].uniqueId);
 		})
 	})
 	describe('Severing DB connection', () => {
 		it('Should remove experiment', async () => {
-			await idMaps.remove(testExperimentId);
+			await idMaps.removeAllForExperiment(testExperimentId);
 
 			let experiment = await idMaps.getExperiment(testExperimentId);
-			expect(experiment).to.be.null;
+			expect(experiment.IDMappings.length).to.equal(0);
 		});
 
 		it('Should close connection', async () => {

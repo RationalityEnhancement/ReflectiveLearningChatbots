@@ -10,7 +10,7 @@
 const { IDMap } = require('../models/IDMap');
 
 
-// Get all experiments
+// Get all mappings
 exports.getAll = async () => {
   try {
     return IDMap.find();
@@ -19,10 +19,30 @@ exports.getAll = async () => {
   }
 }
 
-//Get a single experiment
+//Get all mappings for a single experiment
+exports.getAllForExperiment = async(experimentId) => {
+  try{
+    return IDMap.find({experimentId : experimentId});
+  } catch(err){
+    console.error(err);
+  }
+}
+
+//Get all mappings for a single experiment
 exports.getExperiment = async(experimentId) => {
   try{
-    return IDMap.findOne({experimentId : experimentId});
+    return IDMap.find({experimentId : experimentId})
+        .then(allMaps => {
+          return {
+            experimentId: experimentId,
+            IDMappings: allMaps.map(map => {
+              return {
+                chatId: map.chatId,
+                uniqueId: map.uniqueId
+              }
+            })
+          }
+        })
   } catch(err){
     console.error(err);
   }
@@ -30,20 +50,14 @@ exports.getExperiment = async(experimentId) => {
 
 // Get a single user's mapping by telegram chatId
 let getByChatId = async (experimentId, chatId) => {
+  if(typeof chatId !== "number") return undefined;
   try {
-    experimentId = ""+experimentId;
-    let experiment = await IDMap.findOne({ experimentId: experimentId });
-
-    let foundMap;
-    if(!experiment) return foundMap;
-
-    for(let i = 0; i < experiment.IDMappings.length; i++){
-      if(experiment.IDMappings[i].chatId === chatId){
-        foundMap = experiment.IDMappings[i];
-        break;
-      }
-    }
-    return foundMap;
+    return IDMap.findOne( {
+      experimentId : experimentId,
+      chatId : chatId
+    }).then(found => {
+      return found;
+    })
   } catch (err) {
     console.error(err);
   }
@@ -53,18 +67,13 @@ exports.getByChatId = getByChatId;
 // Get a single user's mapping by bot-generated ID
 let getByUniqueId = async (experimentId, uniqueId) => {
   try {
-    experimentId = ""+experimentId;
-    uniqueId = ""+uniqueId;
-    let experiment = await IDMap.findOne({ experimentId: experimentId });
-    let foundMap;
-    if(!experiment) return foundMap;
-    for(let i = 0; i < experiment.IDMappings.length; i++){
-      if(experiment.IDMappings[i].uniqueId === uniqueId){
-        foundMap = experiment.IDMappings[i];
-        break;
-      }
-    }
-    return foundMap;
+    if(typeof uniqueId !== "string") return undefined;
+    return IDMap.findOne( {
+      experimentId : experimentId,
+      uniqueId : uniqueId
+    }).then(found => {
+      return found;
+    })
   } catch (err) {
     console.error(err);
   }
@@ -72,18 +81,6 @@ let getByUniqueId = async (experimentId, uniqueId) => {
 
 exports.getByUniqueId = getByUniqueId;
 
-// Add a new experiment for mappings
-exports.addExperiment = async (experimentId) => {
-  try {
-    return IDMap.create(
-        {
-          experimentId: experimentId
-        }
-    )
-  } catch (err) {
-    console.error(err);
-  }
-}
 
 // Checks if a given list of Id Mappings contains a given unique Id already
 let hasChatId = (IDMappings, chatId) => {
@@ -114,41 +111,33 @@ let hasUniqueId = (IDMappings, uniqueId) => {
 exports.hasUniqueId = hasUniqueId;
 
 // Generate a unique Id that doesn't exist already
-let generateUniqueId = async (experimentId) => {
-  experimentId = ""+experimentId;
-  let experiment = await IDMap.findOne({ experimentId : experimentId });
-  let createdNewId = false;
-  let newId;
-  if(!experiment) return "";
-  while(!createdNewId){
-    // generate a random number 8 digit number in string form
-    newId = "" + Math.floor(Math.random() * (99999999 - 10000000) + 10000000);
-    if(!hasUniqueId(experiment.IDMappings, newId)) createdNewId = true;
-  }
-  return newId;
+let generateUniqueId = () => {
+  let newId = Math.floor(Math.random() * (99999999 - 10000000) + 10000000);
+  return ""+newId;
 }
 exports.generateUniqueId = generateUniqueId;
 
-// Add a new Id Mapping if it doesn't already exist
+// Add a new Id Mapping if uniqueId doesn't already exist
+// If uniqueId already exists, return undefined
+// If chatID already exists, then update mapping
 let addIDMapping = async (experimentId, chatId, uniqueId) => {
   try {
-    return IDMap.findOneAndUpdate(
-        {
-          experimentId: experimentId,
-          "IDMappings.chatId" : {
-            $ne: chatId
-          }
-        },
-        {
-          $push : {
-            IDMappings: {
-              chatId : chatId,
-              uniqueId : uniqueId
-            }
-          }
-        },
-        { new: true }
-    )
+    return IDMap.findOne({
+      experimentId: experimentId,
+      uniqueId: uniqueId
+    }).then(found => {
+      if(found) return undefined;
+      return IDMap.findOneAndUpdate({
+        experimentId: experimentId,
+        chatId: chatId
+      }, {
+        experimentId: experimentId,
+        chatId: chatId,
+        uniqueId: uniqueId
+      },
+          {upsert: true, new: true})
+    })
+
 
   } catch (err) {
     console.error(err);
@@ -162,22 +151,18 @@ exports.addIDMapping = addIDMapping;
 let updateUniqueId = async (experimentId, chatId, uniqueId) => {
   
   try{
-    experimentId = ""+experimentId;
-    uniqueId = ""+uniqueId;
-    let experiment = await IDMap.findOne({ experimentId: experimentId });
-    if(!experiment) return;
-    let presentMap = hasChatId(experiment.IDMappings, chatId);
-    if(!presentMap){
-      return addIDMapping(experimentId, chatId, uniqueId);
-    }
-    for(let i = 0; i < experiment.IDMappings.length; i++){
-      let curMap = experiment.IDMappings[i];
-      if(curMap.chatId === chatId){
-        curMap.uniqueId = uniqueId;
-        break;
-      }
-    }
-    return experiment.save();
+    return IDMap.findOneAndUpdate(
+        {
+          experimentId: experimentId,
+          chatId: chatId
+        },
+        {
+          experimentId: experimentId,
+          chatId: chatId,
+          uniqueId: uniqueId
+        },
+        { upsert: true, new: true }
+    );
   } catch (err) {
     console.error(err);
   }
@@ -188,16 +173,11 @@ exports.updateUniqueId = updateUniqueId;
 // If it doesn't exist, do nothing
 let deleteByChatId = async(experimentId, chatId) => {
   try{
-    return IDMap.findOneAndUpdate(
-        {experimentId: experimentId},
+    return IDMap.deleteOne(
         {
-          $pull : {
-            IDMappings: {
-              chatId: chatId
-            }
-          }
-        },
-        { new: true }
+          experimentId: experimentId,
+          chatId: chatId
+        }
     )
   } catch (err) {
     console.error(err);
@@ -209,16 +189,11 @@ exports.deleteByChatId = deleteByChatId;
 // If it doesn't exist, do nothing.
 let deleteByUniqueId = async(experimentId, uniqueId) => {
   try{
-    return IDMap.findOneAndUpdate(
-        {experimentId: experimentId},
+    return IDMap.deleteOne(
         {
-          $pull : {
-            IDMappings: {
-              uniqueId: uniqueId
-            }
-          }
-        },
-        { new: true }
+          experimentId: experimentId,
+          uniqueId: uniqueId
+        }
     )
   } catch (err) {
     console.error(err);
@@ -236,10 +211,10 @@ exports.removeAll = async () => {
 }
 
 // Remove a single document by ID
-exports.remove = async experimentId => {
+exports.removeAllForExperiment = async experimentId => {
   try {
     experimentId = ""+experimentId;
-    return IDMap.deleteOne({ experimentId: experimentId });
+    return IDMap.deleteMany({ experimentId: experimentId });
   } catch (err) {
     console.error(err);
   }

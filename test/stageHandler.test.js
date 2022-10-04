@@ -249,7 +249,6 @@ describe('DB Connection', () => {
 
             await participants.add(testPartId);
             await answers.add(testPartId);
-            await idMaps.addExperiment(testConfig.experimentId)
             await idMaps.addIDMapping(testConfig.experimentId, testChatId, testPartId);
             await participants.initializeParticipant(testPartId, config)
             await answers.initializeAnswer(testPartId, config.experimentId)

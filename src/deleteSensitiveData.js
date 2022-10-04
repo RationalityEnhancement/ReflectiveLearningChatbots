@@ -21,7 +21,7 @@ let deleteSensitiveData = async () => {
         }
     });
     console.log("\nDeleting Sensitive Data for Experiment with ID: " + config.experimentId);
-    await idMaps.remove(config.experimentId);
+    await idMaps.removeAllForExperiment(config.experimentId);
     console.log("\nDeletion Complete\n")
     await mongo.connection.close();
 };

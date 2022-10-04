@@ -22,6 +22,7 @@ const qHandler = new QuestionHandler(testConfig);
 const ScheduleHandler = require('../src/scheduleHandler')
 
 const scheduler = require('node-schedule')
+const ExperimentUtils = require("../src/experimentUtils");
 
 const testId = "123";
 const testId2 = "321";
@@ -236,37 +237,65 @@ describe('Scheduling one Operation', () => {
                 }
 
             ]
+            let currentTime;
             it('Should return correct ordering - 1', () => {
                 let date = moment.tz("2022-05-22 07:59:59", 'Europe/Berlin');
+                let dateObjObj = ExperimentUtils.parseMomentDateString(date.format());
+                if(dateObjObj.returnCode === DevConfig.FAILURE_CODE){
+                    return dateObjObj;
+                }
+                let dateObj = dateObjObj.data;
+                currentTime = {
+                    dayIndex: dateObj.dayOfWeek,
+                    time: (dateObj.hours < 10 ? '0' : '') + dateObj.hours + ":" + (dateObj.minutes < 10 ? '0' : '') + dateObj.minutes
+                };
                 let copyQs = JSON.parse(JSON.stringify(testQs));
-                let shiftedQs = ScheduleHandler.shiftTemporalOrderArray(copyQs, date);
+                let shiftedQs = ScheduleHandler.shiftTemporalOrderArray(copyQs, currentTime);
                 expect(shiftedQs).to.eql(copyQs);
                 expect(shiftedQs.length).to.equal(testQs.length);
                 expect(shiftedQs[0].qId).to.equal("test1")
             })
             it('Should return correct ordering - 2', () => {
                 let date = moment.tz("2022-05-23 16:59:59", 'Europe/Berlin');
+                let dateObjObj = ExperimentUtils.parseMomentDateString(date.format());
+                if(dateObjObj.returnCode === DevConfig.FAILURE_CODE){
+                    return dateObjObj;
+                }
+                let dateObj = dateObjObj.data;
+                currentTime = {
+                    dayIndex: dateObj.dayOfWeek,
+                    time: (dateObj.hours < 10 ? '0' : '') + dateObj.hours + ":" + (dateObj.minutes < 10 ? '0' : '') + dateObj.minutes
+                };
                 let copyQs = JSON.parse(JSON.stringify(testQs));
-                let shiftedQs = ScheduleHandler.shiftTemporalOrderArray(copyQs, date);
+                let shiftedQs = ScheduleHandler.shiftTemporalOrderArray(copyQs, currentTime);
                 expect(shiftedQs).to.eql(copyQs);
                 expect(shiftedQs.length).to.equal(testQs.length);
                 expect(shiftedQs[0].qId).to.equal("test4")
             })
             it('Should return correct ordering - wrap around', () => {
                 let date = moment.tz("2022-05-22 04:59:59", 'Europe/Berlin');
+                let dateObjObj = ExperimentUtils.parseMomentDateString(date.format());
+                if(dateObjObj.returnCode === DevConfig.FAILURE_CODE){
+                    return dateObjObj;
+                }
+                let dateObj = dateObjObj.data;
+                currentTime = {
+                    dayIndex: dateObj.dayOfWeek,
+                    time: (dateObj.hours < 10 ? '0' : '') + dateObj.hours + ":" + (dateObj.minutes < 10 ? '0' : '') + dateObj.minutes
+                };
                 let copyQs = JSON.parse(JSON.stringify(testQs));
-                let shiftedQs = ScheduleHandler.shiftTemporalOrderArray(copyQs, date);
+                let shiftedQs = ScheduleHandler.shiftTemporalOrderArray(copyQs, currentTime);
                 expect(shiftedQs).to.eql(copyQs);
                 expect(shiftedQs.length).to.equal(testQs.length);
                 expect(shiftedQs[0].qId).to.equal("test8")
             })
             it('Should return empty when not array', () => {
-                let sortedQs = ScheduleHandler.shiftTemporalOrderArray("lol", new Date());
+                let sortedQs = ScheduleHandler.shiftTemporalOrderArray("lol", currentTime);
                 assert(Array.isArray(sortedQs));
                 expect(sortedQs.length).to.equal(0)
             })
             it('Should return empty when array empty', () => {
-                let sortedQs = ScheduleHandler.shiftTemporalOrderArray([], new Date());
+                let sortedQs = ScheduleHandler.shiftTemporalOrderArray([], currentTime);
                 assert(Array.isArray(sortedQs));
                 expect(sortedQs.length).to.equal(0)
             })
@@ -288,8 +317,6 @@ describe('Scheduling one Operation', () => {
             expect(result).to.equal(1);
         });
         it('Should add experiment ID mappings and add two subjects', async () => {
-            await idMaps.addExperiment(testConfig.experimentId);
-            // await idMaps.addExperiment(failConfig.experimentId);
 
             await idMaps.addIDMapping(testConfig.experimentId, "12455", testId)
             await idMaps.addIDMapping(testConfig.experimentId, "12345", testId2)

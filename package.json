@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/RationalityEnhancement/ReflectiveLearningChatbots#readme",
   "dependencies": {
+    "@appsignal/nodejs": "^2.4.2",
     "chai": "^4.3.6",
     "dotenv": "^16.0.0",
     "express": "^4.18.1",

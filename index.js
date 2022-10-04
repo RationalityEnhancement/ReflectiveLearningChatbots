@@ -1,3 +1,14 @@
+const local = process.argv[2];
+
+if(!local){
+    const { Appsignal } = require("@appsignal/nodejs");
+
+    const appsignal = new Appsignal({
+        active: true,
+        name: "RLChatbots"
+    });
+}
+
 require('dotenv').config();
 const mongo = require('mongoose');
 const { Telegraf } = require('telegraf');
@@ -24,8 +35,6 @@ const lodash = require('lodash');
 const ActionHandler = require('./src/actionHandler');
 const scheduler = require('node-schedule')
 const LogicHandler = require('./src/logicHandler')
-
-const local = process.argv[2];
 
 const SKIP_TO_STAGE = {};
 const REPORT_FEEDBACK = {};
@@ -361,7 +370,10 @@ bot.command('cancel', async ctx =>{
         .catch(err => {
             let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
                 + timeStamp + "\n" + err.message + "\n" + err.stack;
-            handleError(participant, errMsg);
+            handleError(participant, errMsg)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
             console.log(errMsg);
         })
     let partLang = participant.parameters.language;
@@ -369,9 +381,12 @@ bot.command('cancel', async ctx =>{
         SKIP_TO_STAGE[ctx.from.id] = false;
         let message = "Skipping stage has been cancelled. The experiment will continue as normal. Send <i>/repeat</i> to recall any outstanding question.";
         Communicator.sendMessage(bot, participant, ctx.from.id, message, !config.debug.messageDelay)
-            .catch(e => {
+            .catch(err => {
                 handleError(participant, 'Unable to send cancel skip stage message!\n'
-                    + err.message + '\n' + err.stack);
+                    + err.message + '\n' + err.stack)
+                    .catch(err => {
+                        console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                    });
             })
     } else if(REPORT_FEEDBACK[ctx.from.id]){
         REPORT_FEEDBACK[ctx.from.id] = false;
@@ -388,6 +403,9 @@ bot.command('cancel', async ctx =>{
                         console.log('Unable to send feedback cancel message!');
                         console.error(err);
                     })
+                    .catch(err => {
+                        console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                    });
 
             })
     } else if(TALK[ctx.from.id]){
@@ -399,7 +417,10 @@ bot.command('cancel', async ctx =>{
                 ctx.from.id, config.phrases.experiment.experimentContinue[partLang], !config.debug.messageDelay);
         } catch(err){
             await handleError(participant, 'Unable to send talk cancel message!\n'
-                + err.message + '\n' + err.stack);
+                + err.message + '\n' + err.stack)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
             console.log('Unable to send talk cancel message!');
             console.error(err);
         }
@@ -409,7 +430,10 @@ bot.command('cancel', async ctx =>{
                 ctx.from.id, config.phrases.experiment.nothingToCancel[partLang], !config.debug.messageDelay);
         } catch(err){
             await handleError(participant, 'Unable to send no cancel message!\n'
-                + err.message + '\n' + err.stack);
+                + err.message + '\n' + err.stack)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
             console.log('Unable to send no cancel message!');
             console.error(err);
         }
@@ -514,8 +538,11 @@ bot.command('next', async ctx => {
                 let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id, nextQuestion,
                     true, !config.debug.messageDelay, "nextCommand");
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
-                    await handleError(participant, returnObj.data);
-                    throw returnObj.data;
+                    console.log(returnObj.data);
+                    handleError(participant, returnObj.data)
+                        .catch(err => {
+                            console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                        });
                 }
                 if(onlyAction){
                     let firstName = participant.firstName;
@@ -538,8 +565,12 @@ bot.command('next', async ctx => {
                 }
                 let returnObj = await ActionHandler.processAction(bot, config, participant, actionObj, "/next");
                 if (returnObj.returnCode === DevConfig.FAILURE_CODE) {
-                    await handleError(participant, returnObj.data)
-                    throw returnObj.data;
+                    console.log(returnObj.data)
+                    handleError(participant, returnObj.data)
+                        .catch(err => {
+                            console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                        });
+
                 }
                 if(config.debug.actionMessages){
                     nextQuestionFound = true;
@@ -588,7 +619,10 @@ bot.command('repeat', async ctx => {
         .catch(err => {
             let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
                 + timeStamp + "\n" + err.message + "\n" + err.stack;
-            handleError(participant, errMsg);
+            handleError(participant, errMsg)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
             console.log(errMsg);
         })
 
@@ -603,7 +637,10 @@ bot.command('repeat', async ctx => {
             ctx.from.id, config.phrases.experiment.reportFeedbackCancel[partLang], !config.debug.messageDelay)
             .catch((err) => {
                 handleError(participant, 'Unable to send feedback cancel message after repeat!\n'
-                    + err.message + '\n' + err.stack);
+                    + err.message + '\n' + err.stack)
+                    .catch(err => {
+                        console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                    });
                 console.log('Unable to send feedback cancel message after repeat!');
                 console.error(err);
             });
@@ -616,7 +653,10 @@ bot.command('repeat', async ctx => {
                 ctx.from.id, config.phrases.experiment.talkCancelled[partLang], !config.debug.messageDelay)
             .catch((err) => {
                 handleError(participant, 'Unable to send talk cancel message after repeat!\n'
-                    + err.message + '\n' + err.stack);
+                    + err.message + '\n' + err.stack)
+                    .catch(err => {
+                        console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                    });
                 console.log('Unable to send talk cancel message after repeat!');
                 console.error(err);
             });
@@ -642,12 +682,18 @@ bot.command('repeat', async ctx => {
                   .catch((err) => {
                       handleError(participant,
                           'Unable to update participant '+ uniqueId +' state after fail in repeat!\n'
-                          + err.message + '\n' + err.stack);
+                          + err.message + '\n' + err.stack)
+                          .catch(err => {
+                              console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                          });
                       console.log('Unable to update participant state after fail in repeat!');
                       console.error(err);
                   });
               handleError(participant, 'Unable to send repeat question for participant ' + uniqueId + '!\n'
-                  + err.message + '\n' + err.stack);
+                  + err.message + '\n' + err.stack)
+                  .catch(err => {
+                      console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                  });
               console.log('Unable to send repeat question for participant ' + uniqueId + '!\n' + err);
           });
 
@@ -658,7 +704,10 @@ bot.command('repeat', async ctx => {
           ctx.from.id, config.phrases.experiment.repeatFail[partLang], !config.debug.messageDelay)
         .catch((err) => {
           handleError(participant, 'Unable to send repeat fail message!\n'
-              + err.message + '\n' + err.stack);
+              + err.message + '\n' + err.stack)
+              .catch(err => {
+                  console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+              });
           console.log('Unable to send repeat fail message!');
           console.error(err);
       })
@@ -722,25 +771,31 @@ bot.command('report', async ctx => {
         .catch(err => {
             let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
                 + timeStamp + "\n" + err.message + "\n" + err.stack;
-            handleError(participant, errMsg);
             console.log(errMsg);
+            handleError(participant, errMsg)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
+
         })
 
 
     SKIP_TO_STAGE[ctx.from.id] = false;
     TALK[ctx.from.id] = false;
     REPORT_FEEDBACK[ctx.from.id] = true;
-    try{
-        let partLang = participant.parameters.language;
-        await Communicator.sendMessage(bot, participant,
-            ctx.from.id, config.phrases.experiment.reportFeedback[partLang], !config.debug.messageDelay);
-    } catch(err){
-        await handleError(participant, 'Unable to send report feedback message!\n'
-            + err.message + '\n' + err.stack);
-        console.log('Unable to send report feedback message!');
-        console.error(err);
-    }
 
+    let partLang = participant.parameters.language;
+    Communicator.sendMessage(bot, participant,
+        ctx.from.id, config.phrases.experiment.reportFeedback[partLang], !config.debug.messageDelay)
+        .catch(err => {
+            let errMsg = 'Unable to send report feedback message for participant ' + participant.uniqueId + '!\n'
+                + err.message + '\n' + err.stack;
+            console.log(errMsg);
+            handleError(participant, errMsg)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
+        })
 })
 
 // Command to initiate talking
@@ -768,22 +823,28 @@ bot.command('talk', async ctx => {
         .catch(err => {
             let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
                 + timeStamp + "\n" + err.message + "\n" + err.stack;
-            handleError(participant, errMsg);
+            handleError(participant, errMsg)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
             console.log(errMsg);
         })
 
     // Don't allow initiation of talking if there is an outstanding question
     if(participant.currentState.startsWith('awaitingAnswer')){
-        try {
-            await Communicator.sendMessage(bot, participant,
-                ctx.from.id, config.phrases.experiment.cannotStartTalkOutstanding[partLang], !config.debug.messageDelay);
+        Communicator.sendMessage(bot, participant,
+            ctx.from.id, config.phrases.experiment.cannotStartTalkOutstanding[partLang], !config.debug.messageDelay)
+            .catch(err => {
+                console.log('Unable to send talk cannot start message for participant ' +
+                    + participant.uniqueId + '!\n' + err.message + '\n' + err.stack);
+                console.error(err);
+                return handleError(participant, 'Unable to send talk cannot start message for participant ' +
+                    + participant.uniqueId + '!\n' + err.message + '\n' + err.stack)
+                    .catch(err => {
+                        console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                    });
+            })
             return;
-        } catch(err){
-            await handleError(participant, 'Unable to send talk cannot start message!\n'
-                + err.message + '\n' + err.stack);
-            console.log('Unable to send talk cannot start message!');
-            console.error(err);
-        }
     }
 
     // Cancel other open operations, if any
@@ -798,9 +859,11 @@ bot.command('talk', async ctx => {
     try{
         userInfo = await bot.telegram.getChat(ctx.from.id);
     } catch(e) {
-        await handleError(participant, 'Unable to get userID in /talk\n' + e.message + "\n" + e.stack);
         console.log("ERROR: Unable to get userID in /talk\n" + e.message + "\n" + e.stack);
-        return;
+        return handleError(participant, 'Unable to get userID in /talk\n' + e.message + "\n" + e.stack)
+            .catch(err => {
+                console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+            });
     }
 
     participant.firstName = userInfo.first_name;
@@ -809,19 +872,24 @@ bot.command('talk', async ctx => {
         TALK[ctx.from.id] = true;
         sendText = textObj.data;
     } else if(textObj.returnCode === DevConfig.FAILURE_CODE){
-        await handleError(participant, 'Unable to build talk start message\n' + textObj.data);
-    }
-    try {
-        await Communicator.sendMessage(bot, participant,
-            ctx.from.id, sendText, !config.debug.messageDelay);
-    } catch(err){
-        await handleError(participant, 'Unable to send talk start message!\n'
-            + err.message + '\n' + err.stack);
-        console.log('Unable to send talk start message!');
-        console.error(err);
+        handleError(participant, 'Unable to build talk start message\n' + textObj.data)
+            .catch(err => {
+                console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+            });
     }
 
-})
+    Communicator.sendMessage(bot, participant,
+        ctx.from.id, sendText, !config.debug.messageDelay)
+        .catch(err => {
+            let errMsg = 'Unable to send talk start message for participant ' +participant.uniqueId + '!\n'
+                + err.message + '\n' + err.stack
+            console.log(errMsg);
+            handleError(participant, errMsg)
+            .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
+        })
+});
 
 // Command to ask for help
 bot.command('help', async ctx => {
@@ -846,7 +914,10 @@ bot.command('help', async ctx => {
         .catch(err => {
             let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
                 + timeStamp + "\n" + err.message + "\n" + err.stack;
-            handleError(participant, errMsg);
+            handleError(participant, errMsg)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
             console.log(errMsg);
         })
 
@@ -863,7 +934,7 @@ bot.command('help', async ctx => {
         Communicator.sendMessage(config.phrases.experiment.cannotHelp[participant.parameters.language])
             .then(ret => {
                 return handleError(participant, 'Unable to send instructions!\n'
-                    + err.message + '\n' + err.stack);
+                    + err.message + '\n' + err.stack)
             })
             .then(ret => {
                 console.log('Unable to send instructions!');
@@ -932,7 +1003,10 @@ bot.start(async ctx => {
             await idMaps.addIDMapping(config.experimentId, ctx.from.id, uniqueId);
         } catch(err){
             await handleError({}, 'Unable to generate a new ID for participant!\n'
-                + err.message + '\n' + err.stack);
+                + err.message + '\n' + err.stack)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
             console.log('Unable to generate a new ID for participant!');
             console.error(err);
         }
@@ -962,6 +1036,9 @@ bot.start(async ctx => {
     } catch(err){
         await handleError({}, 'Failed to initialize new participant\n'
             + err.message + '\n' + err.stack)
+            .catch(err => {
+                console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+            });
       console.log('Failed to initialize new participant');
       console.error(err);
     }
@@ -975,7 +1052,10 @@ bot.start(async ctx => {
   // Start the setup question chain
   let curQuestionObj = qHandler.getFirstQuestionInCategory(undefined, "setupQuestions", config.defaultLanguage);
   if(curQuestionObj.returnCode === -1){
-      await handleError(participant, curQuestionObj.data);
+      await handleError(participant, curQuestionObj.data)
+          .catch(err => {
+              console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+          });
     throw "ERROR: " + curQuestionObj.data;
   } else {
     let curQuestion = curQuestionObj.data;
@@ -988,7 +1068,10 @@ bot.start(async ctx => {
         })
         .catch(err => {
             handleError(participant, "Failed to send language question\n"
-                + err.message + '\n' + err.stack);
+                + err.message + '\n' + err.stack)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
             console.log('Failed to send language question');
             console.error(err);
         })
@@ -1027,7 +1110,10 @@ bot.on('text', async ctx => {
         .catch(err => {
             let errMsg = "Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
                 + timeStamp + "\n" + err.message + "\n" + err.stack;
-            handleError(participant, errMsg);
+            handleError(participant, errMsg)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
             console.log(errMsg);
         })
 
@@ -1070,22 +1156,24 @@ bot.on('text', async ctx => {
     // If the text is supposed to be feedback that is reported
     if(REPORT_FEEDBACK[ctx.from.id]){
         let feedback = messageText;
-
-        await handleFeedback(participant, feedback);
-        REPORT_FEEDBACK[ctx.from.id] = false;
         let partLang = participant.parameters.language;
-        try{
-            await Communicator.sendMessage(bot, participant,
-                ctx.from.id, config.phrases.experiment.reportFeedbackThanks[partLang], !config.debug.messageDelay);
-            await Communicator.sendMessage(bot, participant,
-                ctx.from.id, config.phrases.experiment.experimentContinue[partLang], !config.debug.messageDelay);
-        } catch(err){
-            await handleError(participant, 'Unable to send feedback cancel message!\n'
-                + err.message + '\n' + err.stack);
-            console.log('Unable to send feedback cancel message!');
-            console.error(err);
-        }
-        return;
+        REPORT_FEEDBACK[ctx.from.id] = false;
+        return handleFeedback(participant, feedback)
+            .then(ret => {
+                return Communicator.sendMessage(bot, participant,
+                    ctx.from.id, config.phrases.experiment.reportFeedbackThanks[partLang], !config.debug.messageDelay);
+            })
+            .then(ret => {
+                return Communicator.sendMessage(bot, participant,
+                    ctx.from.id, config.phrases.experiment.experimentContinue[partLang], !config.debug.messageDelay);
+            })
+            .catch(err => {
+                handleError(participant, 'Unable to save feedback message or send feedback complete' +
+                    'for participant ' + participant.uniqueId + '!\n' + err.message + '\n' + err.stack)
+                    .catch(err => {
+                        console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                    });
+            })
     }
 
     // If text is supposed to be keyword to start talking about something
@@ -1095,9 +1183,11 @@ bot.on('text', async ctx => {
         try{
             userInfo = await bot.telegram.getChat(ctx.from.id);
         } catch(e) {
-            await handleError(participant, 'Unable to get userID in /talk answer\n' + e.message + "\n" + e.stack);
             console.log("ERROR: Unable to get userID in /talk answer\n" + e.message + "\n" + e.stack);
-            return;
+            return handleError(participant, 'Unable to get userID in /talk answer\n' + e.message + "\n" + e.stack)
+                .catch(err => {
+                    console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                });
         }
         participant["firstName"] = userInfo.first_name;
         let partLang = participant.parameters.language;
@@ -1105,36 +1195,49 @@ bot.on('text', async ctx => {
         // Get the QID for the entered keyword
         let getQIDObj = ConfigParser.getUserPromptQID(participant, config, messageText);
         if(getQIDObj.returnCode !== DevConfig.SUCCESS_CODE){
-            try{
-                await Communicator.sendMessage(bot, participant,
-                    ctx.from.id, config.phrases.experiment.talkKeywordNotRecognized[partLang], !config.debug.messageDelay);
-            } catch(err){
-                await handleError(participant, 'Unable to send didnt understand message!\n'
-                    + err.message + '\n' + err.stack);
-                console.log('Unable to send didnt understand message!');
-                console.error(err);
-            }
-            return;
+            return Communicator.sendMessage(bot, participant,
+                ctx.from.id, config.phrases.experiment.talkKeywordNotRecognized[partLang], !config.debug.messageDelay)
+                .catch(err => {
+                    let errMsg = 'Unable to send didnt understand message for participant ' + participant.uniqueId +'!\n'
+                        + err.message + '\n' + err.stack;
+                    console.log(errMsg);
+                    handleError(participant, errMsg)
+                        .catch(err => {
+                            console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                        });
+                })
         }
 
         // Create the question
         let questionObj = qHandler.constructQuestionByID(participant.conditionName,
             getQIDObj.data, partLang);
         if(questionObj.returnCode !== DevConfig.SUCCESS_CODE){
-            await handleError(participant, 'Unable to construct question prompted by user!\n'
-                + questionObj.data);
-            throw questionObj.data;
+            let errMsg = 'Unable to construct question ' + messageText + ' prompted by user ' + participant.uniqueId +'!\n'
+                + questionObj.data;
+            return handleError(participant, errMsg)
+                .catch(err => {
+                console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+            });
         }
 
         // Ask the question
-        let returnObj = await LogicHandler.sendQuestion(bot, participant, ctx.from.id,
+        return LogicHandler.sendQuestion(bot, participant, ctx.from.id,
             questionObj.data, false, config.debug.experimenter, "talk")
-        if(returnObj.returnCode === DevConfig.FAILURE_CODE){
-            await handleError(participant, returnObj.data);
-            throw returnObj.data;
-        }
+            .then(returnObj => {
+                if(returnObj.returnCode === DevConfig.FAILURE_CODE) {
+                    throw returnObj.data;
+                }
+            })
+            .catch(err => {
+                let errMsg = 'Unable to send question '
+                    + questionObj.data + ' prompted by user ' + participant.uniqueId +'!\n'
+                    + err.message + '\n' + err.stack
+                return handleError(participant, errMsg)
+                    .catch(err => {
+                        console.log("ERROR: Unable to handle error: \n" +err.message + "\n" + err.stack);
+                    });
+            })
 
-        return;
     }
 
   const answerText = ctx.message.text;
@@ -1155,7 +1258,7 @@ bot.on('text', async ctx => {
                               console.timeEnd("Handling answer return")
                               if(result.returnCode === DevConfig.FAILURE_CODE){
                                   console.log(result.data)
-                                  return handleError(participant, result.data);
+                                  return handleError(participant, result.data)
                               }
                           })
                           .catch(err => {
@@ -1178,14 +1281,14 @@ bot.on('text', async ctx => {
                           .then(returnObj => {
                               if(returnObj.returnCode === DevConfig.FAILURE_CODE){
                                   console.log(returnObj.data);
-                                  return handleError(participant, returnObj.data);
+                                  return handleError(participant, returnObj.data)
 
                               }
                           })
                           .catch(err => {
                               let errMsg = "Unable to repeat question after invalid for participant " + participant.uniqueId +
                                   "\n" + err.message + "\n" + err.stack
-                              handleError(participant, errMsg);
+                              handleError(participant, errMsg)
                               console.log(errMsg);
                           });
                   }

@@ -62,7 +62,6 @@ describe('DB Connection', () => {
         });
         it('Should add and update id map', async () => {
 
-            await idMaps.addExperiment(config.experimentId);
             await idMaps.addIDMapping(config.experimentId, testChatId, testPartId);
 
             let idMap = await idMaps.getExperiment(config.experimentId);
@@ -1125,9 +1124,9 @@ describe('Severing DB connection', () => {
         expect(experiment).to.be.null;
     });
     it('Should remove idMap', async () => {
-        await idMaps.remove(config.experimentId);
+        await idMaps.removeAllForExperiment(config.experimentId);
         let experiment = await idMaps.getExperiment(config.experimentId);
-        expect(experiment).to.be.null;
+        expect(experiment.IDMappings.length).to.equal(0);
     });
 
     it('Should close connection', async () => {

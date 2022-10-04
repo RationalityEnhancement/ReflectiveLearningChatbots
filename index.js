@@ -971,18 +971,20 @@ bot.start(async ctx => {
     } 
   } else {
       // Recount number of participants assigned to each condition
-      let allParticipants = await participants.getAll();
-      let condCounts = Array(experiment.currentlyAssignedToCondition.length).fill(0);
-      for(let i = 0; i < allParticipants.length; i++){
-          let curExperiment = allParticipants[i].experimentId;
-          let curCondIdx = allParticipants[i].conditionIdx;
-          if(typeof curCondIdx !== "undefined" && curExperiment === config.experimentId){
-              condCounts[curCondIdx] += 1;
-          }
-      }
-      if(!lodash.isEqual(condCounts, experiment.currentlyAssignedToCondition)){
-          await experiments.updateField(config.experimentId, "currentlyAssignedToCondition",condCounts);
-      }
+      participants.getByExperimentId(config.experimentId)
+          .then(allParticipants => {
+              let condCounts = Array(experiment.currentlyAssignedToCondition.length).fill(0);
+              for(let i = 0; i < allParticipants.length; i++){
+                  let curExperiment = allParticipants[i].experimentId;
+                  let curCondIdx = allParticipants[i].conditionIdx;
+                  if(typeof curCondIdx !== "undefined" && curExperiment === config.experimentId){
+                      condCounts[curCondIdx] += 1;
+                  }
+              }
+              if(!lodash.isEqual(condCounts, experiment.currentlyAssignedToCondition)){
+                  return experiments.updateField(config.experimentId, "currentlyAssignedToCondition",condCounts);
+              }
+          })
   }
 
     // Check if participant is already present in the ID Mapping system

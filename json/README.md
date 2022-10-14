@@ -17,6 +17,7 @@ Sections 4 onwards contain detailed documentation of each part of the experiment
     <a href="#ExptInfo">Experiment Information</a>
     <ol>
       <li> <a href="#NandL">Name and Languages</a> </li>
+      <li> <a href="#Instructions">Instructions</a> </li>
       <li> <a href="#Debug">Debug Flags</a> </li>
       <li> <a href="#Conds">Conditions</a> </li>
       <li> <a href="#Stages">Experiment Stages</a> </li>
@@ -249,8 +250,7 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
-  "msPerCharacterDelay" : 5,
-  "instructions" : {...},
+  "msPerCharacterDelay" : 5
   ...
 }
 ```

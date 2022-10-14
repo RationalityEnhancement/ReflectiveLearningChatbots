@@ -295,6 +295,7 @@ These are all fields at the first level of the experiment JSON object.
   * `"pid"` - Assign new participant to a condition based on participant ID (see below)
   * `"balanced"` - Assign new participant to the condition that would best help maintain the relative group sizes in `conditionAssignments`, based on how many participants are already assigned to all conditions. First participant is assigned randomly.
   * `"random"` - Assign new participant to a random condition
+* `conditionMapping` - Object containing mapping between PID and the index of the condition to which participants with that PID should be assigned to. (See below)
   
 Continuation of the beginning of the experiment JSON file, adding two conditions of equal sizes:
 ```
@@ -314,20 +315,24 @@ In json/config.json
   },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {
+    "1234" : 0,
+    "4321" : 1
+  }
   ...
 }
 ```
   
 #### Assigning to Condition By Participant ID
 
-If the `assignmentScheme` is set to be `"pid"`, then the software uses the information in the file `json/PIDCondMap.json`. 
+If the `assignmentScheme` is set to be `"pid"`, then the software uses the information in the property `conditionMapping`, which is an object with only one level. 
 
-This JSON file is itself an object with only one level. The properties are the participant ID of the participant (string, stored to the parameter `PID`), and the value is the _index_ of the condition the participant with that PID is to be assigned to. The _index_ is a number corresponding to the position of the condition in the list `experimentConditions`, with `0` being the first.
+The properties of the `conditionMapping` object are the participant ID of the participant (string, stored to the parameter `PID`), and the value is the **index** of the condition the participant with that PID is to be assigned to. The **index** is a number corresponding to the position of the condition in the list `experimentConditions`, with `0` being the first.
 
-Note that this requires you to obtain the participant ID from the participant through chat interactions and store it to the participant parameter `PID` using the `"saveAnswerTo"` action. Details about how to do this will be explained in the coming sections.
+Note that this requires you to obtain the participant ID from the participant through chat interactions and store it to the participant parameter `PID` using the `"saveAnswerTo"` action. Details about how to do this will be explained in the coming sections (see [Setup Questions](#span-idsetup-setup-questions-and-starting-the-experimentspan)).
 
-The following is an example of `json/PIDCondMap.json`. In this example, `experimentConditions` is `["Experimental","Control"]`. Participant with `PID = 1234` will be assigned to condition `Experimental`, and `4321` will be assigned to `Control`.
+The following is an example of `conditionMapping`. In this example, `experimentConditions` is `["Experimental","Control"]`. Participant with `PID` of value `"1234"` will be assigned to condition `Experimental`, since that has the index `0` in the list of conditions, and `4321` will be assigned to `Control`, since that has the index `1` in the list of conditions.
 
 ```
 {
@@ -344,9 +349,9 @@ In this beginning section of the experimenter configuration file, only the names
 
 **The first stage must be started manually** at the appropriate time after all of the stage-independent setup questions are complete, by using the action `"startStage"` (see section <a href="#Actions">Actions</a>)
 
-Once the first stage has begun, the stage day will automatically increment by 1 at 21:00 **only on every evening that the stage is defined to be running**. If the number of days of the current stage exceeds the specified number of days for that stage, the next stage is **automatically** started. If there is no next stage, the experiment is automatically ended.
+Once the first stage has begun, the stage day will automatically increment by 1 between 04:00 and 05:00 **only on every morning that the stage is defined to be running**. If the number of days of the current stage exceeds the specified number of days for that stage, the next stage is **automatically** started. If there is no next stage, the experiment is automatically ended.
 
-It is possible to have a stage of indefinite length. However, in this case, it is up to the experimenter to **manually** ensure that the next stage begins under the right conditions, by using the action `"startStage"` whenever required (for example, after a certain question is answered).
+It is possible to have a stage of indefinite length. However, in this case, it is up to the experimenter to **manually** ensure that the next stage begins under the right conditions, by using the action `"startStage"` (see [actions](#span-idactions-actions-span))whenever required (for example, after a certain question is answered).
 
 The `experimentStages` object must have the keys of **ALL** of the possible experiment conditions, which means stages have to be specified individually for each condition. The value of each of these keys will be a list of individual stage objects. A stage object has the following fields:
 
@@ -384,6 +389,10 @@ In experimentStages of json/config.json
   ],
   "Condition2" : [
     {
+      "name" : "Intermediate",
+      "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    }
+    {
       "name" : "Test",
       "lengthDays" : 2
       "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
@@ -405,7 +414,8 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {
     "Condition1" : [{ "name" : "Pre-Test" ...}, { "name" : "Test" ...}, { "name" : "Post-Test" ...}],
     "Condition2" : [{ "name" : "Test" ...}]
@@ -474,7 +484,8 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {...},
   "mandatoryParameters" : {
     "language" : "string",
@@ -549,10 +560,11 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {...},
   "mandatoryParameters" : {...},
-  "customParameters" : {...}
+  "customParameters" : {...},
   "questionCategories" : {
     "setupQuestions" : [...]
   }
@@ -640,6 +652,7 @@ In conditionQuestions of json/config.json
   },
   "Condition2" : {
     "questionCategories" : {
+      "intermediate" : [...],
       "morningQs" : [...]
     }
   }
@@ -661,11 +674,12 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {...},
   "mandatoryParameters" : {...},
-  "customParameters" : {...}
-  "questionCategories" : {...}
+  "customParameters" : {...},
+  "questionCategories" : {...},
   "conditionQuestions" : {
     "Condition1" : {
       "questionCategories" : {...}
@@ -1102,18 +1116,17 @@ So we finally come to the topic that has been teased a few times before - what i
 
 Each action has an action type, `aType`, and zero or more string arguments `args` that are required for a particular action. Together, these two fields form the 'action object', representing the execution of a single action. After seeing, in the following table, the descriptions of each action and their arguments, we will pick appropriate actions we might want to perform after our example question.
 
-| aType               | description                                                                                          | arg 1                    | arg 1 type                | arg 2       | arg 2 type                                | example action object                                                 | notes                                                                                        |
-|---------------------|------------------------------------------------------------------------------------------------------|--------------------------|---------------------------|-------------|-------------------------------------------|-----------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| `assignToCondition` | Assigns user to a particular condition based on the `assignmentScheme`                               | none                     | none                      | none        | none                                      | `{ "aType" : "assignToCondition" }`                                   |                                                                                              |
-| `scheduleQuestions` | Schedules all the questions present in the `scheduledQuestions` field of the current condition       | none                     | none                      | none        | none                                      | `{ "aType" : "scheduleQuestions" }`                                   |                                                                                              |
-| `startStage`        | Starts a certain experiment stage at day 1, ending the previous stage if any was running             | name of valid stage      | string                    | none        | none                                      | `{ "aType" : "startStage", args : ["Pre-Test"] }`                     |                                                                                              |
-| `incrementStageDay` | Manually increment the current day of a stage by 1  | name of valid stage      | string                    | none        | none                                      | `{ "aType" : "incrementStageDay", args : ["Test"] }`                  | incrementing of stage day occurs automatically on a daily basis already                      | 
-| `endExperiment`     | Manually causes the experiment to end | none                     | none                      | none        | none                                      | `{ "aType" : "incrementStageDay" }`                                   | ending experiment occurs automatically after the end of last stage (if it has finite length) |
-| `saveAnswerTo`      | Save the user's answer to the current question to a certain variable (parameter)                     | valid variable name      | string, strArr, or number | none        | none                                      | `{ "aType" : "saveAnswerTo", args : ["numGoalsSet"] }`                | save to number only when `qType` is `"number"`                                               |
-| `addAnswerTo`       | Add the user's current answer to the end of a certain array variable (parameter)                     | valid variable name | strArr or numArr          | none        | none                                      | `{ "aType" : "addAnswerTo", args : ["goalsSetToday"] }`               | add to number array only when `qType` is `"number"`                                          |
-| `setBooleanVar`     | Set the value of a particular boolean variable to either true or false                               | valid variable name | boolean                   | new value   | <a href="#Constants">boolean constant</a> | `{ "aType" : "setBooleanVar", args : ["wantsToReflect", "$B{true}"] }` |                                                                                              |
-| `addValueTo`        | Add a number value to a number variable                                                              | valid variable name | number                    | added value | <a href="#Constants">number constant</a>  | `{ "aType" : "addValueTo", args : ["numGoalsSet", "$N{2}"] }`         |                                                                                              |
-| `clearVar`          | Clears a certain variable to default value (see <a href="#Parameters">Parameters</a>)                | valid variable name | any parameter type        | none         | none                                      | `{ "aType" : "clearVar", args : ["goalsSetToday"] }`         |                                                                                              |
+| aType               | description                                                                                          | arg 1                    | arg 1 type                | arg 2       | arg 2 type                                | example action object                                                 | notes                                                                                           |
+|---------------------|------------------------------------------------------------------------------------------------------|--------------------------|---------------------------|-------------|-------------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| `assignToCondition` | Assigns user to a particular condition based on the `assignmentScheme`                               | none                     | none                      | none        | none                                      | `{ "aType" : "assignToCondition" }`                                   |                                                                                                 |
+| `startStage`        | Starts a certain experiment stage at day 1, ending the previous stage if any was running             | name of valid stage      | string                    | none        | none                                      | `{ "aType" : "startStage", args : ["Pre-Test"] }`                     | If the experiment has conditions, execute only when user is **already assigned to a condition** |
+| `incrementStageDay` | Manually increment the current day of a stage by 1  | name of valid stage      | string                    | none        | none                                      | `{ "aType" : "incrementStageDay", args : ["Test"] }`                  | incrementing of stage day occurs automatically on a daily basis already                         | 
+| `endExperiment`     | Manually causes the experiment to end | none                     | none                      | none        | none                                      | `{ "aType" : "incrementStageDay" }`                                   | ending experiment occurs automatically after the end of last stage (if it has finite length)    |
+| `saveAnswerTo`      | Save the user's answer to the current question to a certain variable (parameter)                     | valid variable name      | string, strArr, or number | none        | none                                      | `{ "aType" : "saveAnswerTo", args : ["numGoalsSet"] }`                | save to number only when `qType` is `"number"`                                                  |
+| `addAnswerTo`       | Add the user's current answer to the end of a certain array variable (parameter)                     | valid variable name | strArr or numArr          | none        | none                                      | `{ "aType" : "addAnswerTo", args : ["goalsSetToday"] }`               | add to number array only when `qType` is `"number"`                                             |
+| `setBooleanVar`     | Set the value of a particular boolean variable to either true or false                               | valid variable name | boolean                   | new value   | <a href="#Constants">boolean constant</a> | `{ "aType" : "setBooleanVar", args : ["wantsToReflect", "$B{true}"] }` |                                                                                                 |
+| `addValueTo`        | Add a number value to a number variable                                                              | valid variable name | number                    | added value | <a href="#Constants">number constant</a>  | `{ "aType" : "addValueTo", args : ["numGoalsSet", "$N{2}"] }`         |                                                                                                 |
+| `clearVar`          | Clears a certain variable to default value (see <a href="#Parameters">Parameters</a>)                | valid variable name | any parameter type        | none         | none                                      | `{ "aType" : "clearVar", args : ["goalsSetToday"] }`         |                                                                                                 |
 
 
 As you may see in the examples already, building an action object requires a field `aType` and a field `args`. If there are no required arguments for a given `aType`, the `args` field can be omitted from the action object. If there are arguments, then `args` must be a **list of strings**, even if there is only one argument.
@@ -1385,11 +1398,12 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {...},
   "mandatoryParameters" : {...},
-  "customParameters" : {...}
-  "questionCategories" : {...}
+  "customParameters" : {...},
+  "questionCategories" : {...},
   "conditionQuestions" : {
     "Condition1" : {
       "questionCategories" : {
@@ -1456,11 +1470,12 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {...},
   "mandatoryParameters" : {...},
-  "customParameters" : {...}
-  "questionCategories" : {...}
+  "customParameters" : {...},
+  "questionCategories" : {...},
   "conditionQuestions" : {
     "Condition1" : {
       "questionCategories" : {
@@ -1472,7 +1487,8 @@ In json/config.json
         ],
         "testEveningQs" : [...],
         "postTestMorningQs" : [...],
-        "postTestEveningQs" : [...]
+        "postTestEveningQs" : [...],
+        "surveyQs" : [...]
       }
     },
     "Condition2" : {
@@ -1731,17 +1747,19 @@ Now, you know everything you need to start conditionally defining the chatbot's 
 
 ## <span id="Scheduled"> Scheduling Questions </span>
 
-After you have defined all of your questions and the flow of conversation of your chatbot, you would probably want to schedule certain questions to appear at a certain time. Although scheduled questions are optional, users can interact with your chatbot only if they are asked a question. So if no questions are scheduled, then no interactions happen!
+After you have defined all of your questions and the flow of conversation of your chatbot, you may want to schedule certain questions to appear at a certain time. 
 
-The field to define this, `scheduledQuestions`, is a *list* of schedule objects. The field `scheduledQuestions` occurs at the same level of `questionCategories`, wherever that appears. This also means for every set of question categories (i.e., for every condition), you would have a list of `scheduledQuestions`. 
+The field to define this, `scheduledQuestions`, is a *list* of schedule objects. The field `scheduledQuestions` occurs at the same level of `questionCategories`, wherever that appears. This also means for every set of question categories (i.e., for every condition), you would have only one list of `scheduledQuestions`. 
 
-In order for the questions in these lists to actually be scheduled, you **must** execute the <a href="#Actions">action</a> `scheduleQuestions`. Since the scheduling of the questions is dependent on the condition and the timezone of the participant, it is best to execute this action after both of these have been determined.
+For each scheduled question, you can specify a list of at least one [experiment stage](#span-idstages-experiment-stages-span) during which this scheduled question should appear. If you specify this, the given question will appear regularly only when the experiment is in one of the specified stages, and will not appear in any other stage. 
 
-In the remainder of the section, we will create a list of schedule objects for each condition, add them to our experimenter configuration file. In the next section, we will then ensure that these questions get scheduled by invoking the appropriate actions. 
+In the remainder of the section, we will create a list of schedule objects for each condition, add them to our experimenter configuration file. 
 
 First, we will look at a single schedule object and consider its components:
 * `qId` - mandatory, string with the question category and question ID of the question to be scheduled
-* `atTime` - mandatory, string with the time in format `HH:MM` at which the scheduled question should occur
+* `atTime` - mandatory, string with the time in format `HH:MM` at which the scheduled question should occur, with `HH` being in the range `0-23` and `MM` in the range `0-59`.
+  * It is also possible to use the value of a parameter using the normal access token - `${parameterName}`. However, it is important to ensure that this parameter contains a string in the format `"HH:MM"`
+  * Parameter values can be used in the case of asking the user when they want to receive questions.
 * `onDays` - mandatory, the days on which the scheduled questions should occur at the above-mentioned time.
   * must be an array of strings, containing any combination of the strings `["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]` in any order.
   * the case and spelling of the abbreviated days is important!
@@ -1750,8 +1768,11 @@ First, we will look at a single schedule object and consider its components:
   * **Note: scheduling different questions for different experiment stages is currently done through this field!**
   * If this field is not specified, the question will be scheduled for all days in which any experimental stage is running.
     * This means that no scheduled questions will appear if no experimental stage is running!
+* `stages` - optional (but recommended), a list of strings, each string being the name of an [experiment stage](#span-idstages-experiment-stages-span) in which the question should be scheduled
+  * If this field is an empty list `[]`, the question will not appear in any stage. Use this to temporary disable the scheduling of a question without having to delete it.
+  * If this field is not mentioned, the question will be scheduled to appear in **every** stage in the experiment.
 
-For the condition `Condition1`, we will create a schedule object for 9 am on the weekdays only during the experiment stage `"Test"`.
+For the condition `Condition1`, we will create a schedule object for 9 am on the weekdays only during the experiment stage `"Test"`. Additionally, we can add the condition that the parameter `surveyComplete` has to be equal to `true`.
 
 ```
 Example schedule object 1
@@ -1760,11 +1781,25 @@ Example schedule object 1
   "qId" : "testMorningQs.selectFirstQuestion",
   "atTime" : "09:00",
   "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
-  "if" : "${STAGE_NAME} == $S{Test}"
+  "if" : "${surveyComplete} == $B{true}",
+  "stages" : ["Test"]
 }
 ```
 
-Now, we will create a reflection question to occur in the evening, if the user indicated that they want to reflect on their goals in the evening (assume all `qId`s already exist). Both schedule objects will be combined into a list that we will assign to `scheduledQuestions` of `Condition1`.
+Now, we will create a question to occur in the evening, prompting the user to reflect on their emotions if they indicated that they want to do so in an earlier question (assume all `qId`s already exist). We want this to occur during **all stages** of the experiment, so the `stages` property will be left out. Furthermore, instead of fixing a time at which this will appear, we will use a parameter value containing a time that the user selects. This parameter will be called `eveningTime`, and we will set this value in the [setup phase](#span-idsetup-setup-questions-and-starting-the-experimentspan).
+
+```
+Example schedule object 2
+
+{
+  "qId" : "eveningQs.emotionsReflection",
+  "atTime" : "${eveningTime}",
+  "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+  "if" : "${wantsToReflect} == $B{true}"
+}
+```
+
+Finally, we will create a question that is scheduled to present a survey only in the stages `Pre-Test` and `Post-Test`. After we create this, we will take all schedule objects and combine them into a list, which we will assign to `scheduledQuestions` of `Condition1`.
 
 ```
 In configQuestions > Condition1 > scheduledQuestions of json/config.json
@@ -1774,13 +1809,20 @@ In configQuestions > Condition1 > scheduledQuestions of json/config.json
     "qId" : "testMorningQs.selectFirstQuestion",
     "atTime" : "09:00",
     "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
-    "if" : "${STAGE_NAME} == $S{Test}"
+    "if" : "${surveyComplete} == $B{true}",
+    "stages" : ["Test"]
   },
   {
-    "qId" : "testEveningQs.reflection",
-    "atTime" : "18:00",
+    "qId" : "eveningQs.emotionsReflection",
+    "atTime" : "${eveningTime}",
     "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
-    "if" : "(${STAGE_NAME} == $S{Test}) AND (${wantsToReflect} == $B{true})"
+    "if" : "${wantsToReflect} == $B{true}"
+  },
+  {
+    "qId" : "surveyQs.survey",
+    "atTime" : "09:00",
+    "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+    "stages" : ["Pre-Test", "Post-Test"]
   }
 ]
   
@@ -1799,17 +1841,19 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {...},
   "mandatoryParameters" : {...},
-  "customParameters" : {...}
-  "questionCategories" : {...}
+  "customParameters" : {...},
+  "questionCategories" : {...},
   "conditionQuestions" : {
     "Condition1" : {
       "questionCategories" : {...},
       "scheduledQuestions" : [
         { "qId" : "testMorningQs.selectFirstQuestion" ... },
-        { "qId" : "testEveningQs.reflection" ... }
+        { "qId" : "eveningQs.emotionsReflection" ... },
+        { "qId" : "surveyQs.survey" ... }
       ]
     },
     "Condition2" : {
@@ -1820,7 +1864,7 @@ In json/config.json
 }
 ```
 
-Similarly, we may want to create a list containing a single scheduled question for `Condition2`. Since `Condition2` has only one experimental stage, we can leave out the field if this time, and the question will be scheduled to occur on every day that the stage is running.
+Similarly, we may want to create a list containing a single scheduled question for `Condition2`. Since `Condition2` has only one experimental stage, we can leave out the field `stages` this time, and the question will be scheduled to occur on every day that the stage is running.
  
 This time, we will skip a step and directly added it to the configuration file under `Condition2` of `conditionQuestions`.
 
@@ -1835,11 +1879,12 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {...},
   "mandatoryParameters" : {...},
-  "customParameters" : {...}
-  "questionCategories" : {...}
+  "customParameters" : {...},
+  "questionCategories" : {...},
   "conditionQuestions" : {
     "Condition1" : {
       "questionCategories" : {...},
@@ -1860,9 +1905,13 @@ In json/config.json
 }
 ```
 
-We are done with defining some questions to be scheduled. The section <a href="#Setup">Setup Questions</a> will then ensure that some important parameters are set correctly and that these questions are actually scheduled to appear once the parameters are set.
+We are done with defining some questions to be scheduled. 
+
+So how do we now ensure that these questions will appear? When the experiment stage is started using the [action 'startStage'](#span-idactions-actions-span), all of the questions that are defined to appear for that schedule will be appropriately scheduled.
 
 Feel free to skip over the following subsection on conditionless scheduled questions if your experiment has conditions, as it may not pertain to you.
+
+The following section, <a href="#Setup">Setup Questions</a>, will then ensure that you set some important parameters are set correctly so that your experiment runs smoothly.
 
 ### Detour: Conditionless Scheduled Questions
 
@@ -1896,7 +1945,7 @@ In this case too, the `scheduledQuestions` list is constructed in the same way a
 
 After learning all the components of question objects, we can now come back to looking at our setup questions in detail. While the experimenter has more freedom with defining the questions in the rest of the experiment, that is not quite the case with `setupQuestions`. Setup questions ensure that the correct information is collected from the participant to ensure smooth functioning of the chatbot, such as user language, participant ID, and timezone.
 
-Firstly, it is important that the default `questionCategories` object exists and has a question category called exactly `setupQuestions`. Secondly, it is essential to obtain the minimum of language and timezone information (and PID if you want to assign to condition based on that) from the participant. Thirdly, it is essential that this information is stored in the appropriate format in the appropriately named variables. Finally, appropriate actions are required to be taken, such as assigning to condition as well as scheduling questions.
+Firstly, remember that the setup occurs before the participant is assigned to any condition. Therefore, it is important that the default `questionCategories` object exists and has a question category called exactly `setupQuestions`, since any questions in the `conditionQuestions` are not yet accessible at the time of setup. Secondly, it is essential to obtain the minimum of language and timezone information (and PID if you want to assign to condition based on that) from the participant. Thirdly, it is essential that this information is stored in the appropriate format in the appropriately named variables. Finally, appropriate actions are required to be taken, such as assigning to condition and starting the first stage.
 
 For these reasons, it is better to not make significant changes to the setup questions (except for adding/removing text and reply messages, which can be done freely.) If you would like to collect more information from the user before assigning to a condition, you may add some questions, but ensure the essential components still remain.
 
@@ -2030,10 +2079,9 @@ In questionCategories > setupQuestions of json/config.json
 
 Now, we come to the last essential setup question. Here, we want to ask the user for their timezone, specifically in the format specified under "TZ database name" in this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). Therefore, when providing options to the user to select from, make sure that your options match the spelling/case of these timezones exactly (with no spaces before, in between, or after the timezone name).
 
-Since this is our last setup question, we will also assign the participant to their condition and schedule the questions for that particular condition. If you have more setup questions that are independent of condition and that you would like to ask before assigning a participant to a condition, then perform these two actions after the last setup question has been answered.
+Since the timezone is the last information we need from the participant for setup, we will also assign the participant to their condition after receiving this information. If you have more setup questions that are independent of condition and that you would like to ask before assigning a participant to a condition, then perform this action, `assignToCondition`, only after the last setup question has been answered.
 
 For the following question, we will use some fairly common timezones as options, but this list can and should be expanded.
-
 
 ```
 In third question of questionCategories > setupQuestions of json/config.json
@@ -2056,60 +2104,111 @@ In third question of questionCategories > setupQuestions of json/config.json
     },
     {
       "aType" : "assignToCondition"
-    },
-    {
-      "aType" : "scheduleQuestions"
     }
-  ]
+  ],
+  "nextQuestion" : "setupQuestions.eveningTime"
 }
 ```
-Notes about this question:
-* It is important that you invoke `assignToCondition` before `scheduleQuestions`, since the latter depends on which condition the user is in.
 
-Now, we will add this question as well to the setup questions, and then add the setup questions back into the experimenter configuration.
+Now, we can add this as well to the list of setup questions
 
 ```
-In json/config.json
+In questionCategories > setupQuestions of json/config.json
+[
+  { "qId" : "language", ... },
+  { "qId" : "PID", ... },
+  {
+    "qId" : "timezone",
+    "text" : {
+      "English" : "Please select your timezone",
+      "Deutsch" : "Bitte wähle deine Zeitzone aus"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["Europe/Berlin", "US/Eastern","US/Pacific"],
+      "Deutsch" : ["Europe/Berlin", "US/Eastern","US/Pacific"]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["timezone"]
+      },
+      {
+        "aType" : "assignToCondition"
+      }
+    ],
+    "nextQuestion" : "setupQuestions.startFirstStage"
+  }
+]
+```
+
+### User-Defined Times
+
+As mentioned in the section on [scheduled questions](#span-idscheduled-scheduling-questions-span), we can schedule questions at times that users specify. Here, we will show an example of asking a user for their preferred time, and saving it to the variable `eveningTime` for use during scheduling.
+
+Since it is important for the `atTime` property of a scheduled question to strictly have the format `HH:MM`, we will ask the users to select from options that are already in this format, so that we don't rely on the user to enter their preferred time in the correct format.
+
+```
+In fourth question of questionCategories > setupQuestions of json/config.json
 
 {
-  "experimentName" : "ReflectiveLearning",
-  "experimentId" : "RL-Exp-1",
-  "languages" : [...],
-  "defaultLanguage" : "English",
-  "debug" : { ... },
-  "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
-  "experimentStages" : {...},
-  "mandatoryParameters" : {...},
-  "customParameters" : {...}
-  "questionCategories" : {
-    "setupQuestions" : [
-      { "qId" : "language", "start" : true, ... },
-      { "qId" : "PID", ... },
-      { "qId" : "timezone", ... }
-    ]
-  }
-  "conditionQuestions" : {...}
-  ...
+  "qId" : "eveningTime",
+  "qType" : "singleChoice",
+  "text" : {
+    "English" : "At what time in the evenings would you like to receive questions?",
+    "Deutsch" : "Zu welcher Zeit abends möchten Sie Fragen erhalten?"
+  },
+  "options" : {
+    "English" : ["17:00", "18:00", "19:00"],
+    "Deutsch" : ["17:00", "18:00", "19:00"]
+  },
+  "nextActions" : [
+    {
+      "aType" : "saveAnswerTo",
+      "args" : ["eveningTime"]
+    }
+  ]
+  "nextQuestion" : "setupQuestions.startFirstStage"
 }
 ```
 
-Finally, the participant has been set up and assigned to a condition. The questions that they are to expect are also scheduled for them. 
+As before, we can add this question to the list of setup questions:
 
-However, as you may remember from before, scheduled questions only appear when a stage is running. But scheduling the questions does not guarantee that a stage has begun. Why is that? How do I start the first stage? The next subsection will answer these questions.
+```
+In questionCategories > setupQuestions of json/config.json
+[
+  { "qId" : "language", ... },
+  { "qId" : "PID", ... },
+  { "qId" : "timezone" ... },
+  {
+    "qId" : "eveningTime",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "At what time in the evenings would you like to receive questions?",
+      "Deutsch" : "Zu welcher Zeit abends möchten Sie Fragen erhalten?"
+    },
+    "options" : {
+      "English" : ["17:00", "18:00", "19:00"],
+      "Deutsch" : ["17:00", "18:00", "19:00"]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["eveningTime"]
+      }
+    ]
+    "nextQuestion" : "setupQuestions.startFirstStage"
+  }
+]
+```
+
+We are very nearly done with the setup and starting the experiment. The only thing that is remaining is to start the first stage of the experiment, so that the experiment is successfully running. This will be covered in the following subsection.
 
 ### Starting the First Stage
 
-The first stage is not necessarily started automatically after the setup is complete. This is because it may not be the case that the first day of the stage should occur on the same day that the setup questions were asked. For example, if the first question of a stage is to occur in the morning, but the participant started the interaction with the bot and finished the setup in the afternoon, we wouldn't want Day 1 of the first stage to start until the next day. Moreover, the name of the first stage may vary depending on the condition. 
+The first stage has to be started manually as the very last step of the setup, particularly only **after the user has been assigned to a condition**. If you do not start a stage after setup, the experiment **will not run** and the chatbot will not interact with the user as intended. Therefore, this is **an essential step of the setup process**.
 
-On the other hand, if the first stage of both the conditions have the same name, and the question of the first stage is not time-sensitive, then we can start the first stage and ask the first question as soon as the setup questions are complete.
-
-With different possibilities, it is then left up to the experimenter to decide when the first stage should start. This involves answering a couple of questions.
-
-Firstly, you might ask, how do you start a stage?
-
-All you have to do is have the following action executed after a question has been answered (or after a `dummy` type question).
+Firstly, you might ask, how do you start a stage? All you have to do is execute the following action. 
 
 ```
 {
@@ -2118,23 +2217,71 @@ All you have to do is have the following action executed after a question has be
 }
 ```
 
-Secondly, with all the different possibilities, how is it recommended to start the first stage then?
-
-* If you want to start the first stage on the day AFTER setting up, before the first question of that stage is asked:
-  * Conditionally schedule a dummy question for the morning, which executes the necessary `"startStage"` action, with the condition being that no stage is running yet (`"${STAGE_NAME} == $S{}"`).
-* If you want to start the first stage on the same day as the setup questions
-  * Create a dummy question within `setupQuestions`, and make that the `nextQuestion` of the last setup question. Ensure to set field `selectQFirst` of the last setup question object to `true`, so that this question can be read from the default categories before the participant is assigned to the condition.
-  * Give the dummy question a `cNextActions` field
-  * Create rules conditioned on the possible conditions participant could be assigned to (`"${CONDITION} == $S{<condition>}"`)
-  * Execute the `startStage` action for the first stage of that condition.
-  * You can then already ask the first question of the stage by using `cNextQuestions` in the same manner and selecting the first question of the first stage appropriate to the assigned condition.  
-  
-In our example configuration file, we would want the first day of the first stage to start on the next day, regardless of the condition. So we'll follow the first scenario and create a dummy question called `startStage` and save it under category `"preTestQs"`. This will then be scheduled in the morning to occur if no stage has been started.
-
-We'll first create the question...
+In our example, we will do this using a `dummy` type question called `startFirstStage` in the category `setupQuestions`, which will be invoked after the last setup information has been collected.:
 
 ```
-First question of conditionQuestions > Condition1 > questionCategories > preTestQs of json/config.json
+Example start stage question
+
+{
+  "qId" : "startFirstStage",
+  "qType" : "dummy",
+  "nextActions" : [
+    {
+      "aType" : "startStage",
+      "args" : ["FirstStage"]
+    }
+  ]
+}
+  
+```
+
+However, such a question would only work in the case that _all of the conditions_ have their first stage with the _same name_: `FirstStage`. 
+
+Since our conditions have different first stages, we will have to use the field `cNextActions` in this question instead of `nextActions`, to select the stage to be started based on the condition of the participant. In `Condition1`, we also want the first question of the experiment to be asked right after finishing setup, so we will add that in the `cNextQuestions` also.
+
+```
+In fifth question of questionCategories > setupQuestions of json/config.json
+
+{
+  "qId" : "startFirstStage",
+  "qType" : "dummy",
+  "cNextActions" : [
+    {
+      "if" : "${CONDITION} == $S{Condition1}",
+      "then" : [
+        {
+          "aType" : "startStage",
+          "args" : ["Pre-Test"]
+        }
+      ], 
+      "else" : [
+        {
+          "aType" : "startStage",
+          "args" : ["Intermediate"]
+        }
+      ]
+    }
+  ]
+  "cNextQuestions" : [
+    {
+      "if" : "${CONDITION} == $S{Condition1}",
+      "then" : "surveyQs.firstSurvey"
+    }
+  ]
+}
+  
+```
+
+With this we have defined the stage `Pre-Test` to start after setting up in Condition1, and `Intermediate` in Condition2. Furthermore, the question `surveyQs.firstSurvey` will be presented to participants in `Condition1` immediately after the setup is complete.
+
+Here is another possible scenario that can occur, that we have in `Condition2`: you don't want to start the first stage immediately after setting up, and you instead want to start it on the following day. In Condition2, the stage `Test` is the actual first stage. However, we want day 1 of the `Test` stage to be on the day **after** setup was complete. To achieve this, we don't want to start the stage `Test` immediately after setup is complete. But we are required to start some stage after setup for the experiment to be active. What do we do then?
+
+To get around this issue, we have defined a stage in between setup and `Test`, called `Intermediate`. This stage will be defined to run until the next morning, and the stage `Test` will be started on the next morning. For this, we will have to schedule a question during the stage `Intermediate`, which appears in the morning, and simply starts the new stage `Test` on the first morning of the `Intermediate` stage. This is done by adding two new objects to the experimenter configuration file as follows:
+
+We'll first create the `dummy` type question in the `intermediate` question category of `Condition2`. This question does nothing else but start a new stage, when it is invoked...
+
+```
+First question of conditionQuestions > Condition2 > questionCategories > intermediate of json/config.json
 
 {
   "qId" : "startStage",
@@ -2142,27 +2289,27 @@ First question of conditionQuestions > Condition1 > questionCategories > preTest
   "nextActions" : [
     {
       "aType" : "startStage",
-      "args" : ["Pre-Test"]
+      "args" : ["Test"]
     }
   ]
 }
 ```
 
-... then we'll create the schedule object ...
+... then we'll create the schedule object so that the above question is invoked in the morning, when the stage is `Intermediate` ...
 
 ```
 New schedule object for conditionQuestions > Condition1 > scheduledQuestions of json/config.json
 
 {
-  "qId" : "preTestQs.startStage",
+  "qId" : "intermediate.startStage",
   "atTime" : "06:00",
   "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
-  "if" : "${STAGE_NAME} == $S{}"
+  "stages" : ["Intermediate"]
 }
 
 ```
 
-... and then we'll add them both to the experimenter JSON object under `questionCategories` and `scheduledQuestions` respectively of `Condition1`!
+... and then we'll add them both to the experimenter JSON object under `questionCategories` and `scheduledQuestions` respectively of `Condition2`!
 
 ```
 In json/config.json
@@ -2175,40 +2322,71 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {...},
   "mandatoryParameters" : {...},
-  "customParameters" : {...}
-  "questionCategories" : {...}
+  "customParameters" : {...},
+  "questionCategories" : {...},
   "conditionQuestions" : {
     "Condition1" : {
-      "questionCategories" : {
-        "preTestQs" : [
-          { "qId" : "startStage" ... }
-        ],
-        "testMorningQs" : [...],
-        "testEveningQs" : [...],
-        "postTestMorningQs" : [...],
-        "postTestEveningQs" : [...]
-      },
-      "scheduledQuestions" : [
-        { "qId" : "preTestQs.startStage" ...}, 
-        { "qId" : "testMorningQs.selectFirstQuestion" ... },
-        { "qId" : "testEveningQs.reflection" ... }
-      ]
-    },
-    "Condition2" : {
       "questionCategories" : {...},
       "scheduledQuestions" : [...]
+    },
+    "Condition2" : {
+      "questionCategories" : {
+        "intermediate" : [
+          { "qId" : "startStage" ... }
+        ],
+        "morningQs" : [...]
+      },
+      "scheduledQuestions" : [
+        { "qId" : "intermediate.startStage" ...}
+      ]
     },
   }
   ...
 }
 ```
 
-The same can be repeated for `Condition2`, except with the first stage to start being `"Test"`.
+To summarize, we have started the first stage of the experiment differently for each condition:
+* In `Condition1`, we start the first stage `Pre-Test` immediately after setup, and the receives the first question (`surveyQs.firstSurvey`) right away.
+* In `Condition2`, we start the first stage `Test` on the day following the day of setup, by instead starting the stage `Intermediate` after setup, which simply serves as a buffer before the `Test` stage is started by a scheduled question on the morning of the following day.
+  * After setup, the user will not receive anything until the first scheduled question of the stage `Test` appears on the next day.
 
-There may be more scenarios related to when the stage should start and how to start it at that time. Hopefully every functionality that was described by now, particularly scheduled questions, dummy questions, and conditional next steps, will help you start your first stage at the appropriate time.
+Now that we are finally done starting our first stages in the appropriate way, we can add our question startFirstStage to the list `setupQuestions`, and then add this list to the experimenter configuration, under the question category `setupQuestions` of the **default** object `questionCategories`. We will do this in one step:
+
+```
+In json/config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentConditions" : ["Condition1", "Condition2"],
+  "conditionAssignments" : [1,1],
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
+  "experimentStages" : {...},
+  "mandatoryParameters" : {...},
+  "customParameters" : {...},
+  "questionCategories" : {
+    "setupQuestions" : [
+      { "qId" : "language", "start" : true, ... },
+      { "qId" : "PID", ... },
+      { "qId" : "timezone", ... },
+      { "qId" : "eveningTime", ... },
+      { "qId" : "startFirstStage", ... }
+    ]
+  },
+  "conditionQuestions" : {...}
+  ...
+}
+```
+
+And we are done with setup! Now you should be equipped with everything you need to collect basic information from the user, assign them to a condition, and then start the first stage of that condition so that the experiment can run.
 
 ## <span id="Phrases"> Mandatory Phrases </span>
 
@@ -2460,11 +2638,12 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
   "experimentStages" : {...},
   "mandatoryParameters" : {...},
-  "customParameters" : {...}
-  "questionCategories" : {...}
+  "customParameters" : {...},
+  "questionCategories" : {...},
   "conditionQuestions" : {
     "Condition1" : {
       questionCategories: {...},
@@ -2491,7 +2670,8 @@ In json/config.json
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
-  "assignmentScheme" : "balanced"
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : "$F{json/PIDCondMap.json}",
   "experimentStages" : "$F{json/experimentStages.json}",
   "mandatoryParameters" : {...},
   "customParameters" : "$F{json/parameters.json}",

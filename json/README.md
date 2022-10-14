@@ -52,6 +52,9 @@ Sections 4 onwards contain detailed documentation of each part of the experiment
           <li><a href="#CNextQ">Next Question</a></li>
         </ol>
       </li>
+      <li>
+        <a href="#Reminders">Reminders</a>
+      </li>
     </ol>
   </li>
   <li> 
@@ -234,6 +237,7 @@ The following are fields that exist at the first level of the experiment JSON ob
 * `experimentId` - String that uniquely identifies the current experiment
 * `languages` - List of strings containing all the languages the experiment is available in
 * `defaultLanguage` - String containing the default language
+* `msPerCharacterDelay` - Number of milliseconds the bot waits per character typed, in order to simulate typing.
 
 The following example shows the beginning of the experiment JSON file, titled `config.json`, stored in the directory `json`, which is located in the main directory of your project. If you want to copy the below object into your JSON file, copy only the object and not the text `"In json/config.json"`.
 
@@ -245,9 +249,37 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   ...
 }
 ```
+### <span id="Instructions"> Instructions </span>
+
+The `instructions` property will contain instructions that you would like to present to the user. Users can prompt these instructions to be sent to them at any time during the experiment by using the command `/help`.
+
+The `instructions` object contains a property for each language available for the experiment, with each language having a list of strings corresponding to the instruction text for that language.
+
+```
+In json/config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : ["English", "Deutsch"],
+  "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {
+    "English" : ["Welcome to the test experiment of the Reflective Learning Bot!", "These instructions are not useful."],
+    "Deutsch" : ["Nachricht 1", "Nachricht 2"]
+  }
+  ...
+}
+```
+
+When the user types the command `/help`, the bot simply sends these messages in response, based on the language that the user has selected. Each string in the list will be sent in a separate message (so, the above example will send two messages.)
+
+Note that the Telegram limit for length of a text is 4096 characters. If your instructions are longer than this, split them up into multiple messages.
 
 ### <span id="Debug"> Debug Flags </span>
 
@@ -257,6 +289,7 @@ This is an object of boolean properties that exists at the first level of the ex
 * `actionMessages` - Enables messages whenever an action has been completed (scheduling question, setting variable, etc.)
 * `enableNext` - Enables the `/next` command that allows the experimenter to skip to the next scheduled question without waiting
 * `messageDelay` - Enables message delay to simulate typing of the bot. Can be turned off so that experimenter doesn't have to wait.
+  * Length of delay can be adjusted by changing the parameter `msPerCharacterDelay` (see above)
 * `developer` - For the person writing code. Better to keep this at `false` if you are an experimenter
 
 
@@ -269,6 +302,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : {
     "experimenter" : false,
     "actionMessages" : false,
@@ -306,6 +341,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : {
     "experimenter" : false,
     "actionMessages" : false,
@@ -411,6 +448,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -438,6 +477,8 @@ In json/noCondsConfig.json
   "experimentId" : "RL-NoCond-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentStages" : [
     {
@@ -481,6 +522,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -557,6 +600,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -582,6 +627,8 @@ In json/noCondsConfig.json
   "experimentId" : "RL-NoCond-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentStages" : [...],
   "questionCategories" : {
@@ -671,6 +718,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -832,6 +881,12 @@ The following are mandatory parameters that must be added to the question object
 * `options` - specifies the available options as a list of strings for each language
   * value of this field must be an object with keys being available languages (just as with the field `text`), whose values are however the list of strings of the options translated in that language.
 
+The following are optional parameters that can be added to the question object:
+* `buttonLayoutCols` - Number of columns that the grid layout of the keyboard that displays the options should have.
+  * Must not be more than the number of options available.
+  * If the number of options is not evenly divisible by this number, the last row of the keyboard layout will have fewer columns (buttons) than this number
+  * If this option is not included, the default number of columns is 1. That is, options will appear in a single list from top to bottom.
+
 Example question that prompts selection of one of three options, depending on the language the user has selected.
 
 ```
@@ -861,6 +916,12 @@ The following are mandatory parameters that must be added to the question object
   * value of this field must be an object with keys being available languages (just as with the field `text`), whose values are however the list of strings of the options translated in that language.
   * the option to finish choosing is added automatically, so that need not be included in this list of options
 
+The following are optional parameters that can be added to the question object:
+* `buttonLayoutCols` - Number of columns that the grid layout of the keyboard that displays the options should have. 
+  * Must not be more than the number of options available.
+  * If the number of options is not evenly divisible by this number, the last row of the keyboard layout will have fewer columns (buttons) than this number
+  * If this option is not included, the default number of columns is 1. That is, options will appear in a single list from top to bottom.
+
 Example question that prompts selection of any number of three options, depending on the language the user has selected, along with a fourth option to finish choosing.
 
 ```
@@ -873,9 +934,12 @@ Example question object multiChoice
   "options" : {
     "English" : ["Option A", "Option B", "Option C"],
     "Deutsch" : ["Wahl A", "Wahl B", "Wahl C"]
-  }
+  },
+  "buttonLayoutCols": 3
 }
 ```
+
+With the addition of the property `buttonLayoutCols`, the keyboard prompted by the above question will have 3 options in a single row, as opposed to a single option in 3 rows, which is the default when this property is not set.
 
 #### Likert 5 - "likert5"
 
@@ -1395,6 +1459,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -1467,6 +1533,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -1498,6 +1566,46 @@ In json/config.json
   ...
 }
 ```
+
+### <span id="Reminders"> Reminders </span>
+
+For any question, it is possible to set a reminder for the user to answer the question, in case the user does not answer it within a certain period of time. The experimenter can set the number of reminders for a question, and the time in minutes between each subsequent reminder.
+
+This is done by adding to the question object the property `reminder`. The `reminder` object has two mandatory parameters:
+
+* `numRepeats` - the number of times a reminder should be sent as long as the current question has not been answered
+* `freqMins` - the number of minutes that should elapse between subsequent reminders
+
+Let us see an example question below:
+
+```
+Example question with reminder
+
+{
+  "qId" : "reminderExample",
+  "text" : {
+    "English" : "If you don't answer this question, we will remind you every 30 minutes. Do you understand?"
+    "Deutsch" : "Wenn Sie diese Frage nicht beantworten, erinnern wir Sie alle 30 Minuten. Haben Sie verstanden?"
+  },
+  "qType" : "singleChoice",
+  "options" : {
+    "English" : ["Yes", "No"],
+    "Deutsch" : ["Na sichi", "Nein"]
+  },
+  "reminder" : {
+    "numRepeats" : 4,
+    "freqMins" : 30
+  }
+}
+```
+
+The above question will prompt a reminder to be set as soon as the question has been asked. The first reminder will appear 30 minutes after the question has been asked, the second reminder 60 after minutes, and so on.
+
+In a series of reminders for a given question, the first reminder will be longer, and will contain the text as defined in the [phrases](#span-idphrases-mandatory-phrases-span) object as `"reminderTextLong"`. All subsequent reminders will display the text defined under `"reminderTextShort"`.
+
+If the question is repeated, the reminder(s) will be reset with reference to the time that the repeated question was asked.
+
+After the question is answered, reminders are cancelled, so that they do not appear anymore.
 
 ## <span id="Variables">Variables and Constants</span>
 
@@ -1838,6 +1946,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -1876,6 +1986,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -1929,6 +2041,8 @@ In json/noCondsConfig.json
   "experimentId" : "RL-NoCond-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentStages" : [...],
   "questionCategories" : {
@@ -2319,6 +2433,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -2364,6 +2480,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -2553,6 +2671,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -2635,6 +2755,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],
@@ -2667,6 +2789,8 @@ In json/config.json
   "experimentId" : "RL-Exp-1",
   "languages" : [...],
   "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
   "conditionAssignments" : [1,1],

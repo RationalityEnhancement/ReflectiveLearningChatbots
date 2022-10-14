@@ -356,7 +356,7 @@ class ScheduleHandler{
         if(config.debug.enableNext) {
             // Add temporally ordered scheduled operations to participant's debug queue:
             let scheduledOps = scheduledQuestions.concat(scheduledActions);
-            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, DevConfig.DEFAULT_STAGE_LENGTH_WEEKS);
             this.debugQueueAdjusted[uniqueId] = false;
         }
 
@@ -466,7 +466,7 @@ class ScheduleHandler{
         if(config.debug.enableNext) {
             // Add temporally ordered scheduled operations to participant's debug queue:
             let scheduledOps = scheduledQuestions.concat(scheduledActions);
-            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, DevConfig.DEFAULT_STAGE_LENGTH_WEEKS);
             this.debugQueueAdjusted[uniqueId] = false;
         }
 
@@ -684,7 +684,7 @@ class ScheduleHandler{
         if(config.debug.enableNext) {
             // Add temporally ordered scheduled questions to participant's debug queue:
             let scheduledOps = scheduledQuestionsList.concat(actionList);
-            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, config.experimentLengthWeeks);
+            this.debugQueue[uniqueId] = this.getTemporalOrderArray(scheduledOps, DevConfig.DEFAULT_STAGE_LENGTH_WEEKS);
             this.debugQueueAdjusted[uniqueId] = false;
         }
 

@@ -131,6 +131,7 @@ Information about the participant:
 * Time stamps of start and beginning of each stage
 * Assigned condition 
 * All questions asked, answer(s) given (or lack thereof), timestamp of answer in participant timezone
+  * This includes whether the question was repeated, answered with an invalid answer, or not answered at all.
 * Transcripts of entire conversation exchanged between each user and chatbot
 
 ### Deleting Sensitive Data

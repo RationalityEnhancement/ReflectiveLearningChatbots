@@ -838,10 +838,23 @@
     "qType" : "dummy",
     "cReplyMessages" : [
       {
-        "if": "${STAGE_DAY} == $N{3}",
+        "if": "(${STAGE_DAY} == $N{3}) AND (${STAGE_NAME} == $S{Intervention})",
         "then": {
           "English": [
             "Good job! You have reached the end of the second and final stage!",
+            "We will now start another round of questionnaires."
+          ],
+          "Deutsch": [
+            "Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!",
+            "Jetzt haben wir noch eine Runde Umfragen."
+          ]
+        }
+      },
+      {
+        "if": "(${STAGE_DAY} == $N{3}) AND (${STAGE_NAME} == $S{Goal-Setting})",
+        "then": {
+          "English": [
+            "Good job! You have reached the end of the first stage!",
             "We will now start another round of questionnaires."
           ],
           "Deutsch": [

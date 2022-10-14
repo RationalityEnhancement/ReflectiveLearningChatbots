@@ -49,32 +49,46 @@ let DBHasJob = (jobArray, jobId) => {
 describe('Adding minutes', () => {
     let currentTime = {
         hours : 21,
-        minutes : 23
+        minutes : 23,
+        dayOfWeek: [4]
     }
     it('Should add without rolling over hour', () => {
         let newTime = ReminderHandler.addMins(currentTime, 23);
         expect(newTime.hours).to.equal(currentTime.hours);
         expect(newTime.minutes).to.equal(46);
+        expect(newTime.dayOfWeek).to.eql(currentTime.dayOfWeek)
     })
     it('Should add with rolling over hour by one', () => {
         let newTime = ReminderHandler.addMins(currentTime, 63);
         expect(newTime.hours).to.equal(currentTime.hours + 1);
         expect(newTime.minutes).to.equal(26);
+        expect(newTime.dayOfWeek).to.eql(currentTime.dayOfWeek)
     })
     it('Should add with rolling over hour by multiple', () => {
         let newTime = ReminderHandler.addMins(currentTime, 123);
         expect(newTime.hours).to.equal(currentTime.hours + 2);
         expect(newTime.minutes).to.equal(26);
+        expect(newTime.dayOfWeek).to.eql(currentTime.dayOfWeek)
     })
     it('Should roll over into next day', () => {
         let newTime = ReminderHandler.addMins(currentTime, 183);
         expect(newTime.hours).to.equal(0);
         expect(newTime.minutes).to.equal(26);
+        expect(newTime.dayOfWeek).to.eql([5])
+    })
+    it('Should roll over into next week', () => {
+        let copyTime = JSON.parse(JSON.stringify(currentTime))
+        copyTime.dayOfWeek = [6];
+        let newTime = ReminderHandler.addMins(copyTime, 183);
+        expect(newTime.hours).to.equal(0);
+        expect(newTime.minutes).to.equal(26);
+        expect(newTime.dayOfWeek).to.eql([0])
     })
     it('Should add with rolling over hour when minutes are even at 60', () => {
         let newTime = ReminderHandler.addMins(currentTime, 37);
         expect(newTime.hours).to.equal(currentTime.hours + 1);
         expect(newTime.minutes).to.equal(0);
+        expect(newTime.dayOfWeek).to.eql([5])
     })
 })
 
@@ -93,7 +107,8 @@ describe('Creating reminder job', () => {
     it("Should succeed when valid", () => {
         let currentTime = {
             hours : 12,
-            minutes : 34
+            minutes : 34,
+            dayOfWeek: [3]
         }
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
@@ -105,7 +120,8 @@ describe('Creating reminder job', () => {
     it("Should succeed when timezone doesnt exist", () => {
         let currentTime = {
             hours : 12,
-            minutes : 34
+            minutes : 34,
+            dayOfWeek: [3]
         }
         delete participant.parameters["timezone"];
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
@@ -118,7 +134,8 @@ describe('Creating reminder job', () => {
     it("Should fail when hours invalid", () => {
         let currentTime = {
             hours : 25,
-            minutes : 34
+            minutes : 34,
+            dayOfWeek: [3]
         }
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
@@ -127,7 +144,8 @@ describe('Creating reminder job', () => {
     it("Should fail when minutes invalid", () => {
         let currentTime = {
             hours : 22,
-            minutes : 66
+            minutes : 66,
+            dayOfWeek: [3]
         }
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
@@ -140,14 +158,24 @@ describe('Creating reminder job', () => {
     })
     it("Should fail when minutes missing", () => {
         let currentTime = {
-            hours : 22
+            hours : 22,
+            dayOfWeek: [3]
         }
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
     it("Should fail when hours missing", () => {
         let currentTime = {
-            minutes : 22
+            minutes : 22,
+            dayOfWeek: [3]
+        }
+        let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
+    it("Should fail when dayOfWeek missing", () => {
+        let currentTime = {
+            minutes : 22,
+            hours: 3
         }
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
         expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
@@ -155,7 +183,8 @@ describe('Creating reminder job', () => {
     it("Should fail when part language doesnt exist", () => {
         let currentTime = {
             hours : 22,
-            minutes : 45
+            minutes : 45,
+            dayOfWeek: [3]
         }
         delete participant.parameters["language"]
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);
@@ -164,7 +193,8 @@ describe('Creating reminder job', () => {
     it("Should fail when part parameters doesnt exist", () => {
         let currentTime = {
             hours : 22,
-            minutes : 45
+            minutes : 45,
+            dayOfWeek: [3]
         }
         delete participant["parameters"]
         let returnObj = ReminderHandler.createReminderJob(testConfig, testBot, participant, "12345", currentTime);

@@ -180,7 +180,8 @@ let schemaObject = {
       {
         jobId : String,
         minutes : Number,
-        hours : Number
+        hours : Number,
+        dayOfWeek: [Number]
       }
     ]
   }

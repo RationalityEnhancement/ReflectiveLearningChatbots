@@ -66,6 +66,7 @@ Sections 4 onwards contain detailed documentation of each part of the experiment
   <li><a href="#Scheduled">Scheduling Questions</a></li>
   <li><a href="#Setup">Setup Questions and Starting the Experiment</a></li>
   <li><a href="#Phrases">Mandatory Phrases</a></li>
+  <li><a href="#Split">Splitting Up the Configuration File</a></li>
 </ol>
 
 ## <span id="Overview"> Overview </span>
@@ -234,10 +235,10 @@ The following are fields that exist at the first level of the experiment JSON ob
 * `languages` - List of strings containing all the languages the experiment is available in
 * `defaultLanguage` - String containing the default language
 
-The following example shows the beginning of the experiment JSON file, titled `config.json`. If you want to copy the below object into your JSON file, copy only the object and not the text `"In config.json"`.
+The following example shows the beginning of the experiment JSON file, titled `config.json`, stored in the directory `json`, which is located in the main directory of your project. If you want to copy the below object into your JSON file, copy only the object and not the text `"In json/config.json"`.
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -261,7 +262,7 @@ This is an object of boolean properties that exists at the first level of the ex
 
 Continuation of the beginning of the experiment JSON file, if this were the actual deployed experiment:
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -297,7 +298,7 @@ These are all fields at the first level of the experiment JSON object.
   
 Continuation of the beginning of the experiment JSON file, adding two conditions of equal sizes:
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -362,7 +363,7 @@ Let us add some stages to our example experiment. For `"Condition1"`, we will ha
 For `"Condition2"`, we will have just one stage that lasts 4 days, but it only occurs on weekends. This means that the experiment will end 4 weekend days (in about two weeks) after the stage has been manually started.
 
 ```
-In experimentStages of config.json
+In experimentStages of json/config.json
 
 {
   "Condition1" : [
@@ -394,7 +395,7 @@ In experimentStages of config.json
 Now, to add this to the experiment JSON object we are building, we must simply assign it to the `experimentStages` field.
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -417,10 +418,10 @@ In config.json
 
 If you decide not to define experimental conditions, it is still possible to define stages. However, in this case, the field experimentStages at the first level of the experiment JSON object must directly be a list of stage objects, instead of an object with each condition as it is above.
 
-Example (of a different, condition-less experiment configuration file), `noCondsConfig.json`: 
+Example (of a different, condition-less experiment configuration file), `noCondsConfig.json`, also in the folder `json`: 
 
 ```
-In noCondsConfig.json
+In json/noCondsConfig.json
 
 {
   "experimentName" : "NoConditions",
@@ -463,7 +464,7 @@ The second parameter object is called `customParameters`. Here, the experimenter
 For example, let us define four parameters. The first one will be a number `numGoalsSet`, that stores the number of goals that the user set, the second one a string array `goalsSet` that stores each of the goals that the user set for themselves on that day, the third one a boolean `wantsToReflect`, indicating a user's preference on whether or not they want to reflect on that given day, and the fourth one `reflectionText` storing the user's answer to a reflection prompt.
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -515,7 +516,7 @@ Since our example experiment has two different conditions, the only questions we
 Let us create a question category called `"setupQuestions"` as the only category in our conditionless categories. Since we have not yet seen what question objects look like, we will make placeholders for them and revisit them in the section <a href="#Setup">Setup Questions</a> after we have discussed question objects at length.
 
 ```
-In questionCategories of config.json
+In questionCategories of json/config.json
 
 {
   "setupQuestions" : [
@@ -538,7 +539,7 @@ In questionCategories of config.json
 We've successfully created a conditionless question category object! Now all we have to do is assign this to the field `questionCategories` at the first level of the experiment JSON object.
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -562,7 +563,7 @@ In config.json
 In case your experiment does not have any conditions, you can (and have to) define all your question categories in this default object. We will add this field to our example with no conditions, along with the same setup questions.
 
 ```
-In noCondsConfig.json
+In json/noCondsConfig.json
 
 {
   "experimentName" : "NoConditions",
@@ -589,7 +590,7 @@ The experiment JSON object has, at the first level, another object called `"cond
 Let us already create the skeleton of this object with each of the conditions:
 
 ```
-In conditionQuestions of config.json
+In conditionQuestions of json/config.json
 
 {
   "Condition1" : {...},
@@ -605,7 +606,7 @@ Imagine that we want to create, in the first condition, a category for questions
 Note that each of the lists corresponding to the question categories would be lists of "question objects", as mentioned before, but we will leave those out now because we haven't covered them yet.
 
 ```
-In conditionQuestions of config.json
+In conditionQuestions of json/config.json
 
 {
   "Condition1" : {
@@ -625,7 +626,7 @@ In conditionQuestions of config.json
 Similarly, we can imagine that for our second condition, we only have one type of question that we want to ask every day. So we shall define just one question category.
 
 ```
-In conditionQuestions of config.json
+In conditionQuestions of json/config.json
 
 {
   "Condition1" : {
@@ -650,7 +651,7 @@ Note how the question categories of `"Condition2"` are independent of those of `
 Finally, all we have to do is assign this entire object to the `conditionQuestions` field at the first level of the experiment JSON object. Doing this, we get:
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -1374,7 +1375,7 @@ Now you can see why the experimenter configuration file tends to get very long!
 Having added these conditional operations, we can finally say we are done with our example question object! Now, we will add it to the question category `testMorningQs` of `Condition1`. This is done by just making the entire object above an element of the list `testMorningQs` (order doesn't matter).
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -1445,7 +1446,7 @@ Example question object 2
 And that's it! We can now add this to our experimenter configuration file like before. In the section <a href="#Scheduled">Scheduled Questions</a>, we will schedule this dummy question so that every day, the first question is selected based on which day that is!
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -1766,7 +1767,7 @@ Example schedule object 1
 Now, we will create a reflection question to occur in the evening, if the user indicated that they want to reflect on their goals in the evening (assume all `qId`s already exist). Both schedule objects will be combined into a list that we will assign to `scheduledQuestions` of `Condition1`.
 
 ```
-In configQuestions > Condition1 > scheduledQuestions of config.json
+In configQuestions > Condition1 > scheduledQuestions of json/config.json
 
 [
   {
@@ -1788,7 +1789,7 @@ In configQuestions > Condition1 > scheduledQuestions of config.json
 Now, we will assign this list to the field `scheduledQuestions` of `Condition1` in the experimenter configuration file.
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -1824,7 +1825,7 @@ Similarly, we may want to create a list containing a single scheduled question f
 This time, we will skip a step and directly added it to the configuration file under `Condition2` of `conditionQuestions`.
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -1872,7 +1873,7 @@ We will now briefly revisit that example to see how scheduled questions would be
 Just like when there are conditions, `scheduledQuestions` are added on the same level as `questionCategories`. So, when there are no conditions, since `questionCategories` exists on the first level of the experiment JSON object, so will the list `scheduledQuestions`, like so:
 
 ```
-In noCondsConfig.json
+In json/noCondsConfig.json
 
 {
   "experimentName" : "NoConditions",
@@ -1908,7 +1909,7 @@ The first thing that you would likely want to get from your participant is their
 Here, we have an example language question:
 
 ```
-In first question of questionCategories > setupQuestions of config.json
+In first question of questionCategories > setupQuestions of json/config.json
 
 {
   "qId" : "language",
@@ -1944,7 +1945,7 @@ A few things to notice about this:
 This will now be added to our list of setupQuestions:
 
 ```
-In questionCategories > setupQuestions of config.json
+In questionCategories > setupQuestions of json/config.json
 [
   {
     "qId" : "language",
@@ -1976,7 +1977,7 @@ It is possible to skip this field if your `assignmentScheme` is not `"pid"`. How
 Now that the user has selected a language, we can start having separate texts for different languages. So we will build up our PID question in the following way:
 
 ```
-In second question of questionCategories > setupQuestions of config.json
+In second question of questionCategories > setupQuestions of json/config.json
 
 {
   "qId" : "PID",
@@ -2004,7 +2005,7 @@ A few things to note here:
 Now, we can add this as well to the list of setup questions
 
 ```
-In questionCategories > setupQuestions of config.json
+In questionCategories > setupQuestions of json/config.json
 [
   { "qId" : "language", ... },
   {
@@ -2035,7 +2036,7 @@ For the following question, we will use some fairly common timezones as options,
 
 
 ```
-In third question of questionCategories > setupQuestions of config.json
+In third question of questionCategories > setupQuestions of json/config.json
 
 {
   "qId" : "timezone",
@@ -2068,7 +2069,7 @@ Notes about this question:
 Now, we will add this question as well to the setup questions, and then add the setup questions back into the experimenter configuration.
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -2133,7 +2134,7 @@ In our example configuration file, we would want the first day of the first stag
 We'll first create the question...
 
 ```
-First question of conditionQuestions > Condition1 > questionCategories > preTestQs of config.json
+First question of conditionQuestions > Condition1 > questionCategories > preTestQs of json/config.json
 
 {
   "qId" : "startStage",
@@ -2150,7 +2151,7 @@ First question of conditionQuestions > Condition1 > questionCategories > preTest
 ... then we'll create the schedule object ...
 
 ```
-New schedule object for conditionQuestions > Condition1 > scheduledQuestions of config.json
+New schedule object for conditionQuestions > Condition1 > scheduledQuestions of json/config.json
 
 {
   "qId" : "preTestQs.startStage",
@@ -2164,7 +2165,7 @@ New schedule object for conditionQuestions > Condition1 > scheduledQuestions of 
 ... and then we'll add them both to the experimenter JSON object under `questionCategories` and `scheduledQuestions` respectively of `Condition1`!
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -2367,7 +2368,7 @@ That's a big object! Another reason why the experimenter configuration file tend
 To include this in the experimenter configuration file, all you need to do is add this object to the `phrases` field at the first level of the experimenter JSON object, like so:
 
 ```
-In config.json
+In json/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -2398,3 +2399,127 @@ In config.json
 
 ... and that is what a complete experimenter configuration file essentially looks like! Congratulations on getting through all of this.
 
+However, there is more that can be done to make our experimenter configuration file neater, and this will be discussed in the next section.
+
+## <span id="Split">Splitting Up the Experiment Configuration File</span>
+
+As we have seen, even our simple example here turns out to be very long. This makes it difficult to keep track of the various parts of the configuration file, which becomes very cumbersome. Moreover, when many parts of the configuration have to be repeated (e.g., when two conditions have similar functionality), copying and pasting large parts of the file multiple times seems painstaking and inefficient.
+
+To make definition of the experiment configuration file more modular, it is possible to define elements in different files, and then link to those elements in the main experimenter configuration file.
+
+The elements that can be defined in different files are either [JSON Objects](#objects) or [JSON Lists](#lists).
+
+To separate an element from the main configuration file, simply let the element stand **alone** at the first level of **its own file**, and **in its place in the main experimenter configuration file**, write in, as a **string**, the **path to the file** with the separate JSON element **from the main directory**. Furthermore, the string has to be enclosed in the following symbols: `$F{...}`
+
+This may be confusing, so let us look at an example. We will first look at how a JSON **object** can be separated into its own file, and we will use the example of the large `phrases` property of the configuration file. In general, since this object does not change much between experiments, it is beneficial to store this `phrases` object in a separate file, and link to the same file in each of your different experiments, as seen below.
+
+Let us create a new file called `phrases.json` in the directory `json`, which is where our configuration files are already located.
+
+```
+In json/phrases.json
+
+{
+  "answerValidation" : {...},
+  "keyboards : {...},
+  "endExperiment : {...}
+}
+```
+
+Further, let us also move the **list** of scheduled questions for `Condition1` to a separate file. You may remember this list from the section on [scheduled questions](#span-idscheduled-scheduling-questions-span).
+
+```
+In json/cond1ScheduledQuestions.json
+
+[
+  {
+    "qId" : "testMorningQs.selectFirstQuestion",
+    "atTime" : "09:00",
+    "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+    "if" : "${STAGE_NAME} == $S{Test}"
+  },
+  {
+    "qId" : "testEveningQs.reflection",
+    "atTime" : "18:00",
+    "onDays" : ["Mon","Tue","Wed","Thu","Fri"],
+    "if" : "(${STAGE_NAME} == $S{Test}) AND (${wantsToReflect} == $B{true})"
+  }
+]
+  
+```
+
+Now, we will replace the properties in the main experimenter file with the links to these files instead.
+
+```
+In json/config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentConditions" : ["Condition1", "Condition2"],
+  "conditionAssignments" : [1,1],
+  "assignmentScheme" : "balanced"
+  "experimentStages" : {...},
+  "mandatoryParameters" : {...},
+  "customParameters" : {...}
+  "questionCategories" : {...}
+  "conditionQuestions" : {
+    "Condition1" : {
+      questionCategories: {...},
+      scheduledQuestions: "$F{json/cond1ScheduledQuestions.json}"
+    },
+    "Condition2" : {...},
+  },
+  "phrases" : "$F{json/phrases.json}"
+}
+```
+
+This has already cut down the experiment configuration file by hundreds of lines, and made it a lot more manageable. Ideally, a neat experiment configuration file would use this method to replace any object or list that is more than a few lines long, in order to increase manageability and reduce visual clutter. 
+
+If done right, your experiment configuration file may look like this:
+
+```
+In json/config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "debug" : { ... },
+  "experimentConditions" : ["Condition1", "Condition2"],
+  "conditionAssignments" : [1,1],
+  "assignmentScheme" : "balanced"
+  "experimentStages" : "$F{json/experimentStages.json}",
+  "mandatoryParameters" : {...},
+  "customParameters" : "$F{json/parameters.json}",
+  "questionCategories" : {
+    "setupQuestions" : "$F{json/setupQuestions.json}"
+  },
+  "conditionQuestions" : {
+    "Condition1" : {
+      "questionCategories" : {
+        "preTestQs" : "$F{json/cond1PreTestQs.json}",
+        "testMorningQs" : "$F{json/morningQs.json}",
+        "testEveningQs" : "$F{json/eveningQs.json}",
+        "postTestMorningQs" : "$F{json/postTestMorningQs.json}",
+        "postTestEveningQs" : "$F{json/postTestEveningQs.json}"
+      },
+      scheduledQuestions: "$F{json/cond1ScheduledQuestions.json}"
+    },
+    "Condition2" : {
+      "questionCategories" : {
+        "morningQs" : "$F{json/morningQs.json}",
+      },
+      scheduledQuestions: "$F{json/cond2ScheduledQuestions.json}"
+    },
+  },
+  "phrases" : "$F{json/phrases.json}"
+}
+```
+
+Notice how the file `json/morningQs.json` is mentioned more than once, for both `Condition1` and `Condition2`. This ensures that this question category will be exactly the same for both conditions. Therefore, this method of replacing also helps with reusability of portions of the experiment configuration file. So, if you need to make a change to a certain question in this question category, you would not have to make that change in several places - you would just change it once, in the file `json/morningQs.json`, and everything in the configuration file that links to this file will automatically adopt that change!
+
+Keep in mind: **only** lists and objects can be replaced this way. Notice how the property `assignmentScheme` cannot be replaced in such a manner, since it requires a string in its place. This also means that any file that you link to must contain **only one JSON list or JSON object** at the main level (there can, of course, be several nested JSON lists and objects)!

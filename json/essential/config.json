@@ -1,15 +1,19 @@
 {
-  "experimentName" : "Reflective Learning in Organizations - Prepilot 3",
-  "experimentId" : "RL-Orgs-Prepilot-3",
-  "experimentConditions" : ["MC", "Shallow", "Control"],
-  "conditionAssignments" : [1, 1, 1],
-  "assignmentScheme" : "balanced",
-  "experimentLengthWeeks" : 1,
+  "experimentName" : "Reflective Learning in Organizations - Pilot",
+  "experimentId" : "RL-Orgs-Pilot",
+  "experimentConditions" : ["ControlLeader", "ShallowLeader", "MCLeader", "ControlFollower", "ShallowFollower", "MCFollower"],
+  "conditionAssignments" : [1, 1, 1, 1, 1, 1],
+  "assignmentScheme" : "pid",
+  "conditionMapping" : "$F{json/experiments/RL-Orgs-Pilot/PIDCondMap.json}",
+  "experimentLengthWeeks" : 4,
   "msPerCharacterDelay" : 5,
   "experimentStages" : {
-    "MC" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsStages.json}",
-    "Shallow" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsStages.json}",
-    "Control" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsStages.json}"
+    "ControlLeader" : "$F{json/experiments/RL-Orgs-Pilot/allCondsStages.json}",
+    "ShallowLeader" : "$F{json/experiments/RL-Orgs-Pilot/allCondsStages.json}",
+    "MCLeader" : "$F{json/experiments/RL-Orgs-Pilot/allCondsStages.json}",
+    "ControlFollower" : "$F{json/experiments/RL-Orgs-Pilot/allCondsStages.json}",
+    "ShallowFollower" : "$F{json/experiments/RL-Orgs-Pilot/allCondsStages.json}",
+    "MCFollower" : "$F{json/experiments/RL-Orgs-Pilot/allCondsStages.json}"
   },
   "mandatoryParameters" : {
     "language" : "string",
@@ -18,7 +22,10 @@
   },
   "customParameters" : {
     "onboardingComplete" : "boolean",
+    "preTestComplete" : "boolean",
+    "preTest2Complete" : "boolean",
     "postTestComplete" : "boolean",
+    "pauseEnded" : "boolean",
     "remindWorkIntention" : "boolean",
     "workIntention" : "string",
     "relIntention" : "string",
@@ -33,7 +40,6 @@
     "lastReportedRelProgress" : "number",
     "relProgressReportedOnce" : "boolean",
     "goalsMoreRelevant" : "boolean",
-    "reflectionStartedToday" : "boolean",
     "goalsEquallyRelevant" : "boolean",
     "dontAskInfoAgain" : "boolean",
     "dontAskExampleAgain" : "boolean",
@@ -41,6 +47,7 @@
     "firstRelGoalDay" : "boolean",
     "firstWorkGoalDay" : "boolean",
     "workGoalsSetBefore" : "boolean",
+    "reflectionStartedToday" : "boolean",
     "warningGiven" : "boolean",
     "morningTime" : "string",
     "eveningTime" : "string",
@@ -51,52 +58,108 @@
   },
   "debug" : {
     "experimenter" : true,
-    "actionMessages" : false,
+    "actionMessages" : true,
     "enableNext" : true,
     "messageDelay" : false,
-    "developer" : false,
-    "saveDebugInfo" : true
+    "developer" : false
   },
-  "languages" : ["English"],
+  "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",
-  "phrases" : "$F{json/experiments/RL-Orgs-Prepilot-3/phrases.json}",
-  "instructionText" : "$F{json/experiments/RL-Orgs-Prepilot-3/instructions.json}",
+  "phrases" : "$F{json/experiments/RL-Orgs-Pilot/phrases.json}",
+  "instructionText" : "$F{json/experiments/RL-Orgs-Pilot/instructions.json}",
   "questionCategories": {
-    "setupQuestions": "$F{json/experiments/RL-Orgs-Prepilot-3/setupQuestions.json}"
+    "setupQuestions": "$F{json/experiments/RL-Orgs-Pilot/setupQuestions.json}"
   },
   "conditionQuestions" : {
-    "Control" : {
+    "ControlLeader" : {
       "questionCategories" : {
-        "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot-3/onboardingLeaders.json}",
-        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot-3/morningGoals.json}",
-        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsPreReflection.json}",
-        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/goalSettingIntervention.json}",
-        "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot-3/postTestLeaders.json}"
+        "Onboarding" : "$F{json/experiments/RL-Orgs-Pilot/onboardingLeaders.json}",
+        "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestLeaders.json}",
+        "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
+        "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Leaders.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/goalSettingIntervention.json}",
+        "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestLeaders.json}",
+        "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsScheduledQs.json}",
-      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsUserPromptQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
     },
-    "Shallow" : {
+    "ShallowLeader" : {
       "questionCategories" : {
-        "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot-3/onboardingLeaders.json}",
-        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot-3/morningGoals.json}",
-        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsPreReflection.json}",
-        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/shallowIntervention.json}",
-        "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot-3/postTestLeaders.json}"
+        "Onboarding" : "$F{json/experiments/RL-Orgs-Pilot/onboardingLeaders.json}",
+        "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestLeaders.json}",
+        "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
+        "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Leaders.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/shallowIntervention.json}",
+        "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestLeaders.json}",
+        "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsScheduledQs.json}",
-      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsUserPromptQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
     },
-    "MC" : {
+    "MCLeader" : {
       "questionCategories" : {
-        "Onboarding" : "$F{json/experiments/RL-Orgs-Prepilot-3/onboardingLeaders.json}",
-        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Prepilot-3/morningGoals.json}",
-        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsPreReflection.json}",
-        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Prepilot-3/MCIntervention.json}",
-        "Post-Test" : "$F{json/experiments/RL-Orgs-Prepilot-3/postTestLeaders.json}"
+        "Onboarding" : "$F{json/experiments/RL-Orgs-Pilot/onboardingLeaders.json}",
+        "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestLeaders.json}",
+        "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
+        "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Leaders.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/MCIntervention.json}",
+        "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestLeaders.json}",
+        "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpLeaders.json}"
       },
-      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsScheduledQs.json}",
-      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Prepilot-3/allCondsUserPromptQs.json}"
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
+    },
+    "ControlFollower" : {
+      "questionCategories" : {
+        "Onboarding" : "$F{json/experiments/RL-Orgs-Pilot/onboardingLeaders.json}",
+        "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestLeaders.json}",
+        "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
+        "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Leaders.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/goalSettingIntervention.json}",
+        "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestLeaders.json}",
+        "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpLeaders.json}"
+      },
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
+    },
+    "ShallowFollower" : {
+      "questionCategories" : {
+        "Onboarding" : "$F{json/experiments/RL-Orgs-Pilot/onboardingLeaders.json}",
+        "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestLeaders.json}",
+        "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
+        "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Leaders.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/shallowIntervention.json}",
+        "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestLeaders.json}",
+        "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpLeaders.json}"
+      },
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
+    },
+    "MCFollower" : {
+      "questionCategories" : {
+        "Onboarding" : "$F{json/experiments/RL-Orgs-Pilot/onboardingLeaders.json}",
+        "Pre-Test" : "$F{json/experiments/RL-Orgs-Pilot/preTestLeaders.json}",
+        "Goal-Setting" : "$F{json/experiments/RL-Orgs-Pilot/allCondsGoalSetting.json}",
+        "Pre-Test-2" : "$F{json/experiments/RL-Orgs-Pilot/preTest2Leaders.json}",
+        "Morning-Goals-All" : "$F{json/experiments/RL-Orgs-Pilot/morningGoals.json}",
+        "Pre-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/allCondsPreReflection.json}",
+        "Int-Reflection" : "$F{json/experiments/RL-Orgs-Pilot/MCIntervention.json}",
+        "Post-Test" : "$F{json/experiments/RL-Orgs-Pilot/postTestLeaders.json}",
+        "Follow-Up" : "$F{json/experiments/RL-Orgs-Pilot/followUpLeaders.json}"
+      },
+      "scheduledQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsScheduledQs.json}",
+      "userPromptedQuestions" : "$F{json/experiments/RL-Orgs-Pilot/allCondsUserPromptQs.json}"
     }
   }
 }

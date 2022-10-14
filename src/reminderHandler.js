@@ -16,6 +16,7 @@ class ReminderHandler{
      * and returns the new time object
      *
      * @param currentTime time object with number fields hours (0 < hours < 24) and minutes (0 < minutes < 60)
+     *                      and day of week: [0, ..., 6]
      * @param addedMins number of minutes to add
      * @returns {{hours: number, minutes: number}}
      *          New time object with number fields hours and minutes
@@ -28,11 +29,16 @@ class ReminderHandler{
         let addedHrs = Math.floor(newMin / 60 );
         newMin = newMin % 60;
         let newHour = curHour + addedHrs;
+        let newDay = currentTime.dayOfWeek;
+        if(newHour / 24 >= 1) {
+            newDay[0] = (newDay[0] + 1) % 7
+        }
         newHour = newHour % 24;
 
         return {
             hours : newHour,
-            minutes : newMin
+            minutes : newMin,
+            dayOfWeek: newDay
         }
     }
 
@@ -48,14 +54,16 @@ class ReminderHandler{
         if(typeof currentTime !== "object"){
             return ReturnMethods.returnFailure("RHandler: currentTime for reminder rule must be obj")
         }
-        if(!(("hours" in currentTime) && ("minutes" in currentTime))){
-            return ReturnMethods.returnFailure("RHandler: recurrence rule must have hrs and mins")
+        if(!(("hours" in currentTime) && ("minutes" in currentTime) && ("dayOfWeek" in currentTime))){
+            return ReturnMethods.returnFailure("RHandler: recurrence rule must have hrs and mins and dayOfWeek")
         }
 
         // Build recurrence rule and return
         let rule = new scheduler.RecurrenceRule();
         rule.hour = currentTime.hours;
         rule.minute = currentTime.minutes;
+        if(rule.dayOfWeek && rule.dayOfWeek.length > 0)
+            rule.dayOfWeek = currentTime.dayOfWeek;
         if(timezone) rule.tz = timezone;
 
         return ReturnMethods.returnSuccess(rule)
@@ -87,7 +95,8 @@ class ReminderHandler{
             );
         }
         let job;
-        let jobId = participant.uniqueId + "_r_" + currentTime.hours + "_" + currentTime.minutes;
+        let jobId = participant.uniqueId + "_r_" + currentTime.hours + "_" + currentTime.minutes
+            + "_" + currentTime.dayOfWeek.join('');
         // Get the reminder text from config and schedule the message
         try{
             let reminderTextLong = config.phrases.schedule.reminderTextLong[participant.parameters.language];
@@ -167,7 +176,8 @@ class ReminderHandler{
         let now = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
         let currentTime = {
             minutes : now.minutes,
-            hours : now.hours
+            hours : now.hours,
+            dayOfWeek: [now.dayOfWeek]
         };
 
         let failedJobs = [];
@@ -188,7 +198,8 @@ class ReminderHandler{
                 dbJobs.push({
                     jobId : curJobObj.data.jobId,
                     minutes : newTime.minutes,
-                    hours : newTime.hours
+                    hours : newTime.hours,
+                    dayOfWeek: newTime.dayOfWeek
                 });
             }
         }
@@ -281,7 +292,8 @@ class ReminderHandler{
         for(let i = 0; i < schRems.length; i++){
             let currentTime = {
                 hours : schRems[i].hours,
-                minutes : schRems[i].minutes
+                minutes : schRems[i].minutes,
+                dayOfWeek: schRems[i].dayOfWeek
             };
             let curJobObj = this.createReminderJob(config, bot, participant, chatId, currentTime, i===0);
             if(curJobObj.returnCode === DevConfig.FAILURE_CODE){

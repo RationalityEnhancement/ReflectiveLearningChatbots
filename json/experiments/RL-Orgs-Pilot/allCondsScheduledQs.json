@@ -3,60 +3,70 @@
     "qId" : "Onboarding.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "(${STAGE_NAME} == $S{Onboarding}) AND (${onboardingComplete} == $B{false})"
+    "if" : "(${STAGE_NAME} == $S{Onboarding}) AND (${onboardingComplete} == $B{false})",
+    "stages" : ["Onboarding"]
   },
   {
     "qId" : "Pre-Test.checkComplete",
     "atTime" : "05:00",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Pre-Test}"
+    "if" : "${STAGE_NAME} == $S{Pre-Test}",
+    "stages" : ["Pre-Test"]
   },
   {
     "qId" : "Pre-Test.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "(${STAGE_NAME} == $S{Pre-Test}) AND (${preTestComplete} == $B{false})"
+    "if" : "(${STAGE_NAME} == $S{Pre-Test}) AND (${preTestComplete} == $B{false})",
+    "stages": ["Pre-Test"]
   },
   {
     "qId" : "Morning-Goals-All.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} IN_ARRAY $S*{Goal-Setting, Intervention}"
+    "if" : "${STAGE_NAME} IN_ARRAY $S*{Goal-Setting, Intervention}",
+    "stages": ["Goal-Setting","Intervention"]
   },
   {
     "qId" : "Pre-Reflection.initiateContact",
     "atTime" : "${eveningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} IN_ARRAY $S*{Goal-Setting, Intervention}"
+    "if" : "${STAGE_NAME} IN_ARRAY $S*{Goal-Setting, Intervention}",
+    "stages": ["Goal-Setting","Intervention"]
   },
   {
     "qId" : "Pre-Test-2.checkComplete",
     "atTime" : "05:00",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Pre-Test-2}"
+    "if" : "${STAGE_NAME} == $S{Pre-Test-2}",
+    "stages": ["Pre-Test-2"]
   },
   {
     "qId" : "Pre-Test-2.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "(${STAGE_NAME} == $S{Pre-Test-2}) AND (${preTest2Complete} == $B{false})"
+    "if" : "(${STAGE_NAME} == $S{Pre-Test-2}) AND (${preTest2Complete} == $B{false})",
+    "stages": ["Pre-Test-2"]
   },
   {
     "qId" : "Post-Test.checkComplete",
     "atTime" : "05:00",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Post-Test}"
+    "if" : "${STAGE_NAME} == $S{Post-Test}",
+    "stages": ["Post-Test"]
   },
   {
     "qId" : "Post-Test.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "(${STAGE_NAME} == $S{Post-Test}) AND (${postTestComplete} == $B{false})"
+    "if" : "(${STAGE_NAME} == $S{Post-Test}) AND (${postTestComplete} == $B{false})",
+    "stages": ["Post-Test"]
   },
   {
     "qId" : "Follow-Up.initiateContact",
     "atTime" : "${morningTime}",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "if" : "${STAGE_NAME} == $S{Follow-Up}"
+    "if" : "${STAGE_NAME} == $S{Follow-Up}",
+    "stages": ["Follow-Up"]
   }
 ]

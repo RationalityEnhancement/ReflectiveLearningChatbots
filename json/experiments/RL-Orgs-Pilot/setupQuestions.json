@@ -197,7 +197,6 @@
       {
         "aType" : "assignToCondition"
       },
-      { "aType" : "scheduleQuestions" },
       {
         "aType" : "startStage",
         "args" : ["Onboarding"]

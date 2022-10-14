@@ -321,17 +321,40 @@
     "qType" : "dummy",
     "cReplyMessages" : [
       {
-        "if" : "${STAGE_DAY} == $N{3}",
-        "then" : {
-          "English" : [
+        "if": "(${STAGE_DAY} == $N{3}) AND (${STAGE_NAME} == $S{Intervention})",
+        "then": {
+          "English": [
             "Good job! You have reached the end of the second and final stage!",
             "We will now start another round of questionnaires."
           ],
-          "Deutsch" : ["Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!", "Jetzt haben wir noch eine Runde Umfragen."]
-        },
-        "else" : {
+          "Deutsch": [
+            "Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!",
+            "Jetzt haben wir noch eine Runde Umfragen."
+          ]
+        }
+      },
+      {
+        "if": "(${STAGE_DAY} == $N{3}) AND (${STAGE_NAME} == $S{Goal-Setting})",
+        "then": {
+          "English": [
+            "Good job! You have reached the end of the first stage!",
+            "We will now start another round of questionnaires."
+          ],
+          "Deutsch": [
+            "Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!",
+            "Jetzt haben wir noch eine Runde Umfragen."
+          ]
+        }
+      },
+      {
+        "if" : "${TODAY} != $S{Fri}",
+        "then" : {
           "English": ["Great job reflecting today! Thank you for such insightful answers. See you tomorrow!"],
           "Deutsch" : ["Sie haben heute gut reflektiert! Danke für Ihre einsichtsvollen Antworten. Bis morgen!"]
+        },
+        "else" : {
+          "English": ["Great job reflecting today! Thank you for such insightful answers. Have a good weekend, and see you on Monday!"],
+          "Deutsch" : ["Sie haben heute gut reflektiert! Danke für Ihre einsichtsvollen Antworten. Schönes Wochenende und Bis Montag!"]
         }
       }
     ],

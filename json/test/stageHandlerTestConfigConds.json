@@ -2,7 +2,7 @@
   "experimentName" : "QHandler",
   "experimentId" : "12345",
   "experimentConditions" : ["Experimental", "Fail1", "Fail2", "Fail3", "Extra", "TestOneGroup", "TestManyGroup"],
-  "conditionAssignments" : [0.5, 0.5],
+  "relConditionSizes" : [0.5, 0.5],
   "mandatoryParameters" : {
     "language" : "string",
     "PID" : "number"

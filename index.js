@@ -961,7 +961,7 @@ bot.start(async ctx => {
   if(!experiment){
     try{
       await experiments.add(config.experimentId);
-      await experiments.initializeExperiment(config.experimentId, config.experimentName, config.experimentConditions, config.conditionAssignments);
+      await experiments.initializeExperiment(config.experimentId, config.experimentName, config.experimentConditions, config.relConditionSizes);
 
       // Use the new experiment henceforth
       experiment = await experiments.get(config.experimentId);
@@ -973,7 +973,7 @@ bot.start(async ctx => {
       // Recount number of participants assigned to each condition
       participants.getByExperimentId(config.experimentId)
           .then(allParticipants => {
-              let condCounts = Array(experiment.currentlyAssignedToCondition.length).fill(0);
+              let condCounts = Array(experiment.conditionAssignments.length).fill(0);
               for(let i = 0; i < allParticipants.length; i++){
                   let curExperiment = allParticipants[i].experimentId;
                   let curCondIdx = allParticipants[i].conditionIdx;
@@ -981,8 +981,8 @@ bot.start(async ctx => {
                       condCounts[curCondIdx] += 1;
                   }
               }
-              if(!lodash.isEqual(condCounts, experiment.currentlyAssignedToCondition)){
-                  return experiments.updateField(config.experimentId, "currentlyAssignedToCondition",condCounts);
+              if(!lodash.isEqual(condCounts, experiment.conditionAssignments)){
+                  return experiments.updateField(config.experimentId, "conditionAssignments",condCounts);
               }
           })
   }

@@ -7,8 +7,8 @@ const DevConfig = ConfigReader.getDevConfig()
 
 
 const map = {'1234': 0};
-const conditionAssignments = [0.5, 0.5]
-const conditionAssignments2 = [1, 1, 2];
+const relConditionSizes = [0.5, 0.5]
+const relConditionSizes2 = [1, 1, 2];
 const currentAssignments = [2,1];
 const currentAssignments2 = [1,1,1]
 const currentAssignments3 = [20,20,35]
@@ -56,71 +56,71 @@ describe('Condition assignment', () => {
 	})
 	describe('Fails appropriately', () => {
 		it('Should pass when everything valid', () => {
-			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments,"pid")
+			const result = experimentUtils.assignToCondition('1234', map, relConditionSizes, currentAssignments,"pid")
 			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
 		});
 		it('Should fail when assignmentScheme not valid', () => {
-			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments,"george")
+			const result = experimentUtils.assignToCondition('1234', map, relConditionSizes, currentAssignments,"george")
 			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
 			expect(typeof result.data).to.equal("string");
 		});
 
-		it('Should fail when conditionAssignments undefined', () => {
+		it('Should fail when relConditionSizes undefined', () => {
 			const result = experimentUtils.assignToCondition('1234', map, undefined, currentAssignments,"pid")
 			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
 			expect(typeof result.data).to.equal("string");
 		});
-		it('Should fail when conditionAssignments empty', () => {
+		it('Should fail when relConditionSizes empty', () => {
 			const result = experimentUtils.assignToCondition('1234', map, [], currentAssignments,"pid")
 			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
 			expect(typeof result.data).to.equal("string");
 		});
-		it('Should fail when conditionAssignments all zero', () => {
+		it('Should fail when relConditionSizes all zero', () => {
 			const result = experimentUtils.assignToCondition('1234', map, [0,0], currentAssignments,"pid")
 			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
 			expect(typeof result.data).to.equal("string");
 		});
 		it('Should fail when currentAssignments undefined', () => {
-			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, undefined,"pid")
+			const result = experimentUtils.assignToCondition('1234', map, relConditionSizes, undefined,"pid")
 			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
 			expect(typeof result.data).to.equal("string");
 		});
 		it('Should fail when currentAssignments empty', () => {
-			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, [],"pid")
+			const result = experimentUtils.assignToCondition('1234', map, relConditionSizes, [],"pid")
 			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
 			expect(typeof result.data).to.equal("string");
 		});
-		it('Should fail when currentAssignments and conditionAssignments unequal length', () => {
-			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments2,"pid")
+		it('Should fail when currentAssignments and relConditionSizes unequal length', () => {
+			const result = experimentUtils.assignToCondition('1234', map, relConditionSizes, currentAssignments2,"pid")
 			expect(result.returnCode).to.equal(DevConfig.FAILURE_CODE);
 			expect(typeof result.data).to.equal("string");
 		});
 	})
 	describe('Pid Map', () => {
 		it('assigns to condition by PID successfully', () => {
-			const result = experimentUtils.assignToCondition('1234', map, conditionAssignments, currentAssignments,"pid")
+			const result = experimentUtils.assignToCondition('1234', map, relConditionSizes, currentAssignments,"pid")
 			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
 			expect(result.data).to.equal(0);
 		})
 		it('assigns to condition by balanced when PID not recognized', () => {
-			const result = experimentUtils.assignToCondition('1235', map, conditionAssignments, currentAssignments,"pid")
+			const result = experimentUtils.assignToCondition('1235', map, relConditionSizes, currentAssignments,"pid")
 			expect(result.returnCode).to.equal(1);
 			expect(result.data).to.equal(DevConfig.SUCCESS_CODE);
 		})
 	})
 	describe('Natural assignment', () => {
 		it('balances by condition - 1', () => {
-			const result = experimentUtils.assignToCondition('1235', map, conditionAssignments, currentAssignments,"balanced")
+			const result = experimentUtils.assignToCondition('1235', map, relConditionSizes, currentAssignments,"balanced")
 			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
 			expect(result.data).to.equal(1);
 		})
 		it('balances by condition - 2', () => {
-			const result = experimentUtils.assignToCondition('1235', map, conditionAssignments2, currentAssignments2,"balanced")
+			const result = experimentUtils.assignToCondition('1235', map, relConditionSizes2, currentAssignments2,"balanced")
 			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
 			expect(result.data).to.equal(2);
 		})
 		it('balances by condition - 3', () => {
-			const result = experimentUtils.assignToCondition('1235', map, conditionAssignments2, currentAssignments3,"balanced")
+			const result = experimentUtils.assignToCondition('1235', map, relConditionSizes2, currentAssignments3,"balanced")
 			expect(result.returnCode).to.equal(DevConfig.SUCCESS_CODE);
 			expect(result.data).to.equal(2);
 		})

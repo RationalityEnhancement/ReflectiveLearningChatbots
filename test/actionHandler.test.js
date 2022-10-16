@@ -53,7 +53,7 @@ describe('DB Connection', () => {
         it('Should add and update experiment', async () => {
 
             await experiments.add(config.experimentId);
-            await experiments.initializeExperiment(config.experimentId, config.experimentName, config.experimentConditions, config.conditionAssignments);
+            await experiments.initializeExperiment(config.experimentId, config.experimentName, config.experimentConditions, config.relConditionSizes);
 
             let experiment = await experiments.get(config.experimentId);
             expect(experiment).to.not.be.null;

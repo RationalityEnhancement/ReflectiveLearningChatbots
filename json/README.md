@@ -68,6 +68,7 @@ Sections 4 onwards contain detailed documentation of each part of the experiment
   </li>
   <li><a href="#Conditions">Conditional Expressions</a></li>
   <li><a href="#Scheduled">Scheduling Questions</a></li>
+  <li><a href="#UserPrompt">User Prompted Questions</a></li>
   <li><a href="#Setup">Setup Questions and Starting the Experiment</a></li>
   <li><a href="#Phrases">Mandatory Phrases</a></li>
   <li><a href="#Split">Splitting Up the Configuration File</a></li>
@@ -324,11 +325,11 @@ Experiment conditions are optional! However, if you want to use experiment condi
 These are all fields at the first level of the experiment JSON object. 
 
 * `experimentConditions` - List of strings containing the names of each possible condition
-* `conditionAssignments` - List of numbers that define the relative group sizes of each condition. Must be of same length as experimentConditions.
+* `relConditionSizes` - List of numbers that define the relative group sizes of each condition. Must be of same length as experimentConditions.
   * For example, `[1,1]` or `[2,2]` would mean equal group sizes, `[1,2]` would mean the second condition should have twice as many participants as the first.
 * `assignmentScheme` - Defines how participants are to be assigned to condition. It is a string with the possible options:
   * `"pid"` - Assign new participant to a condition based on participant ID (see below)
-  * `"balanced"` - Assign new participant to the condition that would best help maintain the relative group sizes in `conditionAssignments`, based on how many participants are already assigned to all conditions. First participant is assigned randomly.
+  * `"balanced"` - Assign new participant to the condition that would best help maintain the relative group sizes in `relConditionSizes`, based on how many participants are already assigned to all conditions. First participant is assigned randomly.
   * `"random"` - Assign new participant to a random condition
 * `conditionMapping` - Object containing mapping between PID and the index of the condition to which participants with that PID should be assigned to. (See below)
   
@@ -351,7 +352,7 @@ In json/config.json
     "developer" : false
   },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {
     "1234" : 0,
@@ -452,7 +453,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {
@@ -526,7 +527,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -604,7 +605,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -722,7 +723,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -789,7 +790,9 @@ The question text for each language will take the form of a simple string, with 
 * "This text will have <b>bold</b>" -> This text will have **bold**
 * "This text will have <i>italics</i>" -> This text will have _italics_
 * "This text will have \"quotes\"" -> This text will have "quotes"
-* "This is the first line \nThis is the second line" -> This is the first line <line break>This is the second line
+* "This is the first line \nThis is the second line" -> This is the first line (line break)This is the second line
+* "This text will have the smiling emoji: :simple_smile:" -> This text will have the smiling emoji: :simple_smile:
+  * See [this website](https://www.webfx.com/tools/emoji-cheat-sheet/) for a catalog of all the emojis that you can use in your text.
 
 The question text can also contain values of variables, which you can access as described in section <a href="#Variables">Variables</a>.
 
@@ -1463,7 +1466,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -1537,7 +1540,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -1625,17 +1628,22 @@ Furthermore, some information that reserved variables provide access to might be
 
 The following is a list of all the reserved variables, their data types, and their descriptions.
 
-| Var Name           | Data Type     | Description                                                                                                             | Sensitive? |
-|--------------------|---------------|-------------------------------------------------------------------------------------------------------------------------|------------|
-| `FIRST_NAME`       | `string`        | First name of the participant taken from Telegram                                                                       | Yes        |
-| `UNIQUE_ID`        | `string`        | Unique ID of the participant, generated by the chatbot                                                                  | No         |
-| `TODAY`            | `string`        | Abbreviated name of the current day (e.g., "Mon", "Wed", "Fri")                                                         | No         |
-| `CONDITION`        | `string`        | Name of the participant's condition. Is empty string if participant not assigned                                     | No         |
-| `STAGE_NAME`       | `string`        | Name of the currently running experiment stage. Is empty string if no stage running.                                    | No         |
-| `STAGE_DAY`        | `number`        | Number of the day of the current experiment stage. Is 1 on first day of stage.                                          | No         |
-| `ANSWER_LEN_CHARS` | `number`        | Length in characters of the user's current answer                                                                       | No         |
-| `ANSWER_LEN_WORDS` | `number`        | Length in words of the user's current answer                                                                            | No         |
-| `CURRENT_ANSWER`   | `number`/`strArr` | The current valid answer that the user submitted. Is type `number` only when `qType` of the current question is `number` | No         |
+| Var Name           | Data Type         | Description                                                                                                                                                       | Sensitive? |
+|--------------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| `FIRST_NAME`       | `string`          | First name of the participant taken from Telegram                                                                                                                 | Yes        |
+| `UNIQUE_ID`        | `string`          | Unique ID of the participant, generated by the chatbot                                                                                                            | No         |
+| `TODAY`            | `string`          | Abbreviated name of the current day (e.g., "Mon", "Wed", "Fri")                                                                                                   | No         |
+| `CONDITION`        | `string`          | Name of the participant's condition. Is empty string if participant not assigned                                                                                  | No         |
+| `STAGE_NAME`       | `string`          | Name of the currently running experiment stage. Is empty string if no stage running.                                                                              | No         |
+| `STAGE_DAY`        | `number`          | Number of the day of the current experiment stage. Is 1 on first day of stage.                                                                                    | No         |
+| `ANSWER_LEN_CHARS` | `number`          | Length in characters of the user's current answer                                                                                                                 | No         |
+| `ANSWER_LEN_WORDS` | `number`          | Length in words of the user's current answer                                                                                                                      | No         |
+| `CURRENT_ANSWER`   | `number`/`strArr` | The current valid answer that the user submitted. Is type `number` only when `qType` of the current question is `number`                                          | No         |
+| `TODAY`            | `str`             | Abbreviated form of the English name of the current day ("Sun", "Mon" ... "Sat"). Suitable for defining conditions based on the day.                              | No         |
+| `TODAY_NAME`       | `str`             | Full form of the current day name ("Sunday", "Monday" ... "Saturday") in the preferred language of the participant. Suitable for use in messages to participants. | No         |
+| `CURRENT_HOUR`     | `number`          | Hour value of the current time (e.g., 13, if current time is 13:44)                                                                                               | No         |
+| `CURRENT_MIN`      | `number`          | Minute value of the current time (e.g., 44, if current time is 13:44)                                                                                             | No         |
+
 
 Reserved variables are accessed by simply taking the name of any of the above reserved variables and enclosing it in `${...}`.
 
@@ -1950,7 +1958,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -1990,7 +1998,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -2023,7 +2031,7 @@ So how do we now ensure that these questions will appear? When the experiment st
 
 Feel free to skip over the following subsection on conditionless scheduled questions if your experiment has conditions, as it may not pertain to you.
 
-The following section, <a href="#Setup">Setup Questions</a>, will then ensure that you set some important parameters are set correctly so that your experiment runs smoothly.
+The following section, <a href="#UserPrompt">User Prompted Questions</a>, will show you how to define questions that users themselves can invoke, so that they do not have to wait for scheduled questions to appear.
 
 ### Detour: Conditionless Scheduled Questions
 
@@ -2054,6 +2062,129 @@ In json/noCondsConfig.json
 ```
 
 In this case too, the `scheduledQuestions` list is constructed in the same way as before.
+
+## <span id="UserPrompt"> User Prompted Questions </span>
+
+We saw how it is possible to prompt the user to answer questions using scheduled questions and reminders. But what if the user themselves wants to initiate a conversation with your chatbot? This is possible for the user by using the command `/talk`. This section describes what the user will see when they use this command, and how you can define what interactions the user can initiate with the bot and under which conditions this is possible.
+
+When the user sends the `/talk` command, what they will receive in the next message is a list of keywords, along with a description of the kind of conversation they will be initiating with the chatbot, if they send that keyword.
+
+Here is an example of what they might see:
+
+```
+Hi FirstName!
+
+I see that you want to tell me something. Send one of the following keywords in bold below corresponding to the topic you want to talk about.
+
+* Goals - Add some work or relationship goals to your day, before you begin reflection.
+
+* Survey - Fill out the survey regarding feedback on interaction with your superiors.
+
+* /cancel - Cancel this operation and return to experiment.
+```
+
+As you can see, there are some keywords (`Goals`, `Survey`) along with their descriptions. After this message, the user would simply have to send one of these keywords in a single message, and they would be able to have a conversation with the bot.
+
+What does it mean to have a conversation with the bot? It means that the bot will ask the user one or more questions in a sequence. This is the exact same behaviour as with questions that are scheduled, except the user can decide when to prompt the question to be asked.
+
+The text for the above message can be defined individually for each language in the `experiment` section of the [mandatory phrases](#span-idphrases-mandatory-phrases-span).
+
+To define the keywords and corresponding questions for each keyword, you will use the property `userPromptedQs`. This appears on the same level as `questionCategories` and `scheduledQuestions`, wherever these occur.
+
+The field `userPromptedQs` is a list of objects, each object corresponding to one of the possible interactions that the user can initiate with the chatbot. An object for a user-prompted question has the following properties:
+
+* `keyword` - the keyword that the user must enter to prompt that question. Defined for all available languages.
+* `description` - the explanation of what kind of question the user would be prompting by sending that keyword. Defined for all available languages.
+* `qId` - the question ID in the form of `"<questionCategory>.<qId>"` (just like in `scheduledQuestions`) that should be asked to the user to start that conversation.
+* `if` (optional) - conditions under which the user is allowed to initiate that conversation
+  * Conditions specified as described in the section on [Conditional Expressions](#span-idconditions-conditional-expressions-span).
+  * When the user sends the message `/talk`, only those options will be listed for which the condition is valid at that given point in time. That is, users will not have the option to initiate a conversation of a certain kind if this condition is not satisfied.
+
+Following these rules, we can define the user-prompted questions for `Condition1`, to achieve what the above example text displays:
+
+```
+[
+  {
+    "keyword" : {
+      "English" : "Goals",
+      "Deutsch" : "Ziele"
+    },
+    "description" : {
+      "English" : "Add some work or relationship goals to your day, before you begin reflection.",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "qId" : "morningQs.addGoalsLater",
+    "if" : "(${STAGE_NAME} == $S{Test}) AND (${reflectionStartedToday} != $B{true})"
+  },
+  {
+    "keyword" : {
+      "English" : "Survey",
+      "Deutsch" : "Umfrage"
+    },
+    "description" : {
+      "English" : "Fill out the survey regarding feedback on interaction with your superiors",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "qId" : "surveyQs.feedbackSurvey",
+    "if" : "(${STAGE_NAME} == $S{Test})"
+  }
+]
+```
+
+The above list will generate the example text shown above. If the user sends the command `/talk` and then the keyword `Goals`, they will receive the question with the `qId` `addGoalsLater` in the question category `morningQs` of `Condition1`.
+
+Note that it is only possible for the user to initiate a conversation with the keyword `Goals` if the value of their parameter `reflectionStartedToday` is `false`. This means that if they have already started reflection and their parameter `reflectionStartedToday` accordingly has the value `true`, then this option will not appear when they send the command `/talk`, and only the option `Survey` will appear.
+
+Also note that both of these conversations can be initated only during the stage `Test`. If the user sends the command `/talk` during any other stage, they will simply receive the text as defined in property `cannotStartTalk` of the [mandatory phrases](#span-idphrases-mandatory-phrases-span).
+
+In a similar manner, it is possible to define questions that can only be prompted within certain time frames by using conditional expressions with the parameter values `CURRENT_HOUR` and `CURRENT_MIN`.
+
+Now, we can simply add this list to the property `userPromptedQs` of `Condition1` in our experimenter configuration file:
+
+```
+In json/config.json
+
+{
+  "experimentName" : "ReflectiveLearning",
+  "experimentId" : "RL-Exp-1",
+  "languages" : [...],
+  "defaultLanguage" : "English",
+  "msPerCharacterDelay" : 5,
+  "instructions" : {...},
+  "debug" : { ... },
+  "experimentConditions" : ["Condition1", "Condition2"],
+  "relConditionSizes" : [1,1],
+  "assignmentScheme" : "balanced",
+  "conditionMapping" : {...},
+  "experimentStages" : {...},
+  "mandatoryParameters" : {...},
+  "customParameters" : {...},
+  "questionCategories" : {...},
+  "conditionQuestions" : {
+    "Condition1" : {
+      "questionCategories" : {...},
+      "scheduledQuestions" : [...],
+      "userPromptedQs" : [
+        { "keyword" : { "English" : "Goals", "Deutsch" : "Ziele" }, ... },
+        { "keyword" : { "English" : "Survey", "Deutsch" : "Umfrage" }, ... }
+      ]
+    },
+    "Condition2" : {
+      "questionCategories" : {...},
+      "scheduledQuestions" : [...]
+    }
+  }
+  ...
+}
+```
+
+Notes:
+* The user cannot initiate a new conversation when one is already underway, i.e., when there is an outstanding question that has not yet been answered.
+* Currently, if you want certain conversations to only be possible during a certain stage, this must be defined in the `"if"` property of the user-defined question.
+* The very last option with the keyword `/cancel` will be displayed automatically, and need not be included in the definition.
+* See the `experiment` section of the [mandatory phrases](#span-idphrases-mandatory-phrases-span) for all of the displayed text related to user-prompted questions.
+
+The following section, <a href="#Setup">Setup Questions</a>, will then ensure that some important parameters are set correctly so that your experiment runs smoothly.
 
 ## <span id="Setup"> Setup Questions and Starting the Experiment</span>
 
@@ -2437,7 +2568,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -2484,7 +2615,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -2517,6 +2648,7 @@ These mandatory phrases are simply phrases that would be displayed by the chatbo
 The following is a description of which cases which phrases occur, along with some notes about them.
 
 * `answerValidation` - phrases related to telling the user when an answer is invalid
+  * `defaultInvalid` - default statement of answer not being valid
   * `invalidOption` - when a user types in an option that is not present in the `options` field of `singleChoice` or `multiChoice` questions
   * `noOptions` - when a user selects the 'terminate choosing' answer without selecting any options in `multiChoice` questions
   * `notANumber` - when a user enters something that is not a number in response to a `number` type question
@@ -2528,6 +2660,7 @@ The following is a description of which cases which phrases occur, along with so
     * The variable `${MinLength}` in this phrase will be replaced by the actual `minLengthChars` specified in the question object
   * `notLongEnoughWords` - when a user's `freeform` or `freeformMulti` answer does not contain enough words as specified in `minLengthWords`
     * The variable `${MinLength}` in this phrase will be replaced by the actual `minLengthWords` specified in the question object
+  * `answerNotConforming` - when the user sends an invalid option for question type `freeform`, when parameter `answerShouldBe` is set
   * `terminateAnswerProperly` - when a user does not send the appropriate message to signify having finished a survey during a `qualtrics` type question
 * `keyboards` - phrases sent to the user when prompting certain types of questions
   * `singleChoice` - telling the user to select a single choice in `singleChoice` type questions
@@ -2540,34 +2673,60 @@ The following is a description of which cases which phrases occur, along with so
   * `linkToSurvey` - refer the user to the link to the survey in `qualtrics` type questions.
   * `likert5Options` - options for a five point likert scale in `likert5` type question. Must be a list of length 5.
   * `likert7Options` - options for a five point likert scale in `likert7` type question. Must be a list of length 7.
-* `endExperiment` - message sent automatically when the experiment has been ended.
+* `schedule` - phrases regarding messages that are scheduled
+  * `scheduleQNotif` - notice when a question has been scheduled. Only appears when `actionMessages` of `debugFlags` is set to `true`.
+  * `scheduleANotif` - notice when an action has been scheduled. Only appears when `actionMessages` of `debugFlags` is set to `true`.
+  * `dayNames` - names of the days of the week in every language for use in question/reply text, accessible by the variable `TODAY_NAME`
+  * `reminderTextLong` - long reminder text displayed in first reminder in series
+  * `reminderTextShort` - short reminder text displayed in subsequent reminders in series
+* `experiment` - phrases for communicating information about the state of the experiment
+  * `endExperiment` - message sent automatically when the experiment has been ended.
+  * `reportFeedback` - message sent when the user uses the command `/report`
+  * `reportFeedbackCancel` - when the user uses `/cancel` to cancel the reporting of feedback
+  * `experimentContinue` - message indicating that the experiment will continue as normal after feedback has been cancelled
+  * `reportFeedbackThanks` - message thanking the user for reporting feedback 
+  * `repeatFail` - when the user sends command `/repeat` and there is no outstanding question to repeat
+  * `cannotHelp` - when the user sends command `/help` and there is an error with displaying the instructions.
+  * `didntUnderstand` - when the user sends a message that the bot does not expect, when there are no outstanding questions
+  * `cannotInteractAfterEnd` - when the user attempts to converse with the bot after the experiment has ended
+  * `nothingToCancel` - when the user sends command `/cancel` although there is nothing outstanding to be cancelled
+  * `talkStart` - first message that is sent when the user sends command `/talk`, and there are available options to select
+  * `talkCancelDescription` - description of the `/cancel` operation in the list of options for command `/talk`
+  * `talkCancelled` - message sent when the user sends `/cancel` after starting the `/talk` operation
+  * `talkKeywordNotRecognized` - when the user sends a keyword that is not valid after sending the `/talk` command
+  * `cannotStartTalk` - when the user sends `/talk` but there are no options for the user to start an interaction at that time
+  * `cannotStartTalkOutstanding` - when the user tries to initiate a conversation with `/talk` although there is currently an outstanding question
 
 Below is the object with all of the above phrases. You can consider this as a template to copy and paste, instead of as an example. You may change phrases to adjust the tone of the chatbot, or add a language as you see fit. Just make sure that the language is spelled correctly, just as it is in the field `languages` of the experimenter JSON object. Also make sure, if you are adding a language, that you enter the language for ALL of the phrases.
 
 After this template, you will see how this is added to the experimenter JSON object.
 
 ```
-"phrases" : {
+{
   "answerValidation": {
+    "defaultInvalid" : {
+      "English": "That is not a valid answer.",
+      "Deutsch": "Das ist keine gültige Antwort."
+    },
     "invalidOption": {
-      "English": "Please pick <b>only from the given options</b>",
-      "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+      "English": "Please pick <b>only from the given options</b>.",
+      "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>."
     },
     "noOptions": {
-      "English": "Please select <b>at least one option</b>",
-      "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>"
+      "English": "Please select <b>at least one option</b>.",
+      "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>."
     },
     "notANumber": {
-      "English": "Please enter a number",
-      "Deutsch": "Geben Sie eine Zahl ein"
+      "English": "Please enter a number.",
+      "Deutsch": "Geben Sie eine Zahl ein."
     },
     "numberTooHigh": {
-      "English": "Please enter a number below ${UpperBound}",
-      "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
+      "English": "Please enter a number below ${UpperBound}.",
+      "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}."
     },
     "numberTooLow": {
-      "English": "Please enter a number above ${LowerBound}",
-      "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+      "English": "Please enter a number above ${LowerBound}.",
+      "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}."
     },
     "notLongEnoughChars" : {
       "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} characters.",
@@ -2577,39 +2736,47 @@ After this template, you will see how this is added to the experimenter JSON obj
       "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
       "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
     },
+    "answerNotConforming" : {
+      "English" : "That is not a valid answer. Did you mean one of the following?",
+      "Deutsch" : "Das ist keine gültige Antwort. Meinten Sie vielleicht eines der Folgenden?"
+    },
     "terminateAnswerProperly" : {
-      "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
-      "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
+      "English" : "Please type the correct response to continue after the survey.",
+      "Deutsch" : "Bitte geben Sie die richtige Antwort ein, um nach der Umfrage fortzufahren."
     }
   },
   "keyboards": {
     "singleChoice": {
-      "English": "Please pick one from the given options. You may need to scroll down to see all options.",
+      "English": "Please select from the available options. You may need to scroll down to see all of them.",
       "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
     },
     "multiChoice": {
-      "English": "Choose as many options as you like. Click Done to finish choosing. You may need to scroll down to see all options.",
+      "English": "Choose as many options as you like. <b>Remember to click <i>Done</i> to finish choosing.</b> You may need to scroll down to see all options.",
       "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
     },
     "terminateAnswer": {
       "English": "Done",
       "Deutsch": "Fertig"
     },
+    "finishedChoosingReply": {
+      "English": "I have noted down your choices.",
+      "Deutsch": "Ich habe Ihre Wahlen notiert."
+    },
     "qualtricsFillPrompt" : {
-      "English" : "Please follow the link below to the survey",
-      "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage"
+      "English" : "Please follow the link below to the survey.",
+      "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage."
     },
     "qualtricsDonePrompt" : {
       "English" : "Send <i>Done</i> when you are finished with the survey.",
       "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
     },
     "freeformSinglePrompt" : {
-      "English" : "Type in your answer in a <b>single</b> message and send.",
+      "English" : "Type in your answer in a <b>single</b> message and press 'send'.",
       "Deutsch" : "Geben Sie Ihre Antwort in nur <b>einer</b> Nachricht ein."
     },
     "freeformMultiPrompt" : {
-      "English" : "Type in your answer over one or multiple messages. Send the message <i>Done</i> when complete.",
-      "Deutsch" : "Geben Sie Ihre Antwort über eine oder mehrere Nachrichten ein. Senden Sie <i>Fertig</i>, wenn fertig"
+      "English" : "Type in your answer over one or multiple messages. <b>Remember to send <i>Done</i> in a separate message when you have finished answering.</b>",
+      "Deutsch" : "Geben Sie Ihre Antwort über eine oder mehrere Nachrichten ein. Senden Sie <i>Fertig</i>, wenn fertig."
     },
     "linkToSurvey" : {
       "English" : "Link to Survey (opens in browser)",
@@ -2652,9 +2819,93 @@ After this template, you will see how this is added to the experimenter JSON obj
       ]
     }
   },
-  "endExperiment" : {
-    "English" : "You have successfully completed the experiment! You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
-    "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
+  "schedule" : {
+    "scheduleQNotif" : {
+      "English" : "Question scheduled for the following time:",
+      "Deutsch" : "Frage geplant zur folgenden Zeit:"
+    },
+    "scheduleANotif" : {
+      "English" : "Action scheduled for the following time:",
+      "Deutsch" : "Handlung geplant zur folgenden Zeit:"
+    },
+    "dayNames" : {
+      "English" : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "Deutsch" : ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+    },
+    "reminderTextLong" : {
+      "English" : "Reminder: you have an outstanding question. Please provide an answer as instructed, or type <i>/repeat</i> to see the question again.\n\nIf you have already typed or selected your answer(s), it may be that you have not sent the appropriate message to continue. Instead of repeating the question, you may simply continue with your answer in the next message. <b>If you choose to repeat the question, you must enter or select all your answer(s) once again.</b>",
+      "Deutsch" : "Hier ist eine Erinnerung, dass Sie eine ausstehende Frage noch haben. Geben Sie Ihre Antwort nach Anweisungen ein, oder senden Sie <i>/repeat</i>, um die Frage zu wiederholen."
+    },
+    "reminderTextShort" : {
+      "English" : "Here's a reminder: you have an outstanding question. Please provide an answer as instructed, or type <i>/repeat</i> to see the question again.",
+      "Deutsch" : "Hier ist eine Erinnerung, dass Sie eine ausstehende Frage noch haben. Geben Sie Ihre Antwort nach Anweisungen ein, oder senden Sie <i>/repeat</i>, um die Frage zu wiederholen."
+    }
+  },
+  "experiment" : {
+    "endExperiment" : {
+      "English" : "You will no longer receive any messages from me. Thank you for participating! I hope I was able to help you improve your decision-making.",
+      "Deutsch" : "Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
+    },
+    "reportFeedback" : {
+      "English" : "<b>Report Feedback</b>\n\nJust type in your feedback in a single message and press send!\n\nIf this was a mistake and you don't want to report feedback, send <i>/cancel</i>.",
+      "Deutsch" : "<b>Feedback Melden</b>\n\nGeben Sie Ihr Feedback in eine Nachricht ein und schicken Sie es einfach ab!\n\nWenn Sie sich vertan haben und kein Feedback melden wollen, senden Sie <i>/cancel</i>."
+    },
+    "reportFeedbackCancel" : {
+      "English" : "Feedback reporting has been cancelled.",
+      "Deutsch" : "Feedback-Melden wurde abgebrochen."
+    },
+    "experimentContinue" : {
+      "English" : "The experiment will now continue as normal. If there is an outstanding question to answer, send <i>/repeat</i> to see it again.",
+      "Deutsch" : "Das Experiment geht weiter wie gewohnt. Wenn eine Frage noch aussteht, senden Sie <i>/repeat</i>, um sie wieder aufzurufen."
+    },
+    "reportFeedbackThanks" : {
+      "English" : "Thank you for your valuable feedback!",
+      "Deutsch" : "Danke für das nützliche Feedback!"
+    },
+    "repeatFail" : {
+      "English" : "No outstanding questions!",
+      "Deutsch" : "Keine ausstehenden Fragen!"
+    },
+    "cannotHelp" : {
+      "English" : "Sorry, I cannot help you any further at this moment!",
+      "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht weiter helfen!"
+    },
+    "didntUnderstand" : {
+      "English" : "Sorry, I didn't understand what you are trying to say! Send <i>/help</i> if you would like more information on how to interact with me, or wait for the next time that I ask you a question to talk to me.",
+      "Deutsch" : "Tut mir leid, ich habe das nicht verstanden! Senden Sie <i>/help</i>, wenn Sie mehr Informationen dazu möchten, wie mit mir zu interagieren ist, oder warten Sie einfach auf meine nächste Frage, um mit mir zu reden."
+    },
+    "cannotInteractAfterEnd" : {
+      "English" : "Sorry, I cannot respond to you at this moment! The experiment has been ended. If you would like to report something, use the /report command.\n\nYou can contact the experimenters directly at srinidhi.srinivas@tuebingen.mpg.de",
+      "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht antworten! Das Experiment ist beendet worden. Wenn Sie etwas berichten möchten, benutzen Sie den Befehl /report.\n\nSie können die Experimenter direkt unter srinidhi.srinivas@tuebingen.mpg.de kontaktieren."
+    },
+    "nothingToCancel" : {
+      "English" : "No operations that have to be cancelled are running right now!",
+      "Deutsch" : "Keine Operationen sind jetzt am Laufen, die abgebrochen werden müssen!"
+    },
+    "talkStart" : {
+      "English" : "Hi ${FIRST_NAME}!\n\nI see that you want to tell me something. Send one of the following keywords in bold below corresponding to the topic you want to talk about.",
+      "Deutsch" : "Hi ${FIRST_NAME}!\n\nIch sehe, dass Sie mir etwas sagen wollen. Senden Sie eines der untenstehenden Stichwörter im Fettdruck, das dem Thema entspricht, das Sie besprechen wollen."
+    },
+    "talkCancelDescription" : {
+      "English" : "Cancel this operation and return to experiment.",
+      "Deutsch" : "Operation abbrechen und zum Experiment zurückgehen."
+    },
+    "talkCancelled" : {
+      "English" : "Seems like you don't have anything else to tell me now. No problem!",
+      "Deutsch" : "Es scheint, dass Sie mir jetzt sonst nichts zu sagen haben. Kein Problem!"
+    },
+    "talkKeywordNotRecognized" : {
+      "English" : "I didn't understand. Please try again and make sure to type in the keyword correctly.",
+      "Deutsch" : "Ich habe nicht verstanden. Versuchen Sie noch einmal, und stellen Sie sicher, das Stichwort richtig einzugeben."
+    },
+    "cannotStartTalk" : {
+      "English" : "Sorry, but there is nothing I can talk to you about at this point in time. Please try another time, or wait for the next scheduled question.",
+      "Deutsch" : "Entschuldigung, es gibt derzeit nichts, über das ich mit Ihnen reden kann. Versuchen später noch einmal, oder warten Sie auf die nächste geplante Frage."
+    },
+    "cannotStartTalkOutstanding" : {
+      "English" : "Sorry, but I cannot talk to you about anything else while there is an outstanding question. Send <i>/repeat</i> to see the question again.",
+      "Deutsch" : "Entschuldigung, ich kann nicht mit Ihnen über sonst etwas reden, wenn eine Frage aussteht. Senden Sie <i>/repeat</i>, um die Frage wieder abzurufen."
+    }
   }
 }
 ```
@@ -2675,7 +2926,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced"
   "experimentStages" : {...},
   "mandatoryParameters" : {...},
@@ -2759,7 +3010,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : {...},
   "experimentStages" : {...},
@@ -2793,7 +3044,7 @@ In json/config.json
   "instructions" : {...},
   "debug" : { ... },
   "experimentConditions" : ["Condition1", "Condition2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "conditionMapping" : "$F{json/PIDCondMap.json}",
   "experimentStages" : "$F{json/experimentStages.json}",

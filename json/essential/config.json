@@ -2,7 +2,7 @@
   "experimentName" : "Reflective Learning in Organizations - Pilot",
   "experimentId" : "RL-Orgs-Pilot",
   "experimentConditions" : ["ControlLeader", "ShallowLeader", "MCLeader", "ControlFollower", "ShallowFollower", "MCFollower"],
-  "conditionAssignments" : [1, 1, 1, 1, 1, 1],
+  "relConditionSizes" : [1, 1, 1, 1, 1, 1],
   "assignmentScheme" : "pid",
   "conditionMapping" : "$F{json/experiments/RL-Orgs-Pilot/PIDCondMap.json}",
   "msPerCharacterDelay" : 5,

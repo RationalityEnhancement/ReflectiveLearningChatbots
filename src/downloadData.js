@@ -84,8 +84,8 @@ const config = ConfigReader.getExpConfig();
         experimentList.push(experiment.experimentId);
         experimentList.push(experiment.experimentName);
         experimentList.push(experiment.experimentConditions.join('-'));
-        experimentList.push(experiment.conditionAssignments.join('-'));
-        experimentList.push(experiment.currentlyAssignedToCondition.join(''));
+        experimentList.push(experiment.relConditionSizes.join('-'));
+        experimentList.push(experiment.conditionAssignments.join(''));
         let CSVString = experimentHeaders.join(',') + '\n' + experimentList.join(',');
         fs.writeFileSync(experimentCSVPath, CSVString);
         console.log("\nWritten experiment to CSV!\n" + experimentCSVPath)

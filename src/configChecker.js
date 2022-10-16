@@ -24,15 +24,15 @@ module.exports.checkConfig = () => {
   assert(config.experimentId.length > 0, "config missing experiment id");
   assert("experimentConditions" in config, "config missing experiment conditions" );
   assert(config.experimentConditions.length > 0, "config missing experiment conditions");
-  assert("conditionAssignments" in config, "config missing condition assignments");
-  assert(config.conditionAssignments.length > 0, "config missing condition assignments");
+  assert("relConditionSizes" in config, "config missing relative condition sizes");
+  assert(config.relConditionSizes.length > 0, "config missing relative condition sizes");
   assert("assignmentScheme" in config, "config missing assignment scheme");
   assert(config.assignmentScheme.length > 0, "config missing assignment scheme");
   
-  assert(config.experimentConditions.length == config.conditionAssignments.length, "# of condition assigments does not match # of expt conditions");
+  assert(config.experimentConditions.length == config.relConditionSizes.length, "# of condition assigments does not match # of expt conditions");
   assert(validAssignmentSchemes.includes(config.assignmentScheme), "assignmentScheme is invalid");
   
-  assert(config.conditionAssignments.every(val => !isNaN(val)), "condition assignments should be numbers");
+  assert(config.relConditionSizes.every(val => !isNaN(val)), "relative condition sizes should be numbers");
 
   // : Check parameter data types are valid
   // : Validate presence of all languages in all questions

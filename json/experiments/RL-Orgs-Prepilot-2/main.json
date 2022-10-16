@@ -2,7 +2,7 @@
   "experimentName" : "Reflective Learning in Organizations - Prepilot 2",
   "experimentId" : "RL-Orgs-Prepilot-2",
   "experimentConditions" : ["MC", "Shallow", "Control"],
-  "conditionAssignments" : [1, 1, 1],
+  "relConditionSizes" : [1, 1, 1],
   "assignmentScheme" : "balanced",
   "experimentLengthWeeks" : 2,
   "msPerCharacterDelay" : 5,

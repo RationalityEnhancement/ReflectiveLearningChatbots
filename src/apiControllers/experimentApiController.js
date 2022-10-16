@@ -62,18 +62,18 @@ exports.updateField = async (experimentId, field, value) => {
 }
 
 // Initialize the experiment document with some basic essential information
-exports.initializeExperiment = async (experimentId, experimentName, experimentConditions, conditionAssignments) => {
+exports.initializeExperiment = async (experimentId, experimentName, experimentConditions, relConditionSizes) => {
   try{
     if (!experimentConditions) experimentConditions = [];
-    if (!conditionAssignments) conditionAssignments = [];
+    if (!relConditionSizes) relConditionSizes = [];
     return Experiment.findOneAndUpdate(
         { experimentId: experimentId },
         {
           $set: {
             experimentName: experimentName,
             experimentConditions: experimentConditions,
-            conditionAssignments: conditionAssignments,
-            currentlyAssignedToCondition: new Array(experimentConditions.length).fill(0)
+            relConditionSizes: relConditionSizes,
+            conditionAssignments: new Array(experimentConditions.length).fill(0)
           }
         },
         { new: true}
@@ -90,7 +90,7 @@ exports.initializeExperiment = async (experimentId, experimentName, experimentCo
 //          are rejected and no changes are made!
 exports.updateConditionAssignees = async (experimentId, conditionIdx, updateVal) => {
   try{
-    const field = "currentlyAssignedToCondition";
+    const field = "conditionAssignments";
     let condition = {
       experimentId : experimentId
     }

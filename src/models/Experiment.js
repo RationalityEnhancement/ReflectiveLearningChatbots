@@ -4,8 +4,8 @@ exports.ExperimentSchema = new Schema({
   experimentName: String,
   experimentId: String,
   experimentConditions: [String],
-  conditionAssignments: [Number],
-  currentlyAssignedToCondition: [{
+  relConditionSizes: [Number],
+  conditionAssignments: [{
     type: Number,
     min: 0,
     default: 0

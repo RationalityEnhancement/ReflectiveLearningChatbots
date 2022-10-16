@@ -38,8 +38,8 @@ describe('Experiment Controller API: ', () =>{
 		let newExp = await experiments.get(testId);
 		expect(newExp['experimentName']).to.equal('TestName');
 		expect(newExp['experimentConditions']).to.eql(["Control", "Experiment"]);
-		expect(newExp['conditionAssignments']).to.eql([1,1]);
-		expect(newExp['currentlyAssignedToCondition']).to.eql([0,0]);
+		expect(newExp['relConditionSizes']).to.eql([1,1]);
+		expect(newExp['conditionAssignments']).to.eql([0,0]);
 	})
 	it('Should update String field', async () => {
 		
@@ -55,9 +55,9 @@ describe('Experiment Controller API: ', () =>{
 	it('Should update array field', async () => {
 		
 		const testArray = [2,2];
-		let exp1 = await experiments.updateField(testId, 'currentlyAssignedToCondition', testArray);
+		let exp1 = await experiments.updateField(testId, 'conditionAssignments', testArray);
 		let exp2 = await experiments.get(testId);
-		expect(exp2.currentlyAssignedToCondition).to.eql(testArray);	
+		expect(exp2.conditionAssignments).to.eql(testArray);	
 		
 	});
 
@@ -66,7 +66,7 @@ describe('Experiment Controller API: ', () =>{
 		const testCondIdx = 1;
 		let exp1 = await experiments.updateConditionAssignees(testId, testCondIdx, 1);
 		let exp2 = await experiments.get(testId)
-		expect(exp2["currentlyAssignedToCondition"]).to.eql([2,3]);
+		expect(exp2["conditionAssignments"]).to.eql([2,3]);
 	});
 
 
@@ -74,13 +74,13 @@ describe('Experiment Controller API: ', () =>{
 		const testCondIdx = 0;
 		await experiments.updateConditionAssignees(testId, testCondIdx, -1);
 		let experiment = await experiments.get(testId)
-		expect(experiment["currentlyAssignedToCondition"]).to.eql([1,3]);
+		expect(experiment["conditionAssignments"]).to.eql([1,3]);
 	});
 	it('Should decrease assigned to condition - edge case 0', async () => {
 		const testCondIdx = 0;
 		let newExp = await experiments.updateConditionAssignees(testId, testCondIdx, -2);
 		let experiment = await experiments.get(testId)
-		expect(experiment["currentlyAssignedToCondition"]).to.eql([1,3]);
+		expect(experiment["conditionAssignments"]).to.eql([1,3]);
 	});
 	it('Should add an error', async () => {
 		let part = {

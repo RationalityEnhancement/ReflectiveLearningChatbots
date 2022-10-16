@@ -2,7 +2,7 @@
   "experimentName" : "ExampleExperiment",
   "experimentId" : "experiment123",
   "experimentConditions" : ["C1", "C2"],
-  "conditionAssignments" : [1,1],
+  "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "debug" : {
     "experimenter" : true,

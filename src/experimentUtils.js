@@ -45,7 +45,7 @@ module.exports.resolveAssignmentScheme = resolveAssignmentScheme;
   In:
     participantId -> Id of participant
     pidMap -> object mapping PIDs to condition indices
-    conditionAssignments -> array of same length containing ratios of group
+    relConditionSizes -> array of same length containing ratios of group
                             sizes
     currentAssignment -> array of same length containing number of participants
                           already assigned to each corresponding condition
@@ -56,18 +56,18 @@ module.exports.resolveAssignmentScheme = resolveAssignmentScheme;
     exists in numbers are exceeded 
 
 */
-module.exports.assignToCondition = (participantId, pidMap, conditionAssignments, currentAssignments, assignmentScheme) => {
+module.exports.assignToCondition = (participantId, pidMap, relConditionSizes, currentAssignments, assignmentScheme) => {
   // Error handling
   if(!DevConfig.validAssignmentSchemes.includes(assignmentScheme)){
     return ReturnMethods.returnFailure("ExpUtils: assignmentScheme invalid for condition assignment")
   }
-  if(!conditionAssignments || conditionAssignments.length === 0 || !conditionAssignments.some(val => val > 0)){
+  if(!relConditionSizes || relConditionSizes.length === 0 || !relConditionSizes.some(val => val > 0)){
     return ReturnMethods.returnFailure("ExpUtils: condition ratios invalid for condition assignment")
   }
   if(!currentAssignments || currentAssignments.length === 0){
     return ReturnMethods.returnFailure("ExpUtils: current assignments invalid for condition assignment")
   }
-  if(conditionAssignments.length !== currentAssignments.length){
+  if(relConditionSizes.length !== currentAssignments.length){
     return ReturnMethods.returnFailure("ExpUtils: condition ratios and current assignment do not match length")
   }
 
@@ -78,8 +78,8 @@ module.exports.assignToCondition = (participantId, pidMap, conditionAssignments,
     let totalParts = currentAssignments.reduce((a, b) => a + b, 0);
     let relCurAssignments = currentAssignments.map(n => parseFloat(n / totalParts));
     
-    let relParts = conditionAssignments.reduce((a, b) => a + b, 0);
-    let relReqAssignments = conditionAssignments.map(n => parseFloat(n / relParts));
+    let relParts = relConditionSizes.reduce((a, b) => a + b, 0);
+    let relReqAssignments = relConditionSizes.map(n => parseFloat(n / relParts));
 
     let relDiffs = [];
     for(let i=0; i < relCurAssignments.length; i++){
@@ -87,7 +87,7 @@ module.exports.assignToCondition = (participantId, pidMap, conditionAssignments,
     }
     return ReturnMethods.returnSuccess(relDiffs.indexOf(Math.max(...relDiffs)));
   } else {
-    return ReturnMethods.returnSuccess(Math.floor(Math.random() * conditionAssignments.length));
+    return ReturnMethods.returnSuccess(Math.floor(Math.random() * relConditionSizes.length));
   }
 }
 

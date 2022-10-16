@@ -2,7 +2,7 @@
   "experimentName" : "DayOne",
   "experimentId" : "ScheduleTest",
   "experimentConditions" : ["Control", "Experimental"],
-  "conditionAssignments" : [0.5, 0.5],
+  "relConditionSizes" : [0.5, 0.5],
   "assignmentScheme" : "pid",
   "mandatoryParameters" : {
     "language" : "string",

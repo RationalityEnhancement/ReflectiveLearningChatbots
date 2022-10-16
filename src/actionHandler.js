@@ -126,8 +126,8 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             let scheme = config.assignmentScheme;
 
             // Get the current state of experiment conditions
-            let conditionRatios = experiment["conditionAssignments"];
-            let currentAssignments = experiment["currentlyAssignedToCondition"];
+            let conditionRatios = experiment["relConditionSizes"];
+            let currentAssignments = experiment["conditionAssignments"];
             let conditionNames = experiment["experimentConditions"];
 
             // Assign participant to condition

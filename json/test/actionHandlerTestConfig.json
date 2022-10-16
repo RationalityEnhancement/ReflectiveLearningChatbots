@@ -2,7 +2,7 @@
   "experimentName" : "ActHandler",
   "experimentId" : "12345",
   "experimentConditions" : ["Control", "Experimental"],
-  "conditionAssignments" : [0.5, 0.5],
+  "relConditionSizes" : [0.5, 0.5],
   "assignmentScheme" : "pid",
   "debug" : {
     "experimenter" : true,

@@ -833,6 +833,10 @@ The following are optional parameters that can be added to the question object:
 * `minLengthWords` - a number specifying the minimum number of words the answer must be in order to be valid
   * if invalid, the user is sent the <a href="#Phrases">phrase</a> `answerValidation.notLongEnoughWords` and the question is repeated
   * this parameter cannot be set if `minLengthChars` is also set
+* `answerShouldBe` - a list of answers that the user's answer has to match
+  * if invalid, the user is sent the [phrase](#span-idphrases-mandatory-phrases-span) `answerValidation.answerNotConforming`
+  * the user is also suggested a list of 5 answers that are closest in edit distance to the answer that the user input, in case the user has misspelled something
+  * see example below for more information
 
 Example question that prompts free typing in a single message, with the requirement that the answer is at least 10 words:
 
@@ -846,6 +850,34 @@ Example question object freeform
   "minLengthWords" : 10
 }
 ```
+
+```
+Example question object freeform - with parameter "answerShouldBe"
+
+{
+  "qId" : "exFreeform",
+  "text" : {...},
+  "qType" : "freeform",
+  "answerShouldBe" : ["answer1", "not an answer", "answer12", "answer123"]
+}
+```
+
+```
+Example chatbot response if the user sends the answer "answer" to the above question
+
+That is not a valid answer. Did you mean one of the following?
+
+* answer1
+
+* answer12
+
+* answer123
+
+* not an answer
+
+```
+
+
 
 #### Freeform Multiline - "freeformMulti"
 
@@ -1018,7 +1050,7 @@ Example question object number
 
 Provides the user with a link to an experimenter-specified qualtrics survey. The experimenter can also add fields that will be added as query strings to the survey link, in order to serve as meta-data for that particular response to the survey (for example, linking the participant's ID to the survey response.)
 
-Once the user is finished with the survey, they must send the <a href="#Phrases">phrase</a> `keyboards.terminateAnswer` for the appropriate language in a single message, so that the chatbot can continue.
+Once the user is finished with the survey, they must send the <a href="#Phrases">phrase</a> `keyboards.terminateAnswer` for the appropriate language in a single message, so that the chatbot can continue. It is also possible to set custom strings that the user must send to continue from the survey.
 
 The value of the `qType` of the question object should be `"qualtrics"`
 
@@ -1029,6 +1061,8 @@ The following are optional parameters that can be added to the question object f
 * `qualtricsFields` - list containing objects each having a `field` and `value`. Each of these is appended to the link as query strings to be passed as meta-data for the survey response.
   * `field` and `value` must be strings. `value` can also be the value of a <a href="#Variables">variable</a> at that point in time.
   * `value` should not contain characters &, = or ?
+* `continueStrings` - list of strings containing custom answers that the user can send in order to continue from the survey
+  * e.g., can be used to input survey completion codes, to ensure interaction does not continue until the survey is completed
 
 Example question that shows the question text and then prompts the user to fill out a survey, passing the meta-data of the user's unique ID, as well as the current stage and the experimental condition.
 
@@ -1183,17 +1217,18 @@ So we finally come to the topic that has been teased a few times before - what i
 
 Each action has an action type, `aType`, and zero or more string arguments `args` that are required for a particular action. Together, these two fields form the 'action object', representing the execution of a single action. After seeing, in the following table, the descriptions of each action and their arguments, we will pick appropriate actions we might want to perform after our example question.
 
-| aType               | description                                                                                          | arg 1                    | arg 1 type                | arg 2       | arg 2 type                                | example action object                                                 | notes                                                                                           |
-|---------------------|------------------------------------------------------------------------------------------------------|--------------------------|---------------------------|-------------|-------------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| `assignToCondition` | Assigns user to a particular condition based on the `assignmentScheme`                               | none                     | none                      | none        | none                                      | `{ "aType" : "assignToCondition" }`                                   |                                                                                                 |
-| `startStage`        | Starts a certain experiment stage at day 1, ending the previous stage if any was running             | name of valid stage      | string                    | none        | none                                      | `{ "aType" : "startStage", args : ["Pre-Test"] }`                     | If the experiment has conditions, execute only when user is **already assigned to a condition** |
-| `incrementStageDay` | Manually increment the current day of a stage by 1  | name of valid stage      | string                    | none        | none                                      | `{ "aType" : "incrementStageDay", args : ["Test"] }`                  | incrementing of stage day occurs automatically on a daily basis already                         | 
-| `endExperiment`     | Manually causes the experiment to end | none                     | none                      | none        | none                                      | `{ "aType" : "incrementStageDay" }`                                   | ending experiment occurs automatically after the end of last stage (if it has finite length)    |
-| `saveAnswerTo`      | Save the user's answer to the current question to a certain variable (parameter)                     | valid variable name      | string, strArr, or number | none        | none                                      | `{ "aType" : "saveAnswerTo", args : ["numGoalsSet"] }`                | save to number only when `qType` is `"number"`                                                  |
-| `addAnswerTo`       | Add the user's current answer to the end of a certain array variable (parameter)                     | valid variable name | strArr or numArr          | none        | none                                      | `{ "aType" : "addAnswerTo", args : ["goalsSetToday"] }`               | add to number array only when `qType` is `"number"`                                             |
-| `setBooleanVar`     | Set the value of a particular boolean variable to either true or false                               | valid variable name | boolean                   | new value   | <a href="#Constants">boolean constant</a> | `{ "aType" : "setBooleanVar", args : ["wantsToReflect", "$B{true}"] }` |                                                                                                 |
-| `addValueTo`        | Add a number value to a number variable                                                              | valid variable name | number                    | added value | <a href="#Constants">number constant</a>  | `{ "aType" : "addValueTo", args : ["numGoalsSet", "$N{2}"] }`         |                                                                                                 |
-| `clearVar`          | Clears a certain variable to default value (see <a href="#Parameters">Parameters</a>)                | valid variable name | any parameter type        | none         | none                                      | `{ "aType" : "clearVar", args : ["goalsSetToday"] }`         |                                                                                                 |
+| aType               | description                                                                              | arg 1               | arg 1 type                | arg 2       | arg 2 type                                | example action object                                                  | notes                                                                                                                                  |
+|---------------------|------------------------------------------------------------------------------------------|---------------------|---------------------------|-------------|-------------------------------------------|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| `assignToCondition` | Assigns user to a particular condition based on the `assignmentScheme`                   | none                | none                      | none        | none                                      | `{ "aType" : "assignToCondition" }`                                    |                                                                                                                                        |
+| `startStage`        | Starts a certain experiment stage at day 1, ending the previous stage if any was running | name of valid stage | string                    | none        | none                                      | `{ "aType" : "startStage", args : ["Pre-Test"] }`                      | If the experiment has conditions, execute only when user is **already assigned to a condition**                                        |
+| `incrementStageDay` | Manually increment the current day of a stage by 1                                       | name of valid stage | string                    | none        | none                                      | `{ "aType" : "incrementStageDay", args : ["Test"] }`                   | incrementing of stage day occurs automatically on a daily basis already                                                                | 
+| `endExperiment`     | Manually causes the experiment to end                                                    | none                | none                      | none        | none                                      | `{ "aType" : "incrementStageDay" }`                                    | ending experiment occurs automatically after the end of last stage (if it has finite length)                                           |
+| `saveAnswerTo`      | Save the user's answer to the current question to a certain variable (parameter)         | valid variable name | string, strArr, or number | none        | none                                      | `{ "aType" : "saveAnswerTo", args : ["numGoalsSet"] }`                 | save to number only when `qType` is `"number"`                                                                                         |
+| `saveOptionIdxTo`   | Save the index of the user's answer in the list of options to a variable (parameter)     | valid variable name | number, numArr            | none        | none                                      | `{ "aType" : "saveOptionIdxTo", args : ["selectedGoalIdx"] }`          | only possible for `singleChoice` and `multiChoice` type questions. `multiChoice` type question saves array of indices of all chosen answers. |
+| `addAnswerTo`       | Add the user's current answer to the end of a certain array variable (parameter)         | valid variable name | strArr or numArr          | none        | none                                      | `{ "aType" : "addAnswerTo", args : ["goalsSetToday"] }`                | add to number array only when `qType` is `"number"`                                                                                    |
+| `setBooleanVar`     | Set the value of a particular boolean variable to either true or false                   | valid variable name | boolean                   | new value   | <a href="#Constants">boolean constant</a> | `{ "aType" : "setBooleanVar", args : ["wantsToReflect", "$B{true}"] }` |                                                                                                                                        |
+| `addValueTo`        | Add a number value to a number variable                                                  | valid variable name | number                    | added value | <a href="#Constants">number constant</a>  | `{ "aType" : "addValueTo", args : ["numGoalsSet", "$N{2}"] }`          |                                                                                                                                        |
+| `clearVar`          | Clears a certain variable to default value (see <a href="#Parameters">Parameters</a>)    | valid variable name | any parameter type        | none         | none                                      | `{ "aType" : "clearVar", args : ["goalsSetToday"] }`                   |                                                                                                                                        |
 
 
 As you may see in the examples already, building an action object requires a field `aType` and a field `args`. If there are no required arguments for a given `aType`, the `args` field can be omitted from the action object. If there are arguments, then `args` must be a **list of strings**, even if there is only one argument.
@@ -1808,12 +1843,12 @@ Keep in mind that the operators are **NOT commutative**. This means that `"A op 
 | `>=`              | Checks whether op1 strictly greater than op2                  | number              | number         | `"${STAGE_DAY} > $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                         |                                                                                                                 |
 | `<=`              | Checks whether op1 lesser than or equal to op2                | number              | number         | `"${STAGE_DAY} <= $N{3}"`                       | `true` when var `STAGE_DAY` has value `>= 3`                                                        |                                                                                                                 |
 | `<`               | Checks whether op1 strictly lesser than op2                   | number              | number         | `"${STAGE_DAY} < $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                         |                                                                                                                 |
-| `CONTAINS_STRING` | Checks whether op1 contains the string op2                    | string              | string         | `"${STAGE_NAME} CONTAINS_STRING $S{"Pre"}"`     | `true` when var `STAGE_NAME` has `"Pre"` anywhere as a substring (e.g., `"Pre-Test"`, `"rePresent"`)      |                                                                                                                 |
+| `CONTAINS_STRING` | Checks whether op1 contains the string op2                    | string, strArr      | string         | `"${STAGE_NAME} CONTAINS_STRING $S{"Pre"}"`     | `true` when var `STAGE_NAME` has `"Pre"` anywhere as a substring (e.g., `"Pre-Test"`, `"rePresent"`)      | When op1 is a strArr, then returns `true` if any of the strings in the array contains op2 as substring            |
 | `IN_ARRAY`        | Checks whether op1 is an element in the array op2             | string, number      | strArr, numArr | `"${progress} IN_ARRAY $N*{10,20,30}"`          | `true` when var `progress` has value `10`, `20`, or `30`                                            |                                                                                                                 |
 | `MULTIPLE_OF`     | Checks whether op1 is a multiple of op2                       | number              | number         | `"${STAGE_DAY} MULTIPLE_OF $N{2}"`              | `true` when var `STAGE_DAY` is an even number                                                       |                                                                                                                 |
 | `HAS_CHOICE_IDX`  | Checks whether certain option(s) were chosen on a choice question | `${CURRENT_ANSWER}` | numArr         | `"${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,3}"` | `true` when the index of the chosen answer in the `options` list is either `0`, `1`, or `3`         | can only be used exclusively for this purpose and in this manner with `singleChoice` or `multiChoice` questions |
-| `AND`             | Logical AND checks whether op1 and op2 are both true          | boolean             | boolean        | `"${setGoalsToday} AND ${wantsToReflect}"`      | `true` when the both variables `setGoalsToday` and `wantsToReflect` are `true`                      | |
-| `OR`               | Logical OR checks whether op1 or op2 are true               | boolean             | boolean        | `"${setGoalsToday} OR ${wantsToReflect}"`       | `true` when either variables `setGoalsToday` or `wantsToReflect` is `true`, or when both are `true` | |
+| `AND`             | Logical AND checks whether op1 and op2 are both true          | boolean             | boolean        | `"${setGoalsToday} AND ${wantsToReflect}"`      | `true` when the both variables `setGoalsToday` and `wantsToReflect` are `true`                      |                                                                                                                 |
+| `OR`               | Logical OR checks whether op1 or op2 are true               | boolean             | boolean        | `"${setGoalsToday} OR ${wantsToReflect}"`       | `true` when either variables `setGoalsToday` or `wantsToReflect` is `true`, or when both are `true` |                                                                                                                 |
 
 See section <a href="CondNextSteps">Conditional Next Steps</a> for an example of `HAS_CHOICE_IDX`.
 

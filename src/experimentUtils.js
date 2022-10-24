@@ -223,32 +223,113 @@ module.exports.getMinutesDiff = (obj1, obj2) => {
 /**
  *
  * Calculate the levenshtein (edit) distance between two strings using the
- * naive recursive method
+ * iterative dynamic programming method
+ *
+ * if maxDist is given, then returns -1 for any edit distance greater than or
+ * equal to maxDist (saves computation)
  *
  * @param str1
  * @param str2
- * @param depth
+ * @param maxDist
+ * @param curDist
  * @returns {number|*}
  */
-module.exports.calcLevDistance = (str1, str2, depth=0) => {
-  // console.log('  '.repeat(depth) + 'Comparing:');
-  // console.log('  '.repeat(depth) +str1);
-  // console.log('  '.repeat(depth) + str2);
-  // console.log('\n')
+module.exports.calcLevDistanceDP = (str1, str2, maxDist=Infinity, curDist=0) => {
+
+  // Create array with all zeros
+  let distArr = Array(str1.length + 1)
+  for(let i = 0; i < distArr.length; i++){
+    distArr[i] = Array(str2.length + 1).fill(0)
+  }
+
+  // Initialize default rows
+  for(let i = 0; i < distArr.length; i++){
+    distArr[i][0] = i
+  }
+  for(let i = 0; i < distArr[0].length; i++){
+    distArr[0][i] = i
+  }
+
+  // Compute the array for string prefixes
+  for(let i = 1; i < distArr.length; i++){
+    let minValCalculated = distArr[i][0];
+    for(let j = 1; j < distArr[i].length; j++){
+      let subCost = 1;
+      if(str1.charAt(i-1) === str2.charAt(j-1)){
+        subCost = 0;
+      }
+
+      let newVal = Math.min(
+          distArr[i-1][j] + 1,
+          distArr[i][j-1] + 1,
+          distArr[i-1][j-1] + subCost
+      )
+      if(newVal < minValCalculated){
+        minValCalculated = newVal;
+      }
+      distArr[i][j] = newVal;
+    }
+    if(maxDist && minValCalculated >= maxDist){
+      // If the smallest value computed in a given row is
+      // larger than max dist, then there is no chance of
+      // computing a smaller edit distance than maxDist
+
+      return -1
+    }
+  }
+
+  // console.log(distArr);
+  let dist = distArr[distArr.length - 1][distArr[0].length - 1];
+
+  return (dist >= maxDist) ? -1 : dist;
+
+}
+
+/**
+ *
+ * Calculate the levenshtein (edit) distance between two strings using the
+ * naive recursive method
+ *
+ * if maxDist is given, then returns -1 for any edit distance greater than or
+ * equal to maxDist (saves computation)
+ *
+ * @param str1
+ * @param str2
+ * @param maxDist
+ * @param curDist
+ * @returns {number|*}
+ */
+module.exports.calcLevDistance = (str1, str2, maxDist=Infinity, curDist=0) => {
+
+  // Edit distance too large, stop recursion and return -1
+  if(maxDist && (curDist >= maxDist)){
+    return -1
+  }
+
   if(str1.length === 0){
-    return str2.length;
+    return (str2.length + curDist >= maxDist) ? -1 : str2.length;
   }
   if(str2.length === 0){
-    return str1.length;
+    return (str1.length + curDist >= maxDist) ? -1 : str1.length;
   }
   if(str1.charAt(0) === str2.charAt(0)){
-    return this.calcLevDistance(str1.substring(1), str2.substring(1), depth+1);
+    return this.calcLevDistance(str1.substring(1), str2.substring(1), maxDist, curDist);
   }
-  return 1 + Math.min(
-      this.calcLevDistance(str1.substring(1), str2, depth+1),
-      this.calcLevDistance(str1, str2.substring(1), depth+1),
-      this.calcLevDistance(str1.substring(1), str2.substring(1), depth+1),
-  )
+  let leftSub = this.calcLevDistance(str1.substring(1), str2, maxDist, curDist+1)
+  let rightSub = this.calcLevDistance(str1, str2.substring(1), maxDist, curDist+1)
+  let bothSub = this.calcLevDistance(str1.substring(1), str2.substring(1), maxDist, curDist+1)
+
+  let addDists = [leftSub, rightSub, bothSub];
+
+  // If -1 is returned from all possible branches, then max distance is exceeded in all cases
+  // stop recursion and continue returning -1
+  if(addDists.every(dist => dist === -1)){
+    return -1
+  } else {
+    // Otherwise, return the shortest distance that is not -1
+    return 1 + Math.min(...addDists.filter(dist => dist !== -1))
+  }
+
 }
 
 /**
@@ -273,20 +354,35 @@ module.exports.getClosestStrings = (str, strArr, num) => {
   if(typeof num !== "number") return ReturnMethods.returnFailure("ExpUtils: # of top strings must be number");
   if(num < 1) num = 1
   if(num > strArr.length) num = strArr.length
+  let topClosestStrings = []
   let newStrArr = strArr.slice();
   str = str.toLowerCase();
   let distArr = [];
-  newStrArr.forEach(el => {
-    el = el.toLowerCase();
-    distArr.push(this.calcLevDistance(str, el));
-  })
+  for(let i = 0; i < newStrArr.length; i++){
+    let str2 = newStrArr[i];
+    // For the first 5 strings, just add all to the list
+    if(topClosestStrings.length < num){
+      topClosestStrings.push({
+        str: str2,
+        dist: this.calcLevDistanceDP(str, str2)
+      })
+    } else {
+      // After 5 strings, only calculate full distance of strings that have distance less than
+      //  any of the top 5 closest strings
+      let maxDist = topClosestStrings[topClosestStrings.length - 1].dist;
+      let newDist = this.calcLevDistanceDP(str, str2, maxDist);
+      if(newDist > -1){
+        // Found a string that has distance less than the current longest distance in topClosestStrings
+        // Replace longest
+        topClosestStrings[topClosestStrings.length - 1].str = str2
+        topClosestStrings[topClosestStrings.length - 1].dist = newDist
+      }
+    }
+    // Sort top closest strings by edit distance
+    topClosestStrings.sort((str1, str2) => (str1.dist > str2.dist) ? 1 : -1)
+  }
 
-  let indices = new Array(distArr.length);
-  for (let i = 0; i < distArr.length; ++i) indices[i] = i;
-  indices.sort(function (a, b) { return distArr[a] < distArr[b] ? -1 : distArr[a] > distArr[b] ? 1 : 0; });
-
-  let sortedByDist = indices.map(idx => newStrArr[idx]);
-  return ReturnMethods.returnSuccess(sortedByDist.splice(0, num));
+  return ReturnMethods.returnSuccess(topClosestStrings.map(el => el.str));
 
 }
 

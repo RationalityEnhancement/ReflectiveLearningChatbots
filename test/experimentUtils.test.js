@@ -340,37 +340,195 @@ describe('Rotate left', () => {
 })
 
 describe("Edit distance", () => {
-	describe('Edit distance of two strings', () => {
-		it('Should be 0', () => {
-			let str1 = "test";
-			let str2 = "test";
-			let returnVal = experimentUtils.calcLevDistance(str1, str2);
-			expect(returnVal).to.equal(0);
+	describe('Edit distance of two strings (naive recursion)', () => {
+		describe('Without max distance', () => {
+			it('Should be 0', () => {
+				let str1 = "test";
+				let str2 = "test";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2);
+				expect(returnVal).to.equal(0);
+			})
+			it('Should be 1', () => {
+				let str1 = "test";
+				let str2 = "est";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2);
+				expect(returnVal).to.equal(1);
+			})
+			it('Should be 3', () => {
+				let str1 = "saturday";
+				let str2 = "sunday";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2);
+				expect(returnVal).to.equal(3);
+			})
+			it('Should be length of str1', () => {
+				let str1 = "saturday";
+				let str2 = "";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2);
+				expect(returnVal).to.equal(str1.length);
+			})
+			it('Should be length of str2', () => {
+				let str1 = "";
+				let str2 = "saturday";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2);
+				expect(returnVal).to.equal(str2.length);
+			})
 		})
-		it('Should be 1', () => {
-			let str1 = "test";
-			let str2 = "est";
-			let returnVal = experimentUtils.calcLevDistance(str1, str2);
-			expect(returnVal).to.equal(1);
+		describe('With max distance', () => {
+			it('Should be 0', () => {
+				let str1 = "test";
+				let str2 = "test";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2, 3);
+				expect(returnVal).to.equal(0);
+			})
+			it('Should be 1', () => {
+				let str1 = "test";
+				let str2 = "est";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2, 3);
+				expect(returnVal).to.equal(1);
+			})
+			it('Should be 3', () => {
+				let str1 = "saturday";
+				let str2 = "sunday";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2, 4);
+				expect(returnVal).to.equal(3);
+			})
+			it('Should length of non-empty string', () => {
+				let str1 = "saturday";
+				let str2 = "";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2, 9);
+				expect(returnVal).to.equal(str1.length);
+			})
+			it('Should return -1 when distance is greater than maxDist', () => {
+				let str1 = "saturday";
+				let str2 = "";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2, 7);
+				expect(returnVal).to.equal(-1);
+			})
+			it('Should return -1 when distance is maxDist', () => {
+				let str1 = "saturday";
+				let str2 = "";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2, 8);
+				expect(returnVal).to.equal(-1);
+			})
+			it('Should return when distance is greater than maxDist and start of strings are similar', () => {
+				let str1 = "saturday";
+				let str2 = "saturfrog";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2, 3);
+				expect(returnVal).to.equal(-1);
+			})
 		})
-		it('Should be 3', () => {
-			let str1 = "saturday";
-			let str2 = "sunday";
-			let returnVal = experimentUtils.calcLevDistance(str1, str2);
-			expect(returnVal).to.equal(3);
+		describe('Comparing number of calls', () => {
+			it('Without maxDist', () => {
+				let str1 = "test";
+				let str2 = "frog";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2);
+				assert(true)
+			})
+			it('With maxDist', () => {
+				let str1 = "test";
+				let str2 = "frog";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2, 2);
+				assert(true)
+			})
 		})
-		it('Should be length of str1', () => {
-			let str1 = "saturday";
-			let str2 = "";
-			let returnVal = experimentUtils.calcLevDistance(str1, str2);
-			expect(returnVal).to.equal(str1.length);
+
+	})
+	describe('Edit distance of two strings (iteration)', () => {
+		describe('Without max distance', () => {
+			it('Should be 0', () => {
+				let str1 = "test";
+				let str2 = "test";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2);
+				expect(returnVal).to.equal(0);
+			})
+			it('Should be 1', () => {
+				let str1 = "test";
+				let str2 = "est";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2);
+				expect(returnVal).to.equal(1);
+			})
+			it('Should be 3', () => {
+				let str1 = "saturday";
+				let str2 = "sunday";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2);
+				expect(returnVal).to.equal(3);
+			})
+			it('Should be length of str1', () => {
+				let str1 = "saturday";
+				let str2 = "";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2);
+				expect(returnVal).to.equal(str1.length);
+			})
+			it('Should be length of str2', () => {
+				let str1 = "";
+				let str2 = "saturday";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2);
+				expect(returnVal).to.equal(str2.length);
+			})
 		})
-		it('Should be length of str2', () => {
-			let str1 = "";
-			let str2 = "saturday";
-			let returnVal = experimentUtils.calcLevDistance(str1, str2);
-			expect(returnVal).to.equal(str2.length);
+		describe('With max distance', () => {
+			it('Should be 0', () => {
+				let str1 = "test";
+				let str2 = "test";
+				let returnVal = experimentUtils.calcLevDistance(str1, str2, 3);
+				expect(returnVal).to.equal(0);
+			})
+			it('Should be 1', () => {
+				let str1 = "test";
+				let str2 = "est";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2, 3);
+				expect(returnVal).to.equal(1);
+			})
+			it('Should be 3', () => {
+				let str1 = "saturday";
+				let str2 = "sunday";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2, 4);
+				expect(returnVal).to.equal(3);
+			})
+			it('Should length of non-empty string', () => {
+				let str1 = "saturday";
+				let str2 = "";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2, 9);
+				expect(returnVal).to.equal(str1.length);
+			})
+			it('Should length of non-empty string 2', () => {
+				let str2 = "saturday";
+				let str1 = "";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2, 9);
+				expect(returnVal).to.equal(str2.length);
+			})
+			it('Should return -1 when distance is greater than maxDist', () => {
+				let str1 = "saturday";
+				let str2 = "";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2, 7);
+				expect(returnVal).to.equal(-1);
+			})
+			it('Should return -1 when distance is greater than maxDist - 2', () => {
+				let str2 = "saturday";
+				let str1 = "";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2, 7);
+				expect(returnVal).to.equal(-1);
+			})
+			it('Should return -1 when distance is maxDist', () => {
+				let str1 = "saturday";
+				let str2 = "";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2, 8);
+				expect(returnVal).to.equal(-1);
+			})
+			it('Should return -1 when distance is maxDist - 2', () => {
+				let str2 = "saturday";
+				let str1 = "";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2, 8);
+				expect(returnVal).to.equal(-1);
+			})
+			it('Should return when distance is greater than maxDist and start of strings are similar', () => {
+				let str1 = "saturday";
+				let str2 = "saturfrog";
+				let returnVal = experimentUtils.calcLevDistanceDP(str1, str2, 3);
+				expect(returnVal).to.equal(-1);
+			})
 		})
+
 	})
 	describe('Find closest strings', () => {
 		it('Should find top N strings (n < arr.length) ', () => {
@@ -405,6 +563,31 @@ describe("Edit distance", () => {
 			let returnObj = experimentUtils.getClosestStrings(str, strArr, 0);
 			expect(returnObj.returnCode).to.eql(DevConfig.SUCCESS_CODE);
 			expect(returnObj.data).to.eql(expectedArr);
+		})
+
+		it('Testing speed of large array of strings', () => {
+			function genRandString(length) {
+				var result           = '';
+				var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+				var charactersLength = characters.length;
+				for ( var i = 0; i < length; i++ ) {
+					result += characters.charAt(Math.floor(Math.random() * charactersLength));
+				}
+				return result;
+			}
+			let strLength = 20
+			let testStr = genRandString(strLength);
+			let compareSet = [];
+			let numCompares = 10000;
+			for(let i = 0; i < numCompares; i++){
+				compareSet.push(genRandString(strLength))
+			}
+			console.time("Comparing " + numCompares + " strings of length " + strLength);
+			let returnObj = experimentUtils.getClosestStrings(testStr, compareSet, 5);
+			console.timeEnd("Comparing " + numCompares + " strings of length " + strLength);
+			console.log(testStr);
+			console.log(returnObj.data);
+			assert(true)
 		})
 
 		it('Should fail when input not string ', () => {

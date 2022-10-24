@@ -4,7 +4,7 @@ This repository contains a Node.js infrastructure to specify chatbots for reflec
 
 Once downloaded and set up, the infrastructure can be used by simply designing the experiments, i.e., the questions to be asked, when they are to be asked, etc., in a file and running the software. 
 
-This repository can define and host a single Telegram chatbot. If you want to host multiple instances at once, you will have to download this repository multiple times and repeat these steps for each chatbot you want to host.
+This repository can define and host a **single** Telegram chatbot. If you want to host multiple instances at once, you will have to clone this repository multiple times and repeat these steps for each chatbot you want to host.
 
 Read on for further instructions on how all this is done...
 
@@ -42,7 +42,7 @@ The rest of the instructions will cover each of these steps in detail
 * Download and install [Node.js](https://nodejs.org/en/download/releases/). If possible, download version 17.9.0. This would minimize compatibility issues, as the chatbot software in this repository is built on that version.
   *   Windows: download file "node-v17.9.0-x86.msi"
   *   macOS: download file "node-v17.9.0.pkg"
-* Use git to clone this repository into a local directory of your choice. Navigate to the directory in which you have cloned this repository.
+* Use git to fork this repository into your own account, then clone that forked repository into a local directory of your choice. Navigate to the directory in which you have cloned this repository.
 * Open a [terminal](https://geekiam.io/what-is-a-terminal-window/) of your choice.
 * Run the command `npm install`
 * Copy the file [.env_template](./.env_template) to another file in the same directory with the name "_.env_" (without quotes). 
@@ -186,3 +186,4 @@ Once you host the chatbot experiment on Heroku for the first time, you might wan
 * Push the changes to Heroku 
   * Run the command `git push heroku main`
 * As before, wait until the terminal reports that the build has been completed for the changes to be reflected in the chatbot
+

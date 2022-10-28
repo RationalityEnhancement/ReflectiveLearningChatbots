@@ -4,7 +4,7 @@
   "experimentConditions" : ["MC", "Shallow", "Control"],
   "relConditionSizes" : [1, 1, 1],
   "assignmentScheme" : "pid",
-  "conditionMapping" : "$F{json/experiments/Team-Name-Test/PIDCondMap.json}",
+  "conditionMapping" : "$F{data/Team-Name-Test/condmap.json}",
   "experimentLengthWeeks" : 1,
   "msPerCharacterDelay" : 5,
   "experimentStages" : {

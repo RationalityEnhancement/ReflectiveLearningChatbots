@@ -1,0 +1,178 @@
+[
+  {
+    "qId" : "langQuestion",
+    "text" : {
+      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am the reflection chatbot! Thank you for starting a conversation with me!\n\nWhich language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)"
+    },
+    "qType" : "singleChoice",
+    "options" : {
+      "English" : ["English"]
+    },
+    "nextActions" : [{
+      "aType" : "saveAnswerTo",
+      "args" : ["language"]
+    }],
+    "nextQuestion" : "setupQuestions.introduceInstructions",
+    "replyMessages" : {
+      "English" : ["Thank you for choosing a language"]
+    },
+    "start" : true
+  },
+  {
+    "qId" : "introduceInstructions",
+    "qType" : "dummy",
+    "nextQuestion" : "setupQuestions.displayInstructions",
+    "replyMessages" : {
+      "English" : ["Before we move on, let me explain how you can interact with me!"]
+    }
+  },
+  {
+    "qId" : "displayInstructions",
+    "qType" : "dummy",
+    "nextQuestion" : "setupQuestions.continueFromInstructions",
+    "replyMessages" : "$F{json/experiments/Team-Name-Test/instructions.json}"
+  },
+  {
+    "qId" : "continueFromInstructions",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Click <i>Continue</i> when you are ready to move on!"
+    },
+    "inputPrompt" : {
+      "English" : "(Hint: send /repeat if the <i>Continue</i> button is no longer visible.)"
+    },
+    "nextQuestion" : "setupQuestions.pIdQuestion",
+    "options": {
+      "English" : ["Continue"],
+      "Deutsch" : ["Weiter"]
+    }
+  },
+  {
+    "qId": "pIdQuestion",
+    "text": {
+      "English": "What is your full Prolific ID? Please ensure to avoid mistakes so that you can be identified correctly!"
+    },
+    "qType": "freeform",
+    "replyMessages": {
+      "English": [
+        "Thank you, Prolific ID has been registered."
+      ],
+      "Deutsch": [
+        "Danke, Teilnehmer-ID ist erfasst worden."
+      ]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["ProlificID"]
+      }
+    ],
+    "nextQuestion": "setupQuestions.teamName"
+
+  },
+  {
+    "qId": "teamName",
+    "text": {
+      "English": "Enter the team name that you were given from the survey."
+    },
+    "qType": "freeform",
+    "answerShouldBe": "$F{data/Team-Name-Test/teamNames.json}",
+    "replyMessages": {
+      "English": [
+        "Thank you, your team name has been registered."
+      ]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["PID"]
+      }
+    ],
+    "nextQuestion": "setupQuestions.timezoneQuestion"
+
+  },
+  {
+    "qId": "timezoneQuestion",
+    "text": {
+      "English": "Which time zone are you in?",
+      "Deutsch": "In welcher Zeitzone befinden Sie sich jetzt?"
+    },
+    "qType": "singleChoice",
+    "options": {
+      "English": "$F{json/static/common_timezones.json}",
+      "Deutsch": "$F{json/static/common_timezones.json}"
+    },
+    "buttonLayoutCols" : 2,
+    "cReplyMessages": [
+      {
+        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "then" : {
+          "English": [
+            "Thank you, your time zone has been registered."
+          ]
+        }
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "then" : [
+          {
+            "aType" : "saveAnswerTo",
+            "args" : ["timezone"]
+          }
+        ]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "then" : "setupQuestions.end",
+        "else" : "setupQuestions.moreTimezones"
+      }
+    ]
+  },
+  {
+    "qId" : "moreTimezones",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Select your timezone from the following list.",
+      "Deutsch" : "Übersetzung nicht verfügbar."
+    },
+    "options" : {
+      "English" : "$F{json/static/more_timezones_2.json}",
+      "Deutsch" : "$F{json/static/more_timezones_2.json}"
+    },
+    "buttonLayoutCols" : 2,
+    "nextQuestion" : "setupQuestions.end",
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["timezone"]
+      }
+    ],
+    "replyMessages" : {
+      "English": [
+        "Thank you, your time zone has been registered."
+      ]
+    }
+  },
+  {
+    "qId" : "end",
+    "qType" : "dummy",
+    "replyMessages" : {
+      "English": [
+        "You have now completed the experiment! Please enter the following code into Prolific to mark your completion:",
+        "code"
+      ]
+    },
+    "nextActions" : [
+      {
+        "aType" : "assignToCondition"
+      },
+      {
+        "aType" : "endExperiment"
+      }
+    ]
+  }
+]

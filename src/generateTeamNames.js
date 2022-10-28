@@ -53,10 +53,19 @@ const DevConfig = ConfigReader.getDevConfig();
     } catch(e){
         numNames = DevConfig.DEFAULT_NUM_TEAMS;
     }
+
+    let numConds, condMap = {};
+    try{
+        numConds = process.argv[3];
+    } catch(e){
+        numConds = 1;
+    }
+
     let teamNames = [];
 
     let usedAdjectives = [];
     let usedNouns = [];
+    let numAdded = 0;
     for(let i = 0; i < numNames; i++){
         if(adjList.length === 0){
             adjList = usedAdjectives.slice();
@@ -78,11 +87,13 @@ const DevConfig = ConfigReader.getDevConfig();
 
         let name = adjectiveUpper + '' + nounUpper;
         if(!teamNames.includes(name)){
+            numAdded++;
             teamNames.push(name);
             usedAdjectives.push(adjective);
             usedNouns.push(noun);
             adjList.splice(adjectiveIdx, 1);
             nounList.splice(nounIdx, 1);
+            condMap[name] = (numAdded - 1) % numConds;
         } else {
             i--;
         }
@@ -91,6 +102,7 @@ const DevConfig = ConfigReader.getDevConfig();
     teamNames.sort();
 
     let targetJSONPath = path.join(expPath, DevConfig.TEAM_NAMES_JSON_FILE);
+    let targetCondMapPath = path.join(expPath, DevConfig.TEAM_NAMES_CONDMAP_FILE);
     let targetTXTPath = path.join(expPath, DevConfig.TEAM_NAMES_TXT_FILE);
 
     // Write to JSON
@@ -98,8 +110,13 @@ const DevConfig = ConfigReader.getDevConfig();
         fs.writeFileSync(targetJSONPath, JSON.stringify(teamNames));
         console.log("Team names successfully written to " + targetJSONPath);
 
+        fs.writeFileSync(targetCondMapPath, JSON.stringify(condMap));
+        console.log("Condition Map successfully written to " + targetCondMapPath);
+
         fs.writeFileSync(targetTXTPath, teamNames.join('\n'));
         console.log("Team names successfully written to " + targetTXTPath);
+
+
 
     } catch(err) {
         throw "ERROR: Unable to write team names to JSON file\n" + err;

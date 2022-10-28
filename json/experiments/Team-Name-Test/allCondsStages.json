@@ -1,0 +1,6 @@
+[
+  {
+    "name" : "Setup",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+  }
+]

@@ -1,0 +1,8 @@
+{
+    "ControlLeader" : 0,
+    "ShallowLeader" : 1,
+    "MCLeader" : 2,
+    "ControlFollower": 3,
+    "ShallowFollower" : 4,
+    "MCFollower" : 5
+}

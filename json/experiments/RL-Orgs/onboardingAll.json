@@ -1,0 +1,128 @@
+[
+  {
+    "qId" : "startOnboarding",
+    "qType" : "dummy",
+    "replyMessages": {
+      "English" : ["Let's begin with the first questions!"],
+      "Deutsch" : ["Fangen wir schon mit den ersten Fragen an!"]
+    },
+    "nextQuestion" : "Onboarding.survey"
+  },
+  {
+    "qId" : "initiateContact",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "then" : "Onboarding.wantContinue"
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "then" : "Onboarding.endExperiment",
+        "else" : "Onboarding.survey"
+      }
+    ],
+    "selectQFirst" : true,
+    "cNextActions" : {
+      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+      "then" : [
+        {
+          "aType" : "setBooleanVar",
+          "args" : ["warningGiven", "$B{true}"]
+        }
+      ]
+    },
+    "replyMessages" : {
+      "English" : ["Good morning, ${FIRST_NAME}!"],
+      "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
+    }
+  },
+  {
+    "qId" : "wantContinue",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
+      "Deutsch" : "Übersetzung nicht verfügbar?"
+    },
+    "options" : {
+      "English" : ["Continue", "End Experiment"],
+      "Deutsch" : ["Continue", "End Experiment"]
+    },
+    "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : "Onboarding.endExperiment",
+        "else" : "Onboarding.survey"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
+        "then" : {
+          "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
+          "Deutsch" : ["Übersetzung nicht verfügbar."]
+        }
+      }
+    ]
+  },
+  {
+    "qId" : "endExperiment",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["The experiment has ended.\n\nEnter the following code into the Prolific HIT to show how much you have progressed in the experiment and to receive the appropriate payment.", "CX2CBCRE"],
+      "Deutsch" : ["Übersetzung nicht verfügbar."]
+    }
+  },
+  {
+    "qId" : "survey",
+    "qType" : "qualtrics",
+    "text" : {
+      "English" : "The first thing we need is some basic information. Please take the time to fill out the following survey thoughtfully and thoroughly.",
+      "Deutsch" : "Wir brauchen zuerst von Ihnen einige Basisinformationen. Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+    },
+    "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
+    "qualtricsFields" : [
+      {
+        "field" : "uniqueId",
+        "value" : "${UNIQUE_ID}"
+      },
+      {
+        "field" : "condition",
+        "value" : "${CONDITION}"
+      },
+      {
+        "field" : "stage",
+        "value": "Onboarding"
+      }
+    ],
+    "nextActions" : [
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["onboardingComplete", "$B{true}"]
+      },
+      {
+        "aType" : "startStage",
+        "args" : ["Pre-Test"]
+      }
+    ],
+    "inputPrompt" : {
+      "English" : "Enter the survey code displayed at the end of the survey to continue. (ABCDE, 12345)",
+      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren. (ABCDE, 12345)"
+    },
+    "continueStrings" : ["ABCDE", "12345"],
+    "replyMessages" : {
+      "English" : ["Good start! Thank you for completing the survey!", "We will now move on to the next set of preliminary questions."],
+      "Deutsch" : ["Übersetzung nicht verfügbar"]
+    },
+    "nextQuestion" : "Pre-Test.survey",
+    "reminder" : {
+      "freqMins" : 30,
+      "numRepeats" : 4
+    }
+  }
+]

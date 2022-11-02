@@ -35,7 +35,7 @@
   {
     "qId" : "relGoalsProgress",
     "text" : {
-      "English" : "To what extent did you act according to these goals today, on a scale from 0 (not at all) to 100 (completely)?",
+      "English" : "To which extent did you act in accordance with these goals today, on a scale from 0 (not at all) to 100 (completely)?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "qType" : "number",
@@ -63,7 +63,7 @@
     "qId" : "relAnythingElse",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Were there other interactions you had with your colleagues today that you would like to tell me about?",
+      "English" : "Were there other interactions you have had with your colleagues today that you would like to tell me about?",
       "Deutsch": "Übersetzung nicht verfügbar"
     },
     "options" : {
@@ -81,7 +81,7 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
         "then" : {
-          "English" : ["Okay, let's move on."],
+          "English" : ["Very well, let's move on."],
           "Deutsch" : ["Alles klar, machen wir weiter."]
         }
       }
@@ -112,7 +112,7 @@
   {
     "qId" : "relImpact",
     "text" : {
-      "English" : "Overall, how did your social interactions today impact the work atmosphere of your team?",
+      "English" : "All in all, how did your social interactions  today impact the working atmosphere of your team?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",
@@ -152,7 +152,7 @@
   {
     "qId" : "relEmotions",
     "text" : {
-      "English" : "How do you feel about that, ${FIRST_NAME}? Please select any or all emotions you are experiencing at least a little bit.",
+      "English" : "How do you feel about that, ${FIRST_NAME}? Please select any or all of the emotions you are experiencing at least a little bit.",
       "Deutsch" : "Wie fühlen Sie sich darüber, ${FIRST_NAME}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
     },
     "qType" : "multiChoice",
@@ -165,14 +165,14 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
         "then" : {
-          "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
+          "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
           "Deutsch" : ["Das tut mir leid.", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
         }
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6,7}",
         "then" : {
-          "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
+          "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
           "Deutsch" : ["Das ist gut zu hören!", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
         }
       }
@@ -186,7 +186,7 @@
   {
     "qId" : "relPursuit",
     "text" : {
-      "English" : "Setting aside the outcomes and content of your goals to improve your workplace relationships/atmosphere for a moment, how satisfied are you with <b>the way in which you pursued those goals</b> today?",
+      "English" : "Setting aside the outcomes and the content of your goals to improve your workplace relationships/atmosphere for a moment, how satisfied are you with <b>the way in which you pursued those goals</b> today?",
       "Deutsch" : "Abgesehen von den Ergebnissen und dem Inhalt Ihrer Ziele, wie zufrieden sind Sie mit <b>der Arbeitsweise, mit der Sie heute auf Ihre Ziele hingearbeitet haben</b>?"
     },
     "qType" : "singleChoice",
@@ -266,7 +266,7 @@
   {
     "qId" : "relPlan",
     "text" : {
-      "English" : "What is one small, concrete change you could make tomorrow to improve your goal-setting regarding workplace relationships/atmosphere?",
+      "English" : "What is one small, concrete change that you could make tomorrow to improve on your goal-setting for the improvement of workplace relationships/atmosphere?",
       "Deutsch" : "Nennen Sie eine konkrete Änderung, die Ihre Zielsetzung morgen verbessern könnte."
     },
     "qType" : "freeform",
@@ -321,34 +321,21 @@
     "qType" : "dummy",
     "cReplyMessages" : [
       {
-        "if": "${STAGE_DAY} == $N{5}",
-        "then": {
-          "English": [
-            "Good job! You have reached the end of the second and final stage!",
-            "We will now start another round of questionnaires."
-          ],
-          "Deutsch": [
-            "Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!",
-            "Jetzt haben wir noch eine Runde Umfragen."
-          ]
-        }
-      },
-      {
-        "if" : "${TODAY} != $S{Fri}",
+        "if" : "${STAGE_DAY} == $N{7}",
         "then" : {
-          "English": ["Great job reflecting today! Thank you for such insightful answers. See you tomorrow!"],
-          "Deutsch" : ["Sie haben heute gut reflektiert! Danke für Ihre einsichtsvollen Antworten. Bis morgen!"]
+          "English" : ["Good job on reaching the end of the second and final stage!", "We will now have another round of questionnaires."],
+          "Deutsch" : ["Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!", "Jetzt haben wir noch eine Runde Umfragen."]
         },
         "else" : {
-          "English": ["Great job reflecting today! Thank you for such insightful answers. Have a good weekend, and see you on Monday!"],
-          "Deutsch" : ["Sie haben heute gut reflektiert! Danke für Ihre einsichtsvollen Antworten. Schönes Wochenende und Bis Montag!"]
+          "English": ["Great job reflecting today! Thank you for your insightful answers. See you tomorrow!"],
+          "Deutsch" : ["Sie haben heute gut reflektiert! Danke für Ihre einsichtsvollen Antworten. Bis morgen!"]
         }
       }
     ],
     "selectQFirst" : true,
     "cNextActions" : [
       {
-        "if": "${STAGE_DAY} == $N{5}",
+        "if": "${STAGE_DAY} == $N{7}",
         "then" : [
           {
             "aType" : "startStage",
@@ -359,7 +346,7 @@
     ],
     "cNextQuestions" : [
       {
-        "if": "${STAGE_DAY} == $N{5}",
+        "if": "${STAGE_DAY} == $N{7}",
         "then" : "Post-Test.survey"
       }
     ]
@@ -425,7 +412,7 @@
   {
     "qId" : "taskGoalsProgress",
     "text" : {
-      "English" : "Did you make progress toward your goals today? Rate it on a scale of 0 (no progress whatsoever) to 100 (everything complete). If you went above and beyond what you had planned, you can also enter a number above 100.",
+      "English" : "How much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
       "Deutsch" : "Wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
     },
     "qType" : "number",
@@ -542,7 +529,7 @@
   {
     "qId" : "emotions",
     "text" : {
-      "English" : "How do you feel about that, ${FIRST_NAME}? Please select any or all emotions you are experiencing at least a little bit.",
+      "English" : "How do you feel about that, ${FIRST_NAME}? Please select any or all of the emotions you are experiencing at least a little bit.",
       "Deutsch" : "Wie fühlen Sie sich darüber, ${FIRST_NAME}? Wählen Sie einige oder alle Emotionen, die Sie sogar ein bisschen verspüren."
     },
     "qType" : "multiChoice",
@@ -555,14 +542,14 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
         "then" : {
-          "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
+          "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
           "Deutsch" : ["Das tut mir leid.", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
         }
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6,7}",
         "then" : {
-          "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
+          "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel that way and what you can learn from this experience."],
           "Deutsch" : ["Das ist gut zu hören!", "Lass uns noch tiefer eingehen, um besser zu verstehen, warum Sie sich so fühlen und was Sie daraus lernen können."]
         }
       }
@@ -576,7 +563,7 @@
   {
     "qId" : "pursuitSatisfaction",
     "text" : {
-      "English" : "Setting aside the outcomes and content of your goals for a moment, how satisfied are you with <b>the way you pursued your goals</b> today?",
+      "English" : "Setting aside the outcomes and the content of your goals for a moment, how satisfied are you with <b>the way in which you pursued the goals</b> you worked towards today?",
       "Deutsch" : "Abgesehen von den Ergebnissen und dem Inhalt Ihrer Ziele, wie zufrieden sind Sie mit <b>der Arbeitsweise, mit der Sie heute auf Ihre Ziele hingearbeitet haben</b>?"
     },
     "qType" : "singleChoice",
@@ -617,7 +604,7 @@
   {
     "qId" : "goalsImportance",
     "text" : {
-      "English" : "How relevant were the goals you pursued today to the long-term goals of your project(s), your team, and your organization?",
+      "English" : "Now, setting aside how you pursued your goals and what the outcomes were, <b>how important were the goals you pursued today</b> to the long-term goals of your project(s), your team, and your organization?",
       "Deutsch" : "Wie wichtig waren Ihre heutigen Ziele für die Langzeitziel von Ihrem Projekt, Team, und Ihrer Organisation?"
     },
     "qType" : "singleChoice",
@@ -630,7 +617,7 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
         "then" : {
-          "English" : ["That's unfortunate. Don't worry, there's always room for improvement!"],
+          "English" : ["That's unfortunate. There is always room for improvement!"],
           "Deutsch" : ["Das tut mir leid."]
         }
       },

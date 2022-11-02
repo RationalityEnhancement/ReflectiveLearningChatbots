@@ -28,7 +28,7 @@
     "qId" : "readyToStart",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Are you ready to reflect on today's goals?",
+      "English" : "Are you ready to reflect on all your goals from today?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "options" : {
@@ -37,7 +37,7 @@
     },
     "nextQuestion" : "Pre-Reflection.listlessOrEnergetic",
     "replyMessages" : {
-      "English" : ["Great! We will first start with how you are feeling."],
+      "English" : ["Great! We will first start with a few questions about how you are feeling."],
       "Deutsch" : ["Übersetzung nicht verfügbar"]
     },
     "inputPrompt" : {
@@ -53,7 +53,7 @@
     "qId" : "listlessOrEnergetic",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Please indicate how you feel at the moment using the above picture.",
+      "English" : "Please indicate how you feel at the moment with reference to the above picture.",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "image" : {
@@ -79,7 +79,7 @@
     "qId" : "relaxedOrAngry",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Now, please indicate how you feel at the moment using the above picture.",
+      "English" : "Now, please indicate how you feel at the moment with reference to the above picture.",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "image" : {
@@ -105,7 +105,7 @@
     "qId" : "boredOrEnthusiastic",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Now, please indicate how you feel at the moment using the above picture.",
+      "English" : "Now, please indicate how you feel at the moment with reference to the above picture.",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "image" : {
@@ -131,7 +131,7 @@
     "qId" : "calmOrNervous",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Now, please indicate how you feel at the moment using the above picture.",
+      "English" : "Now, please indicate how you feel at the moment with reference to the above picture.",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "image" : {
@@ -157,7 +157,7 @@
     "qId" : "happyOrUnhappy",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Finally, please indicate how you feel at the moment using the above picture.",
+      "English" : "Finally, please indicate how you feel at the moment with reference to the above picture.",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "image" : {
@@ -181,7 +181,7 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["Great! We are done with the questions about your current feelings.", "Let's now move on to the goals you set today."],
+      "English" : ["Great! We are done with those questions.", "We will now move on to questions about the goals you set today."],
       "Deutsch" : ["Übersetzung nicht verfügbar."]
     },
     "reminder" : {

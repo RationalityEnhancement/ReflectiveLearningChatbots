@@ -5,11 +5,11 @@
     "cNextQuestions" : [
       {
         "if" : "${relGoalsSetToday} == $B{true}",
-        "then" : "Goal-Setting.relGoalsRemind"
+        "then" : "Int-Reflection.relGoalsRemind"
       },
       {
         "if" : "${taskGoalsSetToday} == $B{true}",
-        "then" : "Goal-Setting.taskGoalsRemind"
+        "then" : "Int-Reflection.taskGoalsRemind"
       }
     ]
   },
@@ -20,7 +20,7 @@
       "English" : ["Today you set the following goal(s) for improving your working climate and/or your relationships with your colleagues: ", "${relGoals}"],
       "Deutsch" : ["Heute haben Sie sich die folgenden beziehungsorienterten Ziele gesetzt: ", "${relGoals}"]
     },
-    "nextQuestion" : "Goal-Setting.relGoalsProgress",
+    "nextQuestion" : "Int-Reflection.relGoalsProgress",
     "nextActions" : [
       {
         "aType" : "clearVar",
@@ -35,7 +35,7 @@
   {
     "qId" : "relGoalsProgress",
     "text" : {
-      "English" : "To what extent did you act according to these goals today, on a scale from 0 (not at all) to 100 (completely)?",
+      "English" : "To which extent did you act in accordance with these goals today, on a scale from 0 (not at all) to 100 (completely)?",
       "Deutsch" : "Gefühlt wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
     },
     "qType" : "number",
@@ -56,8 +56,8 @@
     "cNextQuestions" : [
       {
         "if" : "${taskGoalsSetToday} == $B{true}",
-        "then" : "Goal-Setting.askReflectTaskGoals",
-        "else" : "Goal-Setting.checkDone"
+        "then" : "Int-Reflection.askReflectTaskGoals",
+        "else" : "Int-Reflection.checkDone"
       }
     ],
     "reminder" : {
@@ -70,46 +70,33 @@
     "qType" : "dummy",
     "cReplyMessages" : [
       {
-        "if": "${STAGE_DAY} == $N{5}",
-        "then": {
-          "English": [
-            "Good job! You have reached the end of the first stage!",
-            "We will now start another round of questionnaires."
-          ],
-          "Deutsch": [
-            "Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!",
-            "Jetzt haben wir noch eine Runde Umfragen."
-          ]
-        }
-      },
-      {
-        "if" : "${TODAY} != $S{Fri}",
+        "if" : "${STAGE_DAY} == $N{7}",
         "then" : {
-          "English": ["Great job reflecting today! Thank you for such insightful answers. See you tomorrow!"],
-          "Deutsch" : ["Sie haben heute gut reflektiert! Danke für Ihre einsichtsvollen Antworten. Bis morgen!"]
+          "English" : ["Good job on reaching the end of the second and final stage!", "We will now have another round of questionnaires."],
+          "Deutsch" : ["Glückwunsch, dass Sie das Ende dieser letzten Phase erreicht haben!", "Jetzt haben wir noch eine Runde Umfragen."]
         },
         "else" : {
-          "English": ["Great job reflecting today! Thank you for such insightful answers. Have a good weekend, and see you on Monday!"],
-          "Deutsch" : ["Sie haben heute gut reflektiert! Danke für Ihre einsichtsvollen Antworten. Schönes Wochenende und Bis Montag!"]
+          "English" : ["Thank you for sharing. See you tomorrow!"],
+          "Deutsch" : ["Danke fürs Mitteilen. Bis morgen!"]
         }
       }
     ],
     "selectQFirst" : true,
     "cNextActions" : [
       {
-        "if": "${STAGE_DAY} == $N{5}",
+        "if": "${STAGE_DAY} == $N{7}",
         "then" : [
           {
             "aType" : "startStage",
-            "args" : ["Pre-Test-2"]
+            "args" : ["Post-Test"]
           }
         ]
       }
     ],
     "cNextQuestions" : [
       {
-        "if": "${STAGE_DAY} == $N{5}",
-        "then" : "Pre-Test-2.survey"
+        "if": "${STAGE_DAY} == $N{7}",
+        "then" : "Post-Test.survey"
       }
     ]
   },
@@ -128,8 +115,8 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Goal-Setting.taskGoalsRemind",
-        "else" : "Goal-Setting.checkDone"
+        "then" : "Int-Reflection.taskGoalsRemind",
+        "else" : "Int-Reflection.checkDone"
       }
     ],
     "cNextActions" : [
@@ -159,7 +146,7 @@
       "English" : ["Today, you set the following work-related goals: ", "${taskGoals}"],
       "Deutsch" : ["Heute haben Sie sich die folgenden arbeitsbezogenen Ziele gesetzt: ", "${taskGoals}"]
     },
-    "nextQuestion" : "Goal-Setting.taskGoalsProgress",
+    "nextQuestion" : "Int-Reflection.taskGoalsProgress",
     "nextActions" : [
       {
         "aType" : "clearVar",
@@ -174,7 +161,7 @@
   {
     "qId" : "taskGoalsProgress",
     "text" : {
-      "English" : "Did you make progress toward your goals today? Rate it on a scale of 0 (no progress whatsoever) to 100 (everything complete). If you went above and beyond what you had planned, you can also enter a number above 100.",
+      "English" : "How much progress did you make towards your goals today, on a scale of 0 (no progress whatsoever) to 100 (everything complete)? If you went above and beyond what you had planned, you can also enter a number above 100",
       "Deutsch" : "Wie viel Fortschritt haben Sie heute ihrer Ziele entgegen gemacht? Antworten Sie auf einer Skala von 0 (überhaupt kein Fortschritt) bis 100 (alles erledigt)? Wenn Sie über Ihre heutigen Pläne hinausgegangen sind, können Sie eine Zahl über 100 eingeben."
     },
     "qType" : "number",
@@ -192,7 +179,7 @@
         "args" : ["taskProgressReportedOnce", "$B{true}"]
       }
     ],
-    "nextQuestion" : "Goal-Setting.checkDone",
+    "nextQuestion" : "Int-Reflection.checkDone",
     "reminder" : {
       "freqMins" : 30,
       "numRepeats" : 4

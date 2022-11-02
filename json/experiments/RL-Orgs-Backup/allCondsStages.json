@@ -10,7 +10,7 @@
   {
     "name" : "Goal-Setting",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "lengthDays" : 5
+    "lengthDays" : 7
   },
   {
     "name" : "Pre-Test-2",
@@ -19,7 +19,7 @@
   {
     "name" : "Intervention",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "lengthDays" : 5
+    "lengthDays" : 7
   },
   {
     "name" : "Post-Test",

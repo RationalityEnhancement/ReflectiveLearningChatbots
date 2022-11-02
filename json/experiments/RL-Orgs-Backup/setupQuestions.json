@@ -2,13 +2,13 @@
   {
     "qId" : "langQuestion",
     "text" : {
-      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, and I can help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)",
-      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, and I can help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)"
+      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer? (send <i>/repeat</i> if the options are no longer visible.) \n\nHallo ${FIRST_NAME}! :wave:\n\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie? (senden Sie <i>/repeat</i>, wenn die Optionen nicht mehr sichtbar sind.)",
+      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, who will help you reflect on your experiences and learn from them! Which language do you prefer? (send <i>/repeat</i> if the options are no longer visible.) \n\nHallo ${FIRST_NAME}! :wave:\n\nich bin ein Chatbot, der Ihnen dabei hilft über ihre Erfahrungen nachzudenken und aus ihnen zu lernen. Welche Sprache bevorzugen Sie? (senden Sie <i>/repeat</i>, wenn die Optionen nicht mehr sichtbar sind.)"
     },
     "qType" : "singleChoice",
     "options" : {
-      "English" : ["English"],
-      "Deutsch" : ["English"]
+      "English" : ["English", "Deutsch"],
+      "Deutsch" : ["English", "Deutsch"]
     },
     "nextActions" : [{
       "aType" : "saveAnswerTo",
@@ -16,7 +16,7 @@
     }],
     "nextQuestion" : "setupQuestions.introduceInstructions",
     "replyMessages" : {
-      "English" : ["Thank you for choosing a language"],
+      "English" : ["Thank you for choosing your language"],
       "Deutsch": ["Danke, dass Sie eine Sprache ausgewählt haben."]
     },
     "start" : true
@@ -26,7 +26,7 @@
     "qType" : "dummy",
     "nextQuestion" : "setupQuestions.displayInstructions",
     "replyMessages" : {
-      "English" : ["Before we move on, let me explain how you can interact with me!"],
+      "English" : ["Before we move forward, I want to explain to you how you can interact with me!"],
       "Deutsch" : ["Übersetzung nicht verfügbar"]
     }
   },
@@ -34,7 +34,7 @@
     "qId" : "displayInstructions",
     "qType" : "dummy",
     "nextQuestion" : "setupQuestions.continueFromInstructions",
-    "replyMessages" : "$F{json/experiments/RL-Orgs-Prepilot-2/instructions.json}"
+    "replyMessages" : "$F{json/experiments/RL-Orgs/instructions.json}"
   },
   {
     "qId" : "continueFromInstructions",
@@ -56,18 +56,19 @@
   {
     "qId": "pIdQuestion",
     "text": {
-      "English": "What is your full Prolific ID? Please ensure to avoid mistakes so that you can be identified correctly!",
+      "English": "Please enter your team's name as provided to you.",
       "Deutsch": "Bitte geben Sie den Namen Ihres Teams ein, der Ihnen verteilt wurde."
     },
     "qType": "freeform",
     "replyMessages": {
       "English": [
-        "Thank you, Prolific ID has been registered."
+        "Thank you, team name has been registered."
       ],
       "Deutsch": [
         "Danke, Teilnehmer-ID ist erfasst worden."
       ]
     },
+    "answerShouldBe" : ["ControlLeader", "ShallowLeader", "MCLeader", "ControlFollower", "ShallowFollower", "MCFollower"],
     "nextActions" : [
       {
         "aType" : "saveAnswerTo",
@@ -80,7 +81,7 @@
   {
     "qId": "timezoneQuestion",
     "text": {
-      "English": "Which time zone are you in?",
+      "English": "Which time zone are you currently in?",
       "Deutsch": "In welcher Zeitzone befinden Sie sich jetzt?"
     },
     "qType": "singleChoice",
@@ -91,10 +92,10 @@
     "buttonLayoutCols" : 2,
     "cReplyMessages": [
       {
-        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{6}) != $B{True}",
         "then" : {
           "English": [
-            "Thank you, your time zone has been registered."
+            "Thank you, time zone has been registered."
           ],
           "Deutsch": [
             "Danke, Zeitzone ist erfasst worden"
@@ -104,7 +105,7 @@
     ],
     "cNextActions" : [
       {
-        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{6}) != $B{True}",
         "then" : [
           {
             "aType" : "saveAnswerTo",
@@ -115,7 +116,7 @@
     ],
     "cNextQuestions" : [
       {
-        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{6}) != $B{True}",
         "then" : "setupQuestions.goalSetTime",
         "else" : "setupQuestions.moreTimezones"
       }
@@ -129,8 +130,8 @@
       "Deutsch" : "Übersetzung nicht verfügbar."
     },
     "options" : {
-      "English" : "$F{json/static/more_timezones_2.json}",
-      "Deutsch" : "$F{json/static/more_timezones_2.json}"
+      "English" : "$F{json/static/more_timezones.json}",
+      "Deutsch" : "$F{json/static/more_timezones.json}"
     },
     "buttonLayoutCols" : 2,
     "nextQuestion" : "setupQuestions.goalSetTime",
@@ -153,7 +154,7 @@
     "qId" : "goalSetTime",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nWhen would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
+      "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nAt which of the following times would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
       "Deutsch" : "In einigen Phasen des Experiments, werden Sie morgens vor der Arbeit danach gefragt, sich Ziele zu setzen. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
     },
     "options" : {
@@ -177,7 +178,7 @@
     "qId" : "reflectionTime",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set that same morning.\n\nWhen would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
+      "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set the same morning.\n\nAt which of the following times would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
       "Deutsch" : "In einigen Phasen des Experiments, werden Sie abends nach der Arbeit dazu aufgefordert, über Ihre Ziele zu reflektieren, die Sie sich am selben Morgen gesetzt haben. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
     },
     "options" : {
@@ -197,6 +198,7 @@
       {
         "aType" : "assignToCondition"
       },
+      { "aType" : "scheduleQuestions" },
       {
         "aType" : "startStage",
         "args" : ["Onboarding"]

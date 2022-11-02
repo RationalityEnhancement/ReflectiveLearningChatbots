@@ -37,7 +37,7 @@
       {
         "if": "${remindWorkIntention} == $B{true}",
         "then" : {
-          "English" : ["The last time, you wanted me to remind you of the following intention today. Here it is.", "${workIntention}"],
+          "English" : ["The last time, you wanted me to remind you of the following intention today:", "${workIntention}"],
           "Deutsch" : ["Das letzte Mal haben Sie mir gesagt, Sie am nächsten Tag an diese Vorhaben zu erinnern:", "${workIntention}"]
         }
       }
@@ -66,7 +66,7 @@
       {
         "if": "${remindRelIntention} == $B{true}",
         "then" : {
-          "English" : ["The last time, you wanted me to remind you of the following intention today. Here it is.", "${relIntention}"],
+          "English" : ["The last time, you wanted me to remind you of the following intention today:", "${relIntention}"],
           "Deutsch" : ["Das letzte Mal haben Sie mir gesagt, Sie am nächsten Tag an diese Vorhaben zu erinnern:", "${relIntention}"]
         }
       }
@@ -95,187 +95,9 @@
       {
         "if": "${STAGE_DAY} MULTIPLE_OF $N{2}",
         "then" : "Morning-Goals-All.firstRelationshipPrompt",
-        "else" : "Morning-Goals-All.checkWantGoalInfoQuestion"
+        "else" : "Morning-Goals-All.remindWorkIntention"
       }
     ]
-  },
-  {
-    "qId" : "wantGoalInfo",
-    "text" : {
-      "English" : "We will start today by setting goals for work that are SMART (<b>S</b>pecific, <b>M</b>easurable, <b>A</b>chievable, <b>R</b>elevant, and <b>T</b>ime-bound)\n\nWould you like to find out more about SMART goals?",
-      "Deutsch" : "Übersetzung nicht verfügbar"
-    },
-    "qType" : "singleChoice",
-    "options" : {
-      "English" : ["Yes", "No", "Don't ask me again."],
-      "Deutsch" : ["Ja", "Nein", "Frag mich nicht wieder."]
-    },
-    "cNextQuestions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Morning-Goals-All.goalsInfo"
-      },
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Morning-Goals-All.checkWantGoalExampleQuestion"
-      }
-    ],
-    "cNextActions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["dontAskInfoAgain", "$B{true}"]
-          }
-        ]
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "checkWantGoalInfoQuestion",
-    "qType" : "dummy",
-    "cNextQuestions" : [
-      {
-        "if" : "${dontAskInfoAgain} == $B{true}",
-        "then" : "Morning-Goals-All.checkWantGoalExampleQuestion",
-        "else" : "Morning-Goals-All.wantGoalInfo"
-      }
-    ]
-  },
-  {
-    "qId" : "checkWantGoalExampleQuestion",
-    "qType" : "dummy",
-    "cNextQuestions" : [
-      {
-        "if" : "${dontAskExampleAgain} == $B{true}",
-        "then" : "Morning-Goals-All.remindWorkIntention",
-        "else" : "Morning-Goals-All.wantGoalExample"
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "${dontAskExampleAgain} == $B{true}",
-        "then" : {
-          "English" : ["Let's get right to it!"],
-          "Deutsch" : ["Kommen wir direkt zum Thema!"]
-        }
-      }
-    ]
-  },
-  {
-    "qId" : "wantGoalExample",
-    "text" : {
-      "English" : "Would you like to see some examples of SMART task-oriented goals?",
-      "Deutsch" : "Übersetzung nicht verfügbar"
-    },
-    "qType" : "singleChoice",
-    "options" : {
-      "English" : ["Yes", "No", "Don't ask me again."],
-      "Deutsch" : ["Ja", "Nein", "Frag mich nicht wieder."]
-    },
-    "cNextQuestions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Morning-Goals-All.goalsExample"
-      },
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Morning-Goals-All.remindWorkIntention"
-      }
-    ],
-    "cNextActions" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["dontAskExampleAgain", "$B{true}"]
-          }
-        ]
-      }
-    ],
-    "cReplyMessages" : [
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : {
-          "English" : ["Then let's get right to it!"],
-          "Deutsch" : ["Dann kommen wir direkt zum Thema!"]
-        }
-      }
-    ],
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "goalsInfo",
-    "qType" : "dummy",
-    "replyMessages" : {
-      "English" : ["A SMART goal is one that has the following properties:\n\n<b>S</b>pecific - includes concrete details about what is to be accomplished\n\n<b>M</b>easurable - progress towards the goal can be quantified and clearly tracked\n\n<b>A</b>chievable - the goal can be realistically accomplished in the intended time frame\n\n<b>R</b>elevant - completing the goal brings you closer to your or your team's longer-term goals\n\n<b>T</b>ime-bound - has a specific time frame within which the goal should be reached"],
-      "Deutsch" : ["Hier sind Infos zu beziehungsorienterten Zielen"]
-    },
-    "nextQuestion" : "Morning-Goals-All.continueFromInfo"
-  },
-  {
-    "qId" : "continueFromInfo",
-    "qType" : "singleChoice",
-    "text" : {
-      "English" : "Click <i>Continue</i> when you are ready to go!",
-      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
-    },
-    "inputPrompt" : {
-      "English" : "(Hint: send <i>/repeat</i> if the <i>Continue</i> option is no longer visible.)",
-      "Deutsch" : "(Tipp: senden Sie <i>/repeat</i>, wenn die <i>Weiter</i>-Option nicht mehr sichtbar ist.)"
-    },
-    "options" : {
-      "English" : ["Continue"],
-      "Deutsch" : ["Weiter"]
-    },
-    "nextQuestion" : "Morning-Goals-All.checkWantGoalExampleQuestion",
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
-  },
-  {
-    "qId" : "goalsExample",
-    "qType" : "dummy",
-    "replyMessages" : {
-      "English" : ["Here are examples of SMART goals:\n\n * <i>Gain four new clients for my business this quarter by conducting 3 or more customer meetings each week</i>\n\n * <i>Review and reduce the number of meetings on my calendar by 50% in order to enable more time for strategic planning by end of the month</i>\n\n * <i>Improve my product understanding by creating, drafting, and delivering two projects using our product by the end of the quarter.</i>"],
-      "Deutsch" : ["Hier sind Beispiele von beziehungsorienterten Zielen"]
-    },
-    "nextQuestion" : "Morning-Goals-All.continueFromExample"
-  },
-  {
-    "qId" : "continueFromExample",
-    "qType" : "singleChoice",
-    "text" : {
-      "English" : "Click <i>Continue</i> when you are ready to go!",
-      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
-    },
-    "inputPrompt" : {
-      "English" : "(Hint: send <i>/repeat</i> if the <i>Continue</i> option is no longer visible.)",
-      "Deutsch" : "(Tipp: senden Sie <i>/repeat</i>, wenn die <i>Weiter</i>-Option nicht mehr sichtbar ist.)"
-    },
-    "options" : {
-      "English" : ["Continue"],
-      "Deutsch" : ["Weiter"]
-    },
-    "nextQuestion" : "Morning-Goals-All.remindWorkIntention",
-    "replyMessages" : {
-      "English" : ["Great, let's get to it!"],
-      "Deutsch" : ["Übersetzung nicht verfügbar"]
-    },
-    "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
-    }
   },
   {
     "qId" : "firstTaskGoal",
@@ -287,37 +109,14 @@
 
     "nextQuestion" :"Morning-Goals-All.askAddTaskGoals",
     "minLengthWords" : 5,
-    "cNextActions" : [
+    "nextActions" : [
       {
-        "if" : "${workGoalsSetBefore} == $B{false}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["firstWorkGoalDay", "$B{true}"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["workGoalsSetBefore", "$B{true}"]
-          },
-          {
-            "aType" : "addAnswerTo",
-            "args" : ["taskGoals"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["taskGoalsSetToday", "$B{true}"]
-          }
-        ],
-        "else" : [
-          {
-            "aType" : "addAnswerTo",
-            "args" : ["taskGoals"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["taskGoalsSetToday", "$B{true}"]
-          }
-        ]
+        "aType" : "addAnswerTo",
+        "args" : ["taskGoals"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["taskGoalsSetToday", "$B{true}"]
       }
     ],
     "reminder" : {
@@ -350,7 +149,7 @@
       {
         "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}) AND (${STAGE_DAY} MULTIPLE_OF $N{2})",
         "then" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         }
       },
@@ -370,7 +169,7 @@
   {
     "qId" : "addTaskGoals",
     "text" : {
-      "English" : "What else would you like to accomplish today? If you are adding multiple goals, please send each one in a separate message.",
+      "English" : "What else would you like to accomplish today? If you are adding multiple goals, send each goal as a separate message.",
       "Deutsch" : "Was sonst möchten Sie heute erledigen? Wenn Sie mehrere Ziele hinzufügen wollen, senden Sie jedes Ziel jeweils in einer einzelnen Nachricht."
     },
     "minLengthWords" : 5,
@@ -389,7 +188,7 @@
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
         "then" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         },
         "else" : {
@@ -407,7 +206,7 @@
     "qId" : "wantRelationshipGoal",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "${FIRST_NAME}, would you like to work on your relationships with your colleagues today?",
+      "English" : "${FIRST_NAME}, would you like to work on relationships with your colleagues today?",
       "Deutsch" : "${FIRST_NAME}, möchten Sie heute an Ihren Beziehungen zu Ihren Kolleg*innen arbeiten?"
     },
     "options" : {
@@ -424,11 +223,11 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
         "then" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         },
         "else" : {
-          "English" : ["Good for you. You are choosing to improve your work climate!"],
+          "English" : ["Good on you for choosing to improve your work climate!"],
           "Deutsch" : ["Gut, dass Sie sich entschieden haben, Ihre Arbeitsatmösphare zu verbessern!"]
         }
       }
@@ -460,7 +259,7 @@
       {
         "if": "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
         "then" : {
-          "English" : ["Very well.", "Then let's move on directly to the work-related goals."],
+          "English" : ["Very well.", "We shall then move on directly to the work-related goals."],
           "Deutsch" : ["Alles klar.", "Jetzt machen wir dann direkt mit den arbeitsbezogenen Zielen weiter."]
         }
       }
@@ -473,7 +272,7 @@
   {
     "qId" : "wantRelGoalInfo",
     "text" : {
-      "English" : "Here is a tip on setting goals for improving your work relationships:\n\n <i>High quality relationships are characterized by mutual engagement, interest from both sides, and positivity.</i>\n\n Would you like to find out more?",
+      "English" : "Here is a tip on improving your work relationships and setting up goals to improve relationships:\n\n <i>High quality relationships are characterized by mutual engagement, interest from both sides, and positivity.</i>\n\n Would you like to find out more?",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",
@@ -497,7 +296,7 @@
         "then" : [
           {
             "aType" : "setBooleanVar",
-            "args" : ["dontAskRelInfoAgain", "$B{true}"]
+            "args" : ["dontAskInfoAgain", "$B{true}"]
           }
         ]
       }
@@ -512,7 +311,7 @@
     "qType" : "dummy",
     "cNextQuestions" : [
       {
-        "if" : "${dontAskRelInfoAgain} == $B{true}",
+        "if" : "${dontAskInfoAgain} == $B{true}",
         "then" : "Morning-Goals-All.checkWantRelGoalExampleQuestion",
         "else" : "Morning-Goals-All.wantRelGoalInfo"
       }
@@ -523,14 +322,14 @@
     "qType" : "dummy",
     "cNextQuestions" : [
       {
-        "if" : "${dontAskRelExampleAgain} == $B{true}",
+        "if" : "${dontAskExampleAgain} == $B{true}",
         "then" : "Morning-Goals-All.remindRelIntention",
         "else" : "Morning-Goals-All.wantRelGoalExample"
       }
     ],
     "cReplyMessages" : [
       {
-        "if" : "${dontAskRelExampleAgain} == $B{true}",
+        "if" : "${dontAskExampleAgain} == $B{true}",
         "then" : {
           "English" : ["Then let's get right to it!"],
           "Deutsch" : ["Dann kommen wir direkt zum Thema!"]
@@ -565,7 +364,7 @@
         "then" : [
           {
             "aType" : "setBooleanVar",
-            "args" : ["dontAskRelExampleAgain", "$B{true}"]
+            "args" : ["dontAskExampleAgain", "$B{true}"]
           }
         ]
       }
@@ -588,13 +387,13 @@
     "qId" : "relGoalsInfo",
     "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["In high quality work relationships, people feel valued and appreciated. They feel comfortable speaking up and discussing problems openly without fearing interpersonal consequences or loss of their self-image. They also display a wide range of emotions (including negative ones). People in a high quality relationship are engaged and willing to actively participate and disclose information. High quality relationships can withstand stress and conflict and then bounce back after setbacks."],
+      "English" : ["In high quality work relationships, people feel valued and appreciated. They feel safe to speak up, discuss problems openly, open themselves up without fearing interpersonal consequences or loss of their self-image, and display a wide range of emotions (including negative ones). People are engaged and willing to actively participate and disclose information. High quality relationships can withstand stress and conflict and bounce back after setbacks."],
       "Deutsch" : ["Hier sind Infos zu beziehungsorienterten Zielen"]
     },
-    "nextQuestion" : "Morning-Goals-All.continueFromRelInfo"
+    "nextQuestion" : "Morning-Goals-All.continueFromInfo"
   },
   {
-    "qId" : "continueFromRelInfo",
+    "qId" : "continueFromInfo",
     "qType" : "singleChoice",
     "text" : {
       "English" : "Click <i>Continue</i> when you are ready to go!",
@@ -621,10 +420,10 @@
       "English" : ["Here are some example of relationship goals:\n\n * <i>I will discuss a recent work issue with [team member] during lunch today</i>\n\n* <i>I will show empathy for [team member] at today's meeting</i>\n\n* <i>I will withhold judgement of [team member] who made a mistake yesterday</i>\n\n* <i>I will express gratitude for [team member's] hard work this morning</i>\n\n* <i>I will highlight the value of [team member's] unique perspective and input in the afternoon</i>\n\n* <i>I will encourage [team member] to speak up at today's meeting</i>"],
       "Deutsch" : ["Hier sind Beispiele von beziehungsorienterten Zielen"]
     },
-    "nextQuestion" : "Morning-Goals-All.continueFromRelExample"
+    "nextQuestion" : "Morning-Goals-All.continueFromExample"
   },
   {
-    "qId" : "continueFromRelExample",
+    "qId" : "continueFromExample",
     "qType" : "singleChoice",
     "text" : {
       "English" : "Click <i>Continue</i> when you are ready to go!",
@@ -640,7 +439,7 @@
     },
     "nextQuestion" : "Morning-Goals-All.remindRelIntention",
     "replyMessages" : {
-      "English" : ["Great, let's get to it!"],
+      "English" : ["Great, let's get to it then!"],
       "Deutsch" : ["Übersetzung nicht verfügbar"]
     },
     "reminder" : {
@@ -651,7 +450,7 @@
   {
     "qId" : "addFirstRelGoal",
     "text" : {
-      "English" : "${FIRST_NAME}, how would you like to behave toward a colleague today? Tip: make it an SRT goal (<b>S</b>pecific, <b>R</b>elevant, <b>T</b>ime-bound)",
+      "English" : "${FIRST_NAME}, how would you like to relate to or behave towards which of your colleagues today? Tip: make it an SRT goal (specific, relevant, timely)",
       "Deutsch" : "Übersetzung nicht verfügbar"
     },
     "minLengthWords" : 5,
@@ -727,11 +526,11 @@
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
         "then" : {
-          "English" : ["Very well.", "Now, let's move on to the work-related goals."],
+          "English" : ["Very well.", "Now, we shall move on to the work-related goals."],
           "Deutsch" : ["Alles klar.", "Jetzt machen wir mit den arbeitsbezogenen Zielen weiter."]
         },
         "else" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         }
       }
@@ -744,7 +543,7 @@
   {
     "qId" : "addRelGoals",
     "text" : {
-      "English" : "What else would you like to accomplish today? If you are adding multiple goals, send each one in a separate message.",
+      "English" : "What else would you like to accomplish today? If you are adding multiple goals, send each goal as a separate message.",
       "Deutsch" : "Was sonst möchten Sie heute erledigen? Wenn Sie mehrere Ziele hinzufügen wollen, senden Sie jedes Ziel jeweils in einer einzelnen Nachricht."
     },
     "minLengthWords" : 5,
@@ -763,11 +562,11 @@
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
         "then" : {
-          "English" : ["Good job!", "Now, let's move on to the work-related goals."],
+          "English" : ["Good job!", "Now, we shall move on to the work-related goals."],
           "Deutsch" : ["Gute Arbeit!", "Jetzt machen wir mit den arbeitsbezogenen Zielen weiter."]
         },
         "else" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
+          "English" : ["Got it. That's all for now. Good luck completing your goals today!"],
           "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         }
       }
@@ -807,37 +606,14 @@
       "English" : ["Alright, I will remember these goals. Good luck completing them!"],
       "Deutsch" : ["Übersetzung nicht verfügbar."]
     },
-    "cNextActions" : [
+    "nextActions" : [
       {
-        "if" : "${workGoalsSetBefore} == $B{false}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["firstWorkGoalDay", "$B{true}"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["workGoalsSetBefore", "$B{true}"]
-          },
-          {
-            "aType" : "addAnswerTo",
-            "args" : ["taskGoals"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["taskGoalsSetToday", "$B{true}"]
-          }
-        ],
-        "else" : [
-          {
-            "aType" : "addAnswerTo",
-            "args" : ["taskGoals"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["taskGoalsSetToday", "$B{true}"]
-          }
-        ]
+        "aType" : "addAnswerTo",
+        "args" : ["taskGoals"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["taskGoalsSetToday", "$B{true}"]
       }
     ]
   },
@@ -852,37 +628,14 @@
       "English" : ["Alright, I will remember these goals. Good luck completing them!"],
       "Deutsch" : ["Übersetzung nicht verfügbar."]
     },
-    "cNextActions" : [
+    "nextActions" : [
       {
-        "if" : "${relGoalsSetBefore} == $B{false}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["firstRelGoalDay", "$B{true}"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["relGoalsSetBefore", "$B{true}"]
-          },
-          {
-            "aType" : "addAnswerTo",
-            "args" : ["relGoals"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["relGoalsSetToday", "$B{true}"]
-          }
-        ],
-        "else" : [
-          {
-            "aType" : "addAnswerTo",
-            "args" : ["relGoals"]
-          },
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["relGoalsSetToday", "$B{true}"]
-          }
-        ]
+        "aType" : "addAnswerTo",
+        "args" : ["relGoals"]
+      },
+      {
+        "aType" : "setBooleanVar",
+        "args" : ["relGoalsSetToday", "$B{true}"]
       }
     ]
   }

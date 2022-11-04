@@ -1228,7 +1228,7 @@ Each action has an action type, `aType`, and zero or more string arguments `args
 | `addAnswerTo`       | Add the user's current answer to the end of a certain array variable (parameter)         | valid variable name | strArr or numArr          | none        | none                                      | `{ "aType" : "addAnswerTo", args : ["goalsSetToday"] }`                | add to number array only when `qType` is `"number"`                                                                                    |
 | `setBooleanVar`     | Set the value of a particular boolean variable to either true or false                   | valid variable name | boolean                   | new value   | <a href="#Constants">boolean constant</a> | `{ "aType" : "setBooleanVar", args : ["wantsToReflect", "$B{true}"] }` |                                                                                                                                        |
 | `addValueTo`        | Add a number value to a number variable                                                  | valid variable name | number                    | added value | <a href="#Constants">number constant</a>  | `{ "aType" : "addValueTo", args : ["numGoalsSet", "$N{2}"] }`          |                                                                                                                                        |
-| `clearVar`          | Clears a certain variable to default value (see <a href="#Parameters">Parameters</a>)    | valid variable name | any parameter type        | none         | none                                      | `{ "aType" : "clearVar", args : ["goalsSetToday"] }`                   |                                                                                                                                        |
+| `clearVar`          | Clears a certain variable to default value (see <a href="#Parameters">Parameters</a>)    | valid variable name | any parameter type        | none         | none                                      | `{ "aType" : "clearVars", args : ["goalsSetToday"] }`                   |                                                                                                                                        |
 
 
 As you may see in the examples already, building an action object requires a field `aType` and a field `args`. If there are no required arguments for a given `aType`, the `args` field can be omitted from the action object. If there are arguments, then `args` must be a **list of strings**, even if there is only one argument.
@@ -1255,7 +1255,7 @@ Example question object 1
   }
   "nextActions" : [
     {
-      "aType" : "clearVar",
+      "aType" : "clearVars",
       "args" : ["reflectionText"]
     }
   ]
@@ -1300,7 +1300,7 @@ Example question object 1
   }
   "nextActions" : [
     {
-      "aType" : "clearVar",
+      "aType" : "clearVars",
       "args" : ["reflectionText"]
     }
   ],
@@ -1394,7 +1394,7 @@ Example question object 1
   },
   "nextActions" : [
     {
-      "aType" : "clearVar",
+      "aType" : "clearVars",
       "args" : ["reflectionText"]
     }
   ],
@@ -1466,7 +1466,7 @@ Example question object 1
           "args" : ["wantsToReflect", "$B{true}"]
         },
         {
-          "aType" : "clearVar",
+          "aType" : "clearVars",
           "args" : ["reflectionText"]
         }
       ],
@@ -1476,7 +1476,7 @@ Example question object 1
           "args" : ["wantsToReflect", "$B{false}"]
         },
         {
-          "aType" : "clearVar",
+          "aType" : "clearVars",
           "args" : ["reflectionText"]
         }
       ]

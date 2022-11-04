@@ -253,32 +253,24 @@ describe('Participant Controller API: ', () =>{
 		expect(part.parameters[paramField]).to.eql(["zbeengo", paramValue]);
 
 	});
-	it('Should clear array param', async () => {
+	it('Should clear single array param', async () => {
 
 		const paramField = 'testStrArr';
 
-		let part1 = await participants.clearParamValue(testId, paramField);
+		let part1 = await participants.clearParamValues(testId, [paramField]);
 		// console.log(part1)
 		let part = await participants.get(testId);
 		expect(part.parameters[paramField]).to.eql([]);
 
 	});
-	it('Should clear non array param (str)', async () => {
+	it('Should clear non array param (str) and (num)', async () => {
 
-		const paramField = 'timezone';
+		const paramFields = ['timezone','testNum'];
 
-		await participants.clearParamValue(testId, paramField);
+		await participants.clearParamValues(testId, paramFields);
 		let part = await participants.get(testId);
-		expect(part.parameters[paramField]).to.equal("");
-
-	});
-	it('Should clear non array param (num)', async () => {
-
-		const paramField = 'testNum';
-
-		await participants.clearParamValue(testId, paramField);
-		let part = await participants.get(testId);
-		expect(part.parameters[paramField]).to.equal(0);
+		expect(part.parameters[paramFields[0]]).to.equal("");
+		expect(part.parameters[paramFields[1]]).to.equal(0);
 
 	});
 

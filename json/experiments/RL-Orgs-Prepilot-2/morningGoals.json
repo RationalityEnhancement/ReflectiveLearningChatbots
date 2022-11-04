@@ -13,19 +13,19 @@
         "args" : ["reflectionStartedToday", "$B{false}"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["relGoalsSetToday"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["taskGoalsSetToday"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["relGoals"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["taskGoals"]
       }
     ]
@@ -51,7 +51,7 @@
             "args" : ["remindWorkIntention", "$B{false}"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["workIntention"]
           }
         ]
@@ -80,7 +80,7 @@
             "args" : ["remindRelIntention", "$B{false}"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["remindRelIntention"]
           }
         ]

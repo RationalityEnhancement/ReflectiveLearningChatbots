@@ -52,7 +52,7 @@
     "scheduleQuestions" : 0,
     "assignToCondition" : 0,
     "addAnswerTo" : 1,
-    "clearVar" : 1,
+    "clearVars" : -1,
     "addValueTo" : 2,
     "startStage" : 1,
     "incrementStageDay" : 0,

@@ -23,11 +23,11 @@
     "nextQuestion" : "Goal-Setting.relGoalsProgress",
     "nextActions" : [
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["relGoals"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["relGoalsSetToday"]
       }
     ]
@@ -123,11 +123,11 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
         "then" : [
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["taskGoals"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["taskGoalsSetToday"]
           }
         ]
@@ -148,11 +148,11 @@
     "nextQuestion" : "Goal-Setting.taskGoalsProgress",
     "nextActions" : [
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["taskGoals"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["taskGoalsSetToday"]
       }
     ]

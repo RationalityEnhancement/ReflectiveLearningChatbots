@@ -104,6 +104,14 @@ describe('Validate action object', () => {
         let ret = ActionHandler.validateActionObject(actionObj);
         expect(ret.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
+    it('Should fail when args are empty (-1)', () => {
+        let actionObj = {
+            "aType" : "clearVars",
+            "args" : []
+        }
+        let ret = ActionHandler.validateActionObject(actionObj);
+        expect(ret.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
     it('Should fail when one arg is undefined', () => {
         let actionObj = {
             "aType" : "setBooleanVar",
@@ -115,6 +123,14 @@ describe('Validate action object', () => {
     it('Should succeed when all is correct', () => {
         let actionObj = {
             "aType" : "setBooleanVar",
+            "args" : ["1", "2"]
+        }
+        let ret = ActionHandler.validateActionObject(actionObj);
+        expect(ret.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+    })
+    it('Should succeed when at least one arg present for (-1)', () => {
+        let actionObj = {
+            "aType" : "clearVars",
             "args" : ["1", "2"]
         }
         let ret = ActionHandler.validateActionObject(actionObj);
@@ -968,7 +984,7 @@ describe('Processing actions', ()=>{
         describe('String array', () => {
             let returnObj;
             let actionObj = {
-                aType : "clearVar",
+                aType : "clearVars",
                 args : ["testStrArr"]
             }
             it('Should return success', async () => {
@@ -988,7 +1004,7 @@ describe('Processing actions', ()=>{
         describe('Number array', () => {
             let returnObj;
             let actionObj = {
-                aType : "clearVar",
+                aType : "clearVars",
                 args : ["testNumArr"]
             }
             it('Should return success', async () => {
@@ -1008,7 +1024,7 @@ describe('Processing actions', ()=>{
         describe('Number', () => {
             let returnObj;
             let actionObj = {
-                aType : "clearVar",
+                aType : "clearVars",
                 args : ["testNum"]
             }
             it('Should return success', async () => {
@@ -1025,30 +1041,34 @@ describe('Processing actions', ()=>{
                 expect(participant.parameters[actionObj.args[0]]).to.equal(0);
             })
         })
-        describe('String', () => {
+        describe('String + Boolean', () => {
             let returnObj;
             let actionObj = {
-                aType : "clearVar",
-                args : ["timezone"]
+                aType : "clearVars",
+                args : ["timezone", "testBool"]
             }
             it('Should return success', async () => {
                 let participant = await participants.get(testPartId);
                 participant.currentState = "answerReceived";
                 expect(participant.parameters[actionObj.args[0]]).to.not.be.undefined;
+                expect(participant.parameters[actionObj.args[1]]).to.not.be.undefined;
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
                 expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql("")
+                expect(returnObj.data["parameters"][actionObj.args[1]]).to.eql(false)
             })
             it('Should have cleared the string to default in the participant', async ()=>{
                 let participant = await participants.get(testPartId);
                 assert(actionObj.args[0] in participant.parameters);
                 expect(participant.parameters[actionObj.args[0]]).to.equal("");
+                assert(actionObj.args[1] in participant.parameters);
+                expect(participant.parameters[actionObj.args[1]]).to.equal(false);
             })
         })
         describe('Boolean', () => {
             let returnObj;
             let actionObj = {
-                aType : "clearVar",
+                aType : "clearVars",
                 args : ["testBool"]
             }
             it('Should return success', async () => {
@@ -1070,9 +1090,21 @@ describe('Processing actions', ()=>{
             let outString = "23";
             let expectedOut = 23;
 
-            it('Should fail when variable name not string', async () => {
+            it('Should fail when array length 0', async () => {
                 let actionObj = {
-                    aType : "clearVar",
+                    aType : "clearVars",
+                    args : []
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentAnswer = ["hello"];
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data)
+            })
+            it('Should fail when one variable name not string', async () => {
+                let actionObj = {
+                    aType : "clearVars",
                     args : [234]
                 }
                 let participant = await participants.get(testPartId);
@@ -1082,10 +1114,10 @@ describe('Processing actions', ()=>{
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
                 console.log(returnObj.data)
             })
-            it('Should fail when variable not recognized', async () => {
+            it('Should fail when one variable not recognized', async () => {
                 let actionObj = {
-                    aType : "clearVar",
-                    args : ["timezone2"]
+                    aType : "clearVars",
+                    args : ["timezone2", "timezone"]
                 }
                 let participant = await participants.get(testPartId);
                 participant.currentAnswer = ["Europe/Berlin"];
@@ -1096,8 +1128,8 @@ describe('Processing actions', ()=>{
             })
             it('Should fail when cannot clear reserved var', async () => {
                 let actionObj = {
-                    aType : "clearVar",
-                    args : ["STAGE_NAME"]
+                    aType : "clearVars",
+                    args : ["STAGE_NAME", "timezone"]
                 }
                 let participant = await participants.get(testPartId);
                 participant.currentAnswer = ["Europe/Berlin"];

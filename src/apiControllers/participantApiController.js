@@ -223,17 +223,18 @@ exports.addToArrField = async (uniqueId, fieldName, value) => {
 }
 
 // Clear the value of a given parameters
-exports.clearParamValue = async (uniqueId, param) => {
+exports.clearParamValues = async (uniqueId, params) => {
 
   try{
 
-    let defaultVal = Participant.schema.tree.parameters[param].default;
     let update = {
       "$set":{
 
       }
     }
-    update["$set"]["parameters."+param] = defaultVal;
+    params.forEach(param => {
+      update["$set"]["parameters."+param] = Participant.schema.tree.parameters[param].default;
+    })
     return Participant.findOneAndUpdate(
         { uniqueId: uniqueId },
         update,

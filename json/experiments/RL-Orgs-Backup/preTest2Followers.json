@@ -62,55 +62,55 @@
             "args" : ["Intervention"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["remindIntention"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["intentions"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["intentionReminded"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["taskGoals"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["relGoals"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["taskGoalsSetToday"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["relGoalsSetToday"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["lastReportedTaskProgress"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["taskProgressReportedOnce"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["lastReportedRelProgress"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["relProgressReportedOnce"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["dontAskInfoAgain"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["dontAskExampleAgain"]
           }
         ]

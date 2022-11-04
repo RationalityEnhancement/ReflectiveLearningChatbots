@@ -23,11 +23,11 @@
     "nextQuestion" : "Int-Reflection.relGoalsProgress",
     "nextActions" : [
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["relGoals"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["relGoalsSetToday"]
       },
       {
@@ -877,7 +877,18 @@
     "cNextQuestions" : [
       {
         "if": "${STAGE_DAY} == $N{5}",
-        "then" : "Post-Test.survey"
+        "then" : "Post-Test.survey",
+        "else" : "Int-Reflection.remindEmployees"
+      }
+    ]
+  },
+  {
+    "qId" : "remindEmployees",
+    "qType" : "dummy",
+    "cReplyMessages" : [
+      {
+        "if": "(${STAGE_DAY} MULTIPLE_OF $N{2}) AND (${CONDITION} CONTAINS_STRING $S{Leader})",
+        "then" : "$F{json/experiments/RL-Orgs/replyMessages/leaderRefReminderText.json}"
       }
     ]
   },
@@ -904,11 +915,11 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
         "then" : [
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["taskGoals"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["taskGoalsSetToday"]
           }
         ]
@@ -929,11 +940,11 @@
     "nextQuestion" : "Int-Reflection.taskGoalsProgress",
     "nextActions" : [
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["taskGoals"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["taskGoalsSetToday"]
       },
       {

@@ -13,19 +13,19 @@
         "args" : ["reflectionStartedToday", "$B{false}"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["relGoalsSetToday"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["taskGoalsSetToday"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["relGoals"]
       },
       {
-        "aType" : "clearVar",
+        "aType" : "clearVars",
         "args" : ["taskGoals"]
       }
     ]
@@ -51,7 +51,7 @@
             "args" : ["remindWorkIntention", "$B{false}"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["workIntention"]
           }
         ]
@@ -80,7 +80,7 @@
             "args" : ["remindRelIntention", "$B{false}"]
           },
           {
-            "aType" : "clearVar",
+            "aType" : "clearVars",
             "args" : ["remindRelIntention"]
           }
         ]
@@ -343,19 +343,13 @@
       },
       {
         "if" : "(${STAGE_DAY} MULTIPLE_OF $N{2}) != $B{true}",
-        "then" : "Morning-Goals-All.wantRelationshipGoal"
+        "then" : "Morning-Goals-All.wantRelationshipGoal",
+        "else" : "Morning-Goals-All.completeGoalSetting"
       }
     ],
     "cReplyMessages" : [
       {
-        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}) AND (${STAGE_DAY} MULTIPLE_OF $N{2})",
-        "then" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
-        }
-      },
-      {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}) AND ((${STAGE_DAY} MULTIPLE_OF $N{2}) != $B{true})",
         "then" : {
           "English" : ["Alright, let's move on."],
           "Deutsch" : ["Alles klar, machen wir weiter."]
@@ -382,17 +376,14 @@
     "cNextQuestions" : [
       {
         "if" : "(${STAGE_DAY} MULTIPLE_OF $N{2}) != $B{true}",
-        "then" : "Morning-Goals-All.wantRelationshipGoal"
+        "then" : "Morning-Goals-All.wantRelationshipGoal",
+        "else" : "Morning-Goals-All.completeGoalSetting"
       }
     ],
     "cReplyMessages" : [
       {
-        "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
+        "if" : "(${STAGE_DAY} MULTIPLE_OF $N{2}) != $B{true}",
         "then" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
-        },
-        "else" : {
           "English" : ["Great!"],
           "Deutsch" : ["Toll!"]
         }
@@ -417,17 +408,14 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Morning-Goals-All.checkWantRelGoalInfoQuestion"
+        "then" : "Morning-Goals-All.checkWantRelGoalInfoQuestion",
+        "else" : "Morning-Goals-All.completeGoalSetting"
       }
     ],
     "cReplyMessages" : [
       {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
-        },
-        "else" : {
           "English" : ["Good for you. You are choosing to improve your work climate!"],
           "Deutsch" : ["Gut, dass Sie sich entschieden haben, Ihre Arbeitsatmösphare zu verbessern!"]
         }
@@ -713,7 +701,8 @@
       },
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Morning-Goals-All.remindWorkIntention"
+        "then" : "Morning-Goals-All.remindWorkIntention",
+        "else" : "Morning-Goals-All.completeGoalSetting"
       }
     ],
     "cReplyMessages" : [
@@ -729,10 +718,6 @@
         "then" : {
           "English" : ["Very well.", "Now, let's move on to the work-related goals."],
           "Deutsch" : ["Alles klar.", "Jetzt machen wir mit den arbeitsbezogenen Zielen weiter."]
-        },
-        "else" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         }
       }
     ],
@@ -756,7 +741,8 @@
     "cNextQuestions" : [
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Morning-Goals-All.remindWorkIntention"
+        "then" : "Morning-Goals-All.remindWorkIntention",
+        "else" : "Morning-Goals-All.completeGoalSetting"
       }
     ],
     "cReplyMessages" : [
@@ -765,10 +751,6 @@
         "then" : {
           "English" : ["Good job!", "Now, let's move on to the work-related goals."],
           "Deutsch" : ["Gute Arbeit!", "Jetzt machen wir mit den arbeitsbezogenen Zielen weiter."]
-        },
-        "else" : {
-          "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
-          "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
         }
       }
     ],
@@ -776,6 +758,24 @@
       "freqMins" : 30,
       "numRepeats" : 4
     }
+  },
+  {
+    "qId" : "completeGoalSetting",
+    "replyMessages" : {
+      "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
+      "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]
+    },
+    "nextQuestion" : "Morning-Goals-All.remindEmployees"
+  },
+  {
+    "qId" : "remindEmployees",
+    "qType" : "dummy",
+    "cReplyMessages" : [
+      {
+        "if": "(${STAGE_DAY} MULTIPLE_OF $N{2}) AND (${CONDITION} CONTAINS_STRING $S{Leader})",
+        "then" : "$F{json/experiments/RL-Orgs/replyMessages/leaderGoalReminderText.json}"
+      }
+    ]
   },
   {
     "qId" : "addGoalsLater",

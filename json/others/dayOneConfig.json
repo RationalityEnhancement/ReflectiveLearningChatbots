@@ -679,11 +679,11 @@
             ],
             "nextActions" : [
               {
-                "aType" : "clearVar",
+                "aType" : "clearVars",
                 "args" : ["taskGoals"]
               },
               {
-                "aType" : "clearVar",
+                "aType" : "clearVars",
                 "args" : ["taskGoalsSetToday"]
               }
             ]
@@ -698,11 +698,11 @@
             "nextQuestion" :  "goalProgress.goalsProgress",
             "nextActions" : [
               {
-                "aType" : "clearVar",
+                "aType" : "clearVars",
                 "args" : ["relGoals"]
               },
               {
-                "aType" : "clearVar",
+                "aType" : "clearVars",
                 "args" : ["relGoalsSetToday"]
               }
             ]
@@ -886,7 +886,7 @@
                     "args" : ["remindIntention", "$B{false}"]
                   },
                   {
-                    "aType" : "clearVar",
+                    "aType" : "clearVars",
                     "args" : ["intention"]
                   },
                   {
@@ -1245,11 +1245,11 @@
             "nextQuestion" : "taskGoalReflection.goalsProgress",
             "nextActions" : [
               {
-                "aType" : "clearVar",
+                "aType" : "clearVars",
                 "args" : ["taskGoals"]
               },
               {
-                "aType" : "clearVar",
+                "aType" : "clearVars",
                 "args" : ["taskGoalsSetToday"]
               }
             ]
@@ -1631,11 +1631,11 @@
             "nextQuestion" : "relGoalReflection.goalsDescription",
             "nextActions" : [
               {
-                "aType" : "clearVar",
+                "aType" : "clearVars",
                 "args" : ["relGoals"]
               },
               {
-                "aType" : "clearVar",
+                "aType" : "clearVars",
                 "args" : ["relGoalsSetToday"]
               }
             ]

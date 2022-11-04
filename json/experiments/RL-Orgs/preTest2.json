@@ -121,10 +121,20 @@
     "cNextActions" : [
       {
         "if": "${preTestComplete} == $B{true}",
-        "then" : [{
-          "aType" : "startStage",
-          "args" : ["Goal-Setting"]
-        }]
+        "then" : [
+          {
+            "aType" : "clearVars",
+            "args" : ["remindWorkIntention", "workIntention", "relIntention", "remindRelIntention",
+              "taskGoals", "relGoals", "taskGoalsSetToday", "relGoalsSetToday","lastReportedTaskProgress",
+            "taskProgressReportedOnce", "lastReportedRelProgress", "relProgressReportedOnce", "dontAskInfoAgain",
+            "dontAskExampleAgain", "dontAskRelInfoAgain", "dontAskRelExampleAgain","relGoalsSetBefore",
+            "firstRelGoalDay", "firstWorkGoalDay", "workGoalsSetBefore", "reflectionStartedToday", "warningGiven"]
+          },
+          {
+            "aType" : "startStage",
+            "args" : ["Goal-Setting"]
+          }
+        ]
       }
     ]
   }

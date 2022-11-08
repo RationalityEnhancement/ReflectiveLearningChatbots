@@ -172,8 +172,12 @@ function QuestionHandler(config){
         for(let i = 0; i < optionalParams.length; i++){
             let field = optionalParams[i];
             if(field in selectedQuestion) {
-                let languageReplacedValue = this.replaceLanguageDeeply(selectedQuestion[field], config.languages, language)
-                constructedQuestion[field] = languageReplacedValue;
+                let languageReplacedObj = this.replaceLanguageDeeply(selectedQuestion[field], config.languages, language)
+                if(languageReplacedObj.returnCode === DevConfig.FAILURE_CODE){
+                    return ReturnMethods.returnFailure("QHandler: Failure replacing language for question "
+                        + selectedQuestion.qId + "\n" + languageReplacedObj.data);
+                }
+                constructedQuestion[field] = languageReplacedObj.data;
             }
         }
 
@@ -186,37 +190,55 @@ function QuestionHandler(config){
      * (object which has config.languages as keys) with the corresponding value
      * based on the participant preferred language
      *
+     * Returns failure when an object is found where participant language is not present
+     *
      * @param targetObj target object to replace all language objects
      * @param languages possible languages
      * @param partLang participant preferred language
      * @returns {{}|*[]|*}
      */
     this.replaceLanguageDeeply = (targetObj, languages, partLang) => {
-        if(typeof targetObj !== 'object') return targetObj;
-        if(!Array.isArray(languages)) return targetObj;
-        if(typeof partLang !== 'string') return targetObj;
+
+        if(typeof targetObj !== 'object') return ReturnMethods.returnSuccess(targetObj);
+        if(!Array.isArray(languages)) return ReturnMethods.returnFailure("QHandler: Languages array must be array");
+        if(typeof partLang !== 'string') return ReturnMethods.returnFailure("QHandler: Participant language must be string");
+
 
         // Deal with all elements of array
         if(Array.isArray(targetObj)){
             let newArray = [];
             for(let i = 0; i < targetObj.length; i++){
-                newArray.push(this.replaceLanguageDeeply(targetObj[i], languages, partLang))
+                let replaceObj = this.replaceLanguageDeeply(targetObj[i], languages, partLang)
+                if(replaceObj.returnCode === DevConfig.FAILURE_CODE){
+                    return replaceObj;
+                }
+                newArray.push(replaceObj.data)
             }
-            return newArray;
+            return ReturnMethods.returnSuccess(newArray);
         }
 
         // If object is a language object, return the value of the corresponding language
-        if(languages.length === lodash.intersection(Object.keys(targetObj),config.languages).length){
-            // Handle nested language objects
-            return this.replaceLanguageDeeply(targetObj[partLang], languages, partLang);
+        if(lodash.intersection(Object.keys(targetObj),config.languages).length > 0){
+            // If object contains participant language
+            if(targetObj[partLang]){
+                // Handle nested language objects
+                return this.replaceLanguageDeeply(targetObj[partLang], languages, partLang);
+            }
+            // If object doesn't contain participant language
+            return ReturnMethods.returnFailure("QHandler: option for " + partLang + " missing.")
+
         }
         let newObj = {};
 
         // Recursively deal with all properties of object
         for(const [key, value] of Object.entries(targetObj)){
-            newObj[key] = this.replaceLanguageDeeply(value, languages, partLang);
+            let replaceObj = this.replaceLanguageDeeply(value, languages, partLang)
+            if(replaceObj.returnCode === DevConfig.FAILURE_CODE){
+                return replaceObj;
+            }
+            newObj[key] = replaceObj.data;
         }
-        return newObj;
+        return ReturnMethods.returnSuccess(newObj);
     }
 
     /**

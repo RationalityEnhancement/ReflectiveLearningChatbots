@@ -56,13 +56,14 @@
   {
     "qId": "pIdQuestion",
     "text": {
-      "English": "What is your full Prolific ID? Please ensure to avoid mistakes so that you can be identified correctly!",
+      "English": "What is your team name? Please ensure to avoid mistakes so that you can be identified correctly!",
       "Deutsch": "Bitte geben Sie den Namen Ihres Teams ein, der Ihnen verteilt wurde."
     },
     "qType": "freeform",
+    "answerShouldBe" : "$F{data/RL-Orgs/teamnames.json}",
     "replyMessages": {
       "English": [
-        "Thank you, Prolific ID has been registered."
+        "Thank you, team name has been registered."
       ],
       "Deutsch": [
         "Danke, Teilnehmer-ID ist erfasst worden."

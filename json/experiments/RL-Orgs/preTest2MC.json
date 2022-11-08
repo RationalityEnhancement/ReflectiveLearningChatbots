@@ -32,7 +32,7 @@
     "qId" : "wantContinue",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Would you like to continue with the experiment or would you like to end it here and stop receiving messages?",
+      "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
       "Deutsch" : "Übersetzung nicht verfügbar?"
     },
     "options" : {
@@ -50,7 +50,7 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : {
-          "English" : ["Great to hear from you again and that you want to continue the experiment!", "Follow the instructions to continue."],
+          "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
           "Deutsch" : ["Übersetzung nicht verfügbar."]
         }
       }
@@ -65,7 +65,7 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["The experiment has been ended.\n\nEnter the following code into the Prolific HIT to show how much you have progressed in the experiment and to receive the appropriate payment.", "CIESTZJD"],
+      "English" : ["The experiment has ended."],
       "Deutsch" : ["Übersetzung nicht verfügbar."]
     }
   },
@@ -96,7 +96,7 @@
       "numRepeats" : 4
     },
     "inputPrompt" : {
-      "English" : "Enter the survey code that you receive at the end of the survey to continue.",
+      "English" : "Enter the survey code displayed at the end of the survey to continue.",
       "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren."
     },
     "continueStrings" : ["ABCDE", "12345"],
@@ -111,7 +111,7 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["Thank you for that!", "That’s all for today. On the next weekday, we will start again with a daily routine of setting goals in the morning and then reflecting about them in the evening, which will last another 3 days.", "See you later!"],
+      "English" : ["Thank you!", "That’s all for today. On the next weekday, we will start again with a daily routine of setting goals in the morning and then reflecting on them in the evening, which will last another 3 days.", "See you later!"],
       "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
     }
   },
@@ -120,11 +120,21 @@
     "qType" : "dummy",
     "cNextActions" : [
       {
-        "if": "${preTestComplete} == $B{true}",
-        "then" : [{
-          "aType" : "startStage",
-          "args" : ["Goal-Setting"]
-        }]
+        "if": "${preTest2Complete} == $B{true}",
+        "then" : [
+          {
+            "aType" : "clearVars",
+            "args" : ["remindWorkIntention", "workIntention", "relIntention", "remindRelIntention",
+              "taskGoals", "relGoals", "taskGoalsSetToday", "relGoalsSetToday","lastReportedTaskProgress",
+              "taskProgressReportedOnce", "lastReportedRelProgress", "relProgressReportedOnce", "dontAskInfoAgain",
+              "dontAskExampleAgain", "dontAskRelInfoAgain", "dontAskRelExampleAgain","relGoalsSetBefore",
+              "firstRelGoalDay", "firstWorkGoalDay", "workGoalsSetBefore", "reflectionStartedToday", "warningGiven"]
+          },
+          {
+            "aType" : "startStage",
+            "args" : ["Intervention"]
+          }
+        ]
       }
     ]
   }

@@ -14,19 +14,7 @@
       },
       {
         "aType" : "clearVars",
-        "args" : ["relGoalsSetToday"]
-      },
-      {
-        "aType" : "clearVars",
-        "args" : ["taskGoalsSetToday"]
-      },
-      {
-        "aType" : "clearVars",
-        "args" : ["relGoals"]
-      },
-      {
-        "aType" : "clearVars",
-        "args" : ["taskGoals"]
+        "args" : ["relGoalsSetToday", "taskGoalsSetToday", "relGoals", "taskGoals"]
       }
     ]
   },
@@ -441,7 +429,7 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : "Morning-Goals-All.checkWantRelGoalInfoQuestion",
-        "else" : "Morning-Goals-All.remindWorkIntention"
+        "else" : "Morning-Goals-All.checkWantGoalInfoQuestion"
       }
     ],
     "cReplyMessages" : [
@@ -701,7 +689,7 @@
       },
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Morning-Goals-All.remindWorkIntention",
+        "then" : "Morning-Goals-All.checkWantGoalInfoQuestion",
         "else" : "Morning-Goals-All.completeGoalSetting"
       }
     ],
@@ -741,7 +729,7 @@
     "cNextQuestions" : [
       {
         "if" : "${STAGE_DAY} MULTIPLE_OF $N{2}",
-        "then" : "Morning-Goals-All.remindWorkIntention",
+        "then" : "Morning-Goals-All.checkWantGoalInfoQuestion",
         "else" : "Morning-Goals-All.completeGoalSetting"
       }
     ],
@@ -761,6 +749,7 @@
   },
   {
     "qId" : "completeGoalSetting",
+    "qType": "dummy",
     "replyMessages" : {
       "English" : ["Got it. That's all for now. Good luck completing your goals today!\n\n(Hint: if you want to add goals later in the day, send the command <i>/talk</i>.)"],
       "Deutsch" : ["Alles klar. Viel Erfolg bei Ihren Zielen heute!"]

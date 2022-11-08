@@ -53,6 +53,7 @@
     "warningGiven" : "boolean",
     "morningTime" : "string",
     "eveningTime" : "string",
+    "testStr" : "string",
     "testStrArr" : "strArr",
     "testBool" : "boolean",
     "testNum" : "number",
@@ -63,7 +64,8 @@
     "actionMessages" : true,
     "enableNext" : true,
     "messageDelay" : false,
-    "developer" : false
+    "developer" : false,
+    "saveDebugInfo": true
   },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",

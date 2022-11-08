@@ -121,6 +121,9 @@ let processNextSteps = async(bot, uniqueId) => {
 
         // Get updated participant for next action:
         try{
+            if(pActionObj.returnCode === DevConfig.FAILURE_CODE){
+                return ReturnMethods.returnFailure("LHandler: Error occurred during action: \n" + pActionObj.data)
+            }
             participant = pActionObj.data;
             if(!participant) throw "Participant not found"
 
@@ -265,7 +268,6 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
     // Dummies are used to either just send messages or to conditionally
     //  select next questions/actions which are not preceded by another question already
     if(question.qType === "dummy"){
-
         // Replace dummy question text and qId with that of previous question
         //  in case previous question has not been answered and needs to be saved
         let copyQuestion = JSON.parse(JSON.stringify(question));

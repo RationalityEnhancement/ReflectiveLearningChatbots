@@ -13,7 +13,7 @@ let newTeamNames = []
 let newCondMap = {}
 teamNames.forEach(name => {
     newTeamNames.push(...[name, name + "-Leader"])
-    newCondMap[name] = condMap[name];
+    newCondMap[name] = condMap[name] + 3;
     newCondMap[name + "-Leader"] = condMap[name]
 })
 

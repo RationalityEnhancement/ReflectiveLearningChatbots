@@ -109,11 +109,21 @@
     "cNextQuestions" : [
       {
         "if": "${STAGE_DAY} == $N{5}",
-        "then" : "Pre-Test-2.survey"
+        "then" : "Pre-Test-2.survey",
+        "else" : "Goal-Setting.remindEmployees"
       }
     ]
   },
-
+  {
+    "qId" : "remindEmployees",
+    "qType" : "dummy",
+    "cReplyMessages" : [
+      {
+        "if": "(${STAGE_DAY} MULTIPLE_OF $N{2}) AND (${CONDITION} CONTAINS_STRING $S{Leader})",
+        "then" : "$F{json/experiments/RL-Orgs/replyMessages/leaderRefReminderText.json}"
+      }
+    ]
+  },
   {
     "qId" : "askReflectTaskGoals",
     "qType" : "singleChoice",

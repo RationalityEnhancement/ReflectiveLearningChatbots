@@ -440,7 +440,8 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                 return ReturnMethods.returnFailure("ActHandler - clearVars: Cannot update reserved variable!");
             }
             // If type is unrecognized (mostly when varname doesnt exist)
-            if(lodash.intersection(Object.values(DevConfig.OPERAND_TYPES), csParamTypes).length !== csParamTypes.length){
+            if(lodash.intersection(Object.values(DevConfig.OPERAND_TYPES), csParamTypes).length
+                !== csParamTypes.filter((value, index, self) => self.indexOf(value) === index).length){
                 return ReturnMethods.returnFailure("ActHandler - clearVars: did not recognize at least one variable type " + csParamTypes.join(",") + " - " + actionObj.args.join(","));
             }
 

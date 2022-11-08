@@ -1065,11 +1065,35 @@ describe('Processing actions', ()=>{
                 expect(participant.parameters[actionObj.args[1]]).to.equal(false);
             })
         })
+        describe('String + String', () => {
+            let returnObj;
+            let actionObj = {
+                aType : "clearVars",
+                args : ["timezone", "testStr"]
+            }
+            it('Should return success', async () => {
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                expect(participant.parameters[actionObj.args[0]]).to.not.be.undefined;
+                expect(participant.parameters[actionObj.args[1]]).to.not.be.undefined;
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql("")
+                expect(returnObj.data["parameters"][actionObj.args[1]]).to.eql("")
+            })
+            it('Should have cleared the string to default in the participant', async ()=>{
+                let participant = await participants.get(testPartId);
+                assert(actionObj.args[0] in participant.parameters);
+                expect(participant.parameters[actionObj.args[0]]).to.equal("");
+                assert(actionObj.args[1] in participant.parameters);
+                expect(participant.parameters[actionObj.args[1]]).to.equal("");
+            })
+        })
         describe('Boolean', () => {
             let returnObj;
             let actionObj = {
                 aType : "clearVars",
-                args : ["testBool"]
+                args : ["testBool", ]
             }
             it('Should return success', async () => {
                 let participant = await participants.get(testPartId);

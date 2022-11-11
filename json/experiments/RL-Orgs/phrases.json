@@ -44,15 +44,15 @@
   "keyboards": {
     "singleChoice": {
       "English": "Please select from the available options. You may need to scroll down to see all of them.",
-      "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
+      "Deutsch": "Bitte wählen Sie aus den verfügbaren Sprachen. Sie müssen eventuell nach unten scrollen, um alle Optionen zu sehen."
     },
     "multiChoice": {
       "English": "Choose as many options as you like. <b>Remember to click <i>Done</i> to finish choosing.</b> You may need to scroll down to see all options.",
-      "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
+      "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Erledigt, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
     },
     "terminateAnswer": {
       "English": "Done",
-      "Deutsch": "Fertig"
+      "Deutsch": "Erledigt"
     },
     "finishedChoosingReply": {
       "English": "I have noted down your choices.",
@@ -60,23 +60,23 @@
     },
     "qualtricsFillPrompt" : {
       "English" : "Please follow the link below to the survey.",
-      "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage."
+      "Deutsch" : "Bitte folgen Sie dem untenstehenden Link zum Fragebogen."
     },
     "qualtricsDonePrompt" : {
       "English" : "Send <i>Done</i> when you are finished with the survey.",
-      "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
+      "Deutsch" : "Senden Sie <i>Erledigt</i>, wenn Sie mit der Umfrage fertig sind."
     },
     "freeformSinglePrompt" : {
       "English" : "Type in your answer in a <b>single</b> message and press 'send'.",
-      "Deutsch" : "Geben Sie Ihre Antwort in nur <b>einer</b> Nachricht ein."
+      "Deutsch" : "Geben Sie Ihre Antwort in <b>einer einzigen Nachricht</b> ein und klicken Sie auf 'Senden'."
     },
     "freeformMultiPrompt" : {
       "English" : "Type in your answer over one or multiple messages. <b>Remember to send <i>Done</i> in a separate message when you have finished answering.</b>",
-      "Deutsch" : "Geben Sie Ihre Antwort über eine oder mehrere Nachrichten ein. Senden Sie <i>Fertig</i>, wenn fertig."
+      "Deutsch" : "Wählen Sie so viele Optionen aus, wie Sie möchten. <b>Denken Sie daran, auf <i>Erledigt</i> zu klicken, sobald Sie mit Ihrer Auswahl fertig sind.</b>"
     },
     "linkToSurvey" : {
       "English" : "Link to Survey (opens in browser)",
-      "Deutsch" : "Link zur Umfrage (wird im Browser geöffnet)"
+      "Deutsch" : "Link zum Fragebogen (wird im Browser geöffnet)"
     },
     "likert5Options": {
       "English": [
@@ -140,7 +140,7 @@
   "experiment" : {
     "endExperiment" : {
       "English" : "You will no longer receive any messages from me. Thank you for participating! I hope I was able to help you improve your decision-making.",
-      "Deutsch" : "Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
+      "Deutsch" : "Sie werden keine Nachrichten mehr erhalten. Vielen Dank, dass Sie teilgenommen haben. Ich hoffe, ich konnte Ihnen bei zukünftigen Entscheidungsfindungen helfen."
     },
     "reportFeedback" : {
       "English" : "<b>Report Feedback</b>\n\nJust type in your feedback in a single message and press send!\n\nIf this was a mistake and you don't want to report feedback, send <i>/cancel</i>.",

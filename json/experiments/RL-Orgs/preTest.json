@@ -33,11 +33,11 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
-      "Deutsch" : "Übersetzung nicht verfügbar?"
+      "Deutsch" : "Möchten Sie mit dem Experiment fortfahren oder es jetzt beenden? Wenn Sie sich für das Beenden entscheiden, werden Sie keine Nachrichten mehr erhalten."
     },
     "options" : {
       "English" : ["Continue", "End Experiment"],
-      "Deutsch" : ["Continue", "End Experiment"]
+      "Deutsch" : ["Fortfahren", "Experiment Beenden"]
     },
     "cNextQuestions" : [
       {
@@ -51,7 +51,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : {
           "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
-          "Deutsch" : ["Übersetzung nicht verfügbar."]
+          "Deutsch" : ["Schön, dass Sie das Experiment fortsetzen möchten!", "Bitte folgen Sie den Anweisungen um fortzufahren."]
         }
       }
     ]
@@ -66,7 +66,7 @@
     ],
     "replyMessages" : {
       "English" : ["The experiment has ended."],
-      "Deutsch" : ["Übersetzung nicht verfügbar."]
+      "Deutsch" : ["Das Experiment ist beendet."]
     }
   },
   {
@@ -74,7 +74,7 @@
     "qType" : "qualtrics",
     "text" : {
       "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
-      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die nachfolgende Fragebogen sorgfältig und vollständig auszufüllen."
     },
     "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
     "qualtricsFields" : [
@@ -97,7 +97,7 @@
     },
     "inputPrompt" : {
       "English" : "Enter the survey code displayed at the end of the survey to continue. (ABCDE, 12345)",
-      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren. (ABCDE, 12345)"
+      "Deutsch" : "Geben Sie den am Ende des Fragebogens angezeigten Code ein, um fortzufahren. (ABCDE, 12345)"
     },
     "continueStrings" : ["ABCDE", "12345"],
     "nextActions" : [
@@ -111,8 +111,8 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["Thank you!"],
-      "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
+      "English" : ["Thank you!", "That’s all for today. On the next weekday, we will start the daily routine of setting goals in the morning and then reflecting on them in the evening. This will last for five days.", "See you later!"],
+      "Deutsch" : ["Vielen Dank!", "Das war's für heute. Wir werden am nächsten Werktag mit der täglichen Routine beginnen, bei der Sie sich morgens Ziele setzen und sie abends reflektieren. Das Ganze machen wir fünf Tage lang.", "Bis später!"]
     }
   },
   {

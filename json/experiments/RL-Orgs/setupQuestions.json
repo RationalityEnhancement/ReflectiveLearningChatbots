@@ -2,13 +2,13 @@
   {
     "qId" : "langQuestion",
     "text" : {
-      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, and I can help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)",
-      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, and I can help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)"
+      "English" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, and I can help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)\n\nHallo ${FIRST_NAME}! :wave:\n\nIch bin ein Chatbot und kann Ihnen helfen, aus Ihren Erfahrungen zu lernen! Welche Sprache möchten Sie nutzen?\n\n(/repeat eingeben, wenn die Optionen nicht mehr angezeigt werden.)\n",
+      "Deutsch" : "Hello ${FIRST_NAME}! :wave:\n\nI am a chatbot, and I can help you reflect on your experiences and learn from them! Which language do you prefer?\n\n(send <i>/repeat</i> if the options are no longer visible.)\n\nHallo ${FIRST_NAME}! :wave:\n\nIch bin ein Chatbot und kann Ihnen helfen, aus Ihren Erfahrungen zu lernen! Welche Sprache möchten Sie nutzen?\n\n(/repeat eingeben, wenn die Optionen nicht mehr angezeigt werden.)\n"
     },
     "qType" : "singleChoice",
     "options" : {
-      "English" : ["English"],
-      "Deutsch" : ["English"]
+      "English" : ["English", "Deutsch"],
+      "Deutsch" : ["English", "Deutsch"]
     },
     "nextActions" : [{
       "aType" : "saveAnswerTo",
@@ -17,7 +17,7 @@
     "nextQuestion" : "setupQuestions.introduceInstructions",
     "replyMessages" : {
       "English" : ["Thank you for choosing a language"],
-      "Deutsch": ["Danke, dass Sie eine Sprache ausgewählt haben."]
+      "Deutsch": ["Vielen Dank, dass Sie eine Sprache ausgewählt haben."]
     },
     "start" : true
   },
@@ -27,7 +27,7 @@
     "nextQuestion" : "setupQuestions.displayInstructions",
     "replyMessages" : {
       "English" : ["Before we move on, let me explain how you can interact with me!"],
-      "Deutsch" : ["Übersetzung nicht verfügbar"]
+      "Deutsch" : ["Bevor wir fortfahren, erkläre ich Ihnen, wie Sie mit mir kommunizieren können!"]
     }
   },
   {
@@ -41,11 +41,11 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Click <i>Continue</i> when you are ready to move on!",
-      "Deutsch" : "Klicken Sie <i>Weiter</i>, wenn Sie fertig sind!"
+      "Deutsch" : "Klicken Sie auf <i>Weiter</i>, wenn Sie fortfahren möchten!"
     },
     "inputPrompt" : {
       "English" : "(Hint: send /repeat if the <i>Continue</i> button is no longer visible.)",
-      "Deutsch" : "(Tipp: senden Sie /repeat, wenn die <i>Weiter</i>-Taste nicht mehr sichtbar ist.)"
+      "Deutsch" : "(Hinweis: /repeat eingeben, falls der Button <i>Weiter</i> nicht mehr angezeigt wird.)"
     },
     "nextQuestion" : "setupQuestions.pIdQuestion",
     "options": {
@@ -57,7 +57,7 @@
     "qId": "pIdQuestion",
     "text": {
       "English": "What is your team name? Please ensure to avoid mistakes so that you can be identified correctly!",
-      "Deutsch": "Bitte geben Sie den Namen Ihres Teams ein, der Ihnen verteilt wurde."
+      "Deutsch": "Bitte geben Sie Ihren Teamnamen ein. Bitte achten Sie darauf, Tippfehler zu vermeiden, damit Sie korrekt identifiziert werden können!"
     },
     "qType": "freeform",
     "answerShouldBe" : "$F{data/RL-Orgs/teamnames.json}",
@@ -66,7 +66,7 @@
         "Thank you, team name has been registered."
       ],
       "Deutsch": [
-        "Danke, Teilnehmer-ID ist erfasst worden."
+        "Vielen Dank, Ihr Teamname wurde erfasst."
       ]
     },
     "nextActions" : [
@@ -82,7 +82,7 @@
     "qId": "timezoneQuestion",
     "text": {
       "English": "Which time zone are you in?",
-      "Deutsch": "In welcher Zeitzone befinden Sie sich jetzt?"
+      "Deutsch": "In welcher Zeitzone befinden Sie sich?"
     },
     "qType": "singleChoice",
     "options": {
@@ -98,7 +98,7 @@
             "Thank you, your time zone has been registered."
           ],
           "Deutsch": [
-            "Danke, Zeitzone ist erfasst worden"
+            "Vielen Dank, Ihre Zeitzone wurde erfasst."
           ]
         }
       }
@@ -127,7 +127,7 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Select your timezone from the following list.",
-      "Deutsch" : "Übersetzung nicht verfügbar."
+      "Deutsch" : "Wählen Sie Ihre Zeitzone aus der Liste unten aus."
     },
     "options" : {
       "English" : "$F{json/static/more_timezones_2.json}",
@@ -146,7 +146,7 @@
         "Thank you, time zone has been registered."
       ],
       "Deutsch": [
-        "Danke, Zeitzone ist erfasst worden"
+        "Vielen Dank, Ihre Zeitzone wurde erfasst."
       ]
     }
   },
@@ -155,7 +155,7 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nWhen would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
-      "Deutsch" : "In einigen Phasen des Experiments, werden Sie morgens vor der Arbeit danach gefragt, sich Ziele zu setzen. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
+      "Deutsch" : "In einigen Phasen des Experiments werden Sie morgens vor Arbeitsbeginn gebeten, sich Ziele zu setzen.\n\nWann möchten Sie diese Fragen erhalten?\n\n(Der Zeitpunkt kann später nicht mehr geändert werden.)"
     },
     "options" : {
       "English" : "$F{json/static/morningTimeOptions.json}",
@@ -164,7 +164,7 @@
     "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
-      "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]
+      "Deutsch" : ["Großartig, Sie werden diese Fragen um ${CURRENT_ANSWER} erhalten."]
     },
     "nextActions" : [
       {
@@ -179,7 +179,7 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set that same morning.\n\nWhen would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
-      "Deutsch" : "In einigen Phasen des Experiments, werden Sie abends nach der Arbeit dazu aufgefordert, über Ihre Ziele zu reflektieren, die Sie sich am selben Morgen gesetzt haben. Zu welcher der folgenden Uhrzeiten möchten Sie diese Fragen erhalten? Dies kann nicht zu einem späteren Zeitpunkt geändert werden."
+      "Deutsch" : "In einigen Phasen des Experiments werden Sie abends nach Feierabend gebeten, über die am Morgen gesetzten Ziele zu reflektieren.\n\nWann möchten Sie diese Fragen erhalten?\n\n(Der Zeitpunkt kann später nicht mehr geändert werden.)\n"
     },
     "options" : {
       "English" : "$F{json/static/eveningTimeOptions.json}",
@@ -188,7 +188,7 @@
     "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
-      "Deutsch" : ["Alles klar! Sie werden diese Nachrichten um ${CURRENT_ANSWER} erhalten."]
+      "Deutsch" : ["Großartig, Sie werden diese Fragen um ${CURRENT_ANSWER} erhalten."]
     },
     "nextActions" : [
       {

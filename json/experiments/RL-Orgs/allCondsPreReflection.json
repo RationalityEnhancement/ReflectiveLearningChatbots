@@ -29,7 +29,7 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Are you ready to reflect on today's goals?",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Sind Sie bereit über die heutigen Ziele zu reflektieren?"
     },
     "options" : {
       "English" : ["Let's go!"],
@@ -38,11 +38,11 @@
     "nextQuestion" : "Pre-Reflection.listlessOrEnergetic",
     "replyMessages" : {
       "English" : ["Great! We will first start with how you are feeling."],
-      "Deutsch" : ["Übersetzung nicht verfügbar"]
+      "Deutsch" : ["Großartig! Beginnen wir zunächst damit, wie Sie sich fühlen."]
     },
     "inputPrompt" : {
       "English" : "(Hint: send /repeat if the button is no longer visible.)",
-      "Deutsch" : "(Tipp: senden Sie /repeat, wenn die Taste nicht mehr sichtbar ist.)"
+      "Deutsch" : "(Hinweis: <i>/repeat</i> eingeben, falls die Option <i>Weiter</i> nicht mehr angezeigt wird.)"
     },
     "reminder" : {
       "freqMins" : 30,
@@ -54,15 +54,18 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Please indicate how you feel at the moment using the above picture.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Bitte geben Sie anhand der Skala oben an, wie Sie sich gerade fühlen."
     },
     "image" : {
       "sourceType" : "local",
-      "source" : "data/images/LE-PANAVA/listless_energy.png"
+      "source" : {
+        "English" : "data/images/LE-PANAVA/listless_energy.png",
+        "Deutsch" : "data/images/LE-PANAVA/lustlos_energiegeladen.png"
+      }
     },
     "inputPrompt" : {
       "English" : "Select the number that best represents your current feeling.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Wählen Sie die Zahl aus, die Ihre aktuelle Stimmung am besten beschreibt."
     },
     "options": {
       "English" : ["1", "2", "3", "4", "5", "6", "7"],
@@ -80,15 +83,18 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Now, please indicate how you feel at the moment using the above picture.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Bitte geben Sie nun anhand der Skala oben an, wie Sie sich gerade fühlen."
     },
     "image" : {
       "sourceType" : "local",
-      "source" : "data/images/LE-PANAVA/relaxed_angry.png"
+      "source" : {
+        "English": "data/images/LE-PANAVA/relaxed_angry.png",
+        "Deutsch": "data/images/LE-PANAVA/entspannt_veraergert.png"
+      }
     },
     "inputPrompt" : {
       "English" : "Select the number that best represents your current feeling.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Wählen Sie die Zahl aus, die Ihre aktuelle Stimmung am besten beschreibt."
     },
     "options": {
       "English" : ["1", "2", "3", "4", "5", "6", "7"],
@@ -106,15 +112,18 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Now, please indicate how you feel at the moment using the above picture.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Bitte geben Sie nun anhand der Skala oben an, wie Sie sich im Moment fühlen."
     },
     "image" : {
       "sourceType" : "local",
-      "source" : "data/images/LE-PANAVA/bored_enthusiastic.png"
+      "source" : {
+        "English": "data/images/LE-PANAVA/bored_enthusiastic.png",
+        "Deutsch": "data/images/LE-PANAVA/gelangweilt_begeistert.png"
+      }
     },
     "inputPrompt" : {
       "English" : "Select the number that best represents your current feeling.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Wählen Sie die Zahl aus, die Ihre aktuelle Stimmung am besten beschreibt."
     },
     "options": {
       "English" : ["1", "2", "3", "4", "5", "6", "7"],
@@ -132,15 +141,18 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Now, please indicate how you feel at the moment using the above picture.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Bitte geben Sie nun anhand der Skala oben an, wie Sie sich gerade fühlen."
     },
     "image" : {
       "sourceType" : "local",
-      "source" : "data/images/LE-PANAVA/calm_nervous.png"
-    },
+      "source" : {
+          "English": "data/images/LE-PANAVA/calm_nervous.png",
+          "Deutsch": "data/images/LE-PANAVA/ruhig_nervoes.png"
+        }
+      },
     "inputPrompt" : {
       "English" : "Select the number that best represents your current feeling.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Wählen Sie die Zahl aus, die Ihre aktuelle Stimmung am besten beschreibt."
     },
     "options": {
       "English" : ["1", "2", "3", "4", "5", "6", "7"],
@@ -158,15 +170,18 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Finally, please indicate how you feel at the moment using the above picture.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Bitte geben Sie schließlich anhand der Skala oben an, wie Sie sich im Moment fühlen."
     },
     "image" : {
       "sourceType" : "local",
-      "source" : "data/images/LE-PANAVA/unhappy_happy.png"
+      "source" : {
+        "English": "data/images/LE-PANAVA/unhappy_happy.png",
+        "Deutsch": "data/images/LE-PANAVA/ungluecklich_gluecklich.png"
+      }
     },
     "inputPrompt" : {
       "English" : "Select the number that best represents your current feeling.",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Wählen Sie die Zahl aus, die Ihre aktuelle Stimmung am besten beschreibt."
     },
     "options": {
       "English" : ["1", "2", "3", "4", "5", "6", "7"],
@@ -182,7 +197,7 @@
     ],
     "replyMessages" : {
       "English" : ["Great! We are done with the questions about your current feelings.", "Let's now move on to the goals you set today."],
-      "Deutsch" : ["Übersetzung nicht verfügbar."]
+      "Deutsch" : ["Großartig! Wir sind fertig mit den Fragen zu Ihrer aktuellen Stimmung.", "Machen wir weiter mit den Zielen, die Sie sich für heute gesetzt haben."]
     },
     "reminder" : {
       "freqMins" : 30,

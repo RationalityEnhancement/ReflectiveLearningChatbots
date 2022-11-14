@@ -2696,7 +2696,7 @@ The following is a description of which cases which phrases occur, along with so
   * `notLongEnoughWords` - when a user's `freeform` or `freeformMulti` answer does not contain enough words as specified in `minLengthWords`
     * The variable `${MinLength}` in this phrase will be replaced by the actual `minLengthWords` specified in the question object
   * `answerNotConforming` - when the user sends an invalid option for question type `freeform`, when parameter `answerShouldBe` is set
-  * `terminateAnswerProperly` - when a user does not send the appropriate message to signify having finished a survey during a `qualtrics` type question
+  * `terminateSurveyProperly` - when a user does not send the appropriate message to signify having finished a survey during a `qualtrics` type question
 * `keyboards` - phrases sent to the user when prompting certain types of questions
   * `singleChoice` - telling the user to select a single choice in `singleChoice` type questions
   * `multiChoice` - telling the user to select multiple choices and how to terminate choosing in `multiChoice` type questions
@@ -2775,7 +2775,7 @@ After this template, you will see how this is added to the experimenter JSON obj
       "English" : "That is not a valid answer. Did you mean one of the following?",
       "Deutsch" : "Das ist keine gültige Antwort. Meinten Sie vielleicht eines der Folgenden?"
     },
-    "terminateAnswerProperly" : {
+    "terminateSurveyProperly" : {
       "English" : "Please type the correct response to continue after the survey.",
       "Deutsch" : "Bitte geben Sie die richtige Antwort ein, um nach der Umfrage fortzufahren."
     }

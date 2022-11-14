@@ -122,7 +122,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Negatively", "Slightly negatively", "Neither positively nor negatively", "Slightly positively", "Positively", "Very positively"],
-      "Deutsch" : ["Nicht verfügbar"]
+      "Deutsch" : ["Negativ", "Etwas negativ", "Weder positiv noch negativ", "Etwas positiv", "Positiv", "Sehr positiv"]
     },
     "cReplyMessages":  [
       {
@@ -261,7 +261,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very relevant"],
-      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+      "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr relevant"]
     },
     "nextQuestion" : "Int-Reflection.day1RelMetaDescription",
     "cReplyMessages":  [
@@ -319,7 +319,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Rather ineffective", "Mediocre", "Somewhat effective", "Effective", "Very effective", "Perfect"],
-      "Deutsch" : ["Eher ineffektiv", "Mittelmäßig", "Etwas effektiv", "Effektiv", "Sehr effektiv", "Perfekt"]
+      "Deutsch" : ["Eher unwirksam", "Mittelmäßig", "Etwas wirksam", "Wirksam", "Sehr wirksam", "Perfekt"]
     },
     "nextQuestion" : "Int-Reflection.relImproveGoalSetting",
     "cReplyMessages":  [
@@ -470,7 +470,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Much less satisfied", "Less satisfied", "Equally satisfied", "More satisfied", "Much more satisfied"],
-      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+      "Deutsch" : ["Viel weniger zufrieden", "Weniger zufrieden", "Gleich zufrieden", "Zufriedener", "Viel zufriedener"]
     },
     "nextQuestion" : "Int-Reflection.dayNRelRelevance",
     "cReplyMessages":  [
@@ -510,7 +510,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Much less relevant", "Less relevant", "Equally relevant", "More relevant", "Much more relevant"],
-      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+      "Deutsch" : ["Viel weniger relevant", "Weniger relevant", "Gleich relevant", "Relevanter", "Viel relevanter"]
     },
     "nextQuestion" : "Int-Reflection.dayNRelMetaDescription",
     "cReplyMessages":  [
@@ -1032,7 +1032,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Negative", "Close to zero", "Small", "Medium", "Large"],
-      "Deutsch" : ["Nicht verfügbar"]
+      "Deutsch" : ["Negativ", "Ungefähr null", "Gering", "Mittelgroß", "Groß"]
     },
     "cReplyMessages":  [
       {
@@ -1164,7 +1164,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
-      "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
+      "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr relevant"]
     },
     "cReplyMessages":  [
       {
@@ -1223,7 +1223,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Rather ineffective", "Mediocre", "Somewhat effective", "Effective", "Very effective", "Perfect"],
-      "Deutsch" : ["Eher ineffektiv", "Mittelmäßig", "Etwas effektiv", "Effektiv", "Sehr effektiv", "Perfekt"]
+      "Deutsch" : ["Eher unwirksam", "Mittelmäßig", "Etwas wirksam", "Wirksam", "Sehr wirksam", "Perfekt"]
     },
     "nextQuestion" : "Int-Reflection.improveGoalSetting",
     "cReplyMessages":  [
@@ -1381,7 +1381,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Much less satisfied", "Less satisfied", "Equally satisfied", "More satisfied", "Much more satisfied"],
-      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+      "Deutsch" : ["Viel weniger zufrieden", "Weniger zufrieden", "Gleich zufrieden", "Zufriedener", "Viel zufriedener"]
     },
     "nextQuestion" : "Int-Reflection.dayNRelevance",
     "cReplyMessages":  [
@@ -1421,7 +1421,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Much less relevant", "Less relevant", "Equally relevant", "More relevant", "Much more relevant"],
-      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+      "Deutsch" : ["Viel weniger relevant", "Weniger relevant", "Gleich relevant", "Relevanter", "Viel relevanter"]
     },
     "nextQuestion" : "Int-Reflection.dayNMetaDescription",
     "cReplyMessages":  [

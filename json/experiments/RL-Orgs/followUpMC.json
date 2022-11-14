@@ -9,7 +9,7 @@
       },
       {
         "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
-        "then" : "Follow-Up.endExperiment",
+        "then" : "Follow-Up.endExperimentEarly",
         "else" : "Follow-Up.survey"
       }
     ],
@@ -18,8 +18,8 @@
       {
         "if" : "${pauseEnded} == $B{false}",
         "then" : {
-          "English" : ["Hello again, ${FIRST_NAME}! I hope you had a good week.", "I am back to complete the final round of questionnaires for the experiment."],
-          "Deutsch" : ["Übersetzung nicht verfügbar"]
+          "English" : ["Hello again, ${FIRST_NAME}! I hope you had a good break.", "I am back now to complete the final round of questionnaires for the experiment."],
+          "Deutsch" : ["Hallo zurück, ${FIRST_NAME}! Ich hoffe, Sie konnten Ihre Pause genießen.", "Ich bin wieder da, mit der letzten abschließenden Fragerunde zum Experiment."]
         },
         "else" : {
           "English" : ["Good morning, ${FIRST_NAME}!"],
@@ -52,17 +52,17 @@
     "qId" : "wantContinue",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Would you like to continue with the experiment or would you like to end it here and stop receiving messages?",
-      "Deutsch" : "Übersetzung nicht verfügbar?"
+      "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
+      "Deutsch" : "Möchten Sie mit dem Experiment fortfahren oder es jetzt beenden? Wenn Sie sich für das Beenden entscheiden, werden Sie keine Nachrichten mehr erhalten."
     },
     "options" : {
       "English" : ["Continue", "End Experiment"],
-      "Deutsch" : ["Continue", "End Experiment"]
+      "Deutsch" : ["Fortfahren", "Experiment Beenden"]
     },
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
-        "then" : "Follow-Up.endExperiment",
+        "then" : "Follow-Up.endExperimentEarly",
         "else" : "Follow-Up.survey"
       }
     ],
@@ -70,11 +70,24 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : {
-          "English" : ["Great to hear from you again and that you want to continue the experiment!", "Follow the instructions to continue."],
-          "Deutsch" : ["Übersetzung nicht verfügbar."]
+          "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
+          "Deutsch" : ["Schön, dass Sie das Experiment fortsetzen möchten!", "Bitte folgen Sie den Anweisungen um fortzufahren."]
         }
       }
     ]
+  },
+  {
+    "qId" : "endExperimentEarly",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["The experiment has ended."],
+      "Deutsch" : ["Das Experiment ist beendet."]
+    }
   },
   {
     "qId" : "endExperiment",
@@ -85,8 +98,8 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["The experiment has been ended."],
-      "Deutsch" : ["Übersetzung nicht verfügbar."]
+      "English" : ["And with that, we have finally come to the end of the experiment!", "It was great interacting with you, and I appreciate the effort you put into your responses."],
+      "Deutsch" : ["Wir sind endlich am Ende des Experiments angelangt!", "Es war toll, mit Ihnen zusammenzuarbeiten und ich weiß die Mühe zu schätzen, die Sie sich bei der Beantwortung der Fragen gemacht haben."]
     }
   },
   {
@@ -94,7 +107,7 @@
     "qType" : "qualtrics",
     "text" : {
       "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
-      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgende Umfrage bedacht und vollständig auszufüllen."
+      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die nachfolgende Fragebogen sorgfältig und vollständig auszufüllen."
     },
     "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
     "qualtricsFields" : [
@@ -116,18 +129,14 @@
       "numRepeats" : 4
     },
     "inputPrompt" : {
-      "English" : "Enter the survey code that you receive at the end of the survey to continue. (ABCDE, 12345)",
-      "Deutsch" : "Geben Sie den Umfrage-Code ein, den Sie am Ende der Umfrage erhalten, um fortzufahren. (ABCDE, 12345)"
+      "English" : "Enter the survey code displayed at the end of the survey to continue.",
+      "Deutsch" : "Geben Sie den am Ende des Fragebogens angezeigten Code ein, um fortzufahren. (ABCDE, 12345)"
     },
     "continueStrings" : ["ABCDE", "12345"],
-    "nextActions" : [
-      {
-        "aType" : "endExperiment"
-      }
-    ],
+    "nextQuestion" : "Follow-Up.endExperiment",
     "replyMessages" : {
-      "English" : ["Thank you for that!", "And with that, we have finally come to the end of the experiment!", "It was great interacting with you, and I appreciate the effort you put into your responses."],
-      "Deutsch" : ["Übersetzung nicht verfügbar", "Bis später!"]
+      "English" : ["Thank you for that!"],
+      "Deutsch" : ["Vielen Dank!"]
     }
   }
 ]

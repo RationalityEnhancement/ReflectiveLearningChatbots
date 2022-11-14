@@ -6,7 +6,7 @@
     },
     "description" : {
       "English" : "Add some work or relationship goals to your day, before you begin reflection.",
-      "Deutsch" : "Übersetzung nicht verfügbar."
+      "Deutsch" : "Fügen Sie Ihrem Tag weitere Arbeits- oder Beziehungsziele hinzu, bevor Sie mit der Reflexion beginnen."
     },
     "qId" : "Morning-Goals-All.addGoalsLater",
     "if" : "(${STAGE_NAME} IN_ARRAY $S*{Intervention, Goal-Setting}) AND (${reflectionStartedToday} != $B{true})"

@@ -150,7 +150,7 @@
         "if" : "${dontAskExampleAgain} == $B{true}",
         "then" : {
           "English" : ["Let's get right to it!"],
-          "Deutsch" : ["Kommen wir direkt zum Thema!"]
+          "Deutsch" : ["Dann machen wir direkt weiter!"]
         }
       }
     ]
@@ -192,7 +192,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
         "then" : {
           "English" : ["Then let's get right to it!"],
-          "Deutsch" : ["Dann kommen wir direkt zum Thema!"]
+          "Deutsch" : ["Dann machen wir direkt weiter!"]
         }
       }
     ],
@@ -258,7 +258,7 @@
     "nextQuestion" : "Morning-Goals-All.remindWorkIntention",
     "replyMessages" : {
       "English" : ["Great, let's get to it!"],
-      "Deutsch" : ["Übersetzung nicht verfügbar"]
+      "Deutsch" : ["Großartig, machen wir gleich weiter!"]
     },
     "reminder" : {
       "freqMins" : 30,
@@ -771,11 +771,11 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "So you want to add some more goals for the day! Tell me, would you like to add work goals or relationship goals?",
-      "Deutsch" : "Übersetzung nicht verfügbar."
+      "Deutsch" : "Sie wollen sich also zusätzliche Ziele für heute setzen! Sagen Sie mir, was für Ziele möchten Sie hinzufügen?"
     },
     "options" : {
       "English" : ["Work goals.", "Relationship goals."],
-      "Deutsch" : ["Work goals.", "Relationship goals."]
+      "Deutsch" : ["Arbeitsziele.", "Beziehungsziele."]
     },
     "cNextQuestions" : [
       {
@@ -790,11 +790,11 @@
     "qType" : "freeformMulti",
     "text" : {
       "English" : "Tell me, what work goals do you want to add to your day? You can enter multiple goals over multiple messages.",
-      "Deutsch" : "Übersetzung nicht verfügbar."
+      "Deutsch" : "Sagen Sie mir, welche Arbeitsziele möchten Sie Ihrem Plan für heute hinzufügen? Sie können mehrere Ziele über mehrere Nachrichten eingeben."
     },
     "replyMessages" : {
       "English" : ["Alright, I will remember these goals. Good luck completing them!"],
-      "Deutsch" : ["Übersetzung nicht verfügbar."]
+      "Deutsch" : ["Alles klar, ich merke mir diese Ziele. Viel Erfolg dabei!"]
     },
     "cNextActions" : [
       {
@@ -835,11 +835,11 @@
     "qType" : "freeformMulti",
     "text" : {
       "English" : "Tell me, what relationship goals do you want to add to your day? You can enter multiple goals over multiple messages.",
-      "Deutsch" : "Übersetzung nicht verfügbar."
+      "Deutsch" : "Sagen Sie mir, welche beziehungsorientierte Ziele möchten Sie Ihrem Plan für heute hinzufügen? Sie können mehrere Ziele über mehrere Nachrichten eingeben."
     },
     "replyMessages" : {
       "English" : ["Alright, I will remember these goals. Good luck completing them!"],
-      "Deutsch" : ["Übersetzung nicht verfügbar."]
+      "Deutsch" : ["Alles klar, ich merke mir diese Ziele. Viel Erfolg dabei!"]
     },
     "cNextActions" : [
       {

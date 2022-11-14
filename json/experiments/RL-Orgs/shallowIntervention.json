@@ -36,7 +36,7 @@
     "qId" : "relGoalsProgress",
     "text" : {
       "English" : "To what extent did you act according to these goals today, on a scale from 0 (not at all) to 100 (completely)?",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "Wie haben Sie heute nach diesen Zielen gehandelt, auf einer Skala von 0 (gar nicht) bis 100 (vollständig)?"
     },
     "qType" : "number",
     "range" : {
@@ -64,7 +64,7 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "Were there other interactions you had with your colleagues today that you would like to tell me about?",
-      "Deutsch": "Übersetzung nicht verfügbar"
+      "Deutsch": "Hatten Sie heute noch andere Erlebnisse mit Ihren Kollegen, von denen Sie mir erzählen möchten?"
     },
     "options" : {
       "English" : ["Yes", "Not really."],
@@ -118,7 +118,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Negatively", "Slightly negatively", "Neither positively nor negatively", "Slightly positively", "Positively", "Very positively"],
-      "Deutsch" : ["Nicht verfügbar"]
+      "Deutsch" : ["Negativ", "Etwas negativ", "Weder positiv noch negativ", "Etwas positiv", "Positiv", "Sehr positiv"]
     },
     "cReplyMessages":  [
       {
@@ -257,7 +257,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very relevant"],
-      "Deutsch" : ["Sehr unzufrieden", "Unzufrieden", "Weder zufrieden noch unzufrieden", "Zufrieden", "Sehr zufrieden"]
+      "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr relevant"]
     },
     "nextQuestion" : "Int-Reflection.relPlan",
     "cReplyMessages":  [
@@ -578,7 +578,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Negative", "Close to zero", "Small", "Medium", "Large"],
-      "Deutsch" : ["Nicht verfügbar"]
+      "Deutsch" : ["Negativ", "Ungefähr null", "Gering", "Mittelgroß", "Groß"]
     },
     "cReplyMessages":  [
       {
@@ -693,7 +693,7 @@
     "qType" : "singleChoice",
     "options" : {
       "English" : ["Very irrelevant", "Irrelevant", "Somewhat relevant", "Relevant", "Very Relevant"],
-      "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr Relevant"]
+      "Deutsch" : ["Sehr irrelevant", "Irrelevant", "Etwas relevant", "Relevant", "Sehr relevant"]
     },
     "cReplyMessages":  [
       {

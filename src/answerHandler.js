@@ -395,7 +395,7 @@ class AnswerHandler{
                     // Check if user has entered a valid termination answer
                     // If not, then tell the user that the only way to continue is to send that phrase.
                     if(!validAnswers.includes(trimmedAnswer)){
-                        let errorString = config.phrases.answerValidation.terminateAnswerProperly[participant.parameters.language]
+                        let errorString = config.phrases.answerValidation.terminateSurveyProperly[participant.parameters.language]
                         return ReturnMethods.returnPartialFailure(errorString, DevConfig.NO_RESPONSE_STRING);
                     } else {
                         return this.finishAnswering(participant, currentQuestion, answerText);

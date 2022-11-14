@@ -60,7 +60,7 @@
         "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
         "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
       },
-      "terminateAnswerProperly" : {
+      "terminateSurveyProperly" : {
         "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
         "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
       }

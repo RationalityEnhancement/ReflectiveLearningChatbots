@@ -78,6 +78,7 @@
     "ControlLeader" : {
       "questionCategories" : {
         "Onboarding" : "$F{json/experiments/RL-Orgs/onboardingAll.json}",
+        "Update-Times" : "$F{json/experiments/RL-Orgs/updateTimes.json}",
         "Pre-Test" : "$F{json/experiments/RL-Orgs/preTest.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2.json}",
@@ -93,6 +94,7 @@
     "ShallowLeader" : {
       "questionCategories" : {
         "Onboarding" : "$F{json/experiments/RL-Orgs/onboardingAll.json}",
+        "Update-Times" : "$F{json/experiments/RL-Orgs/updateTimes.json}",
         "Pre-Test" : "$F{json/experiments/RL-Orgs/preTest.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2.json}",
@@ -108,6 +110,7 @@
     "MCLeader" : {
       "questionCategories" : {
         "Onboarding" : "$F{json/experiments/RL-Orgs/onboardingAll.json}",
+        "Update-Times" : "$F{json/experiments/RL-Orgs/updateTimes.json}",
         "Pre-Test" : "$F{json/experiments/RL-Orgs/preTestMC.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2MC.json}",
@@ -123,6 +126,7 @@
     "ControlFollower" : {
       "questionCategories" : {
         "Onboarding" : "$F{json/experiments/RL-Orgs/onboardingAll.json}",
+        "Update-Times" : "$F{json/experiments/RL-Orgs/updateTimes.json}",
         "Pre-Test" : "$F{json/experiments/RL-Orgs/preTest.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2.json}",
@@ -138,6 +142,7 @@
     "ShallowFollower" : {
       "questionCategories" : {
         "Onboarding" : "$F{json/experiments/RL-Orgs/onboardingAll.json}",
+        "Update-Times" : "$F{json/experiments/RL-Orgs/updateTimes.json}",
         "Pre-Test" : "$F{json/experiments/RL-Orgs/preTest.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2.json}",
@@ -153,6 +158,7 @@
     "MCFollower" : {
       "questionCategories" : {
         "Onboarding" : "$F{json/experiments/RL-Orgs/onboardingAll.json}",
+        "Update-Times" : "$F{json/experiments/RL-Orgs/updateTimes.json}",
         "Pre-Test" : "$F{json/experiments/RL-Orgs/preTestMC.json}",
         "Goal-Setting" : "$F{json/experiments/RL-Orgs/allCondsGoalSetting.json}",
         "Pre-Test-2" : "$F{json/experiments/RL-Orgs/preTest2MC.json}",

@@ -34,7 +34,7 @@
     "qId" : "displayInstructions",
     "qType" : "dummy",
     "nextQuestion" : "setupQuestions.continueFromInstructions",
-    "replyMessages" : "$F{json/experiments/RL-Orgs-Prepilot-2/instructions.json}"
+    "replyMessages" : "$F{json/experiments/RL-Orgs/instructions.json}"
   },
   {
     "qId" : "continueFromInstructions",
@@ -154,8 +154,8 @@
     "qId" : "goalSetTime",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nWhen would you like to receive these questions?\n\n(This cannot be changed at a later point.)",
-      "Deutsch" : "In einigen Phasen des Experiments werden Sie morgens vor Arbeitsbeginn gebeten, sich Ziele zu setzen.\n\nWann möchten Sie diese Fragen erhalten?\n\n(Der Zeitpunkt kann später nicht mehr geändert werden.)"
+      "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nWhen would you like to receive these questions?\n\n(This can be changed at a later point using the command <i>/talk</i>.)",
+      "Deutsch" : "In einigen Phasen des Experiments werden Sie morgens vor Arbeitsbeginn gebeten, sich Ziele zu setzen.\n\nWann möchten Sie diese Fragen erhalten?\n\n(Der Zeitpunkt kann später mit dem Befehl <i>/talk</i> geändert werden.)"
     },
     "options" : {
       "English" : "$F{json/static/morningTimeOptions.json}",

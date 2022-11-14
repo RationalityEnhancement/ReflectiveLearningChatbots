@@ -6,6 +6,7 @@ const moment = require('moment-timezone')
 const ConfigParser = require('./configParser')
 const AnswerHandler = require('./answerHandler')
 const ExperimentUtils = require('./experimentUtils')
+const ScheduleHandler = require("./scheduleHandler");
 
 /**
  * Stage handler class that takes in a config as a parameter
@@ -262,6 +263,51 @@ module.exports.updateStageDay = async (bot, uniqueId, config) => {
     }
 
     return ReturnMethods.returnSuccess(returnVal);
+}
+
+/**
+ *
+ * @param participant
+ * @returns {Promise<void>}
+ */
+module.exports.rescheduleCurrentStage = async (bot, participant, config) => {
+    const ScheduleHandler = require('./scheduleHandler');
+
+    // Remove all current jobs for the participant
+    let removeReturnObj = await ScheduleHandler.removeAllJobsForParticipant(participant.uniqueId);
+
+    // Remove all jobs for participant
+    if(removeReturnObj.returnCode === DevConfig.FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to remove old jobs when rescheduling current stage"
+            + "\n"+ removeReturnObj.data
+        );
+    } else if(removeReturnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to remove some old jobs when rescheduling current stage"
+            + "\n"+ removeReturnObj.failData
+        );
+    }
+
+    // Schedule new jobs for the currentStage
+    let scheduleAllReturnObj = await ScheduleHandler.scheduleStageForId(bot, participant, participant.stages.stageName, config);
+
+    // Remove all jobs for participant
+    if(scheduleAllReturnObj.returnCode === DevConfig.FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to schedule new jobs when rescheduling current stage"
+            + "\n"+ scheduleAllReturnObj.data
+        );
+    } else if(scheduleAllReturnObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
+        return ReturnMethods.returnFailure(
+            "StageHandler: Failure to schedule some new jobs when rescheduling current stage"
+            + "\n"+ scheduleAllReturnObj.failData
+        );
+    }
+
+    return ReturnMethods.returnSuccess(participant.stages.stageName)
+
+
 }
 
 /**

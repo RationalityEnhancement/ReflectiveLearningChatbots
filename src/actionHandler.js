@@ -539,6 +539,28 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             }
             return ReturnMethods.returnSuccess(newPartStage);
 
+        case "rescheduleCurrentStage" :
+            let newPartRescStage;
+            // Reschedule the current stage
+            let rescStageObj = await StageHandler.rescheduleCurrentStage(bot, participant, config);
+            if(rescStageObj.returnCode === DevConfig.FAILURE_CODE){
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to reschedule stage:\n"+ participant.stages.stageName
+                );
+            }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) "
+                    + rescStageObj.data + " stage rescheduled.", true);
+            }
+            try{
+                newPartRescStage = await participants.get(participant.uniqueId)
+            } catch(err){
+                return ReturnMethods.returnFailure(
+                    "ActHandler:Unable to fetch participant again after rescheduling stage:\n" +
+                    err.message + "\n" + err.stack);
+            }
+            return ReturnMethods.returnSuccess(newPartRescStage);
+
         case "incrementStageDay" :
             // No arguments
 

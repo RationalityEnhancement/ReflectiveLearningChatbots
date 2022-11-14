@@ -10,5 +10,17 @@
     },
     "qId" : "Morning-Goals-All.addGoalsLater",
     "if" : "(${STAGE_NAME} IN_ARRAY $S*{Intervention, Goal-Setting}) AND (${reflectionStartedToday} != $B{true})"
+  },
+  {
+    "keyword" : {
+      "English" : "Time",
+      "Deutsch" : "Zeit"
+    },
+    "description" : {
+      "English" : "Update the time at which you receive questions in the morning or in the evening.",
+      "Deutsch" : "Die Zeit aktualisieren, zu der Sie morgens oder abends bestimmte Fragen erhalten."
+    },
+    "qId" : "Update-Times.promptUpdateTime",
+    "if" : "${STAGE_NAME} != $S{}"
   }
 ]

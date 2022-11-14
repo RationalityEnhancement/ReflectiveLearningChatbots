@@ -44,7 +44,7 @@
   "keyboards": {
     "singleChoice": {
       "English": "Please select from the available options. You may need to scroll down to see all of them.",
-      "Deutsch": "Bitte wählen Sie aus den verfügbaren Sprachen. Sie müssen eventuell nach unten scrollen, um alle Optionen zu sehen."
+      "Deutsch": "Bitte wählen Sie aus den verfügbaren Optionen. Sie müssen eventuell nach unten scrollen, um alle Optionen zu sehen."
     },
     "multiChoice": {
       "English": "Choose as many options as you like. <b>Remember to click <i>Done</i> to finish choosing.</b> You may need to scroll down to see all options.",
@@ -203,8 +203,8 @@
       "Deutsch" : "Entschuldigung, es gibt derzeit nichts, über das ich mit Ihnen reden kann. Versuchen später noch einmal, oder warten Sie auf die nächste geplante Frage."
     },
     "cannotStartTalkOutstanding" : {
-      "English" : "Sorry, but I cannot talk to you about anything else while there is an outstanding question. Send <i>/repeat</i> to see the question again.",
-      "Deutsch" : "Entschuldigung, ich kann nicht mit Ihnen über sonst etwas reden, wenn eine Frage aussteht. Senden Sie <i>/repeat</i>, um die Frage wieder abzurufen."
+      "English" : "Sorry, but I cannot talk to you about anything else while there is an outstanding question. Send <i>/repeat</i> to see the question again, and try again later when all outstanding questions have been answered.",
+      "Deutsch" : "Entschuldigung, ich kann nicht mit Ihnen über sonst etwas reden, wenn eine Frage aussteht. Senden Sie <i>/repeat</i>, um die Frage wieder anzuzeigen, und versuchen Sie erneut später, wenn alle Fragen beantwortet sind."
     }
   }
 }

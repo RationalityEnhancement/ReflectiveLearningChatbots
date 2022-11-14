@@ -774,16 +774,28 @@
       "Deutsch" : "Sie wollen sich also zusätzliche Ziele für heute setzen! Sagen Sie mir, was für Ziele möchten Sie hinzufügen?"
     },
     "options" : {
-      "English" : ["Work goals.", "Relationship goals."],
-      "Deutsch" : ["Arbeitsziele.", "Beziehungsziele."]
+      "English" : ["Work goals.", "Relationship goals.", "Cancel operation."],
+      "Deutsch" : ["Arbeitsziele.", "Beziehungsziele.", "Vorgang abbrechen."]
     },
     "cNextQuestions" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : "Morning-Goals-All.cancelAddingGoal"
+      },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : "Morning-Goals-All.addWorkGoalsLater",
         "else" : "Morning-Goals-All.addRelGoalsLater"
       }
     ]
+  },
+  {
+    "qId" : "cancelAddingGoal",
+    "qType" : "dummy",
+    "replyMessages" : {
+      "English" : ["Adding goals cancelled!"],
+      "Deutsch" : ["Vorgang abgebrochen!"]
+    }
   },
   {
     "qId" : "addWorkGoalsLater",

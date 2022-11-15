@@ -9,7 +9,8 @@
       "Deutsch" : "Fügen Sie Ihrem Tag weitere Arbeits- oder Beziehungsziele hinzu, bevor Sie mit der Reflexion beginnen."
     },
     "qId" : "Morning-Goals-All.addGoalsLater",
-    "if" : "(${STAGE_NAME} IN_ARRAY $S*{Intervention, Goal-Setting}) AND (${reflectionStartedToday} != $B{true})"
+    "if" : "${reflectionStartedToday} != $B{true}",
+    "stages" : ["Intervention", "Goal-Setting"]
   },
   {
     "keyword" : {
@@ -20,7 +21,6 @@
       "English" : "Update the time at which you receive questions in the morning or in the evening.",
       "Deutsch" : "Die Zeit aktualisieren, zu der Sie morgens oder abends bestimmte Fragen erhalten."
     },
-    "qId" : "Update-Times.promptUpdateTime",
-    "if" : "${STAGE_NAME} != $S{}"
+    "qId" : "Update-Times.promptUpdateTime"
   }
 ]

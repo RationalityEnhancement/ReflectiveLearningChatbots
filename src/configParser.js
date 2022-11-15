@@ -1411,8 +1411,17 @@ class ConfigParser{
      */
     static filterAvailableUserPrompts(participant, userPrompts){
         let availablePrompts = []
+        let currentStage = participant.stages.stageName;
         for(let i = 0; i < userPrompts.length; i++){
             let currentPrompt = userPrompts[i];
+
+            // Check if stage matches current stage
+            let promptStages = currentPrompt.stages;
+            if(Array.isArray(promptStages) && !promptStages.includes(currentStage)){
+                continue;
+            }
+
+            // Evaluate condition
             if(currentPrompt.if){
                 let evaluateObj = this.evaluateConditionString(participant, currentPrompt.if);
                 if(evaluateObj.returnCode === DevConfig.FAILURE_CODE){

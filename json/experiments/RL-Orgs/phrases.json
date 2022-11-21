@@ -72,7 +72,7 @@
     },
     "freeformMultiPrompt" : {
       "English" : "Type in your answer over one or multiple messages. <b>Remember to send <i>Done</i> in a separate message when you have finished answering.</b>",
-      "Deutsch" : "Wählen Sie so viele Optionen aus, wie Sie möchten. <b>Denken Sie daran, auf <i>Erledigt</i> zu klicken, sobald Sie mit Ihrer Auswahl fertig sind.</b>"
+      "Deutsch" : "Ihre Antwort kann aus einer oder mehreren Nachrichten bestehen. <b>Denken Sie daran, <i>Erledigt</i> in einer einzelnen Nachricht zu senden, sobald Sie mit Ihrer Antwort fertig sind.</b>"
     },
     "linkToSurvey" : {
       "English" : "Link to Survey (opens in browser)",

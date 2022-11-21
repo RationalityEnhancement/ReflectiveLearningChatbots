@@ -121,6 +121,10 @@
       {
         "if": "(${STAGE_DAY} MULTIPLE_OF $N{2}) AND (${CONDITION} CONTAINS_STRING $S{Leader})",
         "then" : "$F{json/experiments/RL-Orgs/replyMessages/leaderRefReminderText.json}"
+      },
+      {
+        "if": "(${STAGE_DAY} MULTIPLE_OF $N{2}) AND ((${CONDITION} CONTAINS_STRING $S{Leader}) != $B{True})",
+        "then" : "$F{json/experiments/RL-Orgs/replyMessages/followerLeaderboardText.json}"
       }
     ]
   },

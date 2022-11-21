@@ -812,6 +812,43 @@ Example question object 1
 }
 ```
 
+### <span id="QImages">Question Images </span>
+
+Another optional element that can be added to a question is the display of images. Specifically, an image specified by the experimenter can be sent to the user in a separate message **before** the text of the question appears.
+
+An image with file type `.jpg`, `.jpeg`, or `.png` can be added either from the local directory or from a URL.
+
+An image can be added to a question simply by setting the `image` property of the question object. Images can be added to questions of any type (see [qType](#span-idqtypes-question-typesspan) below). 
+
+The image property is itself an object with the following mandatory attributes:
+
+* `sourceType` - this takes the string value of either `"local"` for image files from the local repository or `"url"` for links to images on the internet.
+* `source` - this is the string containing the path to the image file
+  * if `sourceType` is `local`, this property will be the path to this file (including file extension) from the root directory of the repository
+  * if `sourceType` is `url`, this property will be the internet URL to the **image file** (and NOT to a web page)
+  * In case you would like to use a different image for different languages, this property can also be an object containing the name of each language, and the corresponding file path for that specific language.
+
+Let us look at an example below of an example question object with a different image added to it for each language. 
+
+```
+Example question object 1
+
+{
+  "qId" : "askReflect",
+  "text" : {
+    "English" : "Would you like to reflect on your goals later today?",
+    "Deutsch" : "Hier ist die deutsche Übersetzung der obigen Frage?"
+  }
+  "image" : {
+    "sourceType" : "local",
+    "source" : {
+      "English" : "data/images/reflectImg_eng.jpg",
+      "Deutsch" : "data/images/reflectImg_ger.jpg"
+    }
+  }
+}
+```
+
 ### <span id="QTypes"> Question Types</span>
 
 The question type of the question, a string occupying the field `qType` of the question object, defines the type of response that a user is supposed to give to the question. Each question type has some additional associated parameters, either optional or mandatory, that are added directly to the question object.
@@ -1217,18 +1254,19 @@ So we finally come to the topic that has been teased a few times before - what i
 
 Each action has an action type, `aType`, and zero or more string arguments `args` that are required for a particular action. Together, these two fields form the 'action object', representing the execution of a single action. After seeing, in the following table, the descriptions of each action and their arguments, we will pick appropriate actions we might want to perform after our example question.
 
-| aType               | description                                                                              | arg 1               | arg 1 type                | arg 2       | arg 2 type                                | example action object                                                  | notes                                                                                                                                  |
-|---------------------|------------------------------------------------------------------------------------------|---------------------|---------------------------|-------------|-------------------------------------------|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| `assignToCondition` | Assigns user to a particular condition based on the `assignmentScheme`                   | none                | none                      | none        | none                                      | `{ "aType" : "assignToCondition" }`                                    |                                                                                                                                        |
-| `startStage`        | Starts a certain experiment stage at day 1, ending the previous stage if any was running | name of valid stage | string                    | none        | none                                      | `{ "aType" : "startStage", args : ["Pre-Test"] }`                      | If the experiment has conditions, execute only when user is **already assigned to a condition**                                        |
-| `incrementStageDay` | Manually increment the current day of a stage by 1                                       | name of valid stage | string                    | none        | none                                      | `{ "aType" : "incrementStageDay", args : ["Test"] }`                   | incrementing of stage day occurs automatically on a daily basis already                                                                | 
-| `endExperiment`     | Manually causes the experiment to end                                                    | none                | none                      | none        | none                                      | `{ "aType" : "incrementStageDay" }`                                    | ending experiment occurs automatically after the end of last stage (if it has finite length)                                           |
-| `saveAnswerTo`      | Save the user's answer to the current question to a certain variable (parameter)         | valid variable name | string, strArr, or number | none        | none                                      | `{ "aType" : "saveAnswerTo", args : ["numGoalsSet"] }`                 | save to number only when `qType` is `"number"`                                                                                         |
-| `saveOptionIdxTo`   | Save the index of the user's answer in the list of options to a variable (parameter)     | valid variable name | number, numArr            | none        | none                                      | `{ "aType" : "saveOptionIdxTo", args : ["selectedGoalIdx"] }`          | only possible for `singleChoice` and `multiChoice` type questions. `multiChoice` type question saves array of indices of all chosen answers. |
-| `addAnswerTo`       | Add the user's current answer to the end of a certain array variable (parameter)         | valid variable name | strArr or numArr          | none        | none                                      | `{ "aType" : "addAnswerTo", args : ["goalsSetToday"] }`                | add to number array only when `qType` is `"number"`                                                                                    |
-| `setBooleanVar`     | Set the value of a particular boolean variable to either true or false                   | valid variable name | boolean                   | new value   | <a href="#Constants">boolean constant</a> | `{ "aType" : "setBooleanVar", args : ["wantsToReflect", "$B{true}"] }` |                                                                                                                                        |
-| `addValueTo`        | Add a number value to a number variable                                                  | valid variable name | number                    | added value | <a href="#Constants">number constant</a>  | `{ "aType" : "addValueTo", args : ["numGoalsSet", "$N{2}"] }`          |                                                                                                                                        |
-| `clearVar`          | Clears a certain variable to default value (see <a href="#Parameters">Parameters</a>)    | valid variable name | any parameter type        | none         | none                                      | `{ "aType" : "clearVars", args : ["goalsSetToday"] }`                   |                                                                                                                                        |
+| aType                  | description                                                                                 | arg 1               | arg 1 type                | arg 2                  | arg 2 type                                | example action object                                                                                                 | notes                                                                                                                                        |
+|------------------------|---------------------------------------------------------------------------------------------|---------------------|---------------------------|------------------------|-------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `assignToCondition`    | Assigns user to a particular condition based on the `assignmentScheme`                      | none                | none                      | none                   | none                                      | `{ "aType" : "assignToCondition" }`                                                                                   |                                                                                                                                              |
+| `startStage`           | Starts a certain experiment stage at day 1, ending the previous stage if any was running    | name of valid stage | string                    | none                   | none                                      | `{ "aType" : "startStage", args : ["Pre-Test"] }`                                                                     | If the experiment has conditions, execute only when user is **already assigned to a condition**                                              |
+| `incrementStageDay`    | Manually increment the current day of a stage by 1                                          | name of valid stage | string                    | none                   | none                                      | `{ "aType" : "incrementStageDay", args : ["Test"] }`                                                                  | incrementing of stage day occurs automatically on a daily basis already                                                                      | 
+| `endExperiment`        | Manually causes the experiment to end                                                       | none                | none                      | none                   | none                                      | `{ "aType" : "incrementStageDay" }`                                                                                   | ending experiment occurs automatically after the end of last stage (if it has finite length)                                                 |
+| `saveAnswerTo`         | Save the user's answer to the current question to a certain variable (parameter)            | valid variable name | string, strArr, or number | none                   | none                                      | `{ "aType" : "saveAnswerTo", args : ["numGoalsSet"] }`                                                                | save to number only when `qType` is `"number"`                                                                                               |
+| `saveOptionIdxTo`      | Save the index of the user's answer in the list of options to a variable (parameter)        | valid variable name | number, numArr            | none                   | none                                      | `{ "aType" : "saveOptionIdxTo", args : ["selectedGoalIdx"] }`                                                         | only possible for `singleChoice` and `multiChoice` type questions. `multiChoice` type question saves array of indices of all chosen answers. |
+| `addAnswerTo`          | Add the user's current answer to the end of a certain array variable (parameter)            | valid variable name | strArr or numArr          | none                   | none                                      | `{ "aType" : "addAnswerTo", args : ["goalsSetToday"] }`                                                               | add to number array only when `qType` is `"number"`                                                                                          |
+| `setBooleanVar`        | Set the value of a particular boolean variable to either true or false                      | valid variable name | boolean                   | new value              | <a href="#Constants">boolean constant</a> | `{ "aType" : "setBooleanVar", args : ["wantsToReflect", "$B{true}"] }`                                                |                                                                                                                                              |
+| `addValueTo`           | Add a number value to a number variable                                                     | valid variable name | number                    | added value            | <a href="#Constants">number constant</a>  | `{ "aType" : "addValueTo", args : ["numGoalsSet", "$N{2}"] }`                                                         |                                                                                                                                              |
+| `clearVars`            | Clears one or several variables to default value (see <a href="#Parameters">Parameters</a>) | valid variable name | any parameter type        | none or valid var name | none or any parameter type                | `{ "aType" : "clearVars", args : ["goalsSetToday", "reflectionStarted"] }`                                            | Takes any number of arguments, each of which is a variable name. At least one argument required.                                             |
+| `rescheduleCurrentStage` | Reschedules the questions in the current stage without updating stage name or day           | none | none | none | none | `{ "aType" : "rescheduleCurrentStage" }` | Useful, e.g., when changing the time at which user wants to receive questions.                                                               |
 
 
 As you may see in the examples already, building an action object requires a field `aType` and a field `args`. If there are no required arguments for a given `aType`, the `args` field can be omitted from the action object. If there are arguments, then `args` must be a **list of strings**, even if there is only one argument.
@@ -2131,6 +2169,8 @@ The field `userPromptedQs` is a list of objects, each object corresponding to on
 * `keyword` - the keyword that the user must enter to prompt that question. Defined for all available languages.
 * `description` - the explanation of what kind of question the user would be prompting by sending that keyword. Defined for all available languages.
 * `qId` - the question ID in the form of `"<questionCategory>.<qId>"` (just like in `scheduledQuestions`) that should be asked to the user to start that conversation.
+* `stages` (optional) - list of stages for which this question should be available to prompt
+  * If this is omitted, question will be available in all stages. If list is empty, question will be available in no stage.
 * `if` (optional) - conditions under which the user is allowed to initiate that conversation
   * Conditions specified as described in the section on [Conditional Expressions](#span-idconditions-conditional-expressions-span).
   * When the user sends the message `/talk`, only those options will be listed for which the condition is valid at that given point in time. That is, users will not have the option to initiate a conversation of a certain kind if this condition is not satisfied.
@@ -2149,7 +2189,8 @@ Following these rules, we can define the user-prompted questions for `Condition1
       "Deutsch" : "Übersetzung nicht verfügbar."
     },
     "qId" : "morningQs.addGoalsLater",
-    "if" : "(${STAGE_NAME} == $S{Test}) AND (${reflectionStartedToday} != $B{true})"
+    "stages" : ["Test"],
+    "if" : "${reflectionStartedToday} != $B{true}"
   },
   {
     "keyword" : {
@@ -2161,16 +2202,16 @@ Following these rules, we can define the user-prompted questions for `Condition1
       "Deutsch" : "Übersetzung nicht verfügbar."
     },
     "qId" : "surveyQs.feedbackSurvey",
-    "if" : "(${STAGE_NAME} == $S{Test})"
+    "stages" : ["Test"]
   }
 ]
 ```
 
 The above list will generate the example text shown above. If the user sends the command `/talk` and then the keyword `Goals`, they will receive the question with the `qId` `addGoalsLater` in the question category `morningQs` of `Condition1`.
 
-Note that it is only possible for the user to initiate a conversation with the keyword `Goals` if the value of their parameter `reflectionStartedToday` is `false`. This means that if they have already started reflection and their parameter `reflectionStartedToday` accordingly has the value `true`, then this option will not appear when they send the command `/talk`, and only the option `Survey` will appear.
+Note that it is only possible for the user to initiate a conversation with the keyword `Goals` the value of their parameter `reflectionStartedToday` is `false`. This means that if they have already started reflection and their parameter `reflectionStartedToday` accordingly has the value `true`, then this option will not appear when they send the command `/talk`, and only the option `Survey` will appear.
 
-Also note that both of these conversations can be initated only during the stage `Test`. If the user sends the command `/talk` during any other stage, they will simply receive the text as defined in property `cannotStartTalk` of the [mandatory phrases](#span-idphrases-mandatory-phrases-span).
+Also note that both of these conversations can be initiated only during the stage `Test`. If the user sends the command `/talk` during any other stage, they will simply receive the text as defined in property `cannotStartTalk` of the [mandatory phrases](#span-idphrases-mandatory-phrases-span).
 
 In a similar manner, it is possible to define questions that can only be prompted within certain time frames by using conditional expressions with the parameter values `CURRENT_HOUR` and `CURRENT_MIN`.
 

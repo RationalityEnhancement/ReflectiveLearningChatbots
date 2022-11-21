@@ -1,7 +1,7 @@
 {
   "English" : [
     "Please remind your employees to complete their goal reflection for today, so that your team can earn more points for the leaderboard! You can copy the text in the next message and send it to them immediately, or do so personally during your next meeting with them.\n\nThe leaderboard can be viewed at https://chatbot-leaderboard.herokuapp.com",
-    "<i>Hi team!</i>\n\n<i>Here is a reminder to complete your reflection for today with the chatbot. Just open Telegram and continue the conversation with the chatbot!</i>"
+    "<i>Hi team!</i>\n\n<i>Here is a quick reminder to complete your goal-setting for today with the chatbot. Just follow my example, open Telegram and continue the conversation with the chatbot!</i>"
   ],
-  "Deutsch" : ["Nicht verfügbar"]
+  "Deutsch" : ["Leader ref text Nicht verfügbar"]
 }

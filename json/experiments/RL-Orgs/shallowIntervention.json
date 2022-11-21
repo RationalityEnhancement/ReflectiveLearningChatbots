@@ -173,14 +173,14 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,2,3}",
         "then" : {
           "English" : ["Sorry to hear.", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
-          "Deutsch" : ["Das tut mir leid.", "Lassen Sie uns ein wenig tiefer gehen, um besser zu verstehen, warum Sie so empfinden und was Sie aus dieser Erfahrung lernen können."]
+          "Deutsch" : ["Das tut mir leid.", "Lassen Sie uns ein wenig tiefer gehen, um besser zu verstehen, warum Sie das so empfinden und was Sie aus dieser Erfahrung lernen können."]
         }
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{4,5,6,7}",
         "then" : {
           "English" : ["That's great to hear!", "Let's dig a little deeper to better understand why you feel the way you do and what you can learn from this experience."],
-          "Deutsch" : ["Das ist schön!", "Lassen Sie uns ein wenig tiefer gehen, um besser zu verstehen, warum Sie so empfinden und was Sie aus dieser Erfahrung lernen können."]
+          "Deutsch" : ["Das ist schön!", "Lassen Sie uns ein wenig tiefer gehen, um besser zu verstehen, warum Sie das so empfinden und was Sie aus dieser Erfahrung lernen können."]
         }
       }
     ],
@@ -427,6 +427,10 @@
       {
         "if": "(${STAGE_DAY} MULTIPLE_OF $N{2}) AND (${CONDITION} CONTAINS_STRING $S{Leader})",
         "then" : "$F{json/experiments/RL-Orgs/replyMessages/leaderRefReminderText.json}"
+      },
+      {
+        "if": "(${STAGE_DAY} MULTIPLE_OF $N{2}) AND ((${CONDITION} CONTAINS_STRING $S{Leader}) != $B{True})",
+        "then" : "$F{json/experiments/RL-Orgs/replyMessages/followerLeaderboardText.json}"
       }
     ]
   },
@@ -706,15 +710,15 @@
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
         "then" : {
-          "English" : ["Awesome!", "Let's now take a step back and find out where those goals came from."],
-          "Deutsch" : ["Fantastisch!", "Lassen Sie uns einen Schritt zurückgehen und herausfinden, wie es zu diesen Zielen kam."]
+          "English" : ["Awesome!"],
+          "Deutsch" : ["Fantastisch!"]
         }
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
         "then" : {
-          "English" : ["Interesting.", "Let's now take a step back and find out where those goals came from."],
-          "Deutsch" : ["Interessant.", "Lassen Sie uns einen Schritt zurückgehen und herausfinden, wie es zu diesen Zielen kam."]
+          "English" : ["Interesting."],
+          "Deutsch" : ["Interessant."]
         }
       }
     ],

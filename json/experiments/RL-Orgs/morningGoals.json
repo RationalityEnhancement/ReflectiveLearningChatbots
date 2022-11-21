@@ -91,7 +91,7 @@
     "qId" : "wantGoalInfo",
     "text" : {
       "English" : "We will start today by setting goals for work that are SMART (<b>S</b>pecific, <b>M</b>easurable, <b>A</b>chievable, <b>R</b>elevant, and <b>T</b>ime-bound)\n\nWould you like to find out more about SMART goals?",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "GoalsInfo Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",
     "options" : {
@@ -150,7 +150,7 @@
         "if" : "${dontAskExampleAgain} == $B{true}",
         "then" : {
           "English" : ["Let's get right to it!"],
-          "Deutsch" : ["Dann machen wir direkt weiter!"]
+          "Deutsch" : ["Machen wir direkt weiter!"]
         }
       }
     ]
@@ -159,7 +159,7 @@
     "qId" : "wantGoalExample",
     "text" : {
       "English" : "Would you like to see some examples of SMART task-oriented goals?",
-      "Deutsch" : "Übersetzung nicht verfügbar"
+      "Deutsch" : "GoalsExample Übersetzung nicht verfügbar"
     },
     "qType" : "singleChoice",
     "options" : {
@@ -206,7 +206,7 @@
     "qType" : "dummy",
     "replyMessages" : {
       "English" : ["A SMART goal is one that has the following properties:\n\n<b>S</b>pecific - includes concrete details about what is to be accomplished\n\n<b>M</b>easurable - progress towards the goal can be quantified and clearly tracked\n\n<b>A</b>chievable - the goal can be realistically accomplished in the intended time frame\n\n<b>R</b>elevant - completing the goal brings you closer to your or your team's longer-term goals\n\n<b>T</b>ime-bound - has a specific time frame within which the goal should be reached"],
-      "Deutsch" : ["Hier sind Infos zu beziehungsorienterten Zielen"]
+      "Deutsch" : ["Hier sind Infos zu Arbeitszielen"]
     },
     "nextQuestion" : "Morning-Goals-All.continueFromInfo"
   },
@@ -235,8 +235,8 @@
     "qId" : "goalsExample",
     "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["Here are examples of SMART goals:\n\n * <i>Gain four new clients for my business this quarter by conducting 3 or more customer meetings each week</i>\n\n * <i>Review and reduce the number of meetings on my calendar by 50% in order to enable more time for strategic planning by end of the month</i>\n\n * <i>Improve my product understanding by creating, drafting, and delivering two projects using our product by the end of the quarter.</i>"],
-      "Deutsch" : ["Hier sind Beispiele von beziehungsorienterten Zielen"]
+      "English" : ["Here are examples of SMART goals:\n\n * <i>Gain four new clients for my business this quarter by conducting 3 or more customer meetings each week</i>\n\n * <i>Increase average contract value by 15% by the end of the week.</i>\n\n * <i>Decrease average time to close a deal with a new client by 10% by the end of the week.</i>\n\n * <i>Increase the number of contact points with prospective clients by 30% by the end of the week.</i>"],
+      "Deutsch" : ["Hier sind Beispiele von Arbeitszielen"]
     },
     "nextQuestion" : "Morning-Goals-All.continueFromExample"
   },

@@ -510,23 +510,6 @@ class ScheduleHandler{
             );
         }
 
-        if(config.debug.saveDebugInfo) {
-            // Save scheduled questions that were fetched
-            let saveActionObj = {
-                infoType: "getSchQs",
-                scheduledOperations: participant.scheduledOperations,
-                parameters: participant.parameters,
-                stages: participant.stages,
-                info: [JSON.stringify(schQObj.data)],
-                timeStamp: moment.tz(participant.parameters.timezone).format(),
-                from: "SHandler"
-            }
-            debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
-                console.log("Scheduler: could not add save action obj - getScheduledQs - " + participant.uniqueId
-                    + "\n" + err.message + "\n" + err.stack);
-            });
-        }
-
         let scheduledQuestionsList = schQObj.data;
         let actionList = actionsObj.data;
 
@@ -568,24 +551,6 @@ class ScheduleHandler{
                 "Scheduler: Failure to get scheduled question in scheduleStage"
                 + "\n"+ schQObj.data
             );
-        }
-
-
-        if(config.debug.saveDebugInfo) {
-            // Save scheduled questions that were fetched
-            let saveActionObj = {
-                infoType: "getStageSchQs",
-                scheduledOperations: participant.scheduledOperations,
-                parameters: participant.parameters,
-                stages: participant.stages,
-                info: [JSON.stringify(schQObj.data)],
-                timeStamp: moment.tz(participant.parameters.timezone).format(),
-                from: "SHandler"
-            }
-            debugs.addDebugInfo(participant.uniqueId, saveActionObj).catch(err => {
-                console.log("Scheduler: could not add save action obj - getStageScheduledQs - " + participant.uniqueId
-                    + "\n" + err.message + "\n" + err.stack);
-            });
         }
 
         let scheduledQuestionsList = schQObj.data;

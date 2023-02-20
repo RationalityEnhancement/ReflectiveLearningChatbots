@@ -1,3 +1,14 @@
+# Directories
+
+This folder contains the following directories for storing json files.
+
+* `essential` - This folder contains two files that are required for the experiment to run. The files are as follows:
+  * `config.json` - Experimenter definition of the experiment structure
+  * `devConfig.json` - Information for the software to run correctly. Only to be edited by developers!
+* `experiments` - Stores all of your experiment files. You can create subfolders as you please.
+* `static` - Supplementary json files that can be used in experiment definitions, such as lists of timezones, etc.
+* `test` - JSON files that are used for the unit tests. Only to be edited by developers!
+
 # Defining Your Experiment 
 
 _(up to date for third prototype)_

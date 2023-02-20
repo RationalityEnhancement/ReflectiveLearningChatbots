@@ -47,11 +47,35 @@
       "English" : "(Hint: send /repeat if the <i>Continue</i> button is no longer visible.)",
       "Deutsch" : "(Hinweis: /repeat eingeben, falls der Button <i>Weiter</i> nicht mehr angezeigt wird.)"
     },
-    "nextQuestion" : "setupQuestions.pIdQuestion",
+    "nextQuestion" : "setupQuestions.companyQuestion",
     "options": {
       "English" : ["Continue"],
       "Deutsch" : ["Weiter"]
     }
+  },
+  {
+    "qId": "companyQuestion",
+    "text": {
+      "English": "What is the name of the company you work for?",
+      "Deutsch": "Wie heißt die Firma, bei der Sie arbeiten?"
+    },
+    "qType": "freeform",
+    "replyMessages": {
+      "English": [
+        "Thank you, company name has been registered."
+      ],
+      "Deutsch": [
+        "Vielen Dank, Ihre Firma wurde erfasst."
+      ]
+    },
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["company"]
+      }
+    ],
+    "nextQuestion": "setupQuestions.pIdQuestion"
+
   },
   {
     "qId": "pIdQuestion",

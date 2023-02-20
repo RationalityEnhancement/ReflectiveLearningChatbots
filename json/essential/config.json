@@ -53,6 +53,7 @@
     "warningGiven" : "boolean",
     "morningTime" : "string",
     "eveningTime" : "string",
+    "company": "string",
     "testStr" : "string",
     "testStrArr" : "strArr",
     "testBool" : "boolean",

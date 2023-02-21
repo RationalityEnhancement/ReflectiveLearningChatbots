@@ -1341,6 +1341,55 @@ class ConfigParser{
 
     /**
      *
+     * Check whether an experiment stages object is valid
+     *
+     * @param userPrompts
+     * @returns {{returnCode: number, data: *}}
+     */
+    static validateStages(stages, conditions){
+
+        // Validate a single list of experiment stages
+        let validateStageArray = (stageArray, conditionName) => {
+            if(!Array.isArray(stageArray)) {
+                return ReturnMethods.returnFailure("CParser: experiment stages of condition "
+                    + conditionName + " must be an array");
+            }
+            if(stageArray.length === 0){
+                return ReturnMethods.returnFailure("CParser: condition "
+                    + conditionName + " must have at least one stage")
+            }
+            if(!stageArray.every(e => typeof e === "object" && "name" in e)){
+                return ReturnMethods.returnFailure("CParser: condition "
+                    + conditionName + ": Every experiment stage must be an object with" +
+                    " at least field 'name'")
+            }
+            return ReturnMethods.returnSuccess(stageArray)
+        }
+
+        // Validate experiment stages for all conditions
+        if(conditions.length === 0){
+            return validateStageArray(stages, "main");
+        } else {
+            if(typeof stages !== "object") {
+                return ReturnMethods.returnFailure(
+                    "CParser: experimentStages must be an object when multiple conditions are present");
+            }
+            for(let i = 0; i < conditions.length; i++){
+                if(!(conditions[i] in stages)){
+                    return ReturnMethods.returnFailure(
+                        "CParser: experimentStages for condition " + conditions[i] + " missing");
+                }
+                let validateConditionObj = validateStageArray(stages[conditions[i]], conditions[i]);
+                if(validateConditionObj.returnCode === DevConfig.FAILURE_CODE){
+                    return validateConditionObj
+                }
+            }
+            return ReturnMethods.returnSuccess(stages);
+        }
+    }
+
+    /**
+     *
      * Check whether a list of user prompted question objects is valid
      *
      * @param userPrompts

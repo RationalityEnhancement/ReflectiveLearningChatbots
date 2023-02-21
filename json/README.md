@@ -342,7 +342,7 @@ These are all fields at the first level of the experiment JSON object.
   * `"pid"` - Assign new participant to a condition based on participant ID (see below)
   * `"balanced"` - Assign new participant to the condition that would best help maintain the relative group sizes in `relConditionSizes`, based on how many participants are already assigned to all conditions. First participant is assigned randomly.
   * `"random"` - Assign new participant to a random condition
-* `conditionMapping` - Object containing mapping between PID and the index of the condition to which participants with that PID should be assigned to. (See below)
+* `conditionMapping` - Object containing mapping between PID and the index of the condition to which participants with that PID should be assigned to. Required only when `assignmentScheme` is `"pid"` (See below)
   
 Continuation of the beginning of the experiment JSON file, adding two conditions of equal sizes:
 ```

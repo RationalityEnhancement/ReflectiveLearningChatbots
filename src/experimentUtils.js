@@ -58,7 +58,7 @@ module.exports.resolveAssignmentScheme = resolveAssignmentScheme;
 */
 module.exports.assignToCondition = (participantId, pidMap, relConditionSizes, currentAssignments, assignmentScheme) => {
   // Error handling
-  if(!DevConfig.validAssignmentSchemes.includes(assignmentScheme)){
+  if(!DevConfig.VALID_ASSIGNMENT_SCHEMES.includes(assignmentScheme)){
     return ReturnMethods.returnFailure("ExpUtils: assignmentScheme invalid for condition assignment")
   }
   if(!relConditionSizes || relConditionSizes.length === 0 || !relConditionSizes.some(val => val > 0)){

@@ -8,7 +8,8 @@
   "INVALID_ANSWER_STRING" : "[Invalid Answer]",
   "INVALID_FILE_STRING" : "[Invalid File]",
   "qTypeAliases" : ["likert5", "likert7"],
-  "validAssignmentSchemes" : ["pid", "balanced", "random"],
+  "VALID_ASSIGNMENT_SCHEMES" : ["pid", "balanced", "random"],
+  "VALID_PARAMETER_TYPES" : ["string", "number", "boolean", "strArr", "numArr"],
   "RESERVED_VARIABLES" : ["STAGE_NAME", "STAGE_DAY"],
   "VAR_STRINGS" : {
     "FIRST_NAME" : "FIRST_NAME",

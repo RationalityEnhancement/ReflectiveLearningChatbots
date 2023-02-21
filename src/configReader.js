@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('node:path');
 const readConfig = require("../json/essential/config.json");
 let config = require('../json/essential/config.json');
+let customMessages = require('../json/essential/customMessages.json')
 let replaced = false;
 
 /**
@@ -123,6 +124,16 @@ module.exports.getExpConfig = () => {
  */
 module.exports.getDevConfig = () => {
     return DevConfig;
+}
+
+/**
+ *
+ * Get the list of custom messages to send to participants
+ *
+ * @returns {{SUCCESS_CODE: number, PARTIAL_FAILURE_CODE: number, FAILURE_CODE: number, NO_RESPONSE_STRING: string, NEXT_ACTION_STRING: string, REPEAT_QUESTION_STRING: string, INVALID_ANSWER_STRING: string, INVALID_FILE_STRING: string, qTypeAliases: {}, validAssignmentSchemes: {}, RESERVED_VARIABLES: {}, VAR_STRINGS: {FIRST_NAME: string, CURRENT_ANSWER: string, UNIQUE_ID: string, STAGE_NAME: string, STAGE_DAY: string, ANSWER_LEN_CHARS: string, ANSWER_LEN_WORDS: string, TODAY: string, TODAY_NAME: string, CONDITION: string}, SENSITIVE_DATA_VARS: {}, MS_PER_CHARACTER_DELAY: number, DUMMY_QUESTION_TEXT: string, VALID_CONDITIONAL_OPERATORS: {}, VALID_BOOLEAN_CONSTANTS: {}, OPERAND_TYPES: {EXPRESSION: string, NUMBER: string, NUMBER_ARRAY: string, STRING: string, STRING_ARRAY: string, BOOLEAN: string, VARIABLE: string, UNDEFINED: string}, DEFAULT_DTYPE_VALUES: {number: number, numArr: {}, string: string, strArr: {}, boolean: boolean}, VALID_ACTIONS_ARGS: {saveAnswerTo: number, setBooleanVar: number, scheduleQuestions: number, assignToCondition: number, addAnswerTo: number, clearVar: number, addValueTo: number, startStage: number, incrementStageDay: number, endExperiment: number}, END_STAGE_STRING: string, BEGIN_STAGE_STRING: string, DAY_INDEX_ORDERING: {}, STAGE_PARAMS: {LENGTH_DAYS: string, ON_DAYS: string}, STAGE_UPDATE_TIME: string, DATA_FOLDER_PATH: string}}
+ */
+module.exports.getCustomMessages = () => {
+    return customMessages;
 }
 
 /**

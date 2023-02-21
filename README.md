@@ -187,3 +187,36 @@ Once you host the chatbot experiment on Heroku for the first time, you might wan
   * Run the command `git push heroku main`
 * As before, wait until the terminal reports that the build has been completed for the changes to be reflected in the chatbot
 
+## Directory Structure of Repository
+
+```
+ReflectiveLearningChatbots
+│   README.md
+│   index.js (chatbot entry point)    
+│   package.json
+│   package-lock.json
+│
+└─── data
+│   │   (store auxiliary data for defining experiments, such as team names, images, etc.)
+│   
+│   
+└─── json
+│   │   (json files for experiment definition)
+│   │   README.md
+│   
+│
+└─── results
+│   │   (stores the experiment data downloaded from the database server)
+│
+└─── src
+│   │   (JavaScript files for the chatbot logic)
+│   │
+│   └───apiControllers
+│   │   │  (database helper functions)
+│   │
+│   └───models
+│       │  (MongoDB schemas for different documents)
+│   
+└─── test
+    │   (unit test scripts)  
+```

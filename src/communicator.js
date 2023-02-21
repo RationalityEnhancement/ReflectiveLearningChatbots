@@ -272,7 +272,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
         .catch(e => {
             console.log("Unable to add messages to transcript for participant " + participant.uniqueId + " at time "
                 + sentMessages[0].timeStamp + "\n" + e.message + "\n" + e.stack)
-        });;
+        });
 }
 
 /**

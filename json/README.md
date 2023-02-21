@@ -47,6 +47,8 @@ Sections 4 onwards contain detailed documentation of each part of the experiment
     <ol>
       <li> <a href="#QID">Question ID</a> </li>
       <li> <a href="#QText">Question Text</a> </li>
+      <li> <a href="#QImages">Question Images</a> </li>
+      <li> <a href="#InputPrompts">Input Prompts</a> </li>
       <li> <a href="#QTypes">Question Types</a> </li>
       <li> 
         <a href="#DefNextSteps">Default Next Steps</a> 
@@ -1032,6 +1034,11 @@ The choices of the likert scale are defined in `keyboards.likert5Options` of `ph
 
 The user need not enter any options for this one, as the options for every `likert5` type question will be the same.
 
+The following are optional parameters that can be added to the question object:
+* `buttonLayoutCols` - Number of columns that the grid layout of the keyboard that displays the options should have.
+  * Must not be more than 5.
+  * Set to 5 to have likert scale going from left to right. Default is top to bottom.
+
 Example question that prompts selecting from the likert scale with 5 points:
 
 ```
@@ -1051,6 +1058,11 @@ Requires the user to select one choice from a list of choices (essentially a `si
 The choices of the likert scale are defined in `keyboards.likert7Options` of `phrases` (see section <a href="#Phrases">Mandatory Phrases</a>), and can be adjusted there.
 
 The user need not enter any options for this one, as the options for every `likert7` type question will be the same.
+
+The following are optional parameters that can be added to the question object:
+* `buttonLayoutCols` - Number of columns that the grid layout of the keyboard that displays the options should have.
+  * Must not be more than 7.
+  * Set to 7 to have likert scale going from left to right. Default is top to bottom.
 
 Example question that prompts selecting from the likert scale with 7 points:
 
@@ -1108,7 +1120,7 @@ The following are mandatory parameters that must be added to the question object
 The following are optional parameters that can be added to the question object for expanded functionality:
 * `qualtricsFields` - list containing objects each having a `field` and `value`. Each of these is appended to the link as query strings to be passed as meta-data for the survey response.
   * `field` and `value` must be strings. `value` can also be the value of a <a href="#Variables">variable</a> at that point in time.
-  * `value` should not contain characters &, = or ?
+  * `field` and `value` should not contain characters &, = or ?
 * `continueStrings` - list of strings containing custom answers that the user can send in order to continue from the survey
   * e.g., can be used to input survey completion codes, to ensure interaction does not continue until the survey is completed
 
@@ -1199,11 +1211,55 @@ Example question object 1
 }
 ```
 
+### <span id="InputPrompts">Input Prompts</span>
+
+Each of the above defined question types solicits a specific kind of answer from the user. So that the user knows how they are supposed to answer, the chatbot sends a message after each question with instructions on how to answer the question. For example, for a question of type `singleChoice`, the chatbot might instruct the user in the following way: 
+
+```
+Please select from the available options. You may need to scroll down to see all of them.
+```
+
+Such a message is known as an "input prompt", and is different for each question type. The default input prompt that is sent to the user after each question type is defined in the <a href="#Phrases">Phrases</a>. Here, you can change the default input prompts, or add the translations for the input prompt in different languages.
+
+However, it is also possible to manipulate the input prompt of just a single question. The following property can be added to the question object to change the input prompt **only for that specific question**:
+
+* `inputPrompt` - Object containing all the available languages as keys, and the string input prompt for that corresponding language as values.
+  * See example below.
+
+Let us edit the input prompt of our example question object to make it say what we want:
+
+```
+Example question object 1
+
+{
+  "qId" : "askReflect",
+  "text" : {
+    "English" : "Would you like to reflect on your goals later today?",
+    "Deutsch" : "Hier ist die deutsche Übersetzung der obigen Frage?"
+  },
+  "qType" : "singleChoice",
+  "options" : {
+    "English" : ["Yes", "No"],
+    "Deutsch" : ["Ja", "Nein"]
+  },
+  "inputPrompt" : {
+    "English" : "Choose one of the options, Yes or No.",
+    "Deutsch" : "Wähle eine Option aus, Ja oder Nein"
+  }
+}
+```
+
+This above question object will, after sending the question defined in `text`, send the custom input prompt in a separate message, so that the user knows how to answer the question.
+
+<br> <br>
+
 Now we are done with the first part of our question object! We have defined what we want to ask the user, and what sort of responses we want to elicit from them.
 
 This is theoretically a complete question. However, it still lacks something in that nothing happens after the user provides an answer to this question. Therefore, we will proceed to the instructions on how to specify next steps, such as replies to send, actions to perform, or questions to ask next. 
 
 If you would like to see how this question object finally gets added to a question category, skip to the end of the section <a href="#CActions">Conditional Next Actions</a>
+
+
 
 ### <span id="DefNextSteps"> Default Next Steps </span>
 

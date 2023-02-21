@@ -19,7 +19,8 @@
       "English" : ["Thank you for choosing a language"],
       "Deutsch": ["Vielen Dank, dass Sie eine Sprache ausgewählt haben."]
     },
-    "start" : true
+    "start" : true,
+    "suppressInputPrompt" : false
   },
   {
     "qId" : "introduceInstructions",

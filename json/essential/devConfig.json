@@ -10,6 +10,7 @@
   "qTypeAliases" : ["likert5", "likert7"],
   "VALID_ASSIGNMENT_SCHEMES" : ["pid", "balanced", "random"],
   "VALID_PARAMETER_TYPES" : ["string", "number", "boolean", "strArr", "numArr"],
+  "VALID_QUESTION_TYPES" : ["freeform", "freeformMulti", "singleChoice", "multiChoice", "likert5", "likert7", "qualtrics", "dummy"],
   "RESERVED_VARIABLES" : ["STAGE_NAME", "STAGE_DAY"],
   "VAR_STRINGS" : {
     "FIRST_NAME" : "FIRST_NAME",
@@ -85,5 +86,39 @@
   "VALID_IMAGE_EXTENSIONS" : [".jpg", ".jpeg", ".png"],
   "SEND_MESSAGE_ATTEMPTS" : 3,
   "REPEAT_ATTEMPT_WAIT_MS" : 3000,
-  "DEFAULT_STAGE_LENGTH_WEEKS" : 2
+  "DEFAULT_STAGE_LENGTH_WEEKS" : 2,
+  "VALID_QUESTION_PROPERTIES":{
+    "freeform" : {
+      "possible": ["minLengthChars","minLengthWords","answerShouldBe"],
+      "required": []
+    },
+    "freeformMulti" : {
+      "possible": ["minLengthChars","minLengthWords"],
+      "required": []
+    },
+    "singleChoice" : {
+      "possible": ["options", "buttonLayoutCols"],
+      "required": ["options"]
+    },
+    "multiChoice" : {
+      "possible": ["options", "buttonLayoutCols"],
+      "required": ["options"]
+    },
+    "likert7": {
+      "possible": ["buttonLayoutCols"],
+      "required": []
+    },
+    "likert5": {
+      "possible": ["buttonLayoutCols"],
+      "required": []
+    },
+    "number": {
+      "possible": ["range"],
+      "required": []
+    },
+    "qualtrics": {
+      "possible": ["qualtricsLink", "qualtricsFields", "continueStrings"],
+      "required": ["qualtricsLink"]
+    }
+  }
 }

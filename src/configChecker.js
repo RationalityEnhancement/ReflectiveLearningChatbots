@@ -288,11 +288,11 @@ module.exports.checkConfig = () => {
           + "Question type " + questionObj.qType + " cannot contain property minLengthWords")
       assert(typeof questionObj.minLengthWords === "number" && questionObj.minLengthWords > 0,
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "minLengthWords must be a number greater than 0"
+          + " minLengthWords must be a number greater than 0"
       )
       assert(!("minLengthChars" in questionObj),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "question object cannot contain both minLengthChars and minLengthWords"
+          + " question object cannot contain both minLengthChars and minLengthWords"
       )
     }
 
@@ -338,83 +338,98 @@ module.exports.checkConfig = () => {
           + "Question type " + questionObj.qType + " cannot contain property buttonLayoutCols")
       assert(typeof questionObj.buttonLayoutCols === "number",
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "buttonLayoutCols must be a number"
+          + " buttonLayoutCols must be a number"
       )
-      assert(questionObj.buttonLayoutCols < Math.min(...Object.values(questionObj.options).map(arr => arr.length)),
+      assert(questionObj.buttonLayoutCols <= Math.min(...(Object.values(questionObj.options).map(arr => arr.length))),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "buttonLayoutCols cannot be greater than the number of available options"
+          + " buttonLayoutCols cannot be greater than the number of available options"
       )
     }
 
     if("range" in questionObj){
       assert(DevConfig.VALID_QUESTION_PROPERTIES[questionObj.qType].possible.includes("range"),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "Question type " + questionObj.qType + " cannot contain property range")
+          + " Question type " + questionObj.qType + " cannot contain property range")
       assert(typeof questionObj.range === "object",
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "range must be an object"
+          + " range must be an object"
       )
       assert("upper" in questionObj.range || "lower" in questionObj.range,
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "range must contain an upper bound or lower bound"
+          + " range must contain an upper bound or lower bound"
       )
       assert(!("upper" in questionObj.range) || typeof questionObj.range.upper === 'number',
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "upper bound of range must be a number"
+          + " upper bound of range must be a number"
       )
       assert(!("lower" in questionObj.range) || typeof questionObj.range.lower === 'number',
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "lower bound of range must be a number"
+          + " lower bound of range must be a number"
       )
     }
 
     if("qualtricsLink" in questionObj){
       assert(DevConfig.VALID_QUESTION_PROPERTIES[questionObj.qType].possible.includes("qualtricsLink"),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "Question type " + questionObj.qType + " cannot contain property qualtricsLink")
+          + " Question type " + questionObj.qType + " cannot contain property qualtricsLink")
       assert(typeof questionObj.qualtricsLink === "string",
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "qualtricsLink must be a string"
+          + " qualtricsLink must be a string"
       )
     }
 
     if("qualtricsFields" in questionObj){
       assert(DevConfig.VALID_QUESTION_PROPERTIES[questionObj.qType].possible.includes("qualtricsFields"),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "Question type " + questionObj.qType + " cannot contain property qualtricsFields")
+          + " Question type " + questionObj.qType + " cannot contain property qualtricsFields")
       assert(Array.isArray(questionObj.qualtricsFields),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "qualtricsFields must be an array"
+          + " qualtricsFields must be an array"
       )
       assert(questionObj.qualtricsFields.every(el => typeof el === "object"),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "every element of qualtricsFields array must be an object"
+          + " every element of qualtricsFields array must be an object"
       )
       assert(questionObj.qualtricsFields.every(el => {
         return "field" in el && typeof el.field === "string" && !el.field.match(/[&,?]/g)
         &&  "value" in el && typeof el.value === "string" && !el.value.match(/[&,?]/g)
       }),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "every element of qualtricsFields array must have a string \"field\" and string \"value\" " +
+          + " every element of qualtricsFields array must have a string \"field\" and string \"value\" " +
           "without invalid characters"
       )
+
+      // If any of the fields has a parameter reference
+      questionObj.qualtricsFields.forEach(param => {
+        if(param.value.startsWith("${") && param.value.charAt(param.value.length-1) === "}"){
+          let variableTypeChecker = ConfigParser.getVariableType(
+              fakeParticipantObj.parameters, param.value.substring(2,param.value.length-1), "qualtrics")
+          assert(variableTypeChecker.returnCode === DevConfig.SUCCESS_CODE,
+              "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+              + " " + param.value + " is not a valid parameter name")
+        }
+      })
     }
 
     if("continueStrings" in questionObj){
       assert(DevConfig.VALID_QUESTION_PROPERTIES[questionObj.qType].possible.includes("continueStrings"),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "Question type " + questionObj.qType + " cannot contain property continueStrings")
+          + " Question type " + questionObj.qType + " cannot contain property continueStrings")
       assert(Array.isArray(questionObj.continueStrings),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "continueStrings must be an array"
+          + " continueStrings must be an array"
       )
-      assert(questionObj.qualtricsFields.every(el => typeof el === "string"),
+      assert(questionObj.continueStrings.every(el => typeof el === "string"),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "every element of continueStrings array must be a string"
+          + " every element of continueStrings array must be a string"
       )
     }
 
     if("inputPrompt" in questionObj){
+      assert(typeof questionObj.inputPrompt === "object",
+          "Condition: " + condition + "\nCategory: " + questionCategory +
+          "\nField \"inputPrompt\" must be an object: "
+          + questionObj.qId)
       assert(confirmAllLanguages(questionObj.inputPrompt)
           && Object.values(questionObj.inputPrompt).every(el => typeof el === "string"),
           "Condition: " + condition + "\nCategory: " + questionCategory +
@@ -431,46 +446,55 @@ module.exports.checkConfig = () => {
     if("reminder" in questionObj){
       assert(typeof questionObj.reminder === "object",
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "reminder must be an object"
+          + " reminder must be an object"
       )
       assert("freqMins" in questionObj.reminder && "numRepeats" in questionObj.reminder,
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "reminder must contain both freqMins and numRepeats"
+          + " reminder must contain both freqMins and numRepeats"
       )
       assert(typeof questionObj.reminder.freqMins === 'number' && questionObj.reminder.freqMins > 0,
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "freqMins of reminder must be a number greater than 0"
+          + " freqMins of reminder must be a number greater than 0"
       )
       assert(typeof questionObj.reminder.numRepeats === 'number' && questionObj.reminder.numRepeats > 0,
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "numRepeats of reminder must be a number greater than 0"
+          + " numRepeats of reminder must be a number greater than 0"
       )
     }
 
     if("image" in questionObj){
       assert(typeof questionObj.image === "object",
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "image must be an object"
+          + " image must be an object"
       )
       assert("sourceType" in questionObj.image && "source" in questionObj.image,
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "image must contain both source and sourceType"
+          + " image must contain both source and sourceType"
       )
       assert(DevConfig.VALID_IMAGE_SOURCE_TYPES.includes(questionObj.image.sourceType),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "sourceType " + questionObj.image.sourceType + " is not valid"
+          + " sourceType " + questionObj.image.sourceType + " is not valid"
       )
-      assert(confirmAllLanguages(questionObj.image.source) && Object.values(questionObj.image.source.every(el => typeof el === "string")),
-          "Condition: " + condition + "\nCategory: " + questionCategory +
-          "\nField \"source\" of image must have a string present for all languages: "
-          + questionObj.qId)
+      // Image source can be different for different language, or can be a single source for all languages
+      if(typeof questionObj.image.source === "object"){
+        assert(confirmAllLanguages(questionObj.image.source) && Object.values(questionObj.image.source).every(el => typeof el === "string"),
+            "Condition: " + condition + "\nCategory: " + questionCategory +
+            "\nField \"source\" of image must have a string present for all languages: "
+            + questionObj.qId)
+      } else {
+        assert(typeof questionObj.image.source === "string",
+            "Condition: " + condition + "\nCategory: " + questionCategory +
+            "\nField \"source\" of image must be a string: "
+            + questionObj.qId)
+      }
+
     }
 
     // Next possible steps
     if("selectQFirst" in questionObj){
       assert(typeof questionObj.selectQFirst === "boolean",
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "selectQFirst must be boolean"
+          + " selectQFirst must be boolean"
       )
     }
 
@@ -539,13 +563,13 @@ module.exports.checkConfig = () => {
             if (tokenValidateObj.returnCode === DevConfig.FAILURE_CODE) {
               // Invalid token format
               if (!(actionObj.args[i].startsWith("${") && actionObj.args[i].charAt(actionObj.args[i].length - 1) === "}")) {
-                tokenValidateObj.data = "variable reference must begin with ${ and end with }"
+                tokenValidateObj.data += "\ninvalid token or variable reference"
               } else {
                 // Check if variable exists
                 let variableCheck = ConfigParser.getVariableType(fakeParticipantObj.parameters, qType);
                 // Variable does not exist
                 if (variableCheck.returnCode === DevConfig.FAILURE_CODE) {
-                  tokenValidateObj.data = variableCheck.data
+                  tokenValidateObj.data += "\n" + variableCheck.data
                 } else {
                   // Variable exists and is of right data type
                   if (tokenValidateObj.data === argType) {
@@ -558,7 +582,8 @@ module.exports.checkConfig = () => {
                 }
               }
             }
-            if (tokenValidateObj.returnCode) {
+
+            if (tokenValidateObj.returnCode === DevConfig.FAILURE_CODE) {
               return ReturnMethods.returnFailure(
                   "arg number " + (i + 1) + " for action type \"" + actionObj.aType +
                   "\" must be a valid constant of type " + argType + "\n" + tokenValidateObj.data)
@@ -568,7 +593,6 @@ module.exports.checkConfig = () => {
       }
 
       // Handle specific actions - ensure that question type matches arg type
-      // startStage, saveAnswerTo, saveOptionIdxTo, addAnswerTo
       if(actionObj.aType === "startStage"){
         let stageList = typeof condition !== "undefined" ? config.experimentStages[condition] : config.experimentStages;
         if(typeof stageList === "object"){
@@ -577,7 +601,7 @@ module.exports.checkConfig = () => {
         }
         if(!stageList.map(obj => obj.name).includes(actionObj.args[0])){
           return ReturnMethods.returnFailure(
-              "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+              "arg number 1 for action type \"" + actionObj.aType +
               "\" must be a valid stage name in the condition " + condition)
         }
       }
@@ -587,7 +611,7 @@ module.exports.checkConfig = () => {
         let argType = fakeParticipantObj.parameters[actionObj.args[0]];
         if(requiredVariableType.data !== argType){
           return ReturnMethods.returnFailure(
-              "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+              "arg number 1 for action type \"" + actionObj.aType +
               "\": cannot save answer of qType " + qType + " to variable of type " + argType)
         }
       }
@@ -597,7 +621,7 @@ module.exports.checkConfig = () => {
         if(qType === "singleChoice"){
           if("number" !== argType){
             return ReturnMethods.returnFailure(
-                "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+                "arg number 1 for action type \"" + actionObj.aType +
                 "\": cannot add options of qType " + qType + " to variable of type " + argType)
           }
         } else if(qType === "multiChoice"){
@@ -619,14 +643,14 @@ module.exports.checkConfig = () => {
         if(["str", "strArr"].includes(saveVariableType.data)){
           if(argType !== "strArr"){
             return ReturnMethods.returnFailure(
-                "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+                "arg number 1 for action type \"" + actionObj.aType +
                 "\": cannot add answer of qType " + qType + " to variable of type " + argType)
           }
         }
         if(["number"].includes(saveVariableType.data)){
           if(argType !== "numArr"){
             return ReturnMethods.returnFailure(
-                "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+                "arg number 1 for action type \"" + actionObj.aType +
                 "\": cannot add answer of qType " + qType + " to variable of type " + argType)
           }
         }
@@ -655,7 +679,7 @@ module.exports.checkConfig = () => {
     if("nextActions" in questionObj){
       assert(!("cNextActions" in questionObj),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "question object cannot contain both nextActions and cNextActions"
+          + " question object cannot contain both nextActions and cNextActions"
       )
       validateActionList(questionObj.nextActions, questionCategory, condition);
     }
@@ -663,6 +687,53 @@ module.exports.checkConfig = () => {
     // cNextActions
 
     // nextQuestion
+    let validateNextQuestion = (qString, condition) => {
+      if(typeof qString !== "string"){
+        return ReturnMethods.returnFailure(
+            "nextQuestion must be a string")
+      }
+      let qSplit = qString.split(".")
+      if(qSplit.length !== 2){
+        return ReturnMethods.returnFailure(
+            "nextQuestion must be of the form `category.qId`"
+        )
+      }
+      let questionCatObject;
+      if(typeof condition !== "undefined"){
+        // Check only the question categories of that condition
+        questionCatObject = config.conditionQuestions[condition].questionCategories;
+      } else {
+        // Check all conditions to see if any of them have the question category
+        questionCatObject = config.questionCategories
+        if("conditionQuestions" in config){
+          for(const [condition, condObj] of Object.entries(config.conditionQuestions)){
+            questionCatObject = {...questionCatObject, ...condObj.questionCategories}
+          }
+        }
+      }
+
+      if(!(qSplit[0] in questionCatObject)){
+        return ReturnMethods.returnFailure(
+            "question category " + qSplit[0]+ " not present for condition " + condition
+        )
+      }
+      if(!questionCatObject[qSplit[0]].some(qObj => qObj.qId === qSplit[1])){
+        return ReturnMethods.returnFailure(
+            "qId " + qSplit[1] + " does not exist in category " + qSplit[0]+ " for condition " + condition
+        )
+      }
+      return ReturnMethods.returnSuccess(true)
+    }
+    if("nextQuestion" in questionObj){
+      assert(!("cNextQuestions" in questionObj),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " question object cannot contain both nextQuestion and cNextQuestions"
+      )
+      let nextQVal = validateNextQuestion(questionObj.nextQuestion, condition);
+      assert(nextQVal.returnCode === DevConfig.SUCCESS_CODE,
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " nextQuestion is invalid\n" + nextQVal.data)
+    }
 
     // cNextQuestions
 
@@ -674,20 +745,45 @@ module.exports.checkConfig = () => {
 
   // Ensure condition-independent setup questions are present
   assert("setupQuestions" in config.questionCategories, "setupQuestions required in main questionCategories object")
-  assert(Array.isArray(config.questionCategories.setupQuestions), "question category setupQuestions must be an array")
-  config.questionCategories.setupQuestions.forEach(questionObj => {
-    validateQuestionObj(questionObj, "setupQuestions", undefined)
+
+  // Check all question objects of default question categories
+  for(const [defaultCat, qList] of Object.entries(config.questionCategories)){
+    assert(Array.isArray(qList), "question category " + defaultCat + " must be an array")
+  }
+  assert(config.questionCategories.setupQuestions.filter(qObj => "start" in qObj && qObj.start).length === 1,
+      "exactly one of the questions in setupQuestions has to have boolean property \"start\" set to true");
+  for(const [defaultCat, qList] of Object.entries(config.questionCategories)){
+    qList.forEach(questionObj => {
+      validateQuestionObj(questionObj, defaultCat, undefined)
+    })
+  }
+
+  // TODO: scheduled questions
+  // TODO: user prompted questions
+
+  // Ensure there are questions for each condition
+  config.experimentConditions.forEach(condition => {
+    assert(condition in config.conditionQuestions,
+        "questions for condition \"" + condition + "\" not present in question categories")
   })
 
+  // Test the question objects for each question category
+  for(const [condition, condObj] of Object.entries(config.conditionQuestions)){
+    assert("questionCategories" in condObj,
+        "condition " + condition + " missing question categories in conditionQuestions")
+    assert(typeof condObj.questionCategories === "object",
+        "questionCategories of condition " + condition + " must be an object")
+  }
+  for(const [condition, condObj] of Object.entries(config.conditionQuestions)){
+    for(const [catName, qList] of Object.entries(condObj.questionCategories)){
+      assert(Array.isArray(qList),
+          "question category " + catName + " of condition " + condition + "  must be an array")
+      qList.forEach(questionObj => {
+        validateQuestionObj(questionObj, catName, condition)
+      })
+    }
+  }
 
-
-  // : Validate presence of all languages in all questions
-  // : Check if all question categories have unique names
-  // : Validate presence of options depending on question type
-  // : Check if setup questions are present
-  // : Check if all nextquestions are valid question IDs or question chain
-  // : Check for duplicate question IDs
-  // : Check if each question category has only one start question
   // : Check whether scheduled questions have necessary components
 
   console.log('\x1b[42m\x1b[30m%s\x1b[0m', 'Config file valid');

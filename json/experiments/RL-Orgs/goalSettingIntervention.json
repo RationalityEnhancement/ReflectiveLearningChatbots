@@ -47,7 +47,6 @@
       "lower" : 0
     },
     "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/relGoalProgressReplies.json}",
-    "nextQuestion" : "Int-Reflection.relAnythingElse",
     "nextActions" : [
       {
         "aType" : "saveAnswerTo",

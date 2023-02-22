@@ -239,12 +239,105 @@ class ConfigParser{
         // Look in parameters
         if(!foundReserved){
             if(!(varName in participant.parameters)){
-                return ReturnMethods.returnFailure("CParser: Variable name not recognized");
+                return ReturnMethods.returnFailure("CParser: Variable name " +varName +" not recognized");
             }
             if(typeof participant.parameters[varName] === "undefined"){
                 return ReturnMethods.returnFailure("CParser: Parameter " + varName +" value not set");
             }
             return ReturnMethods.returnSuccess(participant.parameters[varName]);
+        }
+        return ReturnMethods.returnSuccess(varVal);
+    }
+
+    /**
+     *
+     * Takes a single variable name, and if a variable (reserved,custom) exists, return
+     * the datatype of that variable
+     *
+     *
+     * @param parameterTypes Object with the available parameter names and their corresponding data types
+     *
+     * @param varName the name of the variable to be returned
+     * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
+     *              returns success code along with data being the datatype of the variable or the error msg
+     *
+     */
+    static getVariableType(parameterTypes, varName, qType) {
+        // Input validation
+        if(typeof varName !== 'string'){
+            return ReturnMethods.returnFailure("CParser: Must be a string to get variable type")
+        }
+        if(!parameterTypes || typeof parameterTypes !== 'object') {
+            return ReturnMethods.returnFailure("CParser: parameterTypes object required to get variable type")
+        }
+
+        // If the variable name is valid, then return a value, otherwise error
+        let varVal = "";
+        let foundReserved = false;
+        switch(varName){
+            case DevConfig.VAR_STRINGS.FIRST_NAME :
+                varVal = "string";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CURRENT_ANSWER :
+                if(qType === "number") {
+                    varVal = "number";
+                } else if(["freeformMulti", "multiChoice"].includes(qType)){
+                    varVal = "strArr";
+                } else {
+                    varVal = "string"
+                }
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.UNIQUE_ID:
+                varVal = "string";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.STAGE_NAME :
+                varVal = "string"
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.STAGE_DAY :
+                varVal = "number"
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS:
+                varVal = "number"
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS:
+                varVal = "number";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.TODAY:
+                varVal = "string";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.TODAY_NAME:
+                varVal = "string";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CURRENT_HOUR:
+                varVal = "number";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CURRENT_MIN:
+                varVal = "number";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CONDITION:
+                varVal = "string"
+                foundReserved = true;
+                break;
+
+            default:
+        }
+        // Look in parameters
+        if(!foundReserved){
+            if(!(varName in parameterTypes)){
+                return ReturnMethods.returnFailure("CParser: Variable name " +varName +" not recognized");
+            }
+            varVal = parameterTypes[varName]
         }
         return ReturnMethods.returnSuccess(varVal);
     }
@@ -1084,6 +1177,23 @@ class ConfigParser{
         }
         let trimmedExpression = expression.substring(3,expression.length-1);
         return this.getBooleanFromString(trimmedExpression);
+    }
+    /**
+     *
+     * Parse a single string token of the form $S{...}. Return the value
+     * if valid, return error if not valid
+     *
+     * @param expression
+     */
+    static parseStringToken(expression){
+        if(typeof expression !== "string"){
+            return ReturnMethods.returnFailure("CParser: String token must be string");
+        }
+        if(!expression.startsWith("$S{") || !expression.endsWith("}")){
+            return ReturnMethods.returnFailure("CParser: String token in incorrect format - must be $S{...}");
+        }
+        let trimmedExpression = expression.substring(3,expression.length-1);
+        return ReturnMethods.returnSuccess(trimmedExpression);
     }
     /**
      *

@@ -13,6 +13,18 @@ const origConfig = ConfigReader.getExpConfig();
 const config = JSON.parse(JSON.stringify(origConfig));
 const DevConfig = ConfigReader.getDevConfig();
 
+let fakeParticipantObj = {
+  firstName: "test",
+  uniqueId: "12345",
+  parameters: {...config.customParameters, ...config.mandatoryParameters},
+  conditionName: "Test",
+  currentAnswer: ["Test"],
+  stages: {
+    stageName: "Test",
+    stageDay: 0
+  }
+}
+
 let configFileInvalid = false;
 
 let assert = (exp, errorMsg) => {
@@ -220,16 +232,6 @@ module.exports.checkConfig = () => {
     if(str.length > 4096){
       return ReturnMethods.returnFailure("Message text cannot be longer than 4096 characters")
     }
-    let fakeParticipantObj = {
-      firstName: "test",
-      parameters: {...config.customParameters, ...config.mandatoryParameters},
-      conditionName: "Test",
-      currentAnswer: ["Test"],
-      stages: {
-        stageName: "Test",
-        stageDay: 0
-      }
-    }
     let replaceVarsObj = ConfigParser.replaceVariablesInString(fakeParticipantObj, str, true)
     if(replaceVarsObj.returnCode === DevConfig.FAILURE_CODE) return replaceVarsObj
 
@@ -237,35 +239,39 @@ module.exports.checkConfig = () => {
 
     return ReturnMethods.returnSuccess(true);
   }
+
+  // Question Object
   let validateQuestionObj = (questionObj, questionCategory, condition) => {
 
     // Validate question ID
     if(!("qId" in questionObj) || typeof questionObj.qId !== "string"){
-      return ReturnMethods.returnFailure("Condition: " + condition + "\nCategory: " + questionCategory +
+      assert(false,"Condition: " + condition + "\nCategory: " + questionCategory +
           "\nField \"qId\" for question in category is either missing or not valid: " + questionObj.qId)
     }
 
     // Validate question type
     if(!("qType" in questionObj) || !DevConfig.VALID_QUESTION_TYPES.includes(questionObj.qType)){
-      return ReturnMethods.returnFailure("Condition: " + condition + "\nCategory: " + questionCategory +
+      assert(false, "Condition: " + condition + "\nCategory: " + questionCategory +
           "\nField \"qType\" of question \"" + questionObj.qId + "\" is either missing or not valid: " + questionObj.qType)
     }
 
     // Validate text
-    if(!("text" in questionObj) && questionObj.qType !== "dummy"){
-      return ReturnMethods.returnFailure("Condition: " + condition + "\nCategory: " + questionCategory +
-          "\nField \"text\" is missing for question: " + questionObj.qId)
-    }
-    if(!confirmAllLanguages(questionObj.text) || !Object.values(questionObj.text.every(el => typeof el === "string"))){
-      return ReturnMethods.returnFailure("Condition: " + condition + "\nCategory: " + questionCategory +
-          "\nField \"text\" must have a string present for all languages: "
-          + questionObj.qType)
-    }
-    for(const [lang, text] of questionObj.text){
-      let validateTextObj = validateSentText(text);
-      assert(validateTextObj.returnCode === DevConfig.SUCCESS_CODE,
-          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "\n text for language " + lang + " invalid:\n" + validateTextObj.data)
+    if(questionObj.qType !== "dummy"){
+      if(!("text" in questionObj)){
+        assert(false,"Condition: " + condition + "\nCategory: " + questionCategory +
+            "\nField \"text\" is missing for question: " + questionObj.qId)
+      }
+      if(!confirmAllLanguages(questionObj.text) || !Object.values(questionObj.text).every(el => typeof el === "string")){
+        assert(false,"Condition: " + condition + "\nCategory: " + questionCategory +
+            "\nField \"text\" must have a string present for all languages: "
+            + questionObj.qId)
+      }
+      for(const [lang, text] of Object.entries(questionObj.text)){
+        let validateTextObj = validateSentText(text);
+        assert(validateTextObj.returnCode === DevConfig.SUCCESS_CODE,
+            "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+            + "\n text for language " + lang + " invalid:\n" + validateTextObj.data)
+      }
     }
 
     // Check for required fields depending on question type
@@ -305,7 +311,7 @@ module.exports.checkConfig = () => {
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
           + "Question type " + questionObj.qType + " cannot contain property answerShouldBe")
 
-      assert(questionObj.answerShouldBe.every(el => el.every(el => typeof el === "string")),
+      assert(questionObj.answerShouldBe.every(el => typeof el === "string"),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
           + "answerShouldBe must be an array of strings"
       )
@@ -409,11 +415,12 @@ module.exports.checkConfig = () => {
     }
 
     if("inputPrompt" in questionObj){
-      assert(confirmAllLanguages(questionObj.inputPrompt) && Object.values(questionObj.inputPrompt.every(el => typeof el === "string")),
+      assert(confirmAllLanguages(questionObj.inputPrompt)
+          && Object.values(questionObj.inputPrompt).every(el => typeof el === "string"),
           "Condition: " + condition + "\nCategory: " + questionCategory +
             "\nField \"inputPrompt\" must have a string present for all languages: "
             + questionObj.qId)
-      for(const [lang, text] of questionObj.inputPrompt){
+      for(const [lang, text] of Object.entries(questionObj.inputPrompt)){
         let validateTextObj = validateSentText(text);
         assert(validateTextObj.returnCode === DevConfig.SUCCESS_CODE,
             "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
@@ -459,12 +466,218 @@ module.exports.checkConfig = () => {
           + questionObj.qId)
     }
 
+    // Next possible steps
+    if("selectQFirst" in questionObj){
+      assert(typeof questionObj.selectQFirst === "boolean",
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + "selectQFirst must be boolean"
+      )
+    }
 
+    // Validating a single action object
+    let validateActionObj = (actionObj, condition, qType) => {
+      // Validate action Type
+      if(!("aType" in actionObj) || !Object.keys(DevConfig.VALID_ACTIONS_ARGS).includes(actionObj.aType)){
+        return ReturnMethods.returnFailure("action type \"" + actionObj.aType + "\" is not valid")
+      }
+
+      // Validate arguments
+      let requiredArgNum = DevConfig.VALID_ACTIONS_ARGS[actionObj.aType];
+      // Args must be present
+      if((!("args" in actionObj) && requiredArgNum !== 0)){
+        return ReturnMethods.returnFailure("action type \"" + actionObj.aType + "\" must take at least one argument")
+      }
+      // Args must be an array with the correct number of arguments
+      if(requiredArgNum !== 0) {
+        if ((!Array.isArray(actionObj.args)
+                || requiredArgNum !== -1 && actionObj.args.length !== requiredArgNum)
+            || (requiredArgNum === -1 && actionObj.args.length === 0)
+        ) {
+          let lengthString = requiredArgNum === -1 ? "at least one" : "" + requiredArgNum;
+          return ReturnMethods.returnFailure(
+              "args for action type \"" + actionObj.aType + "\" must be an array of length " + lengthString)
+        }
+
+
+        // Ensure arguments are of valid type
+        let argTypes = DevConfig.ACTION_ARG_TYPES[actionObj.aType];
+        if (requiredArgNum === -1) {
+          argTypes = [].concat(...Array.from({length: actionObj.args.length}, () => argTypes));
+        }
+        for (let i = 0; i < argTypes.length; i++) {
+          let argType = argTypes[i]
+          // Variable
+          if (argType.charAt(0) === "_") {
+            let validVarTypes = argType.substring(1).split(",");
+            if (!validVarTypes.includes(fakeParticipantObj.parameters[actionObj.args[i]])) {
+              return ReturnMethods.returnFailure(
+                  "arg number " + (i + 1) + " for action type \"" + actionObj.aType +
+                  "\" must be name of a valid variable of types " + validVarTypes.join(", "))
+            }
+          } else if(argType.charAt(0) === "*") {
+            // Normal string without token format
+            let validVarTypes = argType.substring(1).split(",");
+            if (!validVarTypes.includes(typeof actionObj.args[i])) {
+              return ReturnMethods.returnFailure(
+                  "arg number " + (i + 1) + " for action type \"" + actionObj.aType +
+                  "\" must be a non-token constant of types " + validVarTypes.join(", "))
+            }
+
+          } else {
+            // Constant/token
+            let tokenValidateObj;
+            if (argType === "boolean") {
+              tokenValidateObj = ConfigParser.parseBooleanToken(actionObj.args[i])
+            } else if (argType === "number") {
+              tokenValidateObj = ConfigParser.parseNumberToken(actionObj.args[i])
+            } else if (argType === "string") {
+              tokenValidateObj = ConfigParser.parseStringToken(actionObj.args[i])
+            }
+
+            // If it's not a token, check if it's referencing the value of a variable
+            //  and update the validation object accordingly
+            if (tokenValidateObj.returnCode === DevConfig.FAILURE_CODE) {
+              // Invalid token format
+              if (!(actionObj.args[i].startsWith("${") && actionObj.args[i].charAt(actionObj.args[i].length - 1) === "}")) {
+                tokenValidateObj.data = "variable reference must begin with ${ and end with }"
+              } else {
+                // Check if variable exists
+                let variableCheck = ConfigParser.getVariableType(fakeParticipantObj.parameters, qType);
+                // Variable does not exist
+                if (variableCheck.returnCode === DevConfig.FAILURE_CODE) {
+                  tokenValidateObj.data = variableCheck.data
+                } else {
+                  // Variable exists and is of right data type
+                  if (tokenValidateObj.data === argType) {
+                    tokenValidateObj.returnCode === DevConfig.SUCCESS_CODE
+                    tokenValidateObj.data = true
+                  } else {
+                    // Variable exists and is of wrong data type
+                    tokenValidateObj.data = "variable type " + variableCheck.data + " does not match required data type " + argType;
+                  }
+                }
+              }
+            }
+            if (tokenValidateObj.returnCode) {
+              return ReturnMethods.returnFailure(
+                  "arg number " + (i + 1) + " for action type \"" + actionObj.aType +
+                  "\" must be a valid constant of type " + argType + "\n" + tokenValidateObj.data)
+            }
+          }
+        }
+      }
+
+      // Handle specific actions - ensure that question type matches arg type
+      // startStage, saveAnswerTo, saveOptionIdxTo, addAnswerTo
+      if(actionObj.aType === "startStage"){
+        let stageList = typeof condition !== "undefined" ? config.experimentStages[condition] : config.experimentStages;
+        if(typeof stageList === "object"){
+          // participant not assigned to condition yet, just check if stage exists in any condition
+          stageList = Object.values(stageList).flat()
+        }
+        if(!stageList.map(obj => obj.name).includes(actionObj.args[0])){
+          return ReturnMethods.returnFailure(
+              "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+              "\" must be a valid stage name in the condition " + condition)
+        }
+      }
+
+      if(actionObj.aType === "saveAnswerTo"){
+        let requiredVariableType = ConfigParser.getVariableType(fakeParticipantObj.parameters, DevConfig.VAR_STRINGS.CURRENT_ANSWER, qType);
+        let argType = fakeParticipantObj.parameters[actionObj.args[0]];
+        if(requiredVariableType.data !== argType){
+          return ReturnMethods.returnFailure(
+              "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+              "\": cannot save answer of qType " + qType + " to variable of type " + argType)
+        }
+      }
+
+      if(actionObj.aType === "saveOptionIdxTo"){
+        let argType = fakeParticipantObj.parameters[actionObj.args[0]];
+        if(qType === "singleChoice"){
+          if("number" !== argType){
+            return ReturnMethods.returnFailure(
+                "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+                "\": cannot add options of qType " + qType + " to variable of type " + argType)
+          }
+        } else if(qType === "multiChoice"){
+          if("numArr" !== argType){
+            return ReturnMethods.returnFailure(
+                "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+                "\": cannot add options of qType " + qType + " to variable of type " + argType)
+          }
+        } else {
+          return ReturnMethods.returnFailure(
+              "action type \"" + actionObj.aType +
+              "\": cannot save option Idx for question type " + qType);
+        }
+      }
+
+      if(actionObj.aType === "addAnswerTo"){
+        let saveVariableType = ConfigParser.getVariableType(fakeParticipantObj.parameters, DevConfig.VAR_STRINGS.CURRENT_ANSWER, qType);
+        let argType = fakeParticipantObj.parameters[actionObj.args[0]];
+        if(["str", "strArr"].includes(saveVariableType.data)){
+          if(argType !== "strArr"){
+            return ReturnMethods.returnFailure(
+                "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+                "\": cannot add answer of qType " + qType + " to variable of type " + argType)
+          }
+        }
+        if(["number"].includes(saveVariableType.data)){
+          if(argType !== "numArr"){
+            return ReturnMethods.returnFailure(
+                "arg number " + (i+1) +" for action type \"" + actionObj.aType +
+                "\": cannot add answer of qType " + qType + " to variable of type " + argType)
+          }
+        }
+      }
+
+      return ReturnMethods.returnSuccess(true)
+
+    }
+
+    // Validating a list of actions
+    let validateActionList = (actionList, questionCategory, condition) => {
+      assert(Array.isArray(actionList) && actionList.every(ob => typeof ob === "object"),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + "actionList must be an array of action objects"
+      )
+
+      actionList.forEach(actionObj => {
+        let actionValidation = validateActionObj(actionObj, condition, questionObj.qType)
+        assert(actionValidation.returnCode === DevConfig.SUCCESS_CODE,
+            "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+            + "\n" + actionValidation.data)
+      })
+    }
+
+    // Validating field nextActions
+    if("nextActions" in questionObj){
+      assert(!("cNextActions" in questionObj),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + "question object cannot contain both nextActions and cNextActions"
+      )
+      validateActionList(questionObj.nextActions, questionCategory, condition);
+    }
+
+    // cNextActions
+
+    // nextQuestion
+
+    // cNextQuestions
+
+    // replyMessages
+
+    // cReplyMessages
 
   }
 
   // Ensure condition-independent setup questions are present
-
+  assert("setupQuestions" in config.questionCategories, "setupQuestions required in main questionCategories object")
+  assert(Array.isArray(config.questionCategories.setupQuestions), "question category setupQuestions must be an array")
+  config.questionCategories.setupQuestions.forEach(questionObj => {
+    validateQuestionObj(questionObj, "setupQuestions", undefined)
+  })
 
 
 

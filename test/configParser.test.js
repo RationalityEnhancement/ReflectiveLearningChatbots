@@ -114,6 +114,11 @@ describe('Replacing variables', () => {
             "pLength" : undefined,
             "timezone" : "Europe/Berlin"
         },
+        parameterTypes : {
+            "PID" : "string",
+            "pLength" : "number",
+            "timezone" : "string"
+        },
         stages : {
             activity : [],
             stageName : "Test",
@@ -312,6 +317,111 @@ describe('Replacing variables', () => {
         it('Should fail if variable name in parameter but not defined', () => {
             let testString = "pLength";
             let returnObj = ConfigParser.getVariable(participant, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+    })
+    describe('Get Variable type', () => {
+        it('Should fetch string variable', () => {
+            let testString = DevConfig.VAR_STRINGS.FIRST_NAME;
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("string")
+        })
+        it('Should fetch array variable', () => {
+            let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
+
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString,"freeformMulti");
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("strArr")
+        })
+        it('Should fetch current answer as string', () => {
+            let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
+
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString,"freeform");
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("string")
+        })
+        it('Should fetch current answer as number', () => {
+            let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
+
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString,"number");
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("number")
+        })
+
+        it('Should fetch if variable name is param', () => {
+            let testString = "PID";
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal(participant.parameterTypes[testString]);
+        })
+        it('Should fetch if variable name is STAGE_Name', () => {
+            let testString = DevConfig.VAR_STRINGS.STAGE_NAME;
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("string");
+        })
+        it('Should fetch if variable name is STAGE_DAY', () => {
+            let testString = DevConfig.VAR_STRINGS.STAGE_DAY;
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("number");
+        })
+        it('Should fetch ANSWER_LEN_CHARS', () => {
+            participant.currentAnswer = ["o", "on", "one"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS;
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("number");
+        })
+
+        it('Should fetch ANSWER_LEN_WORDS', () => {
+            participant.currentAnswer = ["I had breakfast", "on the beach", "last Tuesday"];
+            let testString = DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS;
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("number");
+        })
+        it('Should fetch CONDITION', () => {
+            let testString = DevConfig.VAR_STRINGS.CONDITION;
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("string");
+        })
+        it('Should fetch current hour as number', () => {
+
+            let testString = DevConfig.VAR_STRINGS.CURRENT_HOUR;
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("number");
+        })
+        it('Should fetch current minute as number', () => {
+
+            let testString = DevConfig.VAR_STRINGS.CURRENT_MIN;
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.equal("number");
+        })
+        it('Should fail if parameterTypes undefined', () => {
+            let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
+            let returnObj = ConfigParser.getVariableType(undefined, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if parameterTypes not object', () => {
+            let testString = DevConfig.VAR_STRINGS.CURRENT_ANSWER;
+
+            let returnObj = ConfigParser.getVariableType("crack", testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+
+        it('Should fail if not string', () => {
+            let testString = 1234;
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+        })
+        it('Should fail if variable name dont exist and not in param', () => {
+            let testString = "scoop";
+            let returnObj = ConfigParser.getVariableType(participant.parameterTypes, testString);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
         })
     })
@@ -1210,6 +1320,51 @@ describe('Getting values from strings', () => {
         it('Should fail when string doesnt end with } ', () => {
             let testStr = "$B{true";
             let returnObj = ConfigParser.parseBooleanToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
+
+    describe('Parse String Token', () => {
+        it('Should return string', () => {
+            let testStr = "$S{tRuE}";
+            let expectedVal = "tRuE";
+            let returnObj = ConfigParser.parseStringToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return empty string', () => {
+            let testStr = "$S{}";
+            let expectedVal = "";
+            let returnObj = ConfigParser.parseStringToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should string with quotes', () => {
+            let testStr = "$S{\"hello\"}";
+            let expectedVal = "\"hello\"";
+            let returnObj = ConfigParser.parseStringToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.parseStringToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt start with $S{ ', () => {
+            let testStr = "${true}";
+            let returnObj = ConfigParser.parseStringToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt end with } ', () => {
+            let testStr = "$S{true";
+            let returnObj = ConfigParser.parseStringToken(testStr);
             expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
 
         })

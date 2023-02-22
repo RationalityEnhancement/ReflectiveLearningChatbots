@@ -62,6 +62,20 @@
     "saveOptionIdxTo" : 1,
     "rescheduleCurrentStage" : 0
   },
+  "ACTION_ARG_TYPES" : {
+    "saveAnswerTo" : ["_number,string,boolean,strArr"],
+    "setBooleanVar" : ["_boolean", "boolean"],
+    "scheduleQuestions" : [],
+    "assignToCondition" : [],
+    "addAnswerTo" : ["_strArr,numArr"],
+    "clearVars" : ["_number,string,boolean,strArr,numArr"],
+    "addValueTo" : ["_number", "number"],
+    "startStage" : ["*string"],
+    "incrementStageDay" : [],
+    "endExperiment" : [],
+    "saveOptionIdxTo" : ["_number"],
+    "rescheduleCurrentStage" : []
+  },
   "END_STAGE_STRING" : "end",
   "BEGIN_STAGE_STRING": "begin",
   "DAY_INDEX_ORDERING" : ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -119,6 +133,10 @@
     "qualtrics": {
       "possible": ["qualtricsLink", "qualtricsFields", "continueStrings"],
       "required": ["qualtricsLink"]
+    },
+    "dummy": {
+      "possible": [],
+      "required": []
     }
   }
 }

@@ -967,6 +967,11 @@ describe('Parse simple expression', () => {
         let returnObj = ConfigParser.parseSimpleExpression(expression);
         expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
     })
+    it('Should fail if brackets mismatched', () => {
+        let expression = "${Parameter} GREATER_THAN $N{10})"
+        let returnObj = ConfigParser.parseSimpleExpression(expression);
+        expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+    })
     it('Should fail if variable token not opened', () => {
         let expression = "$Parameter} GREATER_THAN $N{10}"
         let returnObj = ConfigParser.parseSimpleExpression(expression);

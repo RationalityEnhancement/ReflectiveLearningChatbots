@@ -2021,7 +2021,6 @@ First, we will look at a single schedule object and consider its components:
   * the case and spelling of the abbreviated days is important!
   * if a question is scheduled to appear only for a given stage, ensure that the days for which you schedule a question match up with the days on which the stage is supposed to be running.
 * `if` - optional, a normal conditional expression specifying under which circumstances a certain question should occur.
-  * **Note: scheduling different questions for different experiment stages is currently done through this field!**
   * If this field is not specified, the question will be scheduled for all days in which any experimental stage is running.
     * This means that no scheduled questions will appear if no experimental stage is running!
 * `stages` - optional (but recommended), a list of strings, each string being the name of an [experiment stage](#span-idstages-experiment-stages-span) in which the question should be scheduled

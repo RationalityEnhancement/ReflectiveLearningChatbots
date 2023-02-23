@@ -13,15 +13,35 @@ const origConfig = ConfigReader.getExpConfig();
 const config = JSON.parse(JSON.stringify(origConfig));
 const DevConfig = ConfigReader.getDevConfig();
 
+let testValues = {
+  "number": 24,
+  "string": "Europe/Berlin",
+  "boolean": false,
+  "strArr":["Declaration", "of", "independence"],
+  "numArr":[8,6,7,5,3,0,9]
+}
+
+let parameterTypes = {...config.customParameters, ...config.mandatoryParameters}
+let testParameters = {}
+for(const [param, type] of Object.entries(parameterTypes)){
+  testParameters[param] = testValues[type]
+}
+
 let fakeParticipantObj = {
-  firstName: "test",
+  firstName: "testName",
   uniqueId: "12345",
-  parameters: {...config.customParameters, ...config.mandatoryParameters},
-  conditionName: "Test",
-  currentAnswer: ["Test"],
+  parameterTypes: parameterTypes,
+  parameters: testParameters,
+  conditionName: "TestCondition",
+  currentAnswer: ["4"],
   stages: {
     stageName: "Test",
     stageDay: 0
+  },
+  currentQuestion: {
+    qId: "test",
+    qType: "freeform",
+    options: ["a", "b"]
   }
 }
 
@@ -403,7 +423,7 @@ module.exports.checkConfig = () => {
       questionObj.qualtricsFields.forEach(param => {
         if(param.value.startsWith("${") && param.value.charAt(param.value.length-1) === "}"){
           let variableTypeChecker = ConfigParser.getVariableType(
-              fakeParticipantObj.parameters, param.value.substring(2,param.value.length-1), "qualtrics")
+              fakeParticipantObj.parameterTypes, param.value.substring(2,param.value.length-1), "qualtrics")
           assert(variableTypeChecker.returnCode === DevConfig.SUCCESS_CODE,
               "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
               + " " + param.value + " is not a valid parameter name")
@@ -533,7 +553,7 @@ module.exports.checkConfig = () => {
           // Variable
           if (argType.charAt(0) === "_") {
             let validVarTypes = argType.substring(1).split(",");
-            if (!validVarTypes.includes(fakeParticipantObj.parameters[actionObj.args[i]])) {
+            if (!validVarTypes.includes(fakeParticipantObj.parameterTypes[actionObj.args[i]])) {
               return ReturnMethods.returnFailure(
                   "arg number " + (i + 1) + " for action type \"" + actionObj.aType +
                   "\" must be name of a valid variable of types " + validVarTypes.join(", "))
@@ -566,7 +586,7 @@ module.exports.checkConfig = () => {
                 tokenValidateObj.data += "\ninvalid token or variable reference"
               } else {
                 // Check if variable exists
-                let variableCheck = ConfigParser.getVariableType(fakeParticipantObj.parameters, qType);
+                let variableCheck = ConfigParser.getVariableType(fakeParticipantObj.parameterTypes, qType);
                 // Variable does not exist
                 if (variableCheck.returnCode === DevConfig.FAILURE_CODE) {
                   tokenValidateObj.data += "\n" + variableCheck.data
@@ -607,8 +627,8 @@ module.exports.checkConfig = () => {
       }
 
       if(actionObj.aType === "saveAnswerTo"){
-        let requiredVariableType = ConfigParser.getVariableType(fakeParticipantObj.parameters, DevConfig.VAR_STRINGS.CURRENT_ANSWER, qType);
-        let argType = fakeParticipantObj.parameters[actionObj.args[0]];
+        let requiredVariableType = ConfigParser.getVariableType(fakeParticipantObj.parameterTypes, DevConfig.VAR_STRINGS.CURRENT_ANSWER, qType);
+        let argType = fakeParticipantObj.parameterTypes[actionObj.args[0]];
         if(requiredVariableType.data !== argType){
           return ReturnMethods.returnFailure(
               "arg number 1 for action type \"" + actionObj.aType +
@@ -617,7 +637,7 @@ module.exports.checkConfig = () => {
       }
 
       if(actionObj.aType === "saveOptionIdxTo"){
-        let argType = fakeParticipantObj.parameters[actionObj.args[0]];
+        let argType = fakeParticipantObj.parameterTypes[actionObj.args[0]];
         if(qType === "singleChoice"){
           if("number" !== argType){
             return ReturnMethods.returnFailure(
@@ -638,8 +658,8 @@ module.exports.checkConfig = () => {
       }
 
       if(actionObj.aType === "addAnswerTo"){
-        let saveVariableType = ConfigParser.getVariableType(fakeParticipantObj.parameters, DevConfig.VAR_STRINGS.CURRENT_ANSWER, qType);
-        let argType = fakeParticipantObj.parameters[actionObj.args[0]];
+        let saveVariableType = ConfigParser.getVariableType(fakeParticipantObj.parameterTypes, DevConfig.VAR_STRINGS.CURRENT_ANSWER, qType);
+        let argType = fakeParticipantObj.parameterTypes[actionObj.args[0]];
         if(["str", "strArr"].includes(saveVariableType.data)){
           if(argType !== "strArr"){
             return ReturnMethods.returnFailure(
@@ -657,7 +677,6 @@ module.exports.checkConfig = () => {
       }
 
       return ReturnMethods.returnSuccess(true)
-
     }
 
     // Validating a list of actions
@@ -685,7 +704,8 @@ module.exports.checkConfig = () => {
     }
 
     // cNextActions
-    let validateConditionalObject = (condObj, thenType, fieldName, validationFn) => {
+    let validateConditionalObject = (condObj, thenType, fieldName, qType, validationFn) => {
+      // Function to check if a given variable is of a particular type
       let isType = (value, type) => {
         switch(type){
           case "boolean":
@@ -702,14 +722,28 @@ module.exports.checkConfig = () => {
             return Array.isArray(value) && value.every(el => typeof el === "string")
         }
       }
+
+      // Ensure fields "if" and "then" are present
       if(!("if" in condObj && "then" in condObj)){
         return ReturnMethods.returnFailure("conditional object must have properties \"if\" and \"then\"")
       }
+
+      // Ensure "if" and "then" are in the correct format
       if(!(isType(condObj.if, "string") && isType(condObj.then, thenType))){
         return ReturnMethods.returnFailure(
             " fields \"if\" and \"then\" of conditional object in " +fieldName+ " must be of type string and "
             + thenType + " respectively.")
       }
+      // Ensure that "if" is a valid conditional expression
+      let copyPart = JSON.parse(JSON.stringify(fakeParticipantObj));
+      copyPart.currentQuestion.qType = qType
+      let validateCondObj = ConfigParser.evaluateConditionString(copyPart, condObj.if)
+      if(validateCondObj.returnCode === DevConfig.FAILURE_CODE){
+        return validateCondObj;
+      }
+
+
+      // Validate the outcomes of the then clause
       validationFn(condObj.then);
 
       if("else" in condObj){
@@ -720,7 +754,6 @@ module.exports.checkConfig = () => {
         validationFn(condObj.else);
       }
       return ReturnMethods.returnSuccess(true)
-      // TODO: Check validity of conditional expressions
 
     }
     if("cNextActions" in questionObj){
@@ -729,48 +762,19 @@ module.exports.checkConfig = () => {
           + " cNextActions must be an array of condition objects")
       for(const condObj of questionObj.cNextActions){
         let validateCondObj = validateConditionalObject(condObj, "arr", "cNextActions",
-            (actionList) => validateActionList(actionList, questionCategory, condition))
+            questionObj.qType, (actionList) => validateActionList(actionList, questionCategory, condition))
         assert(validateCondObj.returnCode === DevConfig.SUCCESS_CODE,
             "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-            + validateCondObj.data)
+            + "\n" + validateCondObj.data)
       }
     }
 
     // nextQuestion
     let validateNextQuestion = (qString, condition) => {
-      assert(typeof qString === "string",
+      let valObj = validateQuestionIdentifier(qString, condition);
+      assert(valObj.returnCode === DevConfig.SUCCESS_CODE,
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + " nextQuestion must be a string")
-
-      let qSplit = qString.split(".")
-      assert(qSplit.length === 2,
-          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + " nextQuestion must be of the form `category.qId`")
-
-      let questionCatObject;
-      if(typeof condition !== "undefined"){
-        // Check only the question categories of that condition
-        questionCatObject = config.conditionQuestions[condition].questionCategories;
-      } else {
-        // Check all conditions to see if any of them have the question category
-        questionCatObject = config.questionCategories
-        if("conditionQuestions" in config){
-          for(const [condition, condObj] of Object.entries(config.conditionQuestions)){
-            questionCatObject = {...questionCatObject, ...condObj.questionCategories}
-          }
-        }
-      }
-
-      assert(qSplit[0] in questionCatObject,
-          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + " question category " + qSplit[0]+ " not present for condition " + condition)
-
-
-      assert(questionCatObject[qSplit[0]].some(qObj => qObj.qId === qSplit[1]),
-          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + " qId " + qSplit[1] + " does not exist in category " + qSplit[0]+ " for condition " + condition)
-
-      return ReturnMethods.returnSuccess(true)
+          + ", nextQuestion is not valid\n" + valObj.data);
     }
     if("nextQuestion" in questionObj){
       assert(!("cNextQuestions" in questionObj),
@@ -787,10 +791,10 @@ module.exports.checkConfig = () => {
           + " cNextQuestions must be an array of condition objects")
       for(const condObj of questionObj.cNextQuestions){
         let validateCondObj = validateConditionalObject(condObj, "string", "cNextQuestions",
-            (nextQ) => validateNextQuestion(nextQ, condition))
+            questionObj.qType, (nextQ) => validateNextQuestion(nextQ, condition))
         assert(validateCondObj.returnCode === DevConfig.SUCCESS_CODE,
             "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-            + validateCondObj.data)
+            + "\n" +validateCondObj.data)
       }
     }
 
@@ -833,13 +837,47 @@ module.exports.checkConfig = () => {
           + " cReplyMessages must be an array of condition objects")
       for(const condObj of questionObj.cReplyMessages){
         let validateCondObj = validateConditionalObject(condObj, "object", "cReplyMessages",
-            (nextQ) => validateReplyObject(nextQ, condition))
+            questionObj.qType, (nextQ) => validateReplyObject(nextQ, condition))
         assert(validateCondObj.returnCode === DevConfig.SUCCESS_CODE,
             "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-            + validateCondObj.data)
+            + "\n" + validateCondObj.data)
       }
     }
 
+  }
+  let validateQuestionIdentifier = (qString, condition) => {
+    if(typeof qString !== "string"){
+      return ReturnMethods.returnFailure("question identifier must be a string")
+    }
+
+    let qSplit = qString.split(".")
+    if(qSplit.length !== 2){
+      return ReturnMethods.returnFailure("question identifier must be of the form `category.qId`")
+    }
+
+    let questionCatObject;
+    if(typeof condition !== "undefined"){
+      // Check only the question categories of that condition
+      questionCatObject = config.conditionQuestions[condition].questionCategories;
+    } else {
+      // Check all conditions to see if any of them have the question category
+      questionCatObject = config.questionCategories
+      if("conditionQuestions" in config){
+        for(const [condition, condObj] of Object.entries(config.conditionQuestions)){
+          questionCatObject = {...questionCatObject, ...condObj.questionCategories}
+        }
+      }
+    }
+
+    if(!(qSplit[0] in questionCatObject)){
+      return ReturnMethods.returnFailure("question category " + qSplit[0]+ " not present for condition " + condition)
+    }
+    if(!questionCatObject[qSplit[0]].some(qObj => qObj.qId === qSplit[1])){
+      return ReturnMethods.returnFailure(
+          " qId " + qSplit[1] + " does not exist in category " + qSplit[0]+ " for condition " + condition)
+    }
+
+    return ReturnMethods.returnSuccess(true)
   }
 
   // Ensure condition-independent setup questions are present
@@ -857,7 +895,90 @@ module.exports.checkConfig = () => {
     })
   }
 
-  // TODO: scheduled questions
+  // Validate a list of scheduled questions
+  let validateScheduledQuestions = (schQList, condition) => {
+    schQList.forEach(schQ => {
+      assert(typeof schQ === "object",
+          )
+      assert("qId" in schQ && typeof schQ.qId === "string",
+          "Condition: " + condition + "\nqId of scheduled question must be present and must be string")
+      let validateQIDObj = validateQuestionIdentifier(schQ.qId, condition)
+      assert(validateQIDObj.returnCode === DevConfig.SUCCESS_CODE,
+          "Condition: " + condition + "\nqId of scheduled question not valid: "
+          + schQ.qId +"\n" + validateQIDObj.data)
+
+      // Ensure atTime field is present and valid
+      assert("atTime" in schQ && typeof schQ.qId === "string",
+          "Condition: " + condition
+          + "\natTime of scheduled question must be present and must be string: " + schQ.qId)
+      if(schQ.atTime.startsWith("${") && schQ.atTime.charAt(schQ.atTime.length-1) === "}"){
+        // check if it is a valid string variable
+        let varName = schQ.atTime.substring(2,schQ.atTime.length-1)
+        assert(varName in fakeParticipantObj.parameterTypes
+            && fakeParticipantObj.parameterTypes[varName] === "string",
+            "Condition: " + condition
+            + "\n" + varName + " is not a valid string variable for atTime")
+      } else {
+        // Ensure that it is in HH:MM format
+        let scheduleTimeSplit = schQ.atTime.split(":");
+        assert(scheduleTimeSplit.length === 2 && scheduleTimeSplit.every(el => el.length === 2),
+            "Condition: " + condition
+            + "\n" + schQ.atTime + " is not in `HH:MM` format: "+ schQ.qId)
+        let [h, m] = scheduleTimeSplit;
+        assert(!isNaN(h) && parseInt(h) >= 0 && parseInt(h) <= 23,
+            "Condition: " + condition
+            + "\n" + schQ.atTime + " must have hours as a number between 0 and 23 (inclusive): " + schQ.qId)
+        assert(!isNaN(m) && parseInt(m) >= 0 && parseInt(m) <= 59,
+            "Condition: " + condition
+            + "\n" + schQ.atTime + " must have minutes as a number between 0 and 59 (inclusive): " + schQ.qId)
+      }
+
+      // Ensure onDays is present and in correct format
+      assert("onDays" in schQ && Array.isArray(schQ.onDays),
+          "Condition: " + condition
+          + "\nonDays of scheduled question must be present and must be a string array: " + schQ.qId)
+      schQ.onDays.forEach(el => {
+        assert(DevConfig.DAY_INDEX_ORDERING.includes(el),
+            "Condition: " + condition
+            + "\nonDays of scheduled question " + schQ.qId + " has an invalid member: " + el)
+      })
+
+      // Validate the condition if present
+      if("if" in schQ){
+        assert(typeof schQ.if === "string",
+            "Condition: " + condition
+            + "\nfield \"if\" must be a string" + schQ.qId)
+        let validateCondObj = ConfigParser.evaluateConditionString(fakeParticipantObj, schQ.if)
+        assert(validateCondObj.returnCode === DevConfig.SUCCESS_CODE,
+            "Condition: " + condition
+            + "\nfield \"if\" of scheduled question " + schQ.qId + " has an invalid expression:\n"
+            + validateCondObj.data)
+      }
+
+      // Validate the stages if present
+      if("stages" in schQ){
+        assert(Array.isArray(schQ.stages) && schQ.stages.every(stage => typeof stage === "string"),
+            "Condition: " + condition
+            + "\nfield \"stages\" must be an array of strings" + schQ.qId)
+        let stageList = typeof condition !== "undefined" ? config.experimentStages[condition] : config.experimentStages;
+        if(typeof stageList === "object"){
+          // participant not assigned to condition yet, just check if stage exists in any condition
+          stageList = Object.values(stageList).flat()
+        }
+        schQ.stages.forEach(stage => {
+          assert(stageList.map(obj => obj.name).includes(stage),
+              "Condition: " + condition
+              + "\nfield \"stages\" of " + schQ.qId + ": " + stage + " is not a valid stage for condition " + condition)
+        })
+      }
+    })
+  }
+
+  // Validate default scheduled questions category, if it exists
+  if("scheduledQuestions" in config){
+    assert(Array.isArray(config.scheduledQuestions), " scheduledQuestions of main config file must be array")
+    validateScheduledQuestions(config.scheduledQuestions, undefined)
+  }
   // TODO: user prompted questions
 
   // Ensure there are questions for each condition
@@ -866,7 +987,7 @@ module.exports.checkConfig = () => {
         "questions for condition \"" + condition + "\" not present in question categories")
   })
 
-  // Test the question objects for each question category
+  // Test the question categories for each condition
   for(const [condition, condObj] of Object.entries(config.conditionQuestions)){
     assert("questionCategories" in condObj,
         "condition " + condition + " missing question categories in conditionQuestions")
@@ -880,6 +1001,9 @@ module.exports.checkConfig = () => {
       qList.forEach(questionObj => {
         validateQuestionObj(questionObj, catName, condition)
       })
+    }
+    if("scheduledQuestions" in condObj){
+      validateScheduledQuestions(condObj.scheduledQuestions, condition)
     }
   }
 

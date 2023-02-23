@@ -910,6 +910,12 @@ class ConfigParser{
             return ReturnMethods.returnFailure("CParser: Expression must be a string to evaluate")
         }
 
+        // Check mismatch of brackets0
+        let numOpenBrackets = (expression.match(/\(/g) || []).length
+        let numCloseBrackets = (expression.match(/\)/g) || []).length
+        if(numOpenBrackets !== numCloseBrackets){
+            return ReturnMethods.returnFailure("CParser: open brackets do not match closed brackets")
+        }
         // Remove all enclosing brackets
         let prevExp;
         let newExp = expression.slice();
@@ -1453,8 +1459,9 @@ class ConfigParser{
      *
      * Check whether an experiment stages object is valid
      *
-     * @param userPrompts
      * @returns {{returnCode: number, data: *}}
+     * @param stages experiment stages object
+     * @param conditions list of experiment conditions
      */
     static validateStages(stages, conditions){
 

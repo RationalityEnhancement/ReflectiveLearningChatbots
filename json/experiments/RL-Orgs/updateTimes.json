@@ -13,7 +13,7 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
-        "then" : "Update-Times.cancelAddingGoal"
+        "then" : "Update-Times.cancelUpdateTime"
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
@@ -78,7 +78,7 @@
     "qId" : "cancelUpdateTime",
     "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["Adding goals cancelled!"],
+      "English" : ["Updating time cancelled!"],
       "Deutsch" : ["Vorgang abgebrochen!"]
     }
   }

@@ -14,7 +14,7 @@
       }
     ],
     "selectQFirst" : true,
-    "cNextActions" : {
+    "cNextActions" : [{
       "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
       "then" : [
         {
@@ -22,7 +22,7 @@
           "args" : ["warningGiven", "$B{true}"]
         }
       ]
-    },
+    }],
     "replyMessages" : {
       "English" : ["Good morning, ${FIRST_NAME}!"],
       "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]

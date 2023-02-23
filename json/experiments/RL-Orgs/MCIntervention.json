@@ -1284,8 +1284,8 @@
       {
         "if" : "(${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}) AND (${STAGE_DAY} != $N{1})",
         "then" : {
-          "English" : "Okay, then that wraps up everything for today.",
-          "Deutsch" : "Okay, das war's für heute."
+          "English" : ["Okay, then that wraps up everything for today."],
+          "Deutsch" : ["Okay, das war's für heute."]
         }
       },
       {

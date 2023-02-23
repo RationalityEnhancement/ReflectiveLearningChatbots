@@ -664,7 +664,7 @@ module.exports.checkConfig = () => {
     let validateActionList = (actionList, questionCategory, condition) => {
       assert(Array.isArray(actionList) && actionList.every(ob => typeof ob === "object"),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + "actionList must be an array of action objects"
+          + " actionList must be an array of action objects"
       )
 
       actionList.forEach(actionObj => {
@@ -685,19 +685,68 @@ module.exports.checkConfig = () => {
     }
 
     // cNextActions
+    let validateConditionalObject = (condObj, thenType, fieldName, validationFn) => {
+      let isType = (value, type) => {
+        switch(type){
+          case "boolean":
+          case "number":
+          case "string":
+            return typeof value === type
+          case "arr":
+            return Array.isArray(value)
+          case "object":
+            return typeof value === type && !Array.isArray(value) && value !== null
+          case "strArr":
+            return Array.isArray(value) && value.every(el => typeof el === "string")
+          case "numArr":
+            return Array.isArray(value) && value.every(el => typeof el === "string")
+        }
+      }
+      if(!("if" in condObj && "then" in condObj)){
+        return ReturnMethods.returnFailure("conditional object must have properties \"if\" and \"then\"")
+      }
+      if(!(isType(condObj.if, "string") && isType(condObj.then, thenType))){
+        return ReturnMethods.returnFailure(
+            " fields \"if\" and \"then\" of conditional object in " +fieldName+ " must be of type string and "
+            + thenType + " respectively.")
+      }
+      validationFn(condObj.then);
+
+      if("else" in condObj){
+        if(!isType(condObj.else, thenType)){
+          return ReturnMethods.returnFailure(
+              "field \"else\" must be of type " + thenType)
+        }
+        validationFn(condObj.else);
+      }
+      return ReturnMethods.returnSuccess(true)
+      // TODO: Check validity of conditional expressions
+
+    }
+    if("cNextActions" in questionObj){
+      assert(Array.isArray(questionObj.cNextActions),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " cNextActions must be an array of condition objects")
+      for(const condObj of questionObj.cNextActions){
+        let validateCondObj = validateConditionalObject(condObj, "arr", "cNextActions",
+            (actionList) => validateActionList(actionList, questionCategory, condition))
+        assert(validateCondObj.returnCode === DevConfig.SUCCESS_CODE,
+            "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+            + validateCondObj.data)
+      }
+    }
 
     // nextQuestion
     let validateNextQuestion = (qString, condition) => {
-      if(typeof qString !== "string"){
-        return ReturnMethods.returnFailure(
-            "nextQuestion must be a string")
-      }
+      assert(typeof qString === "string",
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " nextQuestion must be a string")
+
       let qSplit = qString.split(".")
-      if(qSplit.length !== 2){
-        return ReturnMethods.returnFailure(
-            "nextQuestion must be of the form `category.qId`"
-        )
-      }
+      assert(qSplit.length === 2,
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " nextQuestion must be of the form `category.qId`")
+
       let questionCatObject;
       if(typeof condition !== "undefined"){
         // Check only the question categories of that condition
@@ -712,16 +761,15 @@ module.exports.checkConfig = () => {
         }
       }
 
-      if(!(qSplit[0] in questionCatObject)){
-        return ReturnMethods.returnFailure(
-            "question category " + qSplit[0]+ " not present for condition " + condition
-        )
-      }
-      if(!questionCatObject[qSplit[0]].some(qObj => qObj.qId === qSplit[1])){
-        return ReturnMethods.returnFailure(
-            "qId " + qSplit[1] + " does not exist in category " + qSplit[0]+ " for condition " + condition
-        )
-      }
+      assert(qSplit[0] in questionCatObject,
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " question category " + qSplit[0]+ " not present for condition " + condition)
+
+
+      assert(questionCatObject[qSplit[0]].some(qObj => qObj.qId === qSplit[1]),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " qId " + qSplit[1] + " does not exist in category " + qSplit[0]+ " for condition " + condition)
+
       return ReturnMethods.returnSuccess(true)
     }
     if("nextQuestion" in questionObj){
@@ -729,17 +777,68 @@ module.exports.checkConfig = () => {
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
           + " question object cannot contain both nextQuestion and cNextQuestions"
       )
-      let nextQVal = validateNextQuestion(questionObj.nextQuestion, condition);
-      assert(nextQVal.returnCode === DevConfig.SUCCESS_CODE,
-          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + " nextQuestion is invalid\n" + nextQVal.data)
+      validateNextQuestion(questionObj.nextQuestion, condition);
     }
 
     // cNextQuestions
+    if("cNextQuestions" in questionObj){
+      assert(Array.isArray(questionObj.cNextQuestions),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " cNextQuestions must be an array of condition objects")
+      for(const condObj of questionObj.cNextQuestions){
+        let validateCondObj = validateConditionalObject(condObj, "string", "cNextQuestions",
+            (nextQ) => validateNextQuestion(nextQ, condition))
+        assert(validateCondObj.returnCode === DevConfig.SUCCESS_CODE,
+            "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+            + validateCondObj.data)
+      }
+    }
 
     // replyMessages
+    let validateReplyObject = (replyObject) => {
+      assert(typeof replyObject === "object",
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " replyMessages must be an object")
+      assert(confirmAllLanguages(replyObject),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " replyMessages must have a translation for every language")
+
+      assert(!(!Object.values(replyObject).every(rep => Array.isArray(rep)
+             && rep.length > 0 && rep.every(str => typeof str === "string"))),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " replyMessages must contain a non-empty array of strings for every language")
+
+      for(const [lang, replies] of Object.entries(replyObject)){
+        for(const text of replies){
+          let validateTextObj = validateSentText(text)
+          assert(validateTextObj.returnCode === DevConfig.SUCCESS_CODE,
+              "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+              + "\n" + validateTextObj.data)
+        }
+      }
+      return ReturnMethods.returnSuccess(true)
+    }
+    if("replyMessages" in questionObj){
+      assert(!("cReplyMessages" in questionObj),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " question object cannot contain both replyMessages and cReplyMessages"
+      )
+      validateReplyObject(questionObj.replyMessages);
+    }
 
     // cReplyMessages
+    if("cReplyMessages" in questionObj){
+      assert(Array.isArray(questionObj.cReplyMessages),
+          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+          + " cReplyMessages must be an array of condition objects")
+      for(const condObj of questionObj.cReplyMessages){
+        let validateCondObj = validateConditionalObject(condObj, "object", "cReplyMessages",
+            (nextQ) => validateReplyObject(nextQ, condition))
+        assert(validateCondObj.returnCode === DevConfig.SUCCESS_CODE,
+            "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+            + validateCondObj.data)
+      }
+    }
 
   }
 
@@ -783,6 +882,8 @@ module.exports.checkConfig = () => {
       })
     }
   }
+
+
 
   // : Check whether scheduled questions have necessary components
 

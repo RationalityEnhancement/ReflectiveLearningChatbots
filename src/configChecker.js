@@ -899,7 +899,7 @@ module.exports.checkConfig = () => {
   let validateScheduledQuestions = (schQList, condition) => {
     schQList.forEach(schQ => {
       assert(typeof schQ === "object",
-          )
+          "Condition: " + condition + "\neach scheduled question must be object")
       assert("qId" in schQ && typeof schQ.qId === "string",
           "Condition: " + condition + "\nqId of scheduled question must be present and must be string")
       let validateQIDObj = validateQuestionIdentifier(schQ.qId, condition)
@@ -979,7 +979,69 @@ module.exports.checkConfig = () => {
     assert(Array.isArray(config.scheduledQuestions), " scheduledQuestions of main config file must be array")
     validateScheduledQuestions(config.scheduledQuestions, undefined)
   }
-  // TODO: user prompted questions
+
+  // Validate a list of scheduled questions
+  let validateUserPromptedQuestions = (qList, condition) => {
+    qList.forEach(schQ => {
+      assert(typeof schQ === "object",
+          "Condition: " + condition + "\neach user prompted question must be object")
+      assert("qId" in schQ && typeof schQ.qId === "string",
+          "Condition: " + condition + "\nqId of user prompted question must be present and must be string")
+      let validateQIDObj = validateQuestionIdentifier(schQ.qId, condition)
+      assert(validateQIDObj.returnCode === DevConfig.SUCCESS_CODE,
+          "Condition: " + condition + "\nqId of user prompted question not valid: "
+          + schQ.qId +"\n" + validateQIDObj.data)
+
+      // Ensure keyword field is present and valid
+      assert("keyword" in schQ && typeof schQ.keyword === "object",
+          "Condition: " + condition
+          + "\nkeyword of scheduled question must be present and must be an object: " + schQ.qId)
+      assert(confirmAllLanguages(schQ.keyword) && Object.values(schQ.keyword).every(el => typeof el === "string"),
+          "Condition: " + condition + "\nQID: " + schQ.qId
+          + "\nkeyword of scheduled question must have a string present for all languages")
+
+      // Ensure description field is present and valid
+      assert("description" in schQ && typeof schQ.description === "object",
+          "Condition: " + condition
+          + "\ndescription of scheduled question must be present and must be an object: " + schQ.qId)
+      assert(confirmAllLanguages(schQ.description) && Object.values(schQ.description).every(el => typeof el === "string"),
+          "Condition: " + condition + "\nQID: " + schQ.qId
+          + "\ndescription of scheduled question must have a string present for all languages")
+
+      // Validate the condition if present
+      if("if" in schQ){
+        assert(typeof schQ.if === "string",
+            "Condition: " + condition
+            + "\nfield \"if\" must be a string" + schQ.qId)
+        let validateCondObj = ConfigParser.evaluateConditionString(fakeParticipantObj, schQ.if)
+        assert(validateCondObj.returnCode === DevConfig.SUCCESS_CODE,
+            "Condition: " + condition
+            + "\nfield \"if\" of scheduled question " + schQ.qId + " has an invalid expression:\n"
+            + validateCondObj.data)
+      }
+
+      // Validate the stages if present
+      if("stages" in schQ){
+        assert(Array.isArray(schQ.stages) && schQ.stages.every(stage => typeof stage === "string"),
+            "Condition: " + condition
+            + "\nfield \"stages\" must be an array of strings" + schQ.qId)
+        let stageList = typeof condition !== "undefined" ? config.experimentStages[condition] : config.experimentStages;
+        if(typeof stageList === "object"){
+          // participant not assigned to condition yet, just check if stage exists in any condition
+          stageList = Object.values(stageList).flat()
+        }
+        schQ.stages.forEach(stage => {
+          assert(stageList.map(obj => obj.name).includes(stage),
+              "Condition: " + condition
+              + "\nfield \"stages\" of " + schQ.qId + ": " + stage + " is not a valid stage for condition " + condition)
+        })
+      }
+    })
+  }
+  if("userPromptedQuestions" in config){
+    assert(Array.isArray(config.userPromptedQuestions), " userPromptedQuestions of main config file must be array")
+    validateUserPromptedQuestions(config.userPromptedQuestions, undefined)
+  }
 
   // Ensure there are questions for each condition
   config.experimentConditions.forEach(condition => {
@@ -1003,13 +1065,16 @@ module.exports.checkConfig = () => {
       })
     }
     if("scheduledQuestions" in condObj){
+      assert(Array.isArray(condObj.scheduledQuestions), " userPromptedQuestions of condition "
+          + condition + " must be array")
       validateScheduledQuestions(condObj.scheduledQuestions, condition)
     }
+    if("userPromptedQuestions" in condObj){
+      assert(Array.isArray(condObj.userPromptedQuestions), " userPromptedQuestions of condition "
+          + condition + " must be array")
+      validateUserPromptedQuestions(condObj.userPromptedQuestions, condition)
+    }
   }
-
-
-
-  // : Check whether scheduled questions have necessary components
 
   console.log('\x1b[42m\x1b[30m%s\x1b[0m', 'Config file valid');
 

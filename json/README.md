@@ -2228,9 +2228,9 @@ What does it mean to have a conversation with the bot? It means that the bot wil
 
 The text for the above message can be defined individually for each language in the `experiment` section of the [mandatory phrases](#span-idphrases-mandatory-phrases-span).
 
-To define the keywords and corresponding questions for each keyword, you will use the property `userPromptedQs`. This appears on the same level as `questionCategories` and `scheduledQuestions`, wherever these occur.
+To define the keywords and corresponding questions for each keyword, you will use the property `userPromptedQuestions`. This appears on the same level as `questionCategories` and `scheduledQuestions`, wherever these occur.
 
-The field `userPromptedQs` is a list of objects, each object corresponding to one of the possible interactions that the user can initiate with the chatbot. An object for a user-prompted question has the following properties:
+The field `userPromptedQuestions` is a list of objects, each object corresponding to one of the possible interactions that the user can initiate with the chatbot. An object for a user-prompted question has the following properties:
 
 * `keyword` - the keyword that the user must enter to prompt that question. Defined for all available languages.
 * `description` - the explanation of what kind of question the user would be prompting by sending that keyword. Defined for all available languages.
@@ -2281,7 +2281,7 @@ Also note that both of these conversations can be initiated only during the stag
 
 In a similar manner, it is possible to define questions that can only be prompted within certain time frames by using conditional expressions with the parameter values `CURRENT_HOUR` and `CURRENT_MIN`.
 
-Now, we can simply add this list to the property `userPromptedQs` of `Condition1` in our experimenter configuration file:
+Now, we can simply add this list to the property `userPromptedQuestions` of `Condition1` in our experimenter configuration file:
 
 ```
 In json/config.json
@@ -2306,7 +2306,7 @@ In json/config.json
     "Condition1" : {
       "questionCategories" : {...},
       "scheduledQuestions" : [...],
-      "userPromptedQs" : [
+      "userPromptedQuestions" : [
         { "keyword" : { "English" : "Goals", "Deutsch" : "Ziele" }, ... },
         { "keyword" : { "English" : "Survey", "Deutsch" : "Umfrage" }, ... }
       ]

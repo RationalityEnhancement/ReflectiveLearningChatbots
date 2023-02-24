@@ -83,6 +83,7 @@
     "LENGTH_DAYS" : "lengthDays",
     "ON_DAYS" : "onDays"
   },
+  "VALID_HTML_TAGS" : ["a", "b", "i", "u", "br"],
   "STAGE_UPDATE_WINDOW" : {
     "START": "04:00",
     "END" : "05:00"

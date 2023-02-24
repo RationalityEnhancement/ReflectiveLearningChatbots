@@ -800,9 +800,11 @@ Example question object 1
 The next element of the question object is the text that will be displayed when the question is asked.
 
 The question text for each language will take the form of a simple string, with the following additional options for formatting:
-* "This text will have <b>bold</b>" -> This text will have **bold**
-* "This text will have <i>italics</i>" -> This text will have _italics_
-* "This text will have \"quotes\"" -> This text will have "quotes"
+* "This text will have \<b\>bold\</b\>" -> This text will have **bold**
+* "This text will have \<i\>italics\</i\>" -> This text will have _italics_
+* "This text will be \<u\>underlined\</u\>" -> This text will be <u>underlined</u>
+* "This text will have a \<a href="https://github.com"\>link\</a\> to GitHub" -> This text will have a <a href="https://github.com">link</a> to GitHub
+* "This text will have \\\"quotes\\\"" -> This text will have "quotes"
 * "This is the first line \nThis is the second line" -> This is the first line (line break)This is the second line
 * "This text will have the smiling emoji: :simple_smile:" -> This text will have the smiling emoji: :simple_smile:
   * See [this website](https://www.webfx.com/tools/emoji-cheat-sheet/) for a catalog of all the emojis that you can use in your text.

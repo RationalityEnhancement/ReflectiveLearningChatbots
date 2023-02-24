@@ -1,10 +1,11 @@
 
 /**
-  Method to validate the config class to make sure it has all of the necessary parameters
-  to define an experiment
+  File to validate the experimenter configuration to check whether all of the fields are present
+ and in the correct format, and provide warning about what is wrong/missing
 **/
 
 const lodash = require('lodash')
+const emoji = require('node-emoji')
 const ConfigReader = require('./configReader');
 const ReturnMethods = require('./returnMethods')
 const ConfigParser = require('./configParser')
@@ -248,6 +249,8 @@ module.exports.checkConfig = () => {
 
   // ---------- Questions ------------
 
+  // Function to validate the contents of text that is to be sent to the
+  //  user to ensure that it adheres to formatting syntax
   let validateSentText = (str) => {
     if(str.length > 4096){
       return ReturnMethods.returnFailure("Message text cannot be longer than 4096 characters")
@@ -255,12 +258,61 @@ module.exports.checkConfig = () => {
     let replaceVarsObj = ConfigParser.replaceVariablesInString(fakeParticipantObj, str, true)
     if(replaceVarsObj.returnCode === DevConfig.FAILURE_CODE) return replaceVarsObj
 
-    // TODO: Ensure that HTML tags are closed
+    let extractedHTMLTags = str.match(/<\/*[^<>]*>/g);
+    if(extractedHTMLTags){
+      let openTagStack = [];
+      // Match open and close tags
+      for(const tag of extractedHTMLTags){
+        let tagText = tag.replace(/[<>]/g, "");
+        let tagName = tagText.split(" ")[0]
+        if(tagName.length === 0){
+          continue;
+        }
+        if(tagName.charAt(0) === '/'){
+          // Close tag
+          tagName = tagName.substring(1);
+
+          // Match to last opened tag
+          if(openTagStack.length === 0){
+            return ReturnMethods.returnFailure("Cannot close HTML tag " + tag + " when no tag is open");
+          } else {
+            let lastOpenTag = openTagStack[openTagStack.length - 1];
+
+            if(tagName !== lastOpenTag){
+              return ReturnMethods.returnFailure("Cannot close HTML tag " + tag + " when last open tag was <"
+                  +lastOpenTag + ">");
+            } else {
+              openTagStack.pop();
+            }
+          }
+        } else {
+          // Open tag
+          if(!DevConfig.VALID_HTML_TAGS.includes(tagName)){
+            return ReturnMethods.returnFailure("HTML tag "+ tag + " is not a valid tag");
+          }
+          openTagStack.push(tagName)
+        }
+      }
+      if(!openTagStack.every(remainingTag => remainingTag === 'br')){
+        return ReturnMethods.returnFailure("Following open HTML tags not closed: "
+        + openTagStack.filter(tag => tag !== "br").map(el => "<" + el + ">").join(", "));
+      }
+    }
+
+    // Check if all emojis present in text are valid (emoji format is :text:, where text has no spaces)
+    let extractedEmojis = str.match(/:[^ \n]*:/g)
+    if(extractedEmojis){
+      for(const e of extractedEmojis){
+        if(!emoji.hasEmoji(e)){
+          return ReturnMethods.returnFailure("Invalid Emoji: " + e);
+        }
+      }
+    }
 
     return ReturnMethods.returnSuccess(true);
   }
 
-  // Question Object
+  // Function to validate a single Question Object
   let validateQuestionObj = (questionObj, questionCategory, condition) => {
 
     // Validate question ID
@@ -845,6 +897,9 @@ module.exports.checkConfig = () => {
     }
 
   }
+
+  // Function to validate a question identifier category.qId, to make sure the
+  //  question category exists in that condition and that the qId exists within that category
   let validateQuestionIdentifier = (qString, condition) => {
     if(typeof qString !== "string"){
       return ReturnMethods.returnFailure("question identifier must be a string")

@@ -46,6 +46,7 @@
     "range" : {
       "lower" : 0
     },
+    "nextQuestion": "Int-Reflection.checkTaskReflection",
     "cReplyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/relGoalProgressReplies.json}",
     "nextActions" : [
       {
@@ -125,7 +126,30 @@
       }
     ]
   },
-
+  {
+    "qId" : "checkTaskReflection",
+    "qType" : "dummy",
+    "cNextQuestions" : [
+      {
+        "if": "${taskGoalsSetToday} == $B{true}",
+        "then" : "Int-Reflection.askReflectTaskGoals",
+        "else" : "Int-Reflection.checkDone"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if": "${taskGoalsSetToday} != $B{true}",
+        "then": {
+          "English": [
+            "Okay, we're done with goal reflections for today."
+          ],
+          "Deutsch": [
+            "Okay, wir sind für heute fertig mit der Reflexion Ihrer Zielsetzung."
+          ]
+        }
+      }
+    ]
+  },
   {
     "qId" : "askReflectTaskGoals",
     "qType" : "singleChoice",

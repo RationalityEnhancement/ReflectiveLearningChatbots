@@ -6,7 +6,7 @@
         "Congratulations on having improved your progress from the last time!"
       ],
       "Deutsch": [
-        "Gratulation dazu, dass Sie heute mehr Fortschritt gemacht haben als beim letzten Mal!"
+        "Herzlichen Glückwunsch zu dem Fortschritt, den Sie seit dem letzten Mal gemacht haben!"
       ]
     }
   },
@@ -17,7 +17,7 @@
         "I see. That's unfortunate."
       ],
       "Deutsch": [
-        "Übersetzung nicht verfügbar"
+        "Ich verstehe. Das ist schade."
       ]
     }
   },
@@ -28,7 +28,7 @@
         "That's a start!"
       ],
       "Deutsch": [
-        "Übersetzung nicht verfügbar"
+        "Das ist schon mal ein guter Start!"
       ]
     }
   },
@@ -39,12 +39,12 @@
         "That's good progress!"
       ],
       "Deutsch": [
-        "Übersetzung nicht verfügbar"
+        "Das ist ein guter Fortschritt!"
       ]
     },
     "else" : {
       "English" : ["That's amazing progress!"],
-      "Deutsch": ["Übersetzung nicht verfügbar"]
+      "Deutsch": ["Das ist ein hervorragender Fortschritt!"]
     }
   }
 ]

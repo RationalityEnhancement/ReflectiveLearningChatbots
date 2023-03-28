@@ -4,18 +4,18 @@
     "qType" : "dummy",
     "cNextQuestions" : [
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "if" : "(${STAGE_DAY} > $N{1}) AND (${warningGiven} != $B{true})",
         "then" : "Pre-Test-2.wantContinue"
       },
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "if" : "(${STAGE_DAY} > $N{1}) AND (${warningGiven} == $B{true})",
         "then" : "Pre-Test-2.endExperiment",
         "else" : "Pre-Test-2.survey"
       }
     ],
     "selectQFirst" : true,
     "cNextActions" : [{
-      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+      "if" : "(${STAGE_DAY} > $N{1}) AND (${warningGiven} != $B{true})",
       "then" : [
         {
           "aType" : "setBooleanVar",
@@ -111,8 +111,8 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["Thank you!", "That’s all for today. On the next weekday, we will start another daily routine of setting goals in the morning and then reflecting on them in the evening. This will last for five days again.", "See you later!"],
-      "Deutsch" : ["Vielen Dank!", "Das war's für heute. Wir werden am nächsten Werktag mit noch einer täglichen Routine beginnen, bei der Sie sich morgens Ziele setzen und sie abends reflektieren. Das Ganze machen wir fünf Tage lang wieder.", "Bis später!"]
+      "English" : ["Thank you!", "That’s all for today. On the next weekday, we will start another daily routine of setting goals in the morning and then reflecting on them in the evening. This will last for two days again.", "See you later!"],
+      "Deutsch" : ["Vielen Dank!", "Das war's für heute. Wir werden am nächsten Werktag mit noch einer täglichen Routine beginnen, bei der Sie sich morgens Ziele setzen und sie abends reflektieren. Das Ganze machen wir zwei Tage lang wieder.", "Bis später!"]
     }
   },
   {

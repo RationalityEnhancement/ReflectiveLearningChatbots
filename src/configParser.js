@@ -239,12 +239,105 @@ class ConfigParser{
         // Look in parameters
         if(!foundReserved){
             if(!(varName in participant.parameters)){
-                return ReturnMethods.returnFailure("CParser: Variable name not recognized");
+                return ReturnMethods.returnFailure("CParser: Variable name " +varName +" not recognized");
             }
             if(typeof participant.parameters[varName] === "undefined"){
                 return ReturnMethods.returnFailure("CParser: Parameter " + varName +" value not set");
             }
             return ReturnMethods.returnSuccess(participant.parameters[varName]);
+        }
+        return ReturnMethods.returnSuccess(varVal);
+    }
+
+    /**
+     *
+     * Takes a single variable name, and if a variable (reserved,custom) exists, return
+     * the datatype of that variable
+     *
+     *
+     * @param parameterTypes Object with the available parameter names and their corresponding data types
+     *
+     * @param varName the name of the variable to be returned
+     * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
+     *              returns success code along with data being the datatype of the variable or the error msg
+     *
+     */
+    static getVariableType(parameterTypes, varName, qType) {
+        // Input validation
+        if(typeof varName !== 'string'){
+            return ReturnMethods.returnFailure("CParser: Must be a string to get variable type")
+        }
+        if(!parameterTypes || typeof parameterTypes !== 'object') {
+            return ReturnMethods.returnFailure("CParser: parameterTypes object required to get variable type")
+        }
+
+        // If the variable name is valid, then return a value, otherwise error
+        let varVal = "";
+        let foundReserved = false;
+        switch(varName){
+            case DevConfig.VAR_STRINGS.FIRST_NAME :
+                varVal = "string";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CURRENT_ANSWER :
+                if(qType === "number") {
+                    varVal = "number";
+                } else if(["freeformMulti", "multiChoice"].includes(qType)){
+                    varVal = "strArr";
+                } else {
+                    varVal = "string"
+                }
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.UNIQUE_ID:
+                varVal = "string";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.STAGE_NAME :
+                varVal = "string"
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.STAGE_DAY :
+                varVal = "number"
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.ANSWER_LEN_CHARS:
+                varVal = "number"
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.ANSWER_LEN_WORDS:
+                varVal = "number";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.TODAY:
+                varVal = "string";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.TODAY_NAME:
+                varVal = "string";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CURRENT_HOUR:
+                varVal = "number";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CURRENT_MIN:
+                varVal = "number";
+                foundReserved = true;
+                break;
+            case DevConfig.VAR_STRINGS.CONDITION:
+                varVal = "string"
+                foundReserved = true;
+                break;
+
+            default:
+        }
+        // Look in parameters
+        if(!foundReserved){
+            if(!(varName in parameterTypes)){
+                return ReturnMethods.returnFailure("CParser: Variable name " +varName +" not recognized");
+            }
+            varVal = parameterTypes[varName]
         }
         return ReturnMethods.returnSuccess(varVal);
     }
@@ -817,6 +910,12 @@ class ConfigParser{
             return ReturnMethods.returnFailure("CParser: Expression must be a string to evaluate")
         }
 
+        // Check mismatch of brackets0
+        let numOpenBrackets = (expression.match(/\(/g) || []).length
+        let numCloseBrackets = (expression.match(/\)/g) || []).length
+        if(numOpenBrackets !== numCloseBrackets){
+            return ReturnMethods.returnFailure("CParser: open brackets do not match closed brackets")
+        }
         // Remove all enclosing brackets
         let prevExp;
         let newExp = expression.slice();
@@ -1087,6 +1186,23 @@ class ConfigParser{
     }
     /**
      *
+     * Parse a single string token of the form $S{...}. Return the value
+     * if valid, return error if not valid
+     *
+     * @param expression
+     */
+    static parseStringToken(expression){
+        if(typeof expression !== "string"){
+            return ReturnMethods.returnFailure("CParser: String token must be string");
+        }
+        if(!expression.startsWith("$S{") || !expression.endsWith("}")){
+            return ReturnMethods.returnFailure("CParser: String token in incorrect format - must be $S{...}");
+        }
+        let trimmedExpression = expression.substring(3,expression.length-1);
+        return ReturnMethods.returnSuccess(trimmedExpression);
+    }
+    /**
+     *
      * Take a string value and get the corresponding boolean value
      * "TRUE" (case insensitive) => true
      * "FALSE" (case insensitive) => false
@@ -1337,6 +1453,56 @@ class ConfigParser{
                 })
         }
         return ReturnMethods.returnSuccess(expression);
+    }
+
+    /**
+     *
+     * Check whether an experiment stages object is valid
+     *
+     * @returns {{returnCode: number, data: *}}
+     * @param stages experiment stages object
+     * @param conditions list of experiment conditions
+     */
+    static validateStages(stages, conditions){
+
+        // Validate a single list of experiment stages
+        let validateStageArray = (stageArray, conditionName) => {
+            if(!Array.isArray(stageArray)) {
+                return ReturnMethods.returnFailure("CParser: experiment stages of condition "
+                    + conditionName + " must be an array");
+            }
+            if(stageArray.length === 0){
+                return ReturnMethods.returnFailure("CParser: condition "
+                    + conditionName + " must have at least one stage")
+            }
+            if(!stageArray.every(e => typeof e === "object" && "name" in e)){
+                return ReturnMethods.returnFailure("CParser: condition "
+                    + conditionName + ": Every experiment stage must be an object with" +
+                    " at least field 'name'")
+            }
+            return ReturnMethods.returnSuccess(stageArray)
+        }
+
+        // Validate experiment stages for all conditions
+        if(conditions.length === 0){
+            return validateStageArray(stages, "main");
+        } else {
+            if(typeof stages !== "object") {
+                return ReturnMethods.returnFailure(
+                    "CParser: experimentStages must be an object when multiple conditions are present");
+            }
+            for(let i = 0; i < conditions.length; i++){
+                if(!(conditions[i] in stages)){
+                    return ReturnMethods.returnFailure(
+                        "CParser: experimentStages for condition " + conditions[i] + " missing");
+                }
+                let validateConditionObj = validateStageArray(stages[conditions[i]], conditions[i]);
+                if(validateConditionObj.returnCode === DevConfig.FAILURE_CODE){
+                    return validateConditionObj
+                }
+            }
+            return ReturnMethods.returnSuccess(stages);
+        }
     }
 
     /**

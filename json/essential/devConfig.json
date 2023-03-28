@@ -8,7 +8,9 @@
   "INVALID_ANSWER_STRING" : "[Invalid Answer]",
   "INVALID_FILE_STRING" : "[Invalid File]",
   "qTypeAliases" : ["likert5", "likert7"],
-  "validAssignmentSchemes" : ["pid", "balanced", "random"],
+  "VALID_ASSIGNMENT_SCHEMES" : ["pid", "balanced", "random"],
+  "VALID_PARAMETER_TYPES" : ["string", "number", "boolean", "strArr", "numArr"],
+  "VALID_QUESTION_TYPES" : ["freeform", "freeformMulti", "singleChoice", "number", "multiChoice", "likert5", "likert7", "qualtrics", "dummy"],
   "RESERVED_VARIABLES" : ["STAGE_NAME", "STAGE_DAY"],
   "VAR_STRINGS" : {
     "FIRST_NAME" : "FIRST_NAME",
@@ -60,6 +62,20 @@
     "saveOptionIdxTo" : 1,
     "rescheduleCurrentStage" : 0
   },
+  "ACTION_ARG_TYPES" : {
+    "saveAnswerTo" : ["_number,string,boolean,strArr"],
+    "setBooleanVar" : ["_boolean", "boolean"],
+    "scheduleQuestions" : [],
+    "assignToCondition" : [],
+    "addAnswerTo" : ["_strArr,numArr"],
+    "clearVars" : ["_number,string,boolean,strArr,numArr"],
+    "addValueTo" : ["_number", "number"],
+    "startStage" : ["*string"],
+    "incrementStageDay" : [],
+    "endExperiment" : [],
+    "saveOptionIdxTo" : ["_number"],
+    "rescheduleCurrentStage" : []
+  },
   "END_STAGE_STRING" : "end",
   "BEGIN_STAGE_STRING": "begin",
   "DAY_INDEX_ORDERING" : ["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -67,6 +83,7 @@
     "LENGTH_DAYS" : "lengthDays",
     "ON_DAYS" : "onDays"
   },
+  "VALID_HTML_TAGS" : ["a", "b", "i", "u", "br"],
   "STAGE_UPDATE_WINDOW" : {
     "START": "04:00",
     "END" : "05:00"
@@ -84,5 +101,43 @@
   "VALID_IMAGE_EXTENSIONS" : [".jpg", ".jpeg", ".png"],
   "SEND_MESSAGE_ATTEMPTS" : 3,
   "REPEAT_ATTEMPT_WAIT_MS" : 3000,
-  "DEFAULT_STAGE_LENGTH_WEEKS" : 2
+  "DEFAULT_STAGE_LENGTH_WEEKS" : 2,
+  "VALID_QUESTION_PROPERTIES":{
+    "freeform" : {
+      "possible": ["minLengthChars","minLengthWords","answerShouldBe"],
+      "required": []
+    },
+    "freeformMulti" : {
+      "possible": ["minLengthChars","minLengthWords"],
+      "required": []
+    },
+    "singleChoice" : {
+      "possible": ["options", "buttonLayoutCols"],
+      "required": ["options"]
+    },
+    "multiChoice" : {
+      "possible": ["options", "buttonLayoutCols"],
+      "required": ["options"]
+    },
+    "likert7": {
+      "possible": ["buttonLayoutCols"],
+      "required": []
+    },
+    "likert5": {
+      "possible": ["buttonLayoutCols"],
+      "required": []
+    },
+    "number": {
+      "possible": ["range"],
+      "required": []
+    },
+    "qualtrics": {
+      "possible": ["qualtricsLink", "qualtricsFields", "continueStrings"],
+      "required": ["qualtricsLink"]
+    },
+    "dummy": {
+      "possible": [],
+      "required": []
+    }
+  }
 }

@@ -258,7 +258,7 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, noDelay
             from: "bot",
             timeStamp: moment.tz(participant.parameters.timezone).format()
         })
-        // Send the question text
+        // Send the input prompt text
         bot.telegram.sendMessage(chatId, substituteVariables(participant, inputPrompt, true), {
             parse_mode: "HTML",
             reply_markup: keyboard

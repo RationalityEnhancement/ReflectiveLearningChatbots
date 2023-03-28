@@ -43,12 +43,12 @@
   },
   "keyboards": {
     "singleChoice": {
-      "English": "Please select from the available options. You may need to scroll down to see all of them.",
-      "Deutsch": "Bitte wählen Sie aus den verfügbaren Optionen. Sie müssen eventuell nach unten scrollen, um alle Optionen zu sehen."
+      "English": "Please select from the available options. You may need to scroll down to see all of them. Send <i>/repeat</i> to display the options once again if they are no longer visible.",
+      "Deutsch": "Bitte wählen Sie aus den verfügbaren Optionen. Sie müssen eventuell nach unten scrollen, um alle Optionen zu sehen. Senden Sie <i>/repeat</i>, um die Optionen erneut anzuzeigen."
     },
     "multiChoice": {
-      "English": "Choose as many options as you like. <b>Remember to click <i>Done</i> to finish choosing.</b> You may need to scroll down to see all options.",
-      "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Erledigt, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
+      "English": "Choose as many options as you like. <b>Remember to click <i>Done</i> to finish choosing.</b> You may need to scroll down to see all options. Send <i>/repeat</i> to display the options once again if they are no longer visible.",
+      "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf <i>Erledigt</i>, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können. Senden Sie <i>/repeat</i>, um die Optionen erneut anzuzeigen."
     },
     "terminateAnswer": {
       "English": "Done",

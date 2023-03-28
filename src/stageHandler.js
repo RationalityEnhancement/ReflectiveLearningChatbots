@@ -665,6 +665,7 @@ module.exports.createStageUpdateActionList = (config, conditionName) => {
  * @param config loaded config file with stages
  * @param stageName Name of the stage for which the action list is to be fetched
  * @param conditionName name of the condition whose stages are to be served
+ * @param uniqueId unique ID of participant
  * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}|*}
  *              if success, list with one or more action objects as described above
  */

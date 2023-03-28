@@ -13,7 +13,8 @@
     "delete-all": "node src/deleteAllData.js",
     "generate-team-names": "node src/generateTeamNames.js",
     "send-custom-messages": "node src/sendCustomMessage.js",
-    "express": "node webapp.js"
+    "express": "node webapp.js",
+    "check-config": "node src/configChecker.js"
   },
   "repository": {
     "type": "git",

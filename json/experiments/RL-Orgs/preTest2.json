@@ -14,7 +14,7 @@
       }
     ],
     "selectQFirst" : true,
-    "cNextActions" : {
+    "cNextActions" : [{
       "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
       "then" : [
         {
@@ -22,7 +22,7 @@
           "args" : ["warningGiven", "$B{true}"]
         }
       ]
-    },
+    }],
     "replyMessages" : {
       "English" : ["Good morning, ${FIRST_NAME}!"],
       "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
@@ -76,7 +76,7 @@
       "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
       "Deutsch" : "Bitte nehmen Sie sich die Zeit, die nachfolgende Fragebogen sorgfältig und vollständig auszufüllen."
     },
-    "qualtricsLink" : "https://cuboulder.qualtrics.com/jfe/form/SV_8ffND85CsuavdkO",
+    "qualtricsLink" : "https://reg.qualtrics.com/jfe/form/SV_5hCGmKUwTRva7qe",
     "qualtricsFields" : [
       {
         "field" : "uniqueId",
@@ -96,10 +96,10 @@
       "numRepeats" : 4
     },
     "inputPrompt" : {
-      "English" : "Enter the survey code displayed at the end of the survey to continue. (ABCDE, 12345)",
-      "Deutsch" : "Geben Sie den am Ende des Fragebogens angezeigten Code ein, um fortzufahren. (ABCDE, 12345)"
+      "English" : "Enter the survey code displayed at the end of the survey to continue.",
+      "Deutsch" : "Geben Sie den am Ende des Fragebogens angezeigten Code ein, um fortzufahren."
     },
-    "continueStrings" : ["ABCDE", "12345"],
+    "continueStrings" : ["MID2023", "TestBypass"],
     "nextActions" : [
       {
         "aType" : "setBooleanVar",

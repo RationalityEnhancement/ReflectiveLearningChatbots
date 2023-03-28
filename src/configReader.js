@@ -109,7 +109,6 @@ module.exports.replaceFilenameDeeply = (targetObj, depth=0) => {
  */
 module.exports.getExpConfig = () => {
     if(!replaced){
-        console.log("Replaced");
         config = this.replaceFilenameDeeply(readConfig);
         replaced = true;
     }

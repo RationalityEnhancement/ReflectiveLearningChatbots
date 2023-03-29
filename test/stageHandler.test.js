@@ -29,7 +29,8 @@ const testBot = {
         sendChatAction : () =>{
 
             return;
-        }
+        },
+        token: "testToken"
     }
 };
 const testChatId = 98451
@@ -250,7 +251,7 @@ describe('DB Connection', () => {
             await participants.add(testPartId);
             await answers.add(testPartId);
             await idMaps.addIDMapping(testConfig.experimentId, testChatId, testPartId);
-            await participants.initializeParticipant(testPartId, config)
+            await participants.initializeParticipant(testPartId, config, testBot.telegram.token)
             await answers.initializeAnswer(testPartId, config.experimentId)
             let participant = await participants.get(testPartId);
             let answerObj = await answers.getCurrent(testPartId);

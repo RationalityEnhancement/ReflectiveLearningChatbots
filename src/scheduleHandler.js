@@ -224,7 +224,7 @@ class ScheduleHandler{
      * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
      */
     static async rescheduleAllOperations(bot, config){
-        let allParticipants = await participants.getByExperimentId(config.experimentId);
+        let allParticipants = await participants.getByExperimentId(config.experimentId, bot.telegram.token);
         let failedParticipants = [];
         let succeededParticipants = [];
         // Loop through all participants

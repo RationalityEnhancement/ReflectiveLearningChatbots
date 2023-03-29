@@ -168,11 +168,11 @@ TODO: Fill this in
     * These are the same that appear in your `.env` file
   * Run the command `heroku config:set URL=<application_link`>
     * Use the application link that you obtained after running the `heroku create` command in the previous step
-* Upgrade the Heroku dyno type to the "Hobby" plan, which costs $7/mo.
-  * Run the command `heroku ps:type web=Hobby`
 * Upload the software to your heroku application
   * Run the command `git push heroku main`
   * Watch the terminal for the build status and wait for it to report that the build has been completed.
+* Upgrade the Heroku dyno type to the "Basic" plan, which costs $7/mo.
+  * Run the command `heroku ps:type web=Basic`
 * Celebrate!
   * You can now start interacting with your bot on Telegram!
   * Run the command `heroku logs --tail` to see the live terminal output of your hosted chatbot.

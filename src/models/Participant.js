@@ -16,6 +16,7 @@ let schemaObject = {
   uniqueId: String,
   conditionIdx: Number,
   conditionName: String,
+  responsibleBot: String,
   parameters: {},
   stages :{
     activity : [

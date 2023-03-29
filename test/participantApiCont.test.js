@@ -17,6 +17,9 @@ const testId2 = "321";
 const testId3 = "1234";
 const testExptId = config.experimentId;
 const testExptId2 = config.experimentId + "1234";
+const testResponsibleBot = "botToken1"
+const testResponsibleBot2 = "botToken2"
+
 describe('Participant Controller API: ', () =>{
 		
 
@@ -46,9 +49,10 @@ describe('Participant Controller API: ', () =>{
 		const expectedParams = {
 			"language": "English",
 		};
-		let savedPart = await participants.initializeParticipant(testId, config);
+		let savedPart = await participants.initializeParticipant(testId, config, testResponsibleBot);
 		let newPart = await participants.get(testId);
 		expect(newPart['experimentId']).to.equal(testExptId);
+		expect(newPart['responsibleBot']).to.equal(testResponsibleBot);
 		expect(newPart['parameters']['language']).to.eql(expectedParams.language);
 		expect(newPart['currentState']).to.equal("starting");
 		for(const [key,value] of Object.entries(config.mandatoryParameters)){
@@ -76,9 +80,10 @@ describe('Participant Controller API: ', () =>{
 		const expectedParams = {
 			"language": "English",
 		};
-		let savedPart = await participants.initializeParticipant(testId2, config);
+		let savedPart = await participants.initializeParticipant(testId2, config, testResponsibleBot2);
 		let newPart = await participants.get(testId2);
 		expect(newPart['experimentId']).to.equal(testExptId);
+		expect(newPart['responsibleBot']).to.equal(testResponsibleBot2);
 		expect(newPart['parameters']['language']).to.eql(expectedParams.language);
 		expect(newPart['currentState']).to.equal("starting");
 		for(const [key,value] of Object.entries(config.mandatoryParameters)){
@@ -108,9 +113,10 @@ describe('Participant Controller API: ', () =>{
 		};
 		let copyConfig = JSON.parse(JSON.stringify(config))
 		copyConfig.experimentId = testExptId2;
-		let savedPart = await participants.initializeParticipant(testId3, copyConfig);
+		let savedPart = await participants.initializeParticipant(testId3, copyConfig, testResponsibleBot);
 		let newPart = await participants.get(testId3);
 		expect(newPart['experimentId']).to.equal(testExptId2);
+		expect(newPart['responsibleBot']).to.equal(testResponsibleBot);
 		expect(newPart['parameters']['language']).to.eql(expectedParams.language);
 		expect(newPart['currentState']).to.equal("starting");
 		for(const [key,value] of Object.entries(config.mandatoryParameters)){
@@ -128,6 +134,11 @@ describe('Participant Controller API: ', () =>{
 		expect(pList.length).to.equal(2);
 		expect(pList[0].uniqueId).to.equal(testId);
 		expect(pList[1].uniqueId).to.equal(testId2);
+	})
+	it('Should get all participants by experiment ID for a given bot', async() => {
+		let pList = await participants.getByExperimentId(testExptId, testResponsibleBot);
+		expect(pList.length).to.equal(1);
+		expect(pList[0].uniqueId).to.equal(testId);
 	})
 	it('Should update Number field', async () => {
 		

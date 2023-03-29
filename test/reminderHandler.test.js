@@ -30,7 +30,8 @@ const testBot = {
         sendChatAction : () =>{
 
             return;
-        }
+        },
+        token: "testToken"
     }
 };
 let indScheduledJobs = [];

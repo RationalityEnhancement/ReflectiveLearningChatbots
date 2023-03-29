@@ -41,7 +41,8 @@ const testBot = {
         sendChatAction : () =>{
 
             return;
-        }
+        },
+        token: "testToken"
     }
 };
 let indScheduledJobs = [];
@@ -334,7 +335,7 @@ describe('Scheduling one Operation', () => {
         it('Should add and update participant parameter', async () => {
 
             await participants.add(testId);
-            await participants.initializeParticipant(testId, testConfig);
+            await participants.initializeParticipant(testId, testConfig, testBot.telegram.token);
             await participants.updateParameter(testId, "timezone", "Europe/Berlin")
             var participant = await participants.get(testId);
             expect(participant).to.not.be.null;
@@ -348,7 +349,7 @@ describe('Scheduling one Operation', () => {
         it('Should add and update participant parameter 2', async () => {
 
             await participants.add(testId2);
-            await participants.initializeParticipant(testId2, testConfig);
+            await participants.initializeParticipant(testId2, testConfig, testBot.telegram.token);
             await participants.updateParameter(testId2, "timezone", "Europe/Berlin")
             var participant = await participants.get(testId2);
             expect(participant).to.not.be.null;
@@ -362,7 +363,7 @@ describe('Scheduling one Operation', () => {
         it('Should add and update participant parameter 3', async () => {
 
             await participants.add(testId3);
-            await participants.initializeParticipant(testId3, testConfig);
+            await participants.initializeParticipant(testId3, testConfig, testBot.telegram.token);
             await participants.updateParameter(testId3, "timezone", "Europe/Berlin")
             var participant = await participants.get(testId3);
             expect(participant).to.not.be.null;

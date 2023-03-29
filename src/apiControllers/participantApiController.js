@@ -27,9 +27,14 @@ exports.get = async (uniqueId) => {
   }
 }
 
-exports.getByExperimentId = async (experimentId) => {
+exports.getByExperimentId = async (experimentId, botId=null) => {
   try {
-    return Participant.find({ experimentId: experimentId });
+    if(botId){
+      return Participant.find({ experimentId: experimentId, responsibleBot: botId });
+    } else {
+      return Participant.find({ experimentId: experimentId });
+    }
+
   } catch(err) {
     console.error(err);
   }
@@ -49,7 +54,7 @@ exports.add = async (uniqueId) => {
 
 
 // Initialize the experiment document with some basic essential information
-exports.initializeParticipant = async (uniqueId, config) => {
+exports.initializeParticipant = async (uniqueId, config, botUsername) => {
   try{
 
     let paramTypes = {};
@@ -70,6 +75,7 @@ exports.initializeParticipant = async (uniqueId, config) => {
         {
           experimentId: config.experimentId,
           currentState: "starting",
+          responsibleBot: botUsername,
           parameters: {
             language: config.defaultLanguage
           },

@@ -1014,7 +1014,7 @@ bot.start(async ctx => {
   if(!participant){
     try{
       await participants.add(uniqueId);
-      await participants.initializeParticipant(uniqueId, config);
+      await participants.initializeParticipant(uniqueId, config, bot.telegram.token);
 
       await answers.add(uniqueId);
       await answers.initializeAnswer(uniqueId, config.experimentId)
@@ -1236,11 +1236,17 @@ bot.on('text', async ctx => {
   const answerText = ctx.message.text;
 
   // Handle the answer and respond appropriately
-    console.time("\nProcessing Answer")
+    if(config.debug.experimenter){
+        console.time("\nProcessing Answer")
+    }
+
   AnswerHandler.processAnswer(participant, answerText)
       .then((answerHandlerObj) => {
-          console.timeEnd("\nProcessing Answer")
-          console.time("Handling answer return")
+          if(config.debug.experimenter){
+              console.timeEnd("\nProcessing Answer")
+              console.time("Handling answer return")
+          }
+
           switch(answerHandlerObj.returnCode){
               // Answer was valid
               case DevConfig.SUCCESS_CODE:
@@ -1248,7 +1254,10 @@ bot.on('text', async ctx => {
                       // Process the next steps
                       LogicHandler.processNextSteps(bot, uniqueId)
                           .then((result) => {
-                              console.timeEnd("Handling answer return")
+                              if(config.debug.experimenter){
+                                  console.timeEnd("Handling answer return")
+                              }
+
                               if(result.returnCode === DevConfig.FAILURE_CODE){
                                   console.log(result.data)
                                   return handleError(participant, result.data)

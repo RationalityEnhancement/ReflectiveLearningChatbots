@@ -15,7 +15,8 @@ const bot = {
     telegram : {
         sendMessage : () => { return; },
         getChat : (id) => { return { first_name : "John" }},
-        sendChatAction: () => { return; }
+        sendChatAction: () => { return; },
+        token: "testToken"
     }
 }
 
@@ -42,7 +43,7 @@ describe('DB Connection', () => {
         it('Should add and update participant parameter', async () => {
 
             await participants.add(testPartId);
-            await participants.initializeParticipant(testPartId, config)
+            await participants.initializeParticipant(testPartId, config, bot.telegram.token)
             let participant = await participants.get(testPartId);
             expect(participant).to.not.be.null;
             expect(participant.uniqueId).to.equal(testPartId);

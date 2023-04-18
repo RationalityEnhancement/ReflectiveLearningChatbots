@@ -7,18 +7,22 @@
       "Deutsch" : "Sie möchten also die Zeit aktualisieren, zu der Sie besetimmte Fragen erhalten!\n\nWelche der folgenden Zeiten möchten Sie ändern?"
     },
     "options" : {
-      "English" : ["Goal-setting time (morning)", "Reflection time (evening)", "Cancel updating."],
-      "Deutsch" : ["Zeit zur Zielsetzung (morgens)", "Zeit zur Reflexion (abends)", "Vorgang abbrechen."]
+      "English" : ["Timezone","Goal-setting time (morning)", "Reflection time (evening)", "Cancel updating."],
+      "Deutsch" : ["Zeitzone","Zeit zur Zielsetzung (morgens)", "Zeit zur Reflexion (abends)", "Vorgang abbrechen."]
     },
     "cNextQuestions" : [
       {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3}",
         "then" : "Update-Times.cancelUpdateTime"
       },
       {
-        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
-        "then" : "Update-Times.updateGoalSetTime",
-        "else" : "Update-Times.updateReflectionTime"
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
+        "then" : "Update-Times.updateGoalSetTime"
+      },
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
+        "then" : "Update-Times.updateReflectionTime",
+        "else" : "Update-Times.updateTimezone"
       }
     ]
   },
@@ -80,6 +84,82 @@
     "replyMessages" : {
       "English" : ["Updating time cancelled!"],
       "Deutsch" : ["Vorgang abgebrochen!"]
+    }
+  },
+  {
+    "qId": "updateTimezone",
+    "text": {
+      "English": "Which time zone are you in?",
+      "Deutsch": "In welcher Zeitzone befinden Sie sich?"
+    },
+    "qType": "singleChoice",
+    "options": {
+      "English": "$F{json/static/common_timezones.json}",
+      "Deutsch": "$F{json/static/common_timezones.json}"
+    },
+    "buttonLayoutCols" : 2,
+    "cReplyMessages": [
+      {
+        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "then" : {
+          "English": [
+            "Thank you, your time zone has been updated."
+          ],
+          "Deutsch": [
+            "Vielen Dank, Ihre Zeitzone wurde aktualisiert."
+          ]
+        }
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) != $B{true}",
+        "then" : [
+          {
+            "aType" : "saveAnswerTo",
+            "args" : ["timezone"]
+          },
+          {
+            "aType" : "rescheduleCurrentStage"
+          }
+        ]
+      }
+    ],
+    "cNextQuestions" : [
+      {
+        "if" : "($S{Other} IN_ARRAY ${CURRENT_ANSWER}) == $B{true}",
+        "then" : "Update-Times.updateMoreTimezones"
+      }
+    ]
+  },
+  {
+    "qId" : "updateMoreTimezones",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Select your timezone from the following list.",
+      "Deutsch" : "Wählen Sie Ihre Zeitzone aus der Liste unten aus."
+    },
+    "options" : {
+      "English" : "$F{json/static/more_timezones_2.json}",
+      "Deutsch" : "$F{json/static/more_timezones_2.json}"
+    },
+    "buttonLayoutCols" : 2,
+    "nextActions" : [
+      {
+        "aType" : "saveAnswerTo",
+        "args" : ["timezone"]
+      },
+      {
+        "aType" : "rescheduleCurrentStage"
+      }
+    ],
+    "replyMessages" : {
+      "English": [
+        "Thank you, time zone has been updated."
+      ],
+      "Deutsch": [
+        "Vielen Dank, Ihre Zeitzone wurde aktualisiert."
+      ]
     }
   }
 ]

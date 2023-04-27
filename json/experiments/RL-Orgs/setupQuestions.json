@@ -14,13 +14,17 @@
       "aType" : "saveAnswerTo",
       "args" : ["language"]
     }],
-    "nextQuestion" : "setupQuestions.introduceInstructions",
+    "nextQuestion" : "setupQuestions.replyToLanguage",
+    "start" : true
+  },
+  {
+    "qId": "replyToLanguage",
+    "qType": "dummy",
     "replyMessages" : {
       "English" : ["Thank you for choosing a language"],
       "Deutsch": ["Vielen Dank, dass Sie eine Sprache ausgewählt haben."]
     },
-    "start" : true,
-    "suppressInputPrompt" : false
+    "nextQuestion": "setupQuestions.introduceInstructions"
   },
   {
     "qId" : "introduceInstructions",
@@ -57,8 +61,8 @@
   {
     "qId": "companyQuestion",
     "text": {
-      "English": "What is the name of the company you work for?",
-      "Deutsch": "Wie heißt die Firma, bei der Sie arbeiten?"
+      "English": "What is the name of the <b>company</b> you work for? (This is NOT the <b>team name</b> you were assigned.)",
+      "Deutsch": "Wie heißt die <b>Firma</b>, bei der Sie arbeiten? (Dies ist NICHT der <b>Teamname</b>, den Sie bekommen haben.)"
     },
     "qType": "freeform",
     "replyMessages": {

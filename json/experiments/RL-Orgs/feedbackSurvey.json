@@ -5,38 +5,20 @@
     "cNextQuestions" : [
       {
         "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
-        "then" : "Follow-Up.wantContinue"
+        "then" : "Feedback.wantContinue"
       },
       {
         "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
-        "then" : "Follow-Up.endExperimentEarly",
-        "else" : "Follow-Up.survey"
+        "then" : "Feedback.endExperimentEarly",
+        "else" : "Feedback.survey"
       }
     ],
     "selectQFirst" : true,
-    "cReplyMessages" : [
-      {
-        "if" : "${pauseEnded} == $B{false}",
-        "then" : {
-          "English" : ["Hello again, ${FIRST_NAME}! I hope you had a good break.", "I am back now to complete the final round of questionnaires for the experiment."],
-          "Deutsch" : ["Hallo zurück, ${FIRST_NAME}! Ich hoffe, Sie konnten Ihre Pause genießen.", "Ich bin wieder da, mit der letzten abschließenden Fragerunde zum Experiment."]
-        },
-        "else" : {
-          "English" : ["Good morning, ${FIRST_NAME}!"],
-          "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
-        }
-      }
-    ],
+    "replyMessages" : {
+      "English" : ["Good morning, ${FIRST_NAME}!", "To end the program, we will have the very last feedback survey."],
+      "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!", "Zum Abschluss des Programms haben wir die allerletzte Feedback-Umfrage."]
+    },
     "cNextActions" : [
-      {
-        "if" : "${pauseEnded} == $B{false}",
-        "then" : [
-          {
-            "aType" : "setBooleanVar",
-            "args" : ["pauseEnded", "$B{true}"]
-          }
-        ]
-      },
       {
         "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
         "then" : [
@@ -52,18 +34,18 @@
     "qId" : "wantContinue",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
-      "Deutsch" : "Möchten Sie mit dem Experiment fortfahren oder es jetzt beenden? Wenn Sie sich für das Beenden entscheiden, werden Sie keine Nachrichten mehr erhalten."
+      "English" : "Would you like to continue with the program or end it now? If you choose to end it, you will stop receiving messages.",
+      "Deutsch" : "Möchten Sie mit dem Programm fortfahren oder es jetzt beenden? Wenn Sie sich für das Beenden entscheiden, werden Sie keine Nachrichten mehr erhalten."
     },
     "options" : {
-      "English" : ["Continue", "End Experiment"],
-      "Deutsch" : ["Fortfahren", "Experiment Beenden"]
+      "English" : ["Continue", "End program"],
+      "Deutsch" : ["Fortfahren", "Programm beenden"]
     },
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
-        "then" : "Follow-Up.endExperimentEarly",
-        "else" : "Follow-Up.survey"
+        "then" : "Feedback.endExperimentEarly",
+        "else" : "Feedback.survey"
       }
     ],
     "cReplyMessages" : [
@@ -71,7 +53,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : {
           "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
-          "Deutsch" : ["Schön, dass Sie das Experiment fortsetzen möchten!", "Bitte folgen Sie den Anweisungen um fortzufahren."]
+          "Deutsch" : ["Schön, dass Sie das Programm fortsetzen möchten!", "Bitte folgen Sie den Anweisungen um fortzufahren."]
         }
       }
     ]
@@ -85,22 +67,9 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["The experiment has ended."],
-      "Deutsch" : ["Das Experiment ist beendet."]
+      "English" : ["The program has ended."],
+      "Deutsch" : ["Das Programm ist beendet."]
     }
-  },
-  {
-    "qId" : "checkComplete",
-    "qType" : "dummy",
-    "cNextActions" : [
-      {
-        "if": "${followUpComplete} == $B{true}",
-        "then" : [{
-          "aType" : "startStage",
-          "args" : ["Feedback"]
-        }]
-      }
-    ]
   },
   {
     "qId" : "endExperiment",
@@ -112,7 +81,7 @@
     ],
     "replyMessages" : {
       "English" : ["And with that, we have finally come to the end of the experiment!", "It was great interacting with you, and I appreciate the effort you put into your responses."],
-      "Deutsch" : ["Wir sind endlich am Ende des Experiments angelangt!", "Es war toll, mit Ihnen zusammenzuarbeiten und ich weiß die Mühe zu schätzen, die Sie sich bei der Beantwortung der Fragen gemacht haben."]
+      "Deutsch" : ["Wir sind endlich am Ende des Programms angelangt!", "Es war toll, mit Ihnen zusammenzuarbeiten und ich weiß die Mühe zu schätzen, die Sie sich bei der Beantwortung der Fragen gemacht haben."]
     }
   },
   {
@@ -122,7 +91,7 @@
       "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
       "Deutsch" : "Bitte nehmen Sie sich die Zeit, die nachfolgende Fragebogen sorgfältig und vollständig auszufüllen."
     },
-    "qualtricsLink" : "https://uclapsych.qualtrics.com/jfe/form/SV_dnyDkYNjDIEwveC",
+    "qualtricsLink" : "https://uclapsych.qualtrics.com/jfe/form/SV_bwNRzEFGXhZSGAC",
     "qualtricsFields" : [
       {
         "field" : "uniqueId",
@@ -134,7 +103,7 @@
       },
       {
         "field" : "stage",
-        "value": "Follow-Up"
+        "value": "Feedback"
       }
     ],
     "reminder" : {
@@ -145,8 +114,8 @@
       "English" : "Enter the survey code displayed at the end of the survey to continue.",
       "Deutsch" : "Geben Sie den am Ende des Fragebogens angezeigten Code ein, um fortzufahren."
     },
-    "continueStrings" : ["FOL2023", "TestBypass"],
-    "nextQuestion" : "Follow-Up.endExperiment",
+    "continueStrings" : ["FB2023", "TestBypass"],
+    "nextQuestion" : "Feedback.endExperiment",
     "replyMessages" : {
       "English" : ["Thank you for that!"],
       "Deutsch" : ["Vielen Dank!"]

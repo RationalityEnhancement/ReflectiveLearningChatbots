@@ -33,5 +33,9 @@
   {
     "name" : "Follow-Up",
     "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  },
+  {
+    "name" : "Feedback",
+    "onDays" : ["Mon", "Tue", "Wed", "Thu", "Fri"]
   }
 ]

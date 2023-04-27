@@ -151,8 +151,8 @@
       "Deutsch" : "Feedback-Melden wurde abgebrochen."
     },
     "experimentContinue" : {
-      "English" : "The experiment will now continue as normal. If there is an outstanding question to answer, send <i>/repeat</i> to see it again.",
-      "Deutsch" : "Das Experiment geht weiter wie gewohnt. Wenn eine Frage noch aussteht, senden Sie <i>/repeat</i>, um sie wieder aufzurufen."
+      "English" : "The program will now continue as normal. If there is an outstanding question to answer, send <i>/repeat</i> to see it again.",
+      "Deutsch" : "Das Programm geht weiter wie gewohnt. Wenn eine Frage noch aussteht, senden Sie <i>/repeat</i>, um sie wieder aufzurufen."
     },
     "reportFeedbackThanks" : {
       "English" : "Thank you for your valuable feedback!",
@@ -175,8 +175,8 @@
       "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht antworten! Bitte warten Sie auf meine nächste Frage, um mit mir zu reden. Senden Sie <i>/help</i>, wenn Sie mehr Informationen dazu möchten, wie mit mir zu interagieren ist."
     },
     "cannotInteractAfterEnd" : {
-      "English" : "Sorry, I cannot respond to you at this moment! The experiment has been ended. If you would like to report something, use the /report command.\n\nYou can contact the experimenters directly at srinidhi.srinivas@tuebingen.mpg.de",
-      "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht antworten! Das Experiment ist beendet worden. Wenn Sie etwas berichten möchten, benutzen Sie den Befehl /report.\n\nSie können die Experimenter direkt unter srinidhi.srinivas@tuebingen.mpg.de kontaktieren."
+      "English" : "Sorry, I cannot respond to you at this moment! The program has been ended. If you would like to report something, use the /report command.\n\nYou can contact the team directly at srinidhi.srinivas@tuebingen.mpg.de",
+      "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht antworten! Das Programm ist beendet worden. Wenn Sie etwas berichten möchten, benutzen Sie den Befehl /report.\n\nSie können das Team direkt unter srinidhi.srinivas@tuebingen.mpg.de kontaktieren."
     },
     "nothingToCancel" : {
       "English" : "No operations that have to be cancelled are running right now!",
@@ -188,7 +188,7 @@
     },
     "talkCancelDescription" : {
       "English" : "Cancel this operation and return to experiment.",
-      "Deutsch" : "Operation abbrechen und zum Experiment zurückgehen."
+      "Deutsch" : "Operation abbrechen und zum Programm zurückgehen."
     },
     "talkCancelled" : {
       "English" : "Seems like you don't have anything else to tell me now. No problem!",

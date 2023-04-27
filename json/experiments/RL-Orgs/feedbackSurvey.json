@@ -5,28 +5,48 @@
     "cNextQuestions" : [
       {
         "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
-        "then" : "Pre-Test-2.wantContinue"
+        "then" : "Follow-Up.wantContinue"
       },
       {
         "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
-        "then" : "Pre-Test-2.endExperiment",
-        "else" : "Pre-Test-2.survey"
+        "then" : "Follow-Up.endExperimentEarly",
+        "else" : "Follow-Up.survey"
       }
     ],
     "selectQFirst" : true,
-    "cNextActions" : [{
-      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
-      "then" : [
-        {
-          "aType" : "setBooleanVar",
-          "args" : ["warningGiven", "$B{true}"]
+    "cReplyMessages" : [
+      {
+        "if" : "${pauseEnded} == $B{false}",
+        "then" : {
+          "English" : ["Hello again, ${FIRST_NAME}! I hope you had a good break.", "I am back now to complete the final round of questionnaires for the experiment."],
+          "Deutsch" : ["Hallo zurück, ${FIRST_NAME}! Ich hoffe, Sie konnten Ihre Pause genießen.", "Ich bin wieder da, mit der letzten abschließenden Fragerunde zum Experiment."]
+        },
+        "else" : {
+          "English" : ["Good morning, ${FIRST_NAME}!"],
+          "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
         }
-      ]
-    }],
-    "replyMessages" : {
-      "English" : ["Good morning, ${FIRST_NAME}!"],
-      "Deutsch" : ["Guten Morgen, ${FIRST_NAME}!"]
-    }
+      }
+    ],
+    "cNextActions" : [
+      {
+        "if" : "${pauseEnded} == $B{false}",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["pauseEnded", "$B{true}"]
+          }
+        ]
+      },
+      {
+        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "then" : [
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["warningGiven", "$B{true}"]
+          }
+        ]
+      }
+    ]
   },
   {
     "qId" : "wantContinue",
@@ -42,8 +62,8 @@
     "cNextQuestions" : [
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
-        "then" : "Pre-Test-2.endExperiment",
-        "else" : "Pre-Test-2.survey"
+        "then" : "Follow-Up.endExperimentEarly",
+        "else" : "Follow-Up.survey"
       }
     ],
     "cReplyMessages" : [
@@ -57,7 +77,7 @@
     ]
   },
   {
-    "qId" : "endExperiment",
+    "qId" : "endExperimentEarly",
     "qType" : "dummy",
     "nextActions" : [
       {
@@ -67,6 +87,32 @@
     "replyMessages" : {
       "English" : ["The experiment has ended."],
       "Deutsch" : ["Das Experiment ist beendet."]
+    }
+  },
+  {
+    "qId" : "checkComplete",
+    "qType" : "dummy",
+    "cNextActions" : [
+      {
+        "if": "${followUpComplete} == $B{true}",
+        "then" : [{
+          "aType" : "startStage",
+          "args" : ["Feedback"]
+        }]
+      }
+    ]
+  },
+  {
+    "qId" : "endExperiment",
+    "qType" : "dummy",
+    "nextActions" : [
+      {
+        "aType" : "endExperiment"
+      }
+    ],
+    "replyMessages" : {
+      "English" : ["And with that, we have finally come to the end of the experiment!", "It was great interacting with you, and I appreciate the effort you put into your responses."],
+      "Deutsch" : ["Wir sind endlich am Ende des Experiments angelangt!", "Es war toll, mit Ihnen zusammenzuarbeiten und ich weiß die Mühe zu schätzen, die Sie sich bei der Beantwortung der Fragen gemacht haben."]
     }
   },
   {
@@ -88,7 +134,7 @@
       },
       {
         "field" : "stage",
-        "value": "Pre-Test-2"
+        "value": "Follow-Up"
       }
     ],
     "reminder" : {
@@ -99,43 +145,11 @@
       "English" : "Enter the survey code displayed at the end of the survey to continue.",
       "Deutsch" : "Geben Sie den am Ende des Fragebogens angezeigten Code ein, um fortzufahren."
     },
-    "continueStrings" : ["MID2023", "TestBypass"],
-    "nextActions" : [
-      {
-        "aType" : "setBooleanVar",
-        "args" : ["preTest2Complete", "$B{true}"]
-      },
-      {
-        "aType" : "setBooleanVar",
-        "args" : ["warningGiven", "$B{false}"]
-      }
-    ],
+    "continueStrings" : ["FOL2023", "TestBypass"],
+    "nextQuestion" : "Follow-Up.endExperiment",
     "replyMessages" : {
-      "English" : ["Thank you!", "That’s all for today. On the next weekday, we will start another daily routine of setting goals in the morning and then reflecting on them in the evening. This will last for five days again.", "See you later!"],
-      "Deutsch" : ["Vielen Dank!", "Das war's für heute. Wir werden am nächsten Werktag mit noch einer täglichen Routine beginnen, bei der Sie sich morgens Ziele setzen und sie abends reflektieren. Das Ganze machen wir fünf Tage lang wieder.", "Bis später!"]
+      "English" : ["Thank you for that!"],
+      "Deutsch" : ["Vielen Dank!"]
     }
-  },
-  {
-    "qId" : "checkComplete",
-    "qType" : "dummy",
-    "cNextActions" : [
-      {
-        "if": "${preTest2Complete} == $B{true}",
-        "then" : [
-          {
-            "aType" : "clearVars",
-            "args" : ["remindWorkIntention", "workIntention", "relIntention", "remindRelIntention",
-              "taskGoals", "relGoals", "taskGoalsSetToday", "relGoalsSetToday","lastReportedTaskProgress",
-              "taskProgressReportedOnce", "lastReportedRelProgress", "relProgressReportedOnce", "dontAskInfoAgain",
-              "dontAskExampleAgain", "dontAskRelInfoAgain", "dontAskRelExampleAgain","relGoalsSetBefore",
-              "firstRelGoalDay", "firstWorkGoalDay", "workGoalsSetBefore", "reflectionStartedToday", "warningGiven"]
-          },
-          {
-            "aType" : "startStage",
-            "args" : ["Intervention"]
-          }
-        ]
-      }
-    ]
   }
 ]

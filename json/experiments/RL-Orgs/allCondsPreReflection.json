@@ -45,8 +45,7 @@
       "Deutsch" : "(Hinweis: <i>/repeat</i> eingeben, falls die Option <i>Weiter</i> nicht mehr angezeigt wird.)"
     },
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -74,8 +73,7 @@
     "buttonLayoutCols" : 7,
     "nextQuestion" : "Pre-Reflection.relaxedOrAngry",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -103,8 +101,7 @@
     "buttonLayoutCols" : 7,
     "nextQuestion" : "Pre-Reflection.boredOrEnthusiastic",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -132,8 +129,7 @@
     "buttonLayoutCols" : 7,
     "nextQuestion" : "Pre-Reflection.calmOrNervous",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -161,8 +157,7 @@
     "buttonLayoutCols" : 7,
     "nextQuestion" : "Pre-Reflection.happyOrUnhappy",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -200,8 +195,7 @@
       "Deutsch" : ["Großartig! Wir sind fertig mit den Fragen zu Ihrer aktuellen Stimmung.", "Machen wir weiter mit den Zielen, die Sie sich für heute gesetzt haben."]
     },
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   }
 ]

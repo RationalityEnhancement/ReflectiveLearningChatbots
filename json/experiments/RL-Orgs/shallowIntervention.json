@@ -55,8 +55,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -87,8 +86,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -105,8 +103,7 @@
     "nextQuestion" : "Int-Reflection.relImpact",
     "minLengthWords" : 4,
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -152,8 +149,7 @@
     ],
     "nextQuestion" : "Int-Reflection.relEmotions",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -204,8 +200,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -244,8 +239,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -284,8 +278,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
 
@@ -304,8 +297,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -341,8 +333,7 @@
     ],
     "nextQuestion" : "Int-Reflection.checkTaskReflection",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
 
@@ -468,8 +459,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
 
@@ -519,8 +509,7 @@
     ],
     "nextQuestion" : "Int-Reflection.anythingElse",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -551,8 +540,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -569,8 +557,7 @@
     "nextQuestion" : "Int-Reflection.impact",
     "minLengthWords" : 4,
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -609,8 +596,7 @@
     ],
     "nextQuestion" : "Int-Reflection.emotions",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -643,8 +629,7 @@
     ],
     "nextQuestion" : "Int-Reflection.pursuitSatisfaction",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
 
@@ -684,8 +669,7 @@
     ],
     "nextQuestion" : "Int-Reflection.goalsImportance",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -724,8 +708,7 @@
     ],
     "nextQuestion" : "Int-Reflection.plan",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -743,8 +726,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -777,8 +759,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   }
 ]

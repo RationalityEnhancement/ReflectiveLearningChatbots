@@ -61,8 +61,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -162,8 +161,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -208,8 +206,7 @@
     ],
     "nextQuestion" : "Goal-Setting.checkDone",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   }
 ]

@@ -3,7 +3,7 @@ const moment = require('moment-timezone');
 
 const participants = require('../src/apiControllers/participantApiController');
 const idMaps = require('../src/apiControllers/idMapApiController')
-
+const ExperimentUtils = require('../src/experimentUtils')
 const mongo = require('mongoose');
 
 const { assert, expect } = require('chai');
@@ -90,6 +90,146 @@ describe('Adding minutes', () => {
         expect(newTime.hours).to.equal(currentTime.hours + 1);
         expect(newTime.minutes).to.equal(0);
         expect(newTime.dayOfWeek).to.eql([5])
+    })
+})
+
+describe('Converting to time list', () => {
+    let currentTime = {
+        hours : 21,
+        minutes : 23,
+        dayOfWeek: [4]
+    }
+    describe('Periodic time list', () => {
+        it('Should create a time list with 0 reminders', () => {
+            let timeListObj = ReminderHandler.convertPeriodToList(currentTime, 1, 0)
+            expect(timeListObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+            expect(timeListObj.data.length).to.equal(0);
+
+        })
+        it('Should create a time list with 1 reminder', () => {
+            let timeListObj = ReminderHandler.convertPeriodToList(currentTime, 1, 1)
+            expect(timeListObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+            expect(timeListObj.data.length).to.equal(1);
+            for(let i = 0; i < timeListObj.data.length; i++){
+                expect(timeListObj.data[i].minutes).to.equal(currentTime.minutes + (i + 1));
+                expect(timeListObj.data[i].hours).to.equal(currentTime.hours);
+                expect(timeListObj.data[i].dayOfWeek).to.eql(currentTime.dayOfWeek);
+            }
+
+        })
+        it('Should create a time list with 2 reminders', () => {
+            let timeListObj = ReminderHandler.convertPeriodToList(currentTime, 1, 2)
+            expect(timeListObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+            expect(timeListObj.data.length).to.equal(2);
+            for(let i = 0; i < timeListObj.data.length; i++){
+                expect(timeListObj.data[i].minutes).to.equal(currentTime.minutes + (i + 1));
+                expect(timeListObj.data[i].hours).to.equal(currentTime.hours);
+                expect(timeListObj.data[i].dayOfWeek).to.eql(currentTime.dayOfWeek);
+            }
+        })
+        it('Should fail if freqMins not number', () => {
+            let timeListObj = ReminderHandler.convertPeriodToList(currentTime, "fail", 1)
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+
+        })
+        it('Should fail if numRepeats not number', () => {
+            let timeListObj = ReminderHandler.convertPeriodToList(currentTime, 1, "fail")
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+        })
+        it('Should fail if currentTime mins is not valid', () => {
+            let fakeCurrentTime = JSON.parse(JSON.stringify(currentTime))
+            fakeCurrentTime.minutes = "fail"
+            let timeListObj = ReminderHandler.convertPeriodToList(fakeCurrentTime, 1, 1)
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+        })
+        it('Should fail if currentTime hrs is not valid', () => {
+            let fakeCurrentTime = JSON.parse(JSON.stringify(currentTime))
+            fakeCurrentTime.hours = "fail"
+            let timeListObj = ReminderHandler.convertPeriodToList(fakeCurrentTime, 1, 1)
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+        })
+        it('Should fail if currentTime dayOfWeek is not valid', () => {
+            let fakeCurrentTime = JSON.parse(JSON.stringify(currentTime))
+            fakeCurrentTime.dayOfWeek = "fail"
+            let timeListObj = ReminderHandler.convertPeriodToList(fakeCurrentTime, 1, 1)
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+        })
+    })
+    describe('Custom time list', () => {
+        it('Should create a time list with 0 reminders', () => {
+            let timeListObj = ReminderHandler.convertCustomTimesToList(currentTime, [])
+            expect(timeListObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+            expect(timeListObj.data.length).to.equal(0);
+
+        })
+        it('Should create a time list with 1 reminder', () => {
+            let timeListObj = ReminderHandler.convertCustomTimesToList(currentTime, [1])
+            expect(timeListObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+            expect(timeListObj.data.length).to.equal(1);
+            for(let i = 0; i < timeListObj.data.length; i++){
+                expect(timeListObj.data[i].minutes).to.equal(currentTime.minutes + (i + 1));
+                expect(timeListObj.data[i].hours).to.equal(currentTime.hours);
+                expect(timeListObj.data[i].dayOfWeek).to.eql(currentTime.dayOfWeek);
+            }
+
+        })
+        it('Should create a time list with 2 reminders', () => {
+            let timeListObj = ReminderHandler.convertCustomTimesToList(currentTime, [1,2])
+            expect(timeListObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+            expect(timeListObj.data.length).to.equal(2);
+            for(let i = 0; i < timeListObj.data.length; i++){
+                expect(timeListObj.data[i].minutes).to.equal(currentTime.minutes + (i + 1));
+                expect(timeListObj.data[i].hours).to.equal(currentTime.hours);
+                expect(timeListObj.data[i].dayOfWeek).to.eql(currentTime.dayOfWeek);
+            }
+        })
+        it('Should create a time list with 2 reminders with repeated mins', () => {
+            let timeListObj = ReminderHandler.convertCustomTimesToList(currentTime, [1,2,2])
+            expect(timeListObj.returnCode).to.equal(DevConfig.SUCCESS_CODE)
+            expect(timeListObj.data.length).to.equal(2);
+            for(let i = 0; i < timeListObj.data.length; i++){
+                expect(timeListObj.data[i].minutes).to.equal(currentTime.minutes + (i + 1));
+                expect(timeListObj.data[i].hours).to.equal(currentTime.hours);
+                expect(timeListObj.data[i].dayOfWeek).to.eql(currentTime.dayOfWeek);
+            }
+        })
+        it('Should fail if afterMins not array', () => {
+            let timeListObj = ReminderHandler.convertCustomTimesToList(currentTime, "fail")
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+
+        })
+        it('Should fail if not all values in afterMins is a number', () => {
+            let timeListObj = ReminderHandler.convertCustomTimesToList(currentTime, [1, "fail"])
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+        })
+        it('Should fail if currentTime mins is not valid', () => {
+            let fakeCurrentTime = JSON.parse(JSON.stringify(currentTime))
+            fakeCurrentTime.minutes = "fail"
+            let timeListObj = ReminderHandler.convertCustomTimesToList(fakeCurrentTime, [1,2])
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+        })
+        it('Should fail if currentTime hrs is not valid', () => {
+            let fakeCurrentTime = JSON.parse(JSON.stringify(currentTime))
+            fakeCurrentTime.hours = "fail"
+            let timeListObj = ReminderHandler.convertCustomTimesToList(fakeCurrentTime, [1, 2])
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+        })
+        it('Should fail if currentTime dayOfWeek is not valid', () => {
+            let fakeCurrentTime = JSON.parse(JSON.stringify(currentTime))
+            fakeCurrentTime.dayOfWeek = "fail"
+            let timeListObj = ReminderHandler.convertCustomTimesToList(fakeCurrentTime, [1, 2])
+            expect(timeListObj.returnCode).to.equal(DevConfig.FAILURE_CODE)
+            console.log(timeListObj.data)
+        })
     })
 })
 
@@ -264,7 +404,15 @@ describe('Setting reminders', () => {
             expect(Object.keys(scheduler.scheduledJobs).filter(jobId => jobId.includes("_r_")).length).to.equal(0);
             participant = await participants.get(testId)
             participant.firstName = "John";
-            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", 15, 0);
+            let now = ExperimentUtils.getNowDateObject(participant.parameters.timezone)
+            let currentTime = {
+                minutes : now.minutes,
+                hours : now.hours,
+                dayOfWeek: [now.dayOfWeek]
+            }
+            let timeListObj = ReminderHandler.convertPeriodToList(
+                currentTime, 15, 0)
+            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", timeListObj.data);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(Array.isArray(returnObj.data))
             expect(returnObj.data.length).to.equal(0);
@@ -272,7 +420,15 @@ describe('Setting reminders', () => {
         it('Should return success and list of jobs', async () => {
             participant = await participants.get(testId);
             participant.firstName = "John";
-            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", 15, 0);
+            let now = ExperimentUtils.getNowDateObject(participant.parameters.timezone)
+            let currentTime = {
+                minutes : now.minutes,
+                hours : now.hours,
+                dayOfWeek: [now.dayOfWeek]
+            }
+            let timeListObj = ReminderHandler.convertPeriodToList(
+                currentTime, 15, 0)
+            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", timeListObj.data);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(Array.isArray(returnObj.data))
             expect(returnObj.data.length).to.equal(0);
@@ -287,7 +443,15 @@ describe('Setting reminders', () => {
         it('Should return success and list of jobs', async () => {
             participant = await participants.get(testId);
             participant.firstName = "John";
-            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", 15, 1);
+            let now = ExperimentUtils.getNowDateObject(participant.parameters.timezone)
+            let currentTime = {
+                minutes : now.minutes,
+                hours : now.hours,
+                dayOfWeek: [now.dayOfWeek]
+            }
+            let timeListObj = ReminderHandler.convertPeriodToList(
+                currentTime, 15, 1)
+            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", timeListObj.data);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(Array.isArray(returnObj.data))
             expect(returnObj.data.length).to.equal(1);
@@ -306,7 +470,15 @@ describe('Setting reminders', () => {
         it('Should return success and list of jobs', async () => {
             participant = await participants.get(testId);
             participant.firstName = "John";
-            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", 13, 3);
+            let now = ExperimentUtils.getNowDateObject(participant.parameters.timezone)
+            let currentTime = {
+                minutes : now.minutes,
+                hours : now.hours,
+                dayOfWeek: [now.dayOfWeek]
+            }
+            let timeListObj = ReminderHandler.convertPeriodToList(
+                currentTime, 13, 3)
+            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", timeListObj.data);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(Array.isArray(returnObj.data))
             expect(returnObj.data.length).to.equal(3);
@@ -337,7 +509,15 @@ describe('Setting reminders', () => {
         it('Should return success and list of jobs', async () => {
             participant = await participants.get(testId2);
             participant.firstName = "John";
-            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "1231245", 17, 3);
+            let now = ExperimentUtils.getNowDateObject(participant.parameters.timezone)
+            let currentTime = {
+                minutes : now.minutes,
+                hours : now.hours,
+                dayOfWeek: [now.dayOfWeek]
+            }
+            let timeListObj = ReminderHandler.convertPeriodToList(
+                currentTime, 17, 3)
+            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "1231245", timeListObj.data);
             expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
             assert(Array.isArray(returnObj.data))
             expect(returnObj.data.length).to.equal(3);
@@ -363,24 +543,6 @@ describe('Setting reminders', () => {
         })
     })
 
-    describe('Fails', () => {
-        let participant, newPart, returnObj;
-        it('Should return fail when frequency not number', async () => {
-            participant = await participants.get(testId);
-            participant.firstName = "John";
-            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", "13", 3);
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-
-        })
-        it('Should return fail when numRepeats not number', async () => {
-            participant = await participants.get(testId);
-            participant.firstName = "John";
-            returnObj = await ReminderHandler.setReminder(testConfig, testBot, participant, "12345", 13, "0");
-            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-
-        })
-
-    })
 
 })
 describe('Cancelling reminders', () => {

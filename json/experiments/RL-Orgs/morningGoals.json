@@ -233,7 +233,7 @@
     "qType" : "dummy",
     "replyMessages" : {
       "English" : ["Here are examples of SMART goals:\n\n * <i>Gain four new clients for my business this quarter by conducting 3 or more customer meetings each week</i>\n\n * <i>Increase average contract value by 15% by the end of the week.</i>\n\n * <i>Decrease average time to close a deal with a new client by 10% by the end of the week.</i>\n\n * <i>Increase the number of contact points with prospective clients by 30% by the end of the week.</i>"],
-      "Deutsch" : ["Hier sind Beispiele von SMART-Zielen:\n\n* <i>In diesem Quartal vier neue Kunden für mein Unternehmen gewinnen, indem ich jede Woche 3 oder mehr Kundengespräche führe</i>\n\n * <i>Den durchschnittlichen Vertragswert bis zum Ende der Woche um 15% erhöhen</i>\n\n * <i>Die durchschnittliche Zeit bis zum Abschluss eines Geschäfts mit einem neuen Kunden um 10% bis zum Ende der Woche verringern</i>\n\n * <i>Die Anzahl der Kontaktpunkte mit potenziellen Kunden um 30% bis zum Ende der Woche erhöhen</i>"]
+      "Deutsch" : ["Hier sind Beispiele von SMART-Zielen:\n\n* <i>In diesem Quartal vier neue Kunden für mein Unternehmen gewinnen, indem ich jede Woche 3 oder mehr Kundengespräche führe</i>\n\n * <i>Den durchschnittlichen Vertragswert bis zum Ende der Woche um 15% erhöhen</i>\n\n * <i>Die durchschnittliche Zeit bis zum Abschluss eines Geschäfts mit einem neuen Kunden um 10% bis zum Ende der Woche verringern</i>\n\n * <i>Die Anzahl der Interaktionen mit potenziellen Kunden um 30% bis zum Ende der Woche erhöhen</i>"]
     },
     "nextQuestion" : "Morning-Goals-All.continueFromExample"
   },
@@ -255,7 +255,7 @@
     "nextQuestion" : "Morning-Goals-All.remindWorkIntention",
     "replyMessages" : {
       "English" : ["Great, let's get to it!"],
-      "Deutsch" : ["Großartig, machen wir gleich weiter!"]
+      "Deutsch" : ["Toll, machen wir gleich weiter!"]
     },
     "reminder" : {
       "customMins" : [30, 90, 210]
@@ -605,7 +605,7 @@
     "nextQuestion" : "Morning-Goals-All.remindRelIntention",
     "replyMessages" : {
       "English" : ["Great, let's get to it!"],
-      "Deutsch" : ["Großartig, machen wir gleich weiter!"]
+      "Deutsch" : ["Toll, machen wir gleich weiter!"]
     },
     "reminder" : {
       "customMins" : [30, 90, 210]

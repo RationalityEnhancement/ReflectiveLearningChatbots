@@ -89,7 +89,7 @@
     "qType" : "qualtrics",
     "text" : {
       "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
-      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die nachfolgende Fragebogen sorgfältig und vollständig auszufüllen."
+      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgenden Fragebögen sorgfältig und vollständig auszufüllen."
     },
     "qualtricsLink" : "https://uclapsych.qualtrics.com/jfe/form/SV_bwNRzEFGXhZSGAC",
     "qualtricsFields" : [

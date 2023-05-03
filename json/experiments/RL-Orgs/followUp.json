@@ -19,7 +19,7 @@
         "if" : "${pauseEnded} == $B{false}",
         "then" : {
           "English" : ["Hello again, ${FIRST_NAME}! I hope you had a good break.", "I am back now to complete the second-last round of questionnaires for the program."],
-          "Deutsch" : ["Hallo zurück, ${FIRST_NAME}! Ich hoffe, Sie konnten Ihre Pause genießen.", "Ich bin wieder da, mit der vorletzten Fragerunde zum Programm."]
+          "Deutsch" : ["Hallo, ${FIRST_NAME}! Willkommen zurück. Ich hoffe, Sie konnten Ihre Pause genießen.", "Ich bin wieder da, mit der vorletzten Fragerunde zum Programm."]
         },
         "else" : {
           "English" : ["Good morning, ${FIRST_NAME}!"],
@@ -107,7 +107,7 @@
     "qType" : "qualtrics",
     "text" : {
       "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
-      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die nachfolgende Fragebogen sorgfältig und vollständig auszufüllen."
+      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgenden Fragebögen sorgfältig und vollständig auszufüllen."
     },
     "qualtricsLink" : "https://uclapsych.qualtrics.com/jfe/form/SV_dnyDkYNjDIEwveC",
     "qualtricsFields" : [

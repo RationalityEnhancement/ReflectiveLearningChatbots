@@ -74,7 +74,7 @@
     "qType" : "qualtrics",
     "text" : {
       "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
-      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die nachfolgende Fragebogen sorgfältig und vollständig auszufüllen."
+      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgenden Fragebögen sorgfältig und vollständig auszufüllen."
     },
     "qualtricsLink" : "https://uclapsych.qualtrics.com/jfe/form/SV_dnyDkYNjDIEwveC",
     "qualtricsFields" : [
@@ -111,7 +111,7 @@
     ],
     "replyMessages" : {
       "English" : ["Thank you for that!", "That’s all for now. From today onwards, I will be quiet for a while. You will hear from me after 7 days, when I present you the final round of questionnaires.", "See you later, and have a good break!"],
-      "Deutsch" : ["Vielen Dank!", "Das ist alles für den Moment. Von heute an werde ich mich eine Woche lang nicht melden. In 7 Tagen komme ich noch mal mit der letzten Fragerunde zurück.", "Bis dann und eine schöne Woche!"]
+      "Deutsch" : ["Vielen Dank!", "Das ist alles für den Moment. Von heute an werde ich mich eine Woche lang nicht melden. In 7 Tagen komme ich noch mal mit der letzten Fragerunde zurück.", "Bis dann!"]
     }
   },
   {

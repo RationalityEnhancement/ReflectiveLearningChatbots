@@ -36,7 +36,7 @@
     "qId" : "relGoalsProgress",
     "text" : {
       "English" : "To what extent did you act according to these goals today, on a scale from 0 (not at all) to 100 (completely)?",
-      "Deutsch" : "Wie haben Sie heute nach diesen Zielen gehandelt, auf einer Skala von 0 (gar nicht) bis 100 (vollständig)?"
+      "Deutsch" : "Wie sehr haben Sie heute nach diesen Zielen gehandelt, auf einer Skala von 0 (gar nicht) bis 100 (vollständig)?"
     },
     "qType" : "number",
     "range" : {
@@ -382,11 +382,11 @@
         "if" : "${TODAY} != $S{Fri}",
         "then" : {
           "English": ["Great job reflecting today! Thank you for such insightful answers. See you tomorrow!"],
-          "Deutsch" : ["Großartige Arbeit! Danke für die aufschlussreichen Antworten. Bis morgen!"]
+          "Deutsch" : ["Gute Arbeit! Danke für die aufschlussreichen Antworten. Bis morgen!"]
         },
         "else" : {
           "English": ["Great job reflecting today! Thank you for such insightful answers. Have a good weekend, and see you on Monday!"],
-          "Deutsch" : ["Großartige Arbeit! Danke für die aufschlussreichen Antworten. Ein schönes Wochenende und bis Montag!"]
+          "Deutsch" : ["Gute Arbeit! Danke für die aufschlussreichen Antworten. Ein schönes Wochenende und bis Montag!"]
         }
       }
     ],

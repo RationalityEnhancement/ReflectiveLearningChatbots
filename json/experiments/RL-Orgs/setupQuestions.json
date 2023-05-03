@@ -193,7 +193,7 @@
     "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
-      "Deutsch" : ["Großartig, Sie werden diese Fragen um ${CURRENT_ANSWER} erhalten."]
+      "Deutsch" : ["Alles klar, Sie werden diese Fragen um ${CURRENT_ANSWER} Uhr erhalten."]
     },
     "nextActions" : [
       {
@@ -217,7 +217,7 @@
     "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
-      "Deutsch" : ["Großartig, Sie werden diese Fragen um ${CURRENT_ANSWER} erhalten."]
+      "Deutsch" : ["Alles klar, Sie werden diese Fragen um ${CURRENT_ANSWER} Uhr erhalten."]
     },
     "nextActions" : [
       {

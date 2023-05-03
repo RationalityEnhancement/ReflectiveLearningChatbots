@@ -48,7 +48,7 @@
     },
     "multiChoice": {
       "English": "Choose as many options as you like. <b>Remember to click <i>Done</i> to finish choosing.</b> You may need to scroll down to see all options. Send <i>/repeat</i> to display the options once again if they are no longer visible.",
-      "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf <i>Erledigt</i>, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können. Senden Sie <i>/repeat</i>, um die Optionen erneut anzuzeigen."
+      "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf <i>Erledigt</i>, wenn Sie fertig sind. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können. Senden Sie <i>/repeat</i>, um die Optionen erneut anzuzeigen."
     },
     "terminateAnswer": {
       "English": "Done",
@@ -60,7 +60,7 @@
     },
     "qualtricsFillPrompt" : {
       "English" : "Please follow the link below to the survey.",
-      "Deutsch" : "Bitte folgen Sie dem untenstehenden Link zum Fragebogen."
+      "Deutsch" : "Bitte folgen Sie dem untenstehenden Link zu den Fragebögen."
     },
     "qualtricsDonePrompt" : {
       "English" : "Send <i>Done</i> when you are finished with the survey.",
@@ -75,8 +75,8 @@
       "Deutsch" : "Ihre Antwort kann aus einer oder mehreren Nachrichten bestehen. <b>Denken Sie daran, <i>Erledigt</i> in einer einzelnen Nachricht zu senden, sobald Sie mit Ihrer Antwort fertig sind.</b>"
     },
     "linkToSurvey" : {
-      "English" : "Link to Survey (opens in browser)",
-      "Deutsch" : "Link zum Fragebogen (wird im Browser geöffnet)"
+      "English" : "Click here to open the survey in your web browser.",
+      "Deutsch" : "Klicken Sie hier, um die Fragebögen in ihrem Webbrowser zu öffnen."
     },
     "likert5Options": {
       "English": [
@@ -140,7 +140,7 @@
   "experiment" : {
     "endExperiment" : {
       "English" : "You will no longer receive any messages from me. Thank you for participating! I hope I was able to help you improve your decision-making.",
-      "Deutsch" : "Sie werden keine Nachrichten mehr erhalten. Vielen Dank, dass Sie teilgenommen haben. Ich hoffe, ich konnte Ihnen bei zukünftigen Entscheidungsfindungen helfen."
+      "Deutsch" : "Sie werden keine Nachrichten mehr erhalten. Vielen Dank, dass Sie teilgenommen haben. Ich hoffe, ich konnte Ihnen helfen, Ihre Entscheidungsfindung zu verbessern."
     },
     "reportFeedback" : {
       "English" : "<b>Report Feedback</b>\n\nJust type in your feedback in a single message and press send!\n\nIf this was a mistake and you don't want to report feedback, send <i>/cancel</i>.",
@@ -159,8 +159,8 @@
       "Deutsch" : "Danke für das nützliche Feedback!"
     },
     "repeatFail" : {
-      "English" : "No outstanding questions!",
-      "Deutsch" : "Keine ausstehenden Fragen!"
+      "English" : "There are currently no outstanding questions! I will message you later with the next question.",
+      "Deutsch" : "Ich habe im Moment keine weiteren Fragen! Ich werde mich später wieder melden."
     },
     "cannotHelp" : {
       "English" : "Sorry, I cannot help you any further at this moment!",

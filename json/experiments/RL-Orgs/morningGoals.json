@@ -105,7 +105,7 @@
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Morning-Goals-All.checkWantGoalExampleQuestion"
+        "then" : "Morning-Goals-All.remindWorkIntention"
       }
     ],
     "cNextActions" : [
@@ -119,6 +119,15 @@
         ]
       }
     ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
+        "then" : {
+          "English" : ["Then let's get right to it!"],
+          "Deutsch" : ["Dann machen wir direkt weiter!"]
+        }
+      }
+    ],
     "reminder" : {
       "customMins" : [30, 90, 210]
     }
@@ -129,8 +138,17 @@
     "cNextQuestions" : [
       {
         "if" : "${dontAskInfoAgain} == $B{true}",
-        "then" : "Morning-Goals-All.checkWantGoalExampleQuestion",
+        "then" : "Morning-Goals-All.remindWorkIntention",
         "else" : "Morning-Goals-All.wantGoalInfo"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${dontAskInfoAgain} == $B{true}",
+        "then" : {
+          "English" : ["Let's get right to the goal-setting today!"],
+          "Deutsch" : ["Machen wir heute direkt weiter mit der Zielsetzung!"]
+        }
       }
     ]
   },
@@ -182,6 +200,10 @@
           {
             "aType" : "setBooleanVar",
             "args" : ["dontAskExampleAgain", "$B{true}"]
+          },
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["dontAskInfoAgain", "$B{true}"]
           }
         ]
       }
@@ -428,8 +450,8 @@
       {
         "if": "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
         "then" : {
-          "English" : ["Very well.", "Then let's move on directly to the work-related goals."],
-          "Deutsch" : ["Alles klar.", "Machen wir direkt weiter mit den Arbeitszielen."]
+          "English" : ["Very well."],
+          "Deutsch" : ["Alles klar."]
         }
       }
     ],
@@ -455,7 +477,7 @@
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Morning-Goals-All.checkWantRelGoalExampleQuestion"
+        "then" : "Morning-Goals-All.remindRelIntention"
       }
     ],
     "cNextActions" : [
@@ -469,6 +491,15 @@
         ]
       }
     ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
+        "then" : {
+          "English" : ["Then let's get right to it!"],
+          "Deutsch" : ["Dann machen wir direkt weiter!"]
+        }
+      }
+    ],
     "reminder" : {
       "customMins" : [30, 90, 210]
     }
@@ -479,8 +510,17 @@
     "cNextQuestions" : [
       {
         "if" : "${dontAskRelInfoAgain} == $B{true}",
-        "then" : "Morning-Goals-All.checkWantRelGoalExampleQuestion",
+        "then" : "Morning-Goals-All.remindRelIntention",
         "else" : "Morning-Goals-All.wantRelGoalInfo"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${dontAskRelInfoAgain} == $B{true}",
+        "then" : {
+          "English" : ["Let's get right to the goal-setting today!"],
+          "Deutsch" : ["Machen wir heute direkt weiter mit der Zielsetzung!"]
+        }
       }
     ]
   },
@@ -532,6 +572,10 @@
           {
             "aType" : "setBooleanVar",
             "args" : ["dontAskRelExampleAgain", "$B{true}"]
+          },
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["dontAskRelInfoAgain", "$B{true}"]
           }
         ]
       }

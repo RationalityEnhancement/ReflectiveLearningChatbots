@@ -96,7 +96,7 @@ df_columns = ["uniqueId", "teamName", "condition", "timezone", "morningTime", "e
               "dayNRelPursuit", "dayNRelRelevance", "dayNRelMetaDescription", "dayNRelWhatChanged","dayNRelOtherChange",
               "dayNRelChangeMoreRelevant", "dayNRelChangeLessRelevant", "dayNRelChangeEquallyRelevant",
               "dayNRelCanYouImprove", "dayNRelChangeIdeas", "dayNRelChangeSuggestions",
-              "relImproveGoalSetting", "relHowImprove", "relPlan", "relPlanRemember"
+              "relImproveGoalSetting", "relHowImprove", "relPlan", "relPlanRemember",
               "taskGoalsProgress", "moreWork", "impact", "emotions", "pursuitSatisfaction", "goalsImportance",
               "day1Pursuit", "day1Relevance", "day1MetaDescription", "day1MetaJudgement",
               "dayNPursuit", "dayNRelevance", "dayNMetaDescription", "dayNWhatChanged","dayNOtherChange",
@@ -170,5 +170,7 @@ csv_df = pd.DataFrame.from_records(df_rows, columns=df_columns)
 
 display_cols = ["uniqueId", "stageName", "stageDay", "reflectionComplete", "reflectionStart", "reflectionLength(s)","survey"]
 #print(json.dumps(part_info_dict, sort_keys=False, indent=4))
+print(pd.unique(csv_df.uniqueId))
 print(csv_df[display_cols])
+print(len(csv_df))
 csv_df.to_csv(results_folder + '/csv_data.csv')

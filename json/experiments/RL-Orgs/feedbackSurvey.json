@@ -4,11 +4,11 @@
     "qType" : "dummy",
     "cNextQuestions" : [
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
         "then" : "Feedback.wantContinue"
       },
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} == $B{true})",
         "then" : "Feedback.endExperimentEarly",
         "else" : "Feedback.survey"
       }
@@ -20,7 +20,7 @@
     },
     "cNextActions" : [
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
         "then" : [
           {
             "aType" : "setBooleanVar",

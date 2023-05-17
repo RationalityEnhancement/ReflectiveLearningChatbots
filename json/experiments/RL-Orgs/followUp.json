@@ -4,11 +4,11 @@
     "qType" : "dummy",
     "cNextQuestions" : [
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
         "then" : "Follow-Up.wantContinue"
       },
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} == $B{true})",
         "then" : "Follow-Up.endExperiment",
         "else" : "Follow-Up.survey"
       }
@@ -38,7 +38,7 @@
         ]
       },
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
         "then" : [
           {
             "aType" : "setBooleanVar",

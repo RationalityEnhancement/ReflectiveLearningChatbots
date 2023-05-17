@@ -13,18 +13,18 @@
     "qType" : "dummy",
     "cNextQuestions" : [
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
         "then" : "Onboarding.wantContinue"
       },
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} == $B{true})",
         "then" : "Onboarding.endExperiment",
         "else" : "Onboarding.survey"
       }
     ],
     "selectQFirst" : true,
     "cNextActions" : [{
-      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+      "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
       "then" : [
         {
           "aType" : "setBooleanVar",

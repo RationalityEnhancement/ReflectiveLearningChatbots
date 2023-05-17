@@ -1,0 +1,10 @@
+{
+  "English" : [
+    "Great job!",
+    "With the completion of this survey, you earned more points for your team. Check out how your team is doing against the other teams on the leaderboard: https://chatbot-leaderboard.herokuapp.com/en"
+  ],
+  "Deutsch" : [
+    "Gut gemacht!",
+    "Damit haben Sie mehr Punkte für Ihr Team geholt. Sehen Sie sich an, wie Ihr Team im Vergleich zu den anderen Teams in der Rangliste abschneidet: https://chatbot-leaderboard.herokuapp.com/de"
+  ]
+}

@@ -4,18 +4,18 @@
     "qType" : "dummy",
     "cNextQuestions" : [
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
         "then" : "Pre-Test-2.wantContinue"
       },
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} == $B{true})",
         "then" : "Pre-Test-2.endExperiment",
         "else" : "Pre-Test-2.survey"
       }
     ],
     "selectQFirst" : true,
     "cNextActions" : [{
-      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+      "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
       "then" : [
         {
           "aType" : "setBooleanVar",
@@ -109,9 +109,15 @@
         "args" : ["warningGiven", "$B{false}"]
       }
     ],
+    "replyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/survey.json}",
+    "nextQuestion" : "Pre-Test-2.nextSteps"
+  },
+  {
+    "qId" : "nextSteps",
+    "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["Thank you!", "That’s all for today. On the next weekday, we will start another daily routine of setting goals in the morning and then reflecting on them in the evening. This will last for five days again.", "See you later!"],
-      "Deutsch" : ["Vielen Dank!", "Das war's für heute. Wir werden am nächsten Werktag mit noch einer täglichen Routine beginnen, bei der Sie sich morgens Ziele setzen und sie abends reflektieren. Das Ganze machen wir fünf Tage lang wieder.", "Bis später!"]
+      "English" : ["That’s all for today. On the next weekday, we will start another daily routine of setting goals in the morning and then reflecting on them in the evening. This will last for five days again.", "See you later!"],
+      "Deutsch" : ["Das war's für heute. Wir werden am nächsten Werktag mit noch einer täglichen Routine beginnen, bei der Sie sich morgens Ziele setzen und sie abends reflektieren. Das Ganze machen wir fünf Tage lang wieder.", "Bis später!"]
     }
   },
   {

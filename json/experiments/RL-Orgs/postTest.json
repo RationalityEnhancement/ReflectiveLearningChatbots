@@ -4,18 +4,18 @@
     "qType" : "dummy",
     "cNextQuestions" : [
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
         "then" : "Post-Test.wantContinue"
       },
       {
-        "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} == $B{true})",
+        "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} == $B{true})",
         "then" : "Post-Test.endExperiment",
         "else" : "Post-Test.survey"
       }
     ],
     "selectQFirst" : true,
     "cNextActions" : [{
-      "if" : "(${STAGE_DAY} > $N{3}) AND (${warningGiven} != $B{true})",
+      "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
       "then" : [
         {
           "aType" : "setBooleanVar",
@@ -109,9 +109,15 @@
         "args" : ["warningGiven", "$B{false}"]
       }
     ],
+    "replyMessages" : "$F{json/experiments/RL-Orgs/replyMessages/survey.json}",
+    "nextQuestion" : "Post-Test.nextSteps"
+  },
+  {
+    "qId" : "nextSteps",
+    "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["Thank you for that!", "That’s all for now. From today onwards, I will be quiet for a while. You will hear from me after 7 days, when I present you the final round of questionnaires.", "See you later, and have a good break!"],
-      "Deutsch" : ["Vielen Dank!", "Das ist alles für den Moment. Von heute an werde ich mich eine Woche lang nicht melden. In 7 Tagen komme ich noch mal mit der letzten Fragerunde zurück.", "Bis dann!"]
+      "English" : ["That’s all for now. From today onwards, I will be quiet for a while. You will hear from me after 7 days, when I present you the final round of questionnaires.", "See you later, and have a good break!"],
+      "Deutsch" : ["Das ist alles für den Moment. Von heute an werde ich mich eine Woche lang nicht melden. In 7 Tagen komme ich noch mal mit der letzten Fragerunde zurück.", "Bis dann!"]
     }
   },
   {

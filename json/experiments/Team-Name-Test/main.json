@@ -21,6 +21,7 @@
     "ProlificID" : "string"
   },
   "debug" : {
+    "requirePassword" : true,
     "experimenter" : true,
     "actionMessages" : false,
     "enableNext" : true,

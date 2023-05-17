@@ -12,6 +12,7 @@
     "pId" : "string"
   },
   "debug" : {
+    "requirePassword" : true,
     "experimenter" : true,
     "actionMessages" : true,
     "enableNext" : true,

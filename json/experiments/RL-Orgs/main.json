@@ -62,6 +62,7 @@
     "testNumArr" : "numArr"
   },
   "debug" : {
+    "requirePassword" : true,
     "experimenter" : true,
     "actionMessages" : true,
     "enableNext" : true,

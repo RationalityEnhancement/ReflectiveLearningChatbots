@@ -5,6 +5,7 @@
   "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
   "debug" : {
+    "requirePassword" : true,
     "experimenter" : true,
     "actionMessages" : true,
     "enableNext" : true,

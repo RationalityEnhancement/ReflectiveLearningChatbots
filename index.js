@@ -29,6 +29,7 @@ const ReminderHandler = require('./src/reminderHandler')
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 5000;
 const URL = process.env.URL || "https://immense-caverns-61960.herokuapp.com"
+const EXP_PASSWORD = process.env.EXP_PASSWORD;
 const ConfigParser = require('./src/configParser')
 const moment = require('moment-timezone')
 const lodash = require('lodash');
@@ -63,6 +64,18 @@ mongo.connect(process.env.DB_CONNECTION_STRING, { useNewUrlParser: true, useUnif
 //----------------------
 //-- helper functions --
 //----------------------
+
+// Validate a password entered by the user to approve certain commands
+let validatePassword = (text) => {
+    let textSplit = text.split(' ');
+    if(textSplit.length > 0){
+        let password = textSplit[1];
+        if(password === EXP_PASSWORD){
+            return true;
+        }
+    }
+    return false;
+}
 
 // Fetch the participant with error handling
 let getParticipant = async (uniqueId) => {
@@ -275,7 +288,6 @@ bot.command('log_queue', async ctx => {
 // Delete the participant
 bot.command('delete_me', async ctx => {
 
-
     // Check if participant exists
     try{
       let secretMap = await getByChatId(config.experimentId, ctx.from.id);
@@ -289,10 +301,20 @@ bot.command('delete_me', async ctx => {
       console.log('Participant does not exist!')
       return;
     }
-    // In field experiment, only allow deleting in the setup phase
-    if(!config.debug.experimenter){
-        if(participant.stages.activity.length > 0)
+    // If the setup phase has passed
+    if (participant.stages.activity.length > 0){
+        // Disallow deletion if experimenter debug flag is turned off
+        if(!config.debug.experimenter) {
+            ctx.reply("You are not authorized to do that now!")
             return;
+        }
+        // Password protect deletion if experimenter debug flag is turned on
+        if(config.debug.requirePassword){
+            if(!validatePassword(ctx.update.message.text)){
+                ctx.reply("You are not authorized to do that now!")
+                return;
+            }
+        }
     }
 
     // Remove all jobs for participant
@@ -324,7 +346,18 @@ bot.command('delete_me', async ctx => {
 
 // Delete the experiment
 bot.command('delete_exp', async ctx => {
-    if(!config.debug.experimenter) return;
+    // Disallow this if experimenter debug flag is turned off
+    if(!config.debug.experimenter) {
+        ctx.reply("You are not authorized to do that now!")
+        return;
+    }
+    // Password protecting this function even when experimenter debug flag is turned on
+    if(config.debug.requirePassword){
+        if(!validatePassword(ctx.update.message.text)){
+            ctx.reply("You are not authorized to do that now!")
+            return;
+        }
+    }
   try{
       // Check if experiment exists
     let experiment = await experiments.get(config.experimentId);

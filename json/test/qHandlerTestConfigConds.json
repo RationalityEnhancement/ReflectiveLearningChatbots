@@ -5,6 +5,7 @@
   "relConditionSizes" : [0.5, 0.5],
   "assignmentScheme" : "pid",
   "debug" : {
+    "requirePassword" : true,
     "experimenter" : true,
     "actionMessages" : true,
     "enableNext" : true,

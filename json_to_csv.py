@@ -23,7 +23,10 @@ next_states = {
     'Int-Reflection': 'reflection',
     'Post-Test': 'post',
     "Pre-Test": "pre",
-    "Pre-Test-2": "mid"
+    "Pre-Test-2": "mid",
+    "Goal-Setting": 'reflection',
+    'Follow-Up': "followup",
+    "Update-Times": "update"
 }
 
 
@@ -75,11 +78,11 @@ def add_to_day(stages, stage, day, key, value):
     if key in stages[stage][day]:
         stages[stage][day][key] += "|" + str(value)
     else:
-        stages[stage][day][key] = value
+        stages[stage][day][key] = str(value).replace("\n",".")
 
 irrelevant_qids = ["readyToStart", "firstRelationshipPrompt", "askAddTaskGoals", "anythingElse", "wantRelationshipGoal",
                    "continueFromInfo", "continueFromExample", "continueFromRelInfo", "continueFromRelExample",
-                   "addGoalsLater", "askReflectTaskGoals"]
+                   "addGoalsLater", "askReflectTaskGoals","wantContinue"]
 irrelevant_categories = ["setupQuestions"]
 
 df_columns = ["uniqueId", "teamName", "condition", "timezone", "morningTime", "eveningTime",
@@ -93,7 +96,7 @@ df_columns = ["uniqueId", "teamName", "condition", "timezone", "morningTime", "e
               "dayNRelPursuit", "dayNRelRelevance", "dayNRelMetaDescription", "dayNRelWhatChanged","dayNRelOtherChange",
               "dayNRelChangeMoreRelevant", "dayNRelChangeLessRelevant", "dayNRelChangeEquallyRelevant",
               "dayNRelCanYouImprove", "dayNRelChangeIdeas", "dayNRelChangeSuggestions",
-              "relImproveGoalSetting", "relHowImprove", "relPlan", "relPlanRemember"
+              "relImproveGoalSetting", "relHowImprove", "relPlan", "relPlanRemember",
               "taskGoalsProgress", "moreWork", "impact", "emotions", "pursuitSatisfaction", "goalsImportance",
               "day1Pursuit", "day1Relevance", "day1MetaDescription", "day1MetaJudgement",
               "dayNPursuit", "dayNRelevance", "dayNMetaDescription", "dayNWhatChanged","dayNOtherChange",
@@ -139,14 +142,24 @@ for part in participants:
             if qId not in irrelevant_qids and category not in irrelevant_categories:
                 add_to_day(part_info_dict[key]['stages'], answer['stageName'], answer['stageDay'], qId, '|'.join(answer['answer']))
 
-    break
-
 df_rows = []
 
+stage_should_days = {
+    "Onboarding":1,
+    "Pre-Test":1, "Goal-Setting":2, "Pre-Test-2":1, "Intervention":2, "Post-Test":1, "Follow-Up":1
+}
+
 for uniqueId, part in part_info_dict.items():
-    for stage, days in part["stages"].items():
-        for day, interactions in days.items():
-            row_dict = interactions.copy()
+    for stage in stage_should_days.keys():
+        if stage in part["stages"]:
+            should_days = max(part["stages"][stage].keys())
+        else:
+            should_days = stage_should_days[stage]
+        days = list(range(1,should_days + 1))
+        for day in days:
+            row_dict = {}
+            if stage in part["stages"] and day in part["stages"][stage]:
+                row_dict = part["stages"][stage][day].copy()
             row_dict["uniqueId"] = uniqueId
             row_dict["stageDay"] = day
             row_dict["stageName"] = stage
@@ -156,6 +169,8 @@ for uniqueId, part in part_info_dict.items():
 csv_df = pd.DataFrame.from_records(df_rows, columns=df_columns)
 
 display_cols = ["uniqueId", "stageName", "stageDay", "reflectionComplete", "reflectionStart", "reflectionLength(s)","survey"]
-print(json.dumps(part_info_dict, sort_keys=False, indent=4))
+#print(json.dumps(part_info_dict, sort_keys=False, indent=4))
+print(pd.unique(csv_df.uniqueId))
 print(csv_df[display_cols])
+print(len(csv_df))
 csv_df.to_csv(results_folder + '/csv_data.csv')

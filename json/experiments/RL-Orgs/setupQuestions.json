@@ -14,13 +14,17 @@
       "aType" : "saveAnswerTo",
       "args" : ["language"]
     }],
-    "nextQuestion" : "setupQuestions.introduceInstructions",
+    "nextQuestion" : "setupQuestions.replyToLanguage",
+    "start" : true
+  },
+  {
+    "qId": "replyToLanguage",
+    "qType": "dummy",
     "replyMessages" : {
       "English" : ["Thank you for choosing a language"],
       "Deutsch": ["Vielen Dank, dass Sie eine Sprache ausgewählt haben."]
     },
-    "start" : true,
-    "suppressInputPrompt" : false
+    "nextQuestion": "setupQuestions.introduceInstructions"
   },
   {
     "qId" : "introduceInstructions",
@@ -57,8 +61,8 @@
   {
     "qId": "companyQuestion",
     "text": {
-      "English": "What is the name of the company you work for?",
-      "Deutsch": "Wie heißt die Firma, bei der Sie arbeiten?"
+      "English": "What is the name of the <b>company</b> you work for? (This is <b>NOT</b> the team name you were assigned.)",
+      "Deutsch": "Wie heißt die <b>Firma</b>, bei der Sie arbeiten? (Dies ist <b>NICHT</b> der Teamname, den Sie bekommen haben.)"
     },
     "qType": "freeform",
     "replyMessages": {
@@ -180,7 +184,7 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nWhen would you like to receive these questions?\n\n(This can be changed at a later point using the command <i>/talk</i>.)",
-      "Deutsch" : "In einigen Phasen des Experiments werden Sie morgens vor Arbeitsbeginn gebeten, sich Ziele zu setzen.\n\nWann möchten Sie diese Fragen erhalten?\n\n(Der Zeitpunkt kann später mit dem Befehl <i>/talk</i> geändert werden.)"
+      "Deutsch" : "In einigen Phasen des Programms werden Sie morgens vor Arbeitsbeginn gebeten, sich Ziele zu setzen.\n\nWann möchten Sie diese Fragen erhalten?\n\n(Der Zeitpunkt kann später mit dem Befehl <i>/talk</i> geändert werden.)"
     },
     "options" : {
       "English" : "$F{json/static/morningTimeOptions.json}",
@@ -189,7 +193,7 @@
     "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
-      "Deutsch" : ["Großartig, Sie werden diese Fragen um ${CURRENT_ANSWER} erhalten."]
+      "Deutsch" : ["Alles klar, Sie werden diese Fragen um ${CURRENT_ANSWER} Uhr erhalten."]
     },
     "nextActions" : [
       {
@@ -204,7 +208,7 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set that same morning.\n\nWhen would you like to receive these questions?\n\n(This can be changed at a later point using the command <i>/talk</i>.)",
-      "Deutsch" : "In einigen Phasen des Experiments werden Sie abends nach Feierabend gebeten, über die am Morgen gesetzten Ziele zu reflektieren.\n\nWann möchten Sie diese Fragen erhalten?\n\n(Der Zeitpunkt kann später mit dem Befehl <i>/talk</i> geändert werden.)"
+      "Deutsch" : "In einigen Phasen des Programms werden Sie abends nach Feierabend gebeten, über die am Morgen gesetzten Ziele zu reflektieren.\n\nWann möchten Sie diese Fragen erhalten?\n\n(Der Zeitpunkt kann später mit dem Befehl <i>/talk</i> geändert werden.)"
     },
     "options" : {
       "English" : "$F{json/static/eveningTimeOptions.json}",
@@ -213,7 +217,7 @@
     "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER}."],
-      "Deutsch" : ["Großartig, Sie werden diese Fragen um ${CURRENT_ANSWER} erhalten."]
+      "Deutsch" : ["Alles klar, Sie werden diese Fragen um ${CURRENT_ANSWER} Uhr erhalten."]
     },
     "nextActions" : [
       {

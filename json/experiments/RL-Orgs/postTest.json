@@ -32,12 +32,12 @@
     "qId" : "wantContinue",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
-      "Deutsch" : "Möchten Sie mit dem Experiment fortfahren oder es jetzt beenden? Wenn Sie sich für das Beenden entscheiden, werden Sie keine Nachrichten mehr erhalten."
+      "English" : "Would you like to continue with the program or end it now? If you choose to end it, you will stop receiving messages.",
+      "Deutsch" : "Möchten Sie mit dem Programm fortfahren oder es jetzt beenden? Wenn Sie sich für das Beenden entscheiden, werden Sie keine Nachrichten mehr erhalten."
     },
     "options" : {
-      "English" : ["Continue", "End Experiment"],
-      "Deutsch" : ["Fortfahren", "Experiment Beenden"]
+      "English" : ["Continue", "End program"],
+      "Deutsch" : ["Fortfahren", "Programm beenden"]
     },
     "cNextQuestions" : [
       {
@@ -51,7 +51,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : {
           "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
-          "Deutsch" : ["Schön, dass Sie das Experiment fortsetzen möchten!", "Bitte folgen Sie den Anweisungen um fortzufahren."]
+          "Deutsch" : ["Schön, dass Sie das Programm fortsetzen möchten!", "Bitte folgen Sie den Anweisungen um fortzufahren."]
         }
       }
     ]
@@ -65,8 +65,8 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["The experiment has ended."],
-      "Deutsch" : ["Das Experiment ist beendet."]
+      "English" : ["The program has ended."],
+      "Deutsch" : ["Das Programm ist beendet."]
     }
   },
   {
@@ -74,7 +74,7 @@
     "qType" : "qualtrics",
     "text" : {
       "English" : "Please take the time to fill out the following survey thoughtfully and thoroughly.",
-      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die nachfolgende Fragebogen sorgfältig und vollständig auszufüllen."
+      "Deutsch" : "Bitte nehmen Sie sich die Zeit, die folgenden Fragebögen sorgfältig und vollständig auszufüllen."
     },
     "qualtricsLink" : "https://uclapsych.qualtrics.com/jfe/form/SV_dnyDkYNjDIEwveC",
     "qualtricsFields" : [
@@ -92,8 +92,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     },
     "inputPrompt" : {
       "English" : "Enter the survey code displayed at the end of the survey to continue.",
@@ -112,7 +111,7 @@
     ],
     "replyMessages" : {
       "English" : ["Thank you for that!", "That’s all for now. From today onwards, I will be quiet for a while. You will hear from me after 7 days, when I present you the final round of questionnaires.", "See you later, and have a good break!"],
-      "Deutsch" : ["Vielen Dank!", "Das ist alles für den Moment. Von heute an werde ich mich eine Woche lang nicht melden. In 7 Tagen komme ich noch mal mit der letzten Fragerunde zurück.", "Bis dann und eine schöne Woche!"]
+      "Deutsch" : ["Vielen Dank!", "Das ist alles für den Moment. Von heute an werde ich mich eine Woche lang nicht melden. In 7 Tagen komme ich noch mal mit der letzten Fragerunde zurück.", "Bis dann!"]
     }
   },
   {

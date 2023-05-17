@@ -41,12 +41,12 @@
     "qId" : "wantContinue",
     "qType" : "singleChoice",
     "text" : {
-      "English" : "Would you like to continue with the experiment or end it now? If you choose to end it, you will stop receiving messages.",
-      "Deutsch" : "Möchten Sie mit dem Experiment fortfahren oder es jetzt beenden? Wenn Sie sich für das Beenden entscheiden, werden Sie keine Nachrichten mehr erhalten."
+      "English" : "Would you like to continue with the program or end it now? If you choose to end it, you will stop receiving messages.",
+      "Deutsch" : "Möchten Sie mit dem Programm fortfahren oder es jetzt beenden? Wenn Sie sich für das Beenden entscheiden, werden Sie keine Nachrichten mehr erhalten."
     },
     "options" : {
-      "English" : ["Continue", "End Experiment"],
-      "Deutsch" : ["Fortfahren", "Experiment Beenden"]
+      "English" : ["Continue", "End program"],
+      "Deutsch" : ["Fortfahren", "Programm beenden"]
     },
     "cNextQuestions" : [
       {
@@ -60,7 +60,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : {
           "English" : ["Great to hear from you. I see you want to continue the experiment!", "Please follow the instructions to continue."],
-          "Deutsch" : ["Schön, dass Sie das Experiment fortsetzen möchten!", "Bitte folgen Sie den Anweisungen um fortzufahren."]
+          "Deutsch" : ["Schön, dass Sie das Programm fortsetzen möchten!", "Bitte folgen Sie den Anweisungen um fortzufahren."]
         }
       }
     ]
@@ -74,8 +74,8 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["The experiment has ended."],
-      "Deutsch" : ["Das Experiment ist beendet."]
+      "English" : ["The program has ended."],
+      "Deutsch" : ["Das Programm ist beendet."]
     }
   },
   {
@@ -106,8 +106,8 @@
         "args" : ["onboardingComplete", "$B{true}"]
       },
       {
-        "aType" : "startStage",
-        "args" : ["Pre-Test"]
+        "aType" : "setBooleanVar",
+        "args" : ["warningGiven", "$B{false}"]
       }
     ],
     "inputPrompt" : {
@@ -116,13 +116,24 @@
     },
     "continueStrings" : ["IND2023", "TestBypass"],
     "replyMessages" : {
-      "English" : ["Good start! Thank you for completing the survey!", "We will now move on to the second questionnaire with preliminary questions."],
-      "Deutsch" : ["Ein guter Start! Danke, dass Sie den Fragebogen ausgefüllt haben!", "Wir kommen nun zum zweiten Fragebogen mit Vorfragen."]
+      "English" : ["Good start! Thank you for completing the survey!", "That’s all for today. On the next weekday, we will move on to the second questionnaire with preliminary questions."],
+      "Deutsch" : ["Ein guter Start! Danke, dass Sie den Fragebogen ausgefüllt haben!", "Das war's für heute. Wir werden am nächsten Werktag zum zweiten Fragebogen mit Vorfragen kommen."]
     },
-    "nextQuestion" : "Pre-Test.survey",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
+  },
+  {
+    "qId" : "checkComplete",
+    "qType" : "dummy",
+    "cNextActions" : [
+      {
+        "if": "${onboardingComplete} == $B{true}",
+        "then" : [{
+          "aType" : "startStage",
+          "args" : ["Pre-Test"]
+        }]
+      }
+    ]
   }
 ]

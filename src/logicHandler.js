@@ -12,6 +12,7 @@ const ActionHandler = require("./actionHandler")
 const AnswerHandler = require("./answerHandler");
 const ReminderHandler = require("./reminderHandler");
 const moment = require('moment')
+const ExperimentUtils = require("./experimentUtils");
 
 /**
  * Logic handler deals with the logic of what is to occur at each step
@@ -298,9 +299,28 @@ module.exports.sendQuestion = async (bot, participant, chatId, question, schedul
     });
 
     // Set reminders, if any
-    if(question.reminder && question.reminder["freqMins"]){
+    if(question.reminder){
+        let timeListObj;
+        let now = ExperimentUtils.getNowDateObject(participant.parameters.timezone)
+        let currentTime = {
+            minutes : now.minutes,
+            hours : now.hours,
+            dayOfWeek: [now.dayOfWeek]
+        }
+        if(question.reminder.freqMins && question.reminder.numRepeats){
+            timeListObj = ReminderHandler.convertPeriodToList(
+                currentTime, question.reminder.freqMins, question.reminder.numRepeats)
+
+        } else if(question.reminder.customMins){
+            timeListObj = ReminderHandler.convertCustomTimesToList(
+                currentTime, question.reminder.customMins)
+        }
+        if(timeListObj.returnCode === DevConfig.FAILURE_CODE){
+            return ReturnMethods.returnFailure("LHandler: Unable to set reminder:\n"
+                + timeListObj.data)
+        }
         let reminderObj = await ReminderHandler.setReminder(config, bot, participant, chatId,
-            question.reminder.freqMins, question.reminder.numRepeats);
+            timeListObj.data);
         if(reminderObj.returnCode === DevConfig.FAILURE_CODE){
             // Don't crash if unable to set reminders for whatever reason
             console.log(reminderObj.data);

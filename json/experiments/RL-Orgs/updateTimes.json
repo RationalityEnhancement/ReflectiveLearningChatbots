@@ -31,7 +31,7 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "During some stages of the experiment, you will be asked to set goals in the morning before you start working.\n\nWhen would you like to receive these questions?",
-      "Deutsch" : "In einigen Phasen des Experiments werden Sie morgens vor Arbeitsbeginn gebeten, sich Ziele zu setzen.\n\nWann möchten Sie diese Fragen erhalten?"
+      "Deutsch" : "In einigen Phasen des Programms werden Sie morgens vor Arbeitsbeginn gebeten, sich Ziele zu setzen.\n\nWann möchten Sie diese Fragen erhalten?"
     },
     "options" : {
       "English" : "$F{json/static/morningTimeOptions.json}",
@@ -40,7 +40,7 @@
     "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER} instead."],
-      "Deutsch" : ["Großartig, Sie werden diese Fragen stattdessen um ${CURRENT_ANSWER} erhalten."]
+      "Deutsch" : ["Alles klar, Sie werden diese Fragen stattdessen um ${CURRENT_ANSWER} erhalten."]
     },
     "nextActions" : [
       {
@@ -57,7 +57,7 @@
     "qType" : "singleChoice",
     "text" : {
       "English" : "During some stages of the experiment, you will be asked after work in the evening to reflect on the goals you set that same morning.\n\nWhen would you like to receive these questions?",
-      "Deutsch" : "In einigen Phasen des Experiments werden Sie abends nach Feierabend gebeten, über die am Morgen gesetzten Ziele zu reflektieren.\n\nWann möchten Sie diese Fragen erhalten?"
+      "Deutsch" : "In einigen Phasen des Programms werden Sie abends nach Feierabend gebeten, über die am Morgen gesetzten Ziele zu reflektieren.\n\nWann möchten Sie diese Fragen erhalten?"
     },
     "options" : {
       "English" : "$F{json/static/eveningTimeOptions.json}",
@@ -66,7 +66,7 @@
     "buttonLayoutCols" : 4,
     "replyMessages" : {
       "English" : ["Great, you will receive these questions at ${CURRENT_ANSWER} instead."],
-      "Deutsch" : ["Großartig, Sie werden diese Fragen stattdessen um ${CURRENT_ANSWER} erhalten."]
+      "Deutsch" : ["Alles klar, Sie werden diese Fragen stattdessen um ${CURRENT_ANSWER} erhalten."]
     },
     "nextActions" : [
       {

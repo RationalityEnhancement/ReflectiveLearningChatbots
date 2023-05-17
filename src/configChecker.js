@@ -520,18 +520,28 @@ module.exports.checkConfig = () => {
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
           + " reminder must be an object"
       )
-      assert("freqMins" in questionObj.reminder && "numRepeats" in questionObj.reminder,
+      assert(("freqMins" in questionObj.reminder && "numRepeats" in questionObj.reminder)
+          || ("customMins" in questionObj.reminder),
           "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + " reminder must contain both freqMins and numRepeats"
-      )
-      assert(typeof questionObj.reminder.freqMins === 'number' && questionObj.reminder.freqMins > 0,
-          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + " freqMins of reminder must be a number greater than 0"
-      )
-      assert(typeof questionObj.reminder.numRepeats === 'number' && questionObj.reminder.numRepeats > 0,
-          "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
-          + " numRepeats of reminder must be a number greater than 0"
-      )
+          + " reminder must contain either freqMins and numRepeats or customMins")
+      if("freqMins" in questionObj.reminder && "numRepeats" in questionObj.reminder){
+        assert(typeof questionObj.reminder.freqMins === 'number' && questionObj.reminder.freqMins > 0,
+            "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+            + " freqMins of reminder must be a number greater than 0"
+        )
+        assert(typeof questionObj.reminder.numRepeats === 'number' && questionObj.reminder.numRepeats > 0,
+            "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+            + " numRepeats of reminder must be a number greater than 0"
+        )
+      } else {
+        assert(Array.isArray(questionObj.reminder.customMins)
+            && questionObj.reminder.customMins.every(el => typeof el === "number"),
+            "Condition: " + condition + "\nCategory: " + questionCategory + "\nQID: " + questionObj.qId
+            + " customMins must be an array of integers"
+        )
+      }
+
+
     }
 
     if("image" in questionObj){

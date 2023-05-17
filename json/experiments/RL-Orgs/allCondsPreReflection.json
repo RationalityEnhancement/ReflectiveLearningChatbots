@@ -38,15 +38,14 @@
     "nextQuestion" : "Pre-Reflection.listlessOrEnergetic",
     "replyMessages" : {
       "English" : ["Great! We will first start with how you are feeling."],
-      "Deutsch" : ["Großartig! Beginnen wir zunächst damit, wie Sie sich fühlen."]
+      "Deutsch" : ["Toll! Beginnen wir zunächst damit, wie Sie sich fühlen."]
     },
     "inputPrompt" : {
       "English" : "(Hint: send /repeat if the button is no longer visible.)",
       "Deutsch" : "(Hinweis: <i>/repeat</i> eingeben, falls die Option <i>Weiter</i> nicht mehr angezeigt wird.)"
     },
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -74,8 +73,7 @@
     "buttonLayoutCols" : 7,
     "nextQuestion" : "Pre-Reflection.relaxedOrAngry",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -103,8 +101,7 @@
     "buttonLayoutCols" : 7,
     "nextQuestion" : "Pre-Reflection.boredOrEnthusiastic",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -132,8 +129,7 @@
     "buttonLayoutCols" : 7,
     "nextQuestion" : "Pre-Reflection.calmOrNervous",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -161,8 +157,7 @@
     "buttonLayoutCols" : 7,
     "nextQuestion" : "Pre-Reflection.happyOrUnhappy",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -196,12 +191,11 @@
       }
     ],
     "replyMessages" : {
-      "English" : ["Great! We are done with the questions about your current feelings.", "Let's now move on to the goals you set today."],
-      "Deutsch" : ["Großartig! Wir sind fertig mit den Fragen zu Ihrer aktuellen Stimmung.", "Machen wir weiter mit den Zielen, die Sie sich für heute gesetzt haben."]
+      "English" : ["We are now done with the questions about your current feelings.", "Let's now move on to the goals you set today."],
+      "Deutsch" : ["Wir sind jetzt fertig mit den Fragen zu Ihrer aktuellen Stimmung.", "Machen wir weiter mit den Zielen, die Sie sich für heute gesetzt haben."]
     },
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   }
 ]

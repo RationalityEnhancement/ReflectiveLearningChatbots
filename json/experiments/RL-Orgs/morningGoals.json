@@ -105,7 +105,7 @@
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Morning-Goals-All.checkWantGoalExampleQuestion"
+        "then" : "Morning-Goals-All.remindWorkIntention"
       }
     ],
     "cNextActions" : [
@@ -119,9 +119,17 @@
         ]
       }
     ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
+        "then" : {
+          "English" : ["Then let's get right to it!"],
+          "Deutsch" : ["Dann machen wir direkt weiter!"]
+        }
+      }
+    ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -130,8 +138,17 @@
     "cNextQuestions" : [
       {
         "if" : "${dontAskInfoAgain} == $B{true}",
-        "then" : "Morning-Goals-All.checkWantGoalExampleQuestion",
+        "then" : "Morning-Goals-All.remindWorkIntention",
         "else" : "Morning-Goals-All.wantGoalInfo"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${dontAskInfoAgain} == $B{true}",
+        "then" : {
+          "English" : ["Let's get right to the goal-setting today!"],
+          "Deutsch" : ["Machen wir heute direkt weiter mit der Zielsetzung!"]
+        }
       }
     ]
   },
@@ -183,6 +200,10 @@
           {
             "aType" : "setBooleanVar",
             "args" : ["dontAskExampleAgain", "$B{true}"]
+          },
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["dontAskInfoAgain", "$B{true}"]
           }
         ]
       }
@@ -197,8 +218,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -227,16 +247,15 @@
     },
     "nextQuestion" : "Morning-Goals-All.checkWantGoalExampleQuestion",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
     "qId" : "goalsExample",
     "qType" : "dummy",
     "replyMessages" : {
-      "English" : ["Here are examples of SMART goals:\n\n * <i>Gain four new clients for my business this quarter by conducting 3 or more customer meetings each week</i>\n\n * <i>Increase average contract value by 15% by the end of the week.</i>\n\n * <i>Decrease average time to close a deal with a new client by 10% by the end of the week.</i>\n\n * <i>Increase the number of contact points with prospective clients by 30% by the end of the week.</i>"],
-      "Deutsch" : ["Hier sind Beispiele von SMART-Zielen:\n\n* <i>In diesem Quartal vier neue Kunden für mein Unternehmen gewinnen, indem ich jede Woche 3 oder mehr Kundengespräche führe</i>\n\n * <i>Den durchschnittlichen Vertragswert bis zum Ende der Woche um 15% erhöhen</i>\n\n * <i>Die durchschnittliche Zeit bis zum Abschluss eines Geschäfts mit einem neuen Kunden um 10% bis zum Ende der Woche verringern</i>\n\n * <i>Die Anzahl der Kontaktpunkte mit potenziellen Kunden um 30% bis zum Ende der Woche erhöhen</i>"]
+      "English" : ["Here are examples of SMART goals:\n\n * <i>I will create a presentation for the event happening next week till the end of the day</i>\n\n * <i>This afternoon, I will write two pages on how to develop resilience.</i>\n\n * <i>This morning, I will meet with HR to discuss a work contract for a new employee.</i>\n\n * <i>I will finish and upload my grant application till the end of the work day.</i>"],
+      "Deutsch" : ["Hier sind Beispiele von SMART-Zielen:\n\n* <i>Ich werde bis zum Ende des Tages eine Präsentation für die nächste Woche stattfindende Veranstaltung erstellen</i>\n\n * <i>Heute Nachmittag werde ich zwei Seiten darüber schreiben, wie man Resilienz entwickelt.</i>\n\n * <i>Heute Morgen werde ich mich mit der Personalabteilung treffen, um einen Arbeitsvertrag für einen neuen Mitarbeiter zu besprechen.</i>\n\n * <i>Bis zum Ende des Arbeitstages werde ich meinen Antrag auf Forschungsförderung fertigstellen und hochladen.</i>"]
     },
     "nextQuestion" : "Morning-Goals-All.continueFromExample"
   },
@@ -258,11 +277,10 @@
     "nextQuestion" : "Morning-Goals-All.remindWorkIntention",
     "replyMessages" : {
       "English" : ["Great, let's get to it!"],
-      "Deutsch" : ["Großartig, machen wir gleich weiter!"]
+      "Deutsch" : ["Toll, machen wir gleich weiter!"]
     },
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -309,8 +327,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -345,8 +362,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -378,8 +394,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -410,8 +425,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -436,14 +450,13 @@
       {
         "if": "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1}",
         "then" : {
-          "English" : ["Very well.", "Then let's move on directly to the work-related goals."],
-          "Deutsch" : ["Alles klar.", "Machen wir direkt weiter mit den Arbeitszielen."]
+          "English" : ["Very well."],
+          "Deutsch" : ["Alles klar."]
         }
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -464,7 +477,7 @@
       },
       {
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
-        "then" : "Morning-Goals-All.checkWantRelGoalExampleQuestion"
+        "then" : "Morning-Goals-All.remindRelIntention"
       }
     ],
     "cNextActions" : [
@@ -478,9 +491,17 @@
         ]
       }
     ],
+    "cReplyMessages" : [
+      {
+        "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{1,2}",
+        "then" : {
+          "English" : ["Then let's get right to it!"],
+          "Deutsch" : ["Dann machen wir direkt weiter!"]
+        }
+      }
+    ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -489,8 +510,17 @@
     "cNextQuestions" : [
       {
         "if" : "${dontAskRelInfoAgain} == $B{true}",
-        "then" : "Morning-Goals-All.checkWantRelGoalExampleQuestion",
+        "then" : "Morning-Goals-All.remindRelIntention",
         "else" : "Morning-Goals-All.wantRelGoalInfo"
+      }
+    ],
+    "cReplyMessages" : [
+      {
+        "if" : "${dontAskRelInfoAgain} == $B{true}",
+        "then" : {
+          "English" : ["Let's get right to the goal-setting today!"],
+          "Deutsch" : ["Machen wir heute direkt weiter mit der Zielsetzung!"]
+        }
       }
     ]
   },
@@ -542,6 +572,10 @@
           {
             "aType" : "setBooleanVar",
             "args" : ["dontAskRelExampleAgain", "$B{true}"]
+          },
+          {
+            "aType" : "setBooleanVar",
+            "args" : ["dontAskRelInfoAgain", "$B{true}"]
           }
         ]
       }
@@ -556,8 +590,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -565,7 +598,7 @@
     "qType" : "dummy",
     "replyMessages" : {
       "English" : ["In high quality work relationships, people feel valued and appreciated. They feel comfortable speaking up and discussing problems openly without fearing interpersonal consequences or loss of their self-image. They also display a wide range of emotions (including negative ones). People in a high quality relationship are engaged and willing to actively participate and disclose information. High quality relationships can withstand stress and conflict and then bounce back after setbacks."],
-      "Deutsch" : ["In qualitativ hochwertigen Arbeitsbeziehungen fühlen sich die Beteiligten wertgeschätzt und respektiert. Sie trauen sich, Probleme offen anzusprechen und über sie zu reden, ohne dabei persönliche Konsequenzen oder den Verlust ihres Selbstbildes befürchten zu müssen. Sie gehen offen mit ihren Gefühlen um (auch mit negativen). Menschen, die sich in einer guten Arbeitsbeziehung befinden, sind engagiert und bereit, sich aktiv zu beteiligen und Informationen zu teilen. Qualitativ hochwertige Beziehungen können Stress und Konflikten standhalten und sich nach Rückschlägen wieder erholen."]
+      "Deutsch" : ["In qualitativ hochwertigen Arbeitsbeziehungen fühlen sich die Beteiligten wertgeschätzt und respektiert. Sie trauen sich, Probleme offen anzusprechen und über sie zu reden, ohne dabei persönliche Konsequenzen oder den Verlust ihres Ansehens befürchten zu müssen. Sie gehen offen mit ihren Gefühlen um (auch mit negativen). Menschen, die sich in einer guten Arbeitsbeziehung befinden, sind engagiert und bereit, sich aktiv zu beteiligen und Informationen zu teilen. Qualitativ hochwertige Beziehungen können Stress und Konflikten standhalten und sich nach Rückschlägen wieder erholen."]
     },
     "nextQuestion" : "Morning-Goals-All.continueFromRelInfo"
   },
@@ -586,8 +619,7 @@
     },
     "nextQuestion" : "Morning-Goals-All.checkWantRelGoalExampleQuestion",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -617,11 +649,10 @@
     "nextQuestion" : "Morning-Goals-All.remindRelIntention",
     "replyMessages" : {
       "English" : ["Great, let's get to it!"],
-      "Deutsch" : ["Großartig, machen wir gleich weiter!"]
+      "Deutsch" : ["Toll, machen wir gleich weiter!"]
     },
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -667,8 +698,7 @@
     ],
     "nextQuestion" : "Morning-Goals-All.askAddRelGoal",
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -710,8 +740,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {
@@ -743,8 +772,7 @@
       }
     ],
     "reminder" : {
-      "freqMins" : 30,
-      "numRepeats" : 4
+      "customMins" : [30, 90, 210]
     }
   },
   {

@@ -91,7 +91,8 @@ let schemaObject = {
     minLengthWords : Number,
     reminder : {
       freqMins : Number,
-      numRepeats : Number
+      numRepeats : Number,
+      customMins: [Number]
     },
     inputPrompt : String,
     suppressInputPrompt: Boolean,

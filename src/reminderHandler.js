@@ -1,7 +1,6 @@
 const participants = require('./apiControllers/participantApiController')
 const Communicator = require('./communicator')
 const ReturnMethods = require('./returnMethods')
-const ExperimentUtils = require('./experimentUtils')
 const ConfigReader = require('../src/configReader');
 const DevConfig = ConfigReader.getDevConfig()
 
@@ -156,39 +155,100 @@ class ReminderHandler{
 
     /**
      *
-     * Sets a new set of reminders based on their frequency and number
+     * Creates a time list in format digestible by setReminder for a given list of minutes
+     * after the given current time
      *
-     * @param config JSON config file, must have phrases.schedule.reminderText in participant's language
-     * @param bot tg bot instance
-     * @param participant participant object, must have fields timezone and language in participant.parameters
-     * @param chatId participant's tg chat ID
-     * @param freqMins frequency of reminder in minutes
-     * @param numRepeats number of times the reminder should be repeated
-     * @returns {Promise<{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}>}
+     * @param currentTime
+     * @param minsAfter
+     * @returns {{returnCode: number, data: *}}
      */
-    static async setReminder(config, bot, participant, chatId, freqMins, numRepeats){
-
+    static convertCustomTimesToList(currentTime, minsAfter){
+        if(!Array.isArray(minsAfter) || !minsAfter.every(min => typeof min === "number")){
+            return ReturnMethods.returnFailure("RHandler: list of times must all be numbers");
+        }
+        if(!("minutes" in currentTime) || typeof currentTime.minutes !== "number"){
+            return ReturnMethods.returnFailure(
+                "RHandler: Cannot convert time list when currentTime does not have integer minutes")
+        }
+        if(!("hours" in currentTime) || typeof currentTime.hours !== "number"){
+            return ReturnMethods.returnFailure(
+                "RHandler: Cannot convert time list when currentTime does not have integer hours")
+        }
+        if(!("dayOfWeek" in currentTime) || !Array.isArray(currentTime.dayOfWeek)){
+            return ReturnMethods.returnFailure(
+                "RHandler: Cannot convert time list when currentTime does not have dayOfWeek")
+        }
+        minsAfter = [...new Set(minsAfter)]
+        let timeArray = [];
+        for(let i = 0; i < minsAfter.length; i++){
+            let newTime = this.addMins(currentTime, minsAfter[i]);
+            timeArray.push(newTime)
+        }
+        return ReturnMethods.returnSuccess(timeArray);
+    }
+    /**
+     *
+     * Creates a time list in format digestible by setReminder for a given period, given
+     * frequency, and starting from a given current time
+     *
+     * @param currentTime
+     * @param freqMins
+     * @param numRepeats
+     * @returns {{returnCode: number, data: *}}
+     */
+    static convertPeriodToList(currentTime, freqMins, numRepeats){
         if((typeof freqMins !== "number") || (typeof numRepeats !== "number")){
             return ReturnMethods.returnFailure("RHandler: frequency and numRepeats must be numbers\n" + freqMins +"\n"+numRepeats);
         }
 
-        // Get the current time
-        let now = ExperimentUtils.getNowDateObject(participant.parameters.timezone);
-        let currentTime = {
-            minutes : now.minutes,
-            hours : now.hours,
-            dayOfWeek: [now.dayOfWeek]
-        };
+        if(!("minutes" in currentTime) || typeof currentTime.minutes !== "number"){
+            return ReturnMethods.returnFailure(
+                "RHandler: Cannot convert period when currentTime does not have integer minutes")
+        }
+        if(!("hours" in currentTime) || typeof currentTime.hours !== "number"){
+            return ReturnMethods.returnFailure(
+                "RHandler: Cannot convert period when currentTime does not have integer hours")
+        }
+        if(!("dayOfWeek" in currentTime) || !Array.isArray(currentTime.dayOfWeek)){
+            return ReturnMethods.returnFailure(
+                "RHandler: Cannot convert to period when currentTime does not have dayOfWeek")
+        }
+        let timeArray = [];
+        for(let i = 0; i < numRepeats; i++){
+            let newTime = this.addMins(currentTime, (i + 1) * freqMins);
+            timeArray.push(newTime)
+        }
+        return ReturnMethods.returnSuccess(timeArray);
+    }
 
+    /**
+     *
+     * Set reminders for a given list of times for which the reminder should be set
+     *
+     * Time list should be list of objects of the form:
+     *
+     * {
+     *     minutes: mins,
+     *     hours: hrs,
+     *     dayOfWeek: [0-6]
+     * }
+     *
+     * @param config
+     * @param bot
+     * @param participant
+     * @param chatId
+     * @param timeList
+     * @returns {Promise<{returnCode: number, successData: *, failData: *}|{returnCode: *, successData: *, failData: *}|{returnCode: *, data: *}|{returnCode: number, data: *}>}
+     */
+    static async setReminder(config, bot, participant, chatId, timeList){
         let failedJobs = [];
         let succeededJobs = [];
 
         let dbJobs = [];
 
         // Create a new scheduled job for each reminder, calculating the time offset each time
-        for(let i = 0; i < numRepeats; i++){
-            let newTime = this.addMins(currentTime, (i + 1) * freqMins);
-
+        for(let i = 0; i < timeList.length; i++){
+            let newTime = timeList[i];
             let curJobObj = this.createReminderJob(config, bot, participant, chatId, newTime, i===0);
             if(curJobObj.returnCode === DevConfig.FAILURE_CODE){
                 failedJobs.push(curJobObj.data);
@@ -227,7 +287,6 @@ class ReminderHandler{
                 succeededJobs);
         }
         return ReturnMethods.returnSuccess(succeededJobs);
-
     }
 
     /**

@@ -36,15 +36,15 @@
     "if": "${CURRENT_ANSWER} < $N{75}",
     "then": {
       "English": [
-        "That's good progress!"
+        "That's pretty good!"
       ],
       "Deutsch": [
-        "Das ist ein guter Fortschritt!"
+        "Das ist ziemlich gut!"
       ]
     },
     "else" : {
-      "English" : ["That's amazing progress!"],
-      "Deutsch": ["Das ist ein hervorragender Fortschritt!"]
+      "English" : ["That's amazing!"],
+      "Deutsch": ["Das ist hervorragend!"]
     }
   }
 ]

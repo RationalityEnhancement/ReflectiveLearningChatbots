@@ -302,19 +302,24 @@ bot.command('delete_me', async ctx => {
       return;
     }
     // If the setup phase has passed
+    let authorized = true;
     if (participant.stages.activity.length > 0){
         // Disallow deletion if experimenter debug flag is turned off
         if(!config.debug.experimenter) {
-            ctx.reply("You are not authorized to do that now!")
-            return;
+            authorized = false;
         }
         // Password protect deletion if experimenter debug flag is turned on
         if(config.debug.requirePassword){
             if(!validatePassword(ctx.update.message.text)){
-                ctx.reply("You are not authorized to do that now!")
-                return;
+                authorized = false;
             }
         }
+    }
+    if(!authorized){
+        let partLang = participant.parameters.language;
+        Communicator.sendMessage(bot, participant,
+            ctx.from.id, config.phrases.experiment.notAuthorized[partLang], !config.debug.messageDelay)
+        return;
     }
 
     // Remove all jobs for participant

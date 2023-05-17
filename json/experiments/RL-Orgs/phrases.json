@@ -205,6 +205,10 @@
     "cannotStartTalkOutstanding" : {
       "English" : "Sorry, but I cannot talk to you about anything else while there is an outstanding question. Send <i>/repeat</i> to see the question again, and try again later when all outstanding questions have been answered.",
       "Deutsch" : "Entschuldigung, ich kann nicht mit Ihnen über sonst etwas reden, wenn eine Frage aussteht. Senden Sie <i>/repeat</i>, um die Frage wieder anzuzeigen, und versuchen Sie erneut später, wenn alle Fragen beantwortet sind."
+    },
+    "notAuthorized": {
+      "English" : "You are not authorized to do that now!",
+      "Deutsch" : "Sie sind nicht befugt, das jetzt zu machen!"
     }
   }
 }

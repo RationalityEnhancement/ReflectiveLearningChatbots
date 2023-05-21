@@ -61,7 +61,7 @@ class ReminderHandler{
         let rule = new scheduler.RecurrenceRule();
         rule.hour = currentTime.hours;
         rule.minute = currentTime.minutes;
-        if(rule.dayOfWeek && rule.dayOfWeek.length > 0)
+        if(currentTime.dayOfWeek && currentTime.dayOfWeek.length > 0)
             rule.dayOfWeek = currentTime.dayOfWeek;
         if(timezone) rule.tz = timezone;
 
@@ -78,10 +78,11 @@ class ReminderHandler{
      * @param chatId chat Id of participant
      * @param currentTime time object for scheduling with number fields hours and minutes
      * @param long whether the reminder message should be long or short (1st message long, rest short)
+     * @param last whether the current reminder is the last in a series of reminders (cancels reminders after triggering)
      * @returns {{returnCode: *, data: *}|{returnCode: *, data: *}}
      *              When success, list of objects with { jobId : string, job : scheduled object }
      */
-    static createReminderJob(config, bot, participant, chatId, currentTime, long=true){
+    static createReminderJob(config, bot, participant, chatId, currentTime, long=true, last=false){
         if(!("parameters" in participant)){
             return ReturnMethods.returnFailure("RHandler: Participant object must have parameters");
         }
@@ -103,16 +104,32 @@ class ReminderHandler{
             if(!reminderTextLong) throw "Reminder text long is undefined"
             if(!reminderTextShort) throw "Reminder text short is undefined"
             let reminderText = long ? reminderTextLong : reminderTextShort;
+            let rHandlerObj = this;
+
             job = scheduler.scheduleJob(jobId, recRuleObj.data, async function(){
                 for(let i = 0; i < DevConfig.SEND_MESSAGE_ATTEMPTS; i++){
                     try{
                         await Communicator.sendMessage(bot, participant, chatId, reminderText,
                             !config.debug.messageDelay, false)
+
                         break;
                     } catch(e){
                         return ReturnMethods.returnFailure("RHandler: Unable to send reminder:\n"
                             + e.message + "\n" + e.stack)
                     }
+                }
+                // If this is the last reminder of the series, cancel the reminders after it has been sent
+                if(last){
+                    // Get the updated participant
+                    let newParticipant;
+                    try {
+                        newParticipant = await participants.get(participant.uniqueId);
+                        if (!newParticipant) throw "Participant not found"
+                    } catch (err) {
+                        console.log(err);
+                    }
+                    await rHandlerObj.cancelCurrentReminder(newParticipant);
+
                 }
             })
             if(!job) {
@@ -249,7 +266,8 @@ class ReminderHandler{
         // Create a new scheduled job for each reminder, calculating the time offset each time
         for(let i = 0; i < timeList.length; i++){
             let newTime = timeList[i];
-            let curJobObj = this.createReminderJob(config, bot, participant, chatId, newTime, i===0);
+            let curJobObj = this.createReminderJob(config, bot, participant, chatId, newTime, i===0,
+                i===timeList.length-1);
             if(curJobObj.returnCode === DevConfig.FAILURE_CODE){
                 failedJobs.push(curJobObj.data);
             } else {
@@ -354,7 +372,8 @@ class ReminderHandler{
                 minutes : schRems[i].minutes,
                 dayOfWeek: schRems[i].dayOfWeek
             };
-            let curJobObj = this.createReminderJob(config, bot, participant, chatId, currentTime, i===0);
+            let curJobObj = this.createReminderJob(config, bot, participant, chatId, currentTime,
+                i===0, i===schRems.length);
             if(curJobObj.returnCode === DevConfig.FAILURE_CODE){
                 failedJobs.push(curJobObj.data);
             } else {
@@ -390,6 +409,7 @@ class ReminderHandler{
     static async cancelCurrentReminder(participant){
 
         let cancelObj = this.cancelJobsForId(participant.uniqueId);
+
         if(cancelObj.returnCode === DevConfig.PARTIAL_FAILURE_CODE){
             return ReturnMethods.returnFailure(cancelObj.failData);
         } else if(cancelObj.returnCode === DevConfig.FAILURE_CODE){

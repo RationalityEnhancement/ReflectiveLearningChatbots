@@ -256,6 +256,7 @@ describe('Creating reminder job', () => {
         let recRule = returnObj.data.job.pendingInvocations[0].recurrenceRule;
         expect(recRule.hour).to.equal(currentTime.hours)
         expect(recRule.minute).to.equal(currentTime.minutes)
+        expect(recRule.dayOfWeek).to.eql(currentTime.dayOfWeek)
         expect(recRule.tz).to.equal(participant.parameters.timezone)
     })
     it("Should succeed when timezone doesnt exist", () => {
@@ -270,6 +271,7 @@ describe('Creating reminder job', () => {
         let recRule = returnObj.data.job.pendingInvocations[0].recurrenceRule;
         expect(recRule.hour).to.equal(currentTime.hours)
         expect(recRule.minute).to.equal(currentTime.minutes)
+        expect(recRule.dayOfWeek).to.eql(currentTime.dayOfWeek)
         expect(recRule.tz).to.be.undefined;
     })
     it("Should fail when hours invalid", () => {
@@ -484,6 +486,7 @@ describe('Setting reminders', () => {
             expect(returnObj.data.length).to.equal(3);
             for(let i = 0; i < returnObj.data.length-1; i++){
                 let thisRule = returnObj.data[i].job.pendingInvocations[0].recurrenceRule;
+                expect(thisRule.dayOfWeek).to.eql(currentTime.dayOfWeek);
                 let nextRule = returnObj.data[i+1].job.pendingInvocations[0].recurrenceRule;
                 let minDiff = nextRule.minute - thisRule.minute;
                 if(minDiff < 0) minDiff = 60 + minDiff;
@@ -523,6 +526,7 @@ describe('Setting reminders', () => {
             expect(returnObj.data.length).to.equal(3);
             for(let i = 0; i < returnObj.data.length-1; i++){
                 let thisRule = returnObj.data[i].job.pendingInvocations[0].recurrenceRule;
+                expect(thisRule.dayOfWeek).to.eql(currentTime.dayOfWeek)
                 let nextRule = returnObj.data[i+1].job.pendingInvocations[0].recurrenceRule;
                 let minDiff = nextRule.minute - thisRule.minute;
                 if(minDiff < 0) minDiff = 60 + minDiff;
@@ -605,6 +609,7 @@ describe('Rescheduling reminders', () => {
             expect(returnObj.data.length).to.equal(4);
             for(let i = 1; i < returnObj.data.length-1; i++){
                 let thisRule = returnObj.data[i].job.pendingInvocations[0].recurrenceRule;
+                expect(thisRule.dayOfWeek).to.not.be.null;
                 let nextRule = returnObj.data[i+1].job.pendingInvocations[0].recurrenceRule;
                 let minDiff = nextRule.minute - thisRule.minute;
                 if(minDiff < 0) minDiff = 60 + minDiff;

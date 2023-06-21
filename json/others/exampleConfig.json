@@ -4,13 +4,19 @@
   "experimentConditions" : ["C1", "C2"],
   "relConditionSizes" : [1,1],
   "assignmentScheme" : "balanced",
+  "experimentLengthWeeks": 1,
+  "instructionText" : {
+    "English" : "Instructions that should appear when user sends command /help",
+    "Deutsch" : "Anweisungen, die angezeigt werden sollen, wenn der Nutzer den Befehl /help schickt"
+  },
   "debug" : {
-    "requirePassword" : true,
+    "requirePassword" : false,
     "experimenter" : true,
     "actionMessages" : true,
     "enableNext" : true,
     "messageDelay" : false,
-    "developer" : false
+    "developer" : false,
+    "saveDebugInfo": false
   },
   "experimentStages" : {
     "C1" : [
@@ -64,19 +70,26 @@
           ]
         },
         "start": true,
-        "selectQFirst": true,
-        "nextQuestion": "setupQuestions.timezone",
+        "nextQuestion": "setupQuestions.conditionAssign",
         "nextActions": [
           {
             "aType": "saveAnswerTo",
             "args": [
               "language"
             ]
-          },
+          }
+        ]
+      },
+      {
+        "qId" : "conditionAssign",
+        "qType": "dummy",
+        "nextActions": [
           {
             "aType": "assignToCondition"
           }
-        ]
+        ],
+        "nextQuestion": "setupQuestions.timezone",
+        "selectQFirst": true
       },
       {
         "qId": "timezone",
@@ -109,15 +122,40 @@
             "Danke, Zeitzone ist erfasst worden"
           ]
         },
-        "nextActions": [
+        "cNextActions": [
           {
-            "aType": "saveAnswerTo",
-            "args": [
-              "timezone"
+            "if": "${CONDITION} == $S{C1}",
+            "then" : [
+              {
+                "aType": "saveAnswerTo",
+                "args": [
+                  "timezone"
+                ]
+              },
+              {
+                "aType": "startStage",
+                "args": ["First-Half"]
+              }
+            ],
+            "else" : [
+              {
+                "aType": "saveAnswerTo",
+                "args": [
+                  "timezone"
+                ]
+              },
+              {
+                "aType": "startStage",
+                "args": ["Main"]
+              }
             ]
-          },
+          }
+        ],
+        "cNextQuestions": [
           {
-            "aType": "scheduleQuestions"
+            "if": "${CONDITION} == $S{C1}",
+            "then" : "firstHalf.selectQuestion",
+            "else" : "main.selectQuestion"
           }
         ]
       }
@@ -310,6 +348,14 @@
                   "Deutsch": [
                     "Gestern hast du ${satisfactionAnswer} gesagt"
                   ]
+                },
+                "else": {
+                  "English": [
+                    "Thank you for your answer! I will remind you of it tomorrow."
+                  ],
+                  "Deutsch": [
+                    "Danke für deine Antwort. Ich werde dich morgen daran erinnern."
+                  ]
                 }
               }
             ]
@@ -337,7 +383,15 @@
                     "Yesterday, you said ${satisfactionAnswer}"
                   ],
                   "Deutsch": [
-                    "Gestern hast du ${satisfactionAnswer}"
+                    "Gestern hast du ${satisfactionAnswer} gesagt"
+                  ]
+                },
+                "else": {
+                  "English": [
+                    "Thank you for your answer! I will remind you of it tomorrow."
+                  ],
+                  "Deutsch": [
+                    "Danke für deine Antwort. Ich werde dich morgen daran erinnern."
                   ]
                 }
               }
@@ -356,75 +410,83 @@
   },
   "phrases" : {
     "answerValidation": {
+      "defaultInvalid" : {
+        "English": "That is not a valid answer.",
+        "Deutsch": "Das ist keine gültige Antwort."
+      },
       "invalidOption": {
-        "English": "Please pick <b>only from the given options</b>",
-        "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>"
+        "English": "Please pick <b>only from the given options</b>.",
+        "Deutsch": "Bitte wählen Sie <b>nur aus den vorgebenen Optionen</b>."
       },
       "noOptions": {
-        "English": "Please select <b>at least one option</b>",
-        "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>"
+        "English": "Please select <b>at least one option</b>.",
+        "Deutsch": "Bitte wählen Sie <b>zumindest eine Option</b>."
       },
       "notANumber": {
-        "English": "Please enter a number",
-        "Deutsch": "Geben Sie eine Zahl ein"
+        "English": "Please enter a number.",
+        "Deutsch": "Geben Sie eine Zahl ein."
       },
       "numberTooHigh": {
-        "English": "Please enter a number below ${UpperBound}",
-        "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}"
+        "English": "Please enter a number below ${UpperBound}.",
+        "Deutsch": "Geben Sie eine Zahl ein, die kleiner ist als ${UpperBound}."
       },
       "numberTooLow": {
-        "English": "Please enter a number above ${LowerBound}",
-        "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}"
+        "English": "Please enter a number above ${LowerBound}.",
+        "Deutsch": "Geben Sie eine Zahl ein, die größer ist als ${LowerBound}."
       },
       "notLongEnoughChars" : {
         "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} characters.",
-        "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Charaktere betragen."
+        "Deutsch": "Bitte nehmen Sie sich etwas mehr Zeit, um eine ausführlichere Antwort zu formulieren. Sie muss mehr als ${MinLength} Charaktere umfassen."
       },
       "notLongEnoughWords" : {
         "English": "Please take some more time to put more thought into your answer. It must be more than ${MinLength} words.",
-        "Deutsch": "Nehmen Sie sich die Zeit, eine bedachte Antwort zu geben. Sie muss zumindest ${MinLength} Wörter betragen."
+        "Deutsch": "Bitte nehmen Sie sich etwas mehr Zeit, um eine ausführlichere Antwort zu formulieren. Sie muss mehr als ${MinLength} Wörter umfassen."
+      },
+      "answerNotConforming" : {
+        "English" : "That is not a valid answer. Did you mean one of the following?",
+        "Deutsch" : "Das ist keine gültige Antwort. Meinten Sie vielleicht eines der Folgenden?"
       },
       "terminateSurveyProperly" : {
-        "English" : "Please type <b>only</b> <i>Done</i> to continue after the survey",
-        "Deutsch" : "Bitte geben Sie <b>nur</b> <i>Fertig</i> ein, um nach der Umfrage fortzufahren"
+        "English" : "Please type the correct survey code to continue after the survey.",
+        "Deutsch" : "Bitte geben Sie den richtigen Code ein, um nach dem Ausfüllen des Fragebogens fortzufahren."
       }
     },
     "keyboards": {
       "singleChoice": {
-        "English": "Please pick one from the given options. You may need to scroll down to see all options.",
-        "Deutsch": "Bitte wählen Sie eine aus den vorgebenen Optionen. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
+        "English": "Please select from the available options. You may need to scroll down to see all of them. Send <i>/repeat</i> to display the options once again if they are no longer visible.",
+        "Deutsch": "Bitte wählen Sie aus den verfügbaren Optionen. Sie müssen eventuell nach unten scrollen, um alle Optionen zu sehen. Senden Sie <i>/repeat</i>, um die Optionen erneut anzuzeigen."
       },
       "multiChoice": {
-        "English": "Choose as many options as you like. Click Done to finish choosing. You may need to scroll down to see all options.",
-        "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf Fertig, wenn fertig. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können."
+        "English": "Choose as many options as you like. <b>Remember to click <i>Done</i> to finish choosing.</b> You may need to scroll down to see all options. Send <i>/repeat</i> to display the options once again if they are no longer visible.",
+        "Deutsch": "Wählen Sie eine oder mehrere Ihrer gewünschten Optionen. Klicken Sie auf <i>Erledigt</i>, wenn Sie fertig sind. Es kann sein, dass Sie durchscrollen müssen, um alle Optionen sehen zu können. Senden Sie <i>/repeat</i>, um die Optionen erneut anzuzeigen."
       },
       "terminateAnswer": {
         "English": "Done",
-        "Deutsch": "Fertig"
+        "Deutsch": "Erledigt"
       },
       "finishedChoosingReply": {
-        "English": "I have noted down your choices",
-        "Deutsch": "Ich habe Ihre Wahlen notiert"
+        "English": "I have noted down your choices.",
+        "Deutsch": "Ich habe Ihre Wahlen notiert."
       },
       "qualtricsFillPrompt" : {
-        "English" : "Please follow the link below to the survey",
-        "Deutsch" : "Folgen Sie dem untenstehenden Link zur Umfrage"
+        "English" : "Please follow the link below to the survey.",
+        "Deutsch" : "Bitte folgen Sie dem untenstehenden Link zu den Fragebögen."
       },
       "qualtricsDonePrompt" : {
         "English" : "Send <i>Done</i> when you are finished with the survey.",
-        "Deutsch" : "Senden Sie <i>Fertig</i>, wenn Sie mit der Umfrage fertig sind."
+        "Deutsch" : "Senden Sie <i>Erledigt</i>, wenn Sie mit der Umfrage fertig sind."
       },
       "freeformSinglePrompt" : {
-        "English" : "Type in your answer in a <b>single</b> message and send.",
-        "Deutsch" : "Geben Sie Ihre Antwort in nur <b>einer</b> Nachricht ein."
+        "English" : "Type in your answer in a <b>single</b> message and press 'send'.",
+        "Deutsch" : "Geben Sie Ihre Antwort in <b>einer einzigen Nachricht</b> ein und klicken Sie auf 'Senden'."
       },
       "freeformMultiPrompt" : {
-        "English" : "Type in your answer over one or multiple messages. Send the message <i>Done</i> when complete.",
-        "Deutsch" : "Geben Sie Ihre Antwort über eine oder mehrere Nachrichten ein. Senden Sie <i>Fertig</i>, wenn fertig"
+        "English" : "Type in your answer over one or multiple messages. <b>Remember to send <i>Done</i> in a separate message when you have finished answering.</b>",
+        "Deutsch" : "Ihre Antwort kann aus einer oder mehreren Nachrichten bestehen. <b>Denken Sie daran, <i>Erledigt</i> in einer einzelnen Nachricht zu senden, sobald Sie mit Ihrer Antwort fertig sind.</b>"
       },
       "linkToSurvey" : {
-        "English" : "Link to Survey (opens in browser)",
-        "Deutsch" : "Link zur Umfrage (wird im Browser geöffnet)"
+        "English" : "Click here to open the survey in your web browser.",
+        "Deutsch" : "Klicken Sie hier, um die Fragebögen in ihrem Webbrowser zu öffnen."
       },
       "likert5Options": {
         "English": [
@@ -471,11 +533,93 @@
       "scheduleANotif" : {
         "English" : "Action scheduled for the following time:",
         "Deutsch" : "Handlung geplant zur folgenden Zeit:"
+      },
+      "dayNames" : {
+        "English" : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "Deutsch" : ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+      },
+      "reminderTextLong" : {
+        "English" : "Reminder: you have an outstanding question. Please provide an answer as instructed, or type <i>/repeat</i> to see the question again.\n\nIf you have already typed or selected your answer(s), it may be that you have not sent the appropriate message to continue. Instead of repeating the question, you may simply continue with your answer in the next message. <b>If you choose to repeat the question, you must enter or select all your answer(s) once again.</b>",
+        "Deutsch" : "Hinweis: Sie haben eine Frage nicht beantwortet. Bitte geben Sie eine Antwort ein, oder senden Sie den Befehl <i>/repeat</i>, um die Frage erneut anzuzeigen.\n\nWenn Sie Ihre Antwort/en bereits eingegeben oder ausgewählt haben, wurde die entsprechende Nachricht nicht übermittelt. Anstatt die Frage zu wiederholen, können Sie Ihre Antwort einfach in der nächsten Nachricht fortsetzen. Wenn Sie sich dafür entscheiden, die Frage zu wiederholen, <b>geben Sie Ihre Antwort/en noch von neuem ein oder wählen Sie sie von neuem aus.</b>"
+      },
+      "reminderTextShort" : {
+        "English" : "Here's a reminder: you have an outstanding question. Please provide an answer as instructed, or type <i>/repeat</i> to see the question again.",
+        "Deutsch" : "Hinweis: Sie haben eine Frage nicht beantwortet. Bitte geben Sie entsprechend der Vorgaben eine Antwort ein, oder senden Sie den Befehl <i>/repeat</i>, um die Frage erneut anzuzeigen."
       }
     },
-    "endExperiment" : {
-      "English" : "You have successfully completed the experiment! You will no longer receive any messages from me. Thank you for participating, and I hope that I was able to help you improve your decision-making.",
-      "Deutsch" : "Sie haben das Experiment erfolgreich abgeschlossen! Sie erhalten von mir keine Nachrichten mehr. Danke für Ihre Teilnahme, und ich hoffe, ich konnte Ihnen dabei helfen, Ihren Entscheidungsprozess zu verbessern."
+    "experiment" : {
+      "endExperiment" : {
+        "English" : "You will no longer receive any messages from me. Thank you for participating! I hope I was able to help you improve your decision-making.",
+        "Deutsch" : "Sie werden keine Nachrichten mehr erhalten. Vielen Dank, dass Sie teilgenommen haben. Ich hoffe, ich konnte Ihnen helfen, Ihre Entscheidungsfindung zu verbessern."
+      },
+      "reportFeedback" : {
+        "English" : "<b>Report Feedback</b>\n\nJust type in your feedback in a single message and press send!\n\nIf this was a mistake and you don't want to report feedback, send <i>/cancel</i>.",
+        "Deutsch" : "<b>Feedback Melden</b>\n\nGeben Sie Ihr Feedback in eine Nachricht ein und schicken Sie es einfach ab!\n\nWenn Sie sich vertan haben und kein Feedback melden wollen, senden Sie <i>/cancel</i>."
+      },
+      "reportFeedbackCancel" : {
+        "English" : "Feedback reporting has been cancelled.",
+        "Deutsch" : "Feedback-Melden wurde abgebrochen."
+      },
+      "experimentContinue" : {
+        "English" : "The program will now continue as normal. If there is an outstanding question to answer, send <i>/repeat</i> to see it again.",
+        "Deutsch" : "Das Programm geht weiter wie gewohnt. Wenn eine Frage noch aussteht, senden Sie <i>/repeat</i>, um sie wieder aufzurufen."
+      },
+      "reportFeedbackThanks" : {
+        "English" : "Thank you for your valuable feedback!",
+        "Deutsch" : "Danke für das nützliche Feedback!"
+      },
+      "repeatFail" : {
+        "English" : "There are currently no outstanding questions! I will message you later with the next question.",
+        "Deutsch" : "Ich habe im Moment keine weiteren Fragen! Ich werde mich später wieder melden."
+      },
+      "cannotHelp" : {
+        "English" : "Sorry, I cannot help you any further at this moment!",
+        "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht weiter helfen!"
+      },
+      "didntUnderstand" : {
+        "English" : "Sorry, I didn't understand what you are trying to say! Send <i>/help</i> if you would like more information on how to interact with me, or wait for the next time that I ask you a question to talk to me.",
+        "Deutsch" : "Tut mir leid, ich habe das nicht verstanden! Senden Sie <i>/help</i>, wenn Sie mehr Informationen dazu möchten, wie mit mir zu interagieren ist, oder warten Sie einfach auf meine nächste Frage, um mit mir zu reden."
+      },
+      "cannotInteract" : {
+        "English" : "Sorry, I cannot respond to you at this moment! Please wait for the next time that I ask you a question to talk to me. Send <i>/help</i> if you would like more information on how to interact with me.",
+        "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht antworten! Bitte warten Sie auf meine nächste Frage, um mit mir zu reden. Senden Sie <i>/help</i>, wenn Sie mehr Informationen dazu möchten, wie mit mir zu interagieren ist."
+      },
+      "cannotInteractAfterEnd" : {
+        "English" : "Sorry, I cannot respond to you at this moment! The program has been ended. If you would like to report something, use the /report command.\n\nYou can contact the team directly at srinidhi.srinivas@tuebingen.mpg.de",
+        "Deutsch" : "Tut mir leid, ich kann Ihnen zu dieser Zeit nicht antworten! Das Programm ist beendet worden. Wenn Sie etwas berichten möchten, benutzen Sie den Befehl /report.\n\nSie können das Team direkt unter srinidhi.srinivas@tuebingen.mpg.de kontaktieren."
+      },
+      "nothingToCancel" : {
+        "English" : "No operations that have to be cancelled are running right now!",
+        "Deutsch" : "Keine Operationen sind jetzt am Laufen, die abgebrochen werden müssen!"
+      },
+      "talkStart" : {
+        "English" : "Hi ${FIRST_NAME}!\n\nI see that you want to tell me something. Send one of the following keywords in bold below corresponding to the topic you want to talk about.",
+        "Deutsch" : "Hi ${FIRST_NAME}!\n\nIch sehe, dass Sie mir etwas sagen wollen. Senden Sie eines der untenstehenden Stichwörter im Fettdruck, das dem Thema entspricht, das Sie besprechen wollen."
+      },
+      "talkCancelDescription" : {
+        "English" : "Cancel this operation and return to experiment.",
+        "Deutsch" : "Operation abbrechen und zum Programm zurückgehen."
+      },
+      "talkCancelled" : {
+        "English" : "Seems like you don't have anything else to tell me now. No problem!",
+        "Deutsch" : "Es scheint, dass Sie mir jetzt sonst nichts zu sagen haben. Kein Problem!"
+      },
+      "talkKeywordNotRecognized" : {
+        "English" : "I didn't understand. Please try again and make sure to type in the keyword correctly.",
+        "Deutsch" : "Ich habe nicht verstanden. Versuchen Sie noch einmal, und stellen Sie sicher, das Stichwort richtig einzugeben."
+      },
+      "cannotStartTalk" : {
+        "English" : "Sorry, but there is nothing I can talk to you about at this point in time. Please try another time, or wait for the next scheduled question.",
+        "Deutsch" : "Entschuldigung, es gibt derzeit nichts, über das ich mit Ihnen reden kann. Versuchen später noch einmal, oder warten Sie auf die nächste geplante Frage."
+      },
+      "cannotStartTalkOutstanding" : {
+        "English" : "Sorry, but I cannot talk to you about anything else while there is an outstanding question. Send <i>/repeat</i> to see the question again, and try again later when all outstanding questions have been answered.",
+        "Deutsch" : "Entschuldigung, ich kann nicht mit Ihnen über sonst etwas reden, wenn eine Frage aussteht. Senden Sie <i>/repeat</i>, um die Frage wieder anzuzeigen, und versuchen Sie erneut später, wenn alle Fragen beantwortet sind."
+      },
+      "notAuthorized": {
+        "English" : "You are not authorized to do that now!",
+        "Deutsch" : "Sie sind nicht befugt, das jetzt zu machen!"
+      }
     }
   }
 }

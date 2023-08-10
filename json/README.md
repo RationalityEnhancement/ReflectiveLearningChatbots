@@ -85,6 +85,7 @@ Sections 4 onwards contain detailed documentation of each part of the experiment
   <li><a href="#Setup">Setup Questions and Starting the Experiment</a></li>
   <li><a href="#Phrases">Mandatory Phrases</a></li>
   <li><a href="#Split">Splitting Up the Configuration File</a></li>
+  <li><a href="#DefaultParams">Manually Setting Default Values for Parameters</a></li>
 </ol>
 
 ## <span id="Overview"> Overview </span>
@@ -153,7 +154,7 @@ Let us add a property to the above dog object, that defines a list of "friends" 
 
 ### Recursion
 
-These elements can be used recursively to an arbitrary depth - an object can contain list properties, and a list can contain objects. An object
+These elements can be used recursively to an arbitrary depth - an object can contain list properties, and a list can contain objects.
 
 This can be illustrated with an example of a dog shelter with multiple dogs, Fido being one of them. The dog shelter object has a property "residents" which is a list of Dog objects, each Dog object having a list property. The dog shelter also has a property "suppliers" that itself is an object.
 
@@ -187,7 +188,7 @@ Note the position of the commas - between the properties and elements of a list,
 
 ### Experiment Config Structure
 
-The experiment config is essentially one monolithic JSON object. Most of the properties of the experiment exist as properties of the main JSON object (they are at the first level).
+The experiment config is essentially one single very large JSON object. Most of the properties of the experiment exist as properties of the main JSON object (they are at the first level).
 
 Other parts of the experiment definition, such as stages, question categories, and phrases are themselves objects with more properties, despite being properties of the main experiment object.
 
@@ -215,26 +216,27 @@ How to run this example (assuming you have completed set-up as described [here](
 
 The following lines will describe what you should expect from your interaction with the bot along with links to the lines in the example file where these functionalities can be defined.
 * [Link](others/exampleConfig.json#L3-L5) - The experiment has two possible conditions, C1 and C2, of equal sizes.
-* [Link](others/exampleConfig.json#L14-L34) - Both conditions are 4 days long. C1 has two stages, and C2 has just one.
-* [Link](others/exampleConfig.json#L47-L78) - On first interaction, you are welcomed and are given options to choose your language
-* [Link](others/exampleConfig.json#L67-L5) - Your answer is saved and you are then assigned to a condition 
-  * ([Link](others/exampleConfig.json#L124-L260) - we will assume you are assigned to C1, so you get these questions)
-  * ([Link](others/exampleConfig.json#L261-L354) - if you weren't, you would have got these questions)
+* [Link](others/exampleConfig.json#L21-L41) - Both conditions are 4 days long. C1 has two stages, and C2 has just one.
+* [Link](others/exampleConfig.json#L55-L82) - On first interaction, you are welcomed and are given options to choose your language
+* [Link](others/exampleConfig.json#L75-L80) - Your answer is saved and your preferred language is updated
+* [Link](others/exampleConfig.json#L83-L93)- You are assigned to a condition
+  * ([Link](others/exampleConfig.json#L165-L285) - we will assume you are assigned to C1, so you get these questions)
+  * ([Link](others/exampleConfig.json#L301-L401) - if you weren't, you would have got these questions)
   * you can start over (Step 6 above) if you weren't assigned to C1 and you would like to be
-* [Link](others/exampleConfig.json#L66) - The next question for your timezone is selected.
-* [Link](others/exampleConfig.json#L79-121) - You are asked for your timezone.
-* [Link](others/exampleConfig.json#L117-L119) - All of the questions for your condition are scheduled.
-  * ([Link](others/exampleConfig.json#L246-L259) - C1 scheduled questions defined here.)
-  * ([Link](others/exampleConfig.json#L346-L352) - C2 scheduled questions defined here.)
-* [Link](others/exampleConfig.json#L132-L139) - You type `/next` and the stage First-Half begins.
-* [Link](others/exampleConfig.json#L148-L154) - The question is selected based on whether it's an odd day or even day of the stage
-* [Link](others/exampleConfig.json#L172-L186) - On the first day, you can enter an answer over multiple lines
-  * [Link](others/exampleConfig.json#L179-L184) - Once you answer, a variable is incremented
-  * [Link](others/exampleConfig.json#L185) - The next question is automatically selected
-  * [Link](others/exampleConfig.json#L157-L171) - You receive a question which you answer in only one message.
-  * [Link](others/exampleConfig.json#L161-L162) - The question text contains the value of the variable that is being incremented
-* [Link](others/exampleConfig.json#L188-L245) - After typing `/next` until the stage Second-Half starts, you get the choice questions of the next stage.
-* [Link](others/exampleConfig.json#L148-L154) - Finally, you type next until you reach the end of the experiment.
+* [Link](others/exampleConfig.json#L91) - The next question for your timezone is selected.
+* [Link](others/exampleConfig.json#L95-163) - You are asked for your timezone.
+* [Link](others/exampleConfig.json#L135-L138) - The first stage for your condition is started, and the questions are scheduled.
+  * ([Link](others/exampleConfig.json#L286-L299) - C1 scheduled questions defined here.)
+  * ([Link](others/exampleConfig.json#L402-L408) - C2 scheduled questions defined here.)
+* [Link](others/exampleConfig.json#L154-L160) - You are shown the first question for the condition you are assigned to.
+* [Link](others/exampleConfig.json#L188-L194) - The question is selected based on whether it's an odd day or even day of the stage
+* [Link](others/exampleConfig.json#L213-L226) - On the first day, you can enter an answer over multiple messages
+  * [Link](others/exampleConfig.json#L219-L224) - Once you answer, a variable is incremented
+  * [Link](others/exampleConfig.json#L225) - The next question is automatically selected
+  * [Link](others/exampleConfig.json#L197-L211) - You receive a question which you answer in only one message.
+  * [Link](others/exampleConfig.json#L200-L203) - The question text contains the value of the variable that is being incremented
+* [Link](others/exampleConfig.json#L228-L285) - After typing `/next` until the stage Second-Half starts, you get the choice questions of the next stage.
+* Finally, you type `/next` until you reach the end of the experiment.
 
 Hopefully this, along with the overview of the file structure, helps you make some connections between what the file looks like and what you see in the experiment.
 
@@ -300,6 +302,7 @@ Note that the Telegram limit for length of a text is 4096 characters. If your in
 This is an object of boolean properties that exists at the first level of the experiment JSON object. These contain various flags to turn certain features on or off, for the purposes of debugging.
 
 * `experimenter` - Enables functionalities such as logging information, deleting participants/experiment, etc.
+* `requirePassword` - Enables password protection of sensitive commands when `experimenter` flag is set to true (see section "Password Protecting Commands" of the [main README](../README.md) file)
 * `actionMessages` - Enables messages whenever an action has been completed (scheduling question, setting variable, etc.)
 * `enableNext` - Enables the `/next` command that allows the experimenter to skip to the next scheduled question without waiting
 * `messageDelay` - Enables message delay to simulate typing of the bot. Can be turned off so that experimenter doesn't have to wait.
@@ -1714,12 +1717,19 @@ In json/config.json
 
 ### <span id="Reminders"> Reminders </span>
 
-For any question, it is possible to set a reminder for the user to answer the question, in case the user does not answer it within a certain period of time. The experimenter can set the number of reminders for a question, and the time in minutes between each subsequent reminder.
+For any question, it is possible to set a reminder for the user to answer the question, in case the user does not answer it within a certain period of time. There are two possible ways that the experimenter can determine the time of the reminders:
 
-This is done by adding to the question object the property `reminder`. The `reminder` object has two mandatory parameters:
+* (1) periodic reminders, by defining the number of reminders and the time in between each reminder
+* (2) custom reminder times, by specifying the number of minutes after the question was originally asked that the reminder should appear
 
-* `numRepeats` - the number of times a reminder should be sent as long as the current question has not been answered
-* `freqMins` - the number of minutes that should elapse between subsequent reminders
+Both of these are done by adding to the question object the property `reminder`. 
+
+* For periodic reminders (1), the `reminder` object has two mandatory parameters:
+  * `numRepeats` - the number of times a reminder should be sent as long as the current question has not been answered
+  * `freqMins` - the number of minutes that should elapse between subsequent reminders
+* For periodic reminders (2), the `reminder` object has one mandatory parameter:
+  * `customMins` - list of integers, each specifying the number of minutes **after the question was originally asked** when the reminder should be presented
+* You cannot define both periodic and custom reminder times for the same reminder
 
 Let us see an example question below:
 
@@ -1746,11 +1756,30 @@ Example question with reminder
 
 The above question will prompt a reminder to be set as soon as the question has been asked. The first reminder will appear 30 minutes after the question has been asked, the second reminder 60 after minutes, and so on.
 
+Let us now look at an example of a custom reminder:
+
+```
+Example question with reminder
+
+{
+  "qId" : "reminderExample",
+  ...
+  "reminder" : {
+    "customMins" : [10, 30, 80]
+  }
+}
+```
+
+Here, the first reminder will appear 10 minutes after the question was asked, the second reminder 30 minutes after the question was asked (i.e., 20 minutes after the first reminder), and the third reminder 80 minutes after the question was asked (i.e., 50 minutes after the second reminder).
+
+
 In a series of reminders for a given question, the first reminder will be longer, and will contain the text as defined in the [phrases](#span-idphrases-mandatory-phrases-span) object as `"reminderTextLong"`. All subsequent reminders will display the text defined under `"reminderTextShort"`.
 
 If the question is repeated, the reminder(s) will be reset with reference to the time that the repeated question was asked.
 
 After the question is answered, reminders are cancelled, so that they do not appear anymore.
+
+**NOTE: Reminders can only be set after the timezone of the user has saved in the parameter `timezone` (see section <a href="#Setup">Setup Questions</a>).**
 
 ## <span id="Variables">Variables and Constants</span>
 
@@ -2840,6 +2869,7 @@ The following is a description of which cases which phrases occur, along with so
   * `talkKeywordNotRecognized` - when the user sends a keyword that is not valid after sending the `/talk` command
   * `cannotStartTalk` - when the user sends `/talk` but there are no options for the user to start an interaction at that time
   * `cannotStartTalkOutstanding` - when the user tries to initiate a conversation with `/talk` although there is currently an outstanding question
+  * `notAuthorized` - when the user tries to use a password-protected command without the correct password
 
 Below is the object with all of the above phrases. You can consider this as a template to copy and paste, instead of as an example. You may change phrases to adjust the tone of the chatbot, or add a language as you see fit. Just make sure that the language is spelled correctly, just as it is in the field `languages` of the experimenter JSON object. Also make sure, if you are adding a language, that you enter the language for ALL of the phrases.
 
@@ -3049,12 +3079,16 @@ After this template, you will see how this is added to the experimenter JSON obj
     "cannotStartTalkOutstanding" : {
       "English" : "Sorry, but I cannot talk to you about anything else while there is an outstanding question. Send <i>/repeat</i> to see the question again.",
       "Deutsch" : "Entschuldigung, ich kann nicht mit Ihnen über sonst etwas reden, wenn eine Frage aussteht. Senden Sie <i>/repeat</i>, um die Frage wieder abzurufen."
+    },
+    "notAuthorized": {
+      "English" : "You are not authorized to do that now!",
+      "Deutsch" : "Sie sind nicht befugt, das jetzt zu machen!"
     }
   }
 }
 ```
 
-That's a big object! Another reason why the experimenter configuration file tends to get long. 
+That's a big object! This is another reason why the experimenter configuration file tends to get long. 
 
 To include this in the experimenter configuration file, all you need to do is add this object to the `phrases` field at the first level of the experimenter JSON object, like so:
 

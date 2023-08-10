@@ -1373,7 +1373,7 @@ if(!!local && local === "-l"){
     bot.launch().then(() => {
 
         console.log('Listening to humans');
-        console.log("Starting rescheduling now")
+        console.log("Starting resched   uling now")
         console.time("Rescheduling all participants")
         ScheduleHandler.rescheduleAllOperations(bot, config).then(returnObj => {
             console.timeEnd("Rescheduling all participants")

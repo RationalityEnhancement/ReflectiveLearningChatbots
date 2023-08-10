@@ -3,7 +3,7 @@
   "experimentId" : "experiment123",
   "experimentConditions" : ["C1", "C2"],
   "relConditionSizes" : [1,1],
-  "assignmentScheme" : "balanced",
+  "assignmentScheme" : "random",
   "experimentLengthWeeks": 1,
   "instructionText" : {
     "English" : "Instructions that should appear when user sends command /help",

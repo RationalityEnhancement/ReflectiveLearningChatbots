@@ -28,23 +28,24 @@ The rest of the instructions will cover each of these steps in detail
   * Navigate to your organization, where you will find an overview of all your projects. Click on "New Project" in the top right.
 * Follow instructions to create a database cluster within this project. The free (shared) version with default settings will work.
 * You will be asked to create a user+password to ensure restricted access to the database. Once this is done, creating the cluster may take a few minutes.
-* Navigate to the 'Database' tab under 'Deployment' and click on 'Connect' next to your new cluster. Choose the third option (MongoDB Compass), and copy the connection string starting with _mongodb+srv://_ under step (2). Downloading MongoDB Compass (step 1) is not necessary.
-* The connection string will have a part _\<password\>_ which should be replaced with the password of the user created above. If the database has multiple users, then the _\<user\>_ part will also have to be replaced with the corresponding username created when the cluster is created. Save this connection string for later.
+* Navigate to the 'Database' tab under 'Deployment' and click on 'Connect' next to your new cluster. Choose the option Compass (or MongoDB Compass), and copy the connection string starting with _mongodb+srv://_ under step (2). Downloading MongoDB Compass (step 1) is not necessary.
+* The connection string will have a part _\<password\>_ which should be replaced with the password of the user created above. If the database has multiple users, then the _\<user\>_ part will also have to be replaced with the corresponding username created when the cluster is created. Replace these fields in your local copy of the connection string and save this for later.
 * On the left, choose 'Network Access', click 'ADD IP ADDRESS', and add the address "0.0.0.0" without quotes or click 'Allow Access from Anywhere' to automatically do this. This will ensure that the database is accessible by anyone that has the database connection string.
 
 ### Creating a Bot
 
 * Download and install Telegram. Using the Desktop client or Website app will make copying information easier.
 * Start a chat with the bot [@BotFather](https://t.me/botfather)
-* Follow the instructions to name your bot, etc., and obtain the 'bot token' (HTTP API Token). Save this bot token for later.
+* Follow the instructions to name your bot, etc., and obtain the 'bot token' (HTTP API Token). Save this bot token and the bot information (username, etc.) for later.
+* If you need to edit your bot later, you can always come back to chat with [@BotFather](https://t.me/botfather) and follow instructions to do so.
 
 ### Software Setup
-* Download and install [Node.js](https://nodejs.org/en/download/releases/). If possible, download version 17.9.0. This would minimize compatibility issues, as the chatbot software in this repository is built on that version.
+* Download and install [Node.js](https://nodejs.org/en/download/releases/). If possible, download version 17.9.0, or the closest available version. This would minimize compatibility issues, as the chatbot software in this repository is built on that version.
   *   Windows: download file "node-v17.9.0-x86.msi"
   *   macOS: download file "node-v17.9.0.pkg"
 * Use git to fork this repository into your own account, then clone that forked repository into a local directory of your choice. Navigate to the directory in which you have cloned this repository.
 * Open a [terminal](https://geekiam.io/what-is-a-terminal-window/) of your choice.
-* Run the command `npm install`
+* Run the command `npm install` in the directory where the repository is cloned. If there are any warnings about vulnerabilities, you may ignore them.
 * Copy the file [.env_template](./.env_template) to another file in the same directory with the name "_.env_" (without quotes). 
   * macOS Terminal - `cp .env_template .env`
   * Windows Command Prompt - `copy .env_template .env`
@@ -74,30 +75,64 @@ Skip [ahead](#deploying-the-bot-server-to-heroku) to see how to host the bot on 
   * The bot will lead you through the remainder of the conversation, as defined by the experimenter in the configuration file.
 * Type `/repeat` to have the bot repeat the last question, as long as an answer has not yet been provided.
 * Type `/next` to have the bot display the next question that is scheduled to appear.
-  * Only available when the `enableNext` flag is set to `true` in the experiment configuration file (see [here](json/README.md#span-iddebug-debug-flags-span))
+  * Only available when the `enableNext` flag is set to `true` in the experiment configuration file (see section [Debug Flags](json/README.md#span-iddebug-debug-flags-span))
 * Type `/help` to have the bot display instructions
   * These are defined by the experimenter in the experiment configuration file
 * Type `/talk` to initiate a conversation about certain topics with the bot
   * Times at which this is possible and what conversations topics are available are defined by the experimenter in the experiment configuration file.
 * Type `/skip_to` to skip to a particular stage of the experiment
   * After you type this command, the bot will instruct you how to select your desired stage
-  * Stages are defined in the experiment configuration file (see [here](json/README.md#span-idstages-experiment-stages-span))
-  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see [here](json/README.md#span-iddebug-debug-flags-span)))
+  * Stages are defined in the experiment configuration file (see section [Experiment Stages](json/README.md#span-idstages-experiment-stages-span))
+  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see section [Debug Flags](json/README.md#span-iddebug-debug-flags-span)))
 * Type `/delete_me` to erase data of your interaction with the chatbot from the database
   * For the experimenter/developer: use this command to start interaction with the bot afresh.
-  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see [here](json/README.md#span-iddebug-debug-flags-span))
+  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see section [Debug Flags](json/README.md#span-iddebug-debug-flags-span))
+  * Requires additional input of a password when the `requirePassword` flag is set to `true` in the experiment configuration file (see section [Debug Flags](json/README.md#span-iddebug-debug-flags-span) and the next section)
 * Type `/delete_exp` to erase data of your interaction with the chatbot from the database
   * For the experimenter/developer: use this command to start the experiment afresh
-  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see [here](json/README.md#span-iddebug-debug-flags-span))
+  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see section [Debug Flags](json/README.md#span-iddebug-debug-flags-span))
+  * Requires additional input of a password when the `requirePassword` flag is set to `true` in the experiment configuration file (see section [Debug Flags](json/README.md#span-iddebug-debug-flags-span) and the next section)
 * Type `/log_part` to display the information that is stored in the database for the user from which this command is sent
   * This is the current information about the participant's stage, answers to questions, etc.
   * This will output to the terminal, where you have run the start command
-  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see [here](json/README.md#span-iddebug-debug-flags-span))
+  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see section [Debug Flags](json/README.md#span-iddebug-debug-flags-span))
 * Type `/log_exp` to display the information about the current experiment that is stored in the database
   * This is the current information about the number of participants currently assigned to each condition, etc.
   * This will also output to the terminal where the start command was run
-  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see [here](json/README.md#span-iddebug-debug-flags-span))
-  
+  * Only available when the `experimenter` flag is set to `true` in the experiment configuration file (see section [Debug Flags](json/README.md#span-iddebug-debug-flags-span))
+
+### Password Protecting Commands
+
+There are some sensitive commands that can be password protected so that only users with the password have the privilege to execute those commands. The two commands which can be password protected are `/delete_me` and `/delete_exp`. These can be protected so that users may not use the commands to delete their own data or accidentally delete the experiment data. It is possible to disable these commands entirely by setting the `experimenter` debug flag to `false` (see section "Debug Flags" of this, but adding password protection affords the experimenter some flexibility to use these commands without them being misused. 
+
+To turn on password protection for these commands, simple set the `requirePassword` debug flag in the experimenter JSON file to `true`. Note that the `experimenter` debug flag has to be set to `true` for the password protection to work, otherwise the above two commands are disabled by default.
+
+The password that a user can input to authenticate the use of a command must be stored as a string in the `EXP_PASSWORD` field of the `.env` file. 
+
+For example, if the `.env` file looks like this...
+
+```
+BOT_TOKEN=1234567890:eXaMpLeB0tT0kEnBlaHblAhBlaH
+DB_CONNECTION_STRING=mongodb+srv://username:Password@cluster0.iblwy.mongodb.net/test
+EXP_PASSWORD=letMeUseThisCommand1234
+```
+
+...then, you can use the password protected commands as follows (by sending it as a message to the chatbot in Telegram):
+
+`/delete_me letMeUseThisCommand1234`
+
+Trying to use a password-protected command in the following ways will deny you access:
+
+`/delete_me`
+
+`/delete_me letMeUseThisCommand`
+
+`/delete_me wrongPassword`
+
+(see section [Debug Flags](json/README.md#span-iddebug-debug-flags-span) for instructions on setting debug flags for your experiment)
+
+(see `notAuthorized` of section [Mandatory Phrases](json/README.md#span-idphrases-mandatory-phrases-span) to set the message that appears when access to the command is denied)
+
 ### Defining your Own Experiment
 
 Head on over to [this page](/json/README.md) and take note of the instructions there!

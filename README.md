@@ -170,6 +170,56 @@ Information about the participant:
   * This includes whether the question was repeated, answered with an invalid answer, or not answered at all.
 * Transcripts of entire conversation exchanged between each user and chatbot
 
+### Manually Broadcasting Messages to Active Participants
+
+Automated messages are not the only way of interacting with the user through the chatbot. It is also possible to send custom messages, as the experimenter, to the users through the chatbot. 
+
+It is possible to send a different message to different groups of participants. To do this, you first have to identify the participants that you want to send a message to. Participants are identified by an auto-generated random identifier, called the `uniqueId`. In the participant data, the uniqueId of a participant is stored along with the participant's data, and this is where you will find the participants. Along with this data is stored other information such as condition, stage, etc. To find the correct `uniqueId`s to whom you want to send the message, you must manually go through the participant data and pick out the desired `uniqueId`s (e.g., those belonging to a particular condition.)
+
+Once you have your list of `uniqueId`s, you must enter them into the file `json/essential/customMessages.json`. The format of the file is described in the following lines.
+
+The `customMessages.json` file is a list of objects. Each object contains a single broadcast (which may contain one or more messages) sent to a particular group of users. In the object, you define the text of the broadcast (see the [instructions on defining an experiment](/json) for formatting rules) and the `uniqueId`s of the users to whom this broadcast will be sent out. 
+
+A single broadcast object will have the following properties:
+
+* `text`: A list of strings with the text to be broadcasted to the participant. Each string will be sent in a single message, and may not be longer than 4096 characters.
+* `uniqueIds`: A list of **strings**, each containing a uniqueId of a participant who is to receive the message.
+  * Note that even though the `uniqueId`s are fully numeric, they must be entered as strings in this list.
+
+The following is an example of the full `customMessages.json` file:
+
+```
+In json/essential/customMessages.json:
+
+[
+  { 
+    "text": [
+      "Hello, ${FIRST_NAME}! Thank you for participating in my experiment.",
+      "If you are interested in helping us further, I request you to additionally sign up to follow experiment X"
+    ],
+    "uniqueIds": ["32476232", "78934214", "98786311"]
+  },
+  {
+    "text": [
+      "Hello, ${FIRST_NAME}! Thank you for participating in my experiment.",
+      "If you are interested in helping us further, I request you to additionally sign up to follow experiment Y"
+    ],
+    "uniqueIds": ["62176431", "99036521", "88726460"]
+  }
+]
+```
+
+In the above example, the first set of 2 messages will be sent to 3 participants, who belong to condition `X`. The second set of messages will be sent to the 3 participants who belong to a separate condition `Y`.
+
+Once you have confirmed that the messages are correct, you can send out the messages using the following command in the terminal, executed from the root directory of the repository:
+
+`npm run send-custom-messages`
+
+Notes:
+
+* You cannot have a two-way conversation with the users. The users cannot respond to the messages. These custom messages serve only a "broadcast" purpose, to convey certain information that does not warrant a direct answer in the chatbot. If the user responds to the messsge, the chatbot will either not understand it, or will interpret it as the answer to an outstanding question, should there be one. Make sure to make this clear to the user in your message, and try to use this function only when the experiment is not running.
+* This functionality works only for participants who are still connected to the chatbot. If the participant has blocked or deleted the chatbot, or if you have already deleted any of the experiment data, you cannot re-establish contact with the users.
+
 ### Deleting Sensitive Data
 
 In order for the chatbot to interact with the user, it requires information about the user's Telegram account, namely, an integer ID. Although this doesn't contain any direct information that can identify the owner of the Telegram account, it is unique to the user, so responses from the same user can be connected between different Telegram bots.

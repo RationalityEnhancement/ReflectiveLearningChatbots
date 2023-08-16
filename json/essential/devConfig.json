@@ -59,7 +59,8 @@
     "incrementStageDay" : 0,
     "endExperiment" : 0,
     "saveOptionIdxTo" : 1,
-    "rescheduleCurrentStage" : 0
+    "rescheduleCurrentStage" : 0,
+    "setVar": 2
   },
   "ACTION_ARG_TYPES" : {
     "saveAnswerTo" : ["_number,string,boolean,strArr"],
@@ -73,7 +74,8 @@
     "incrementStageDay" : [],
     "endExperiment" : [],
     "saveOptionIdxTo" : ["_number"],
-    "rescheduleCurrentStage" : []
+    "rescheduleCurrentStage" : [],
+    "setVar": ["_number,string,boolean,strArr,numArr", "number,string,boolean,strArr,numArr"]
   },
   "END_STAGE_STRING" : "end",
   "BEGIN_STAGE_STRING": "begin",

@@ -446,7 +446,7 @@ describe('End/Begin Stage', () => {
     describe('Fail when stages not present - begin', () => {
         let returnObj, newPart;
         let stageName = "Test";
-        it('Should return success', async () => {
+        it('Should return failure', async () => {
             let participant = await participants.get(testPartId);
             let copyPart = JSON.parse(JSON.stringify(participant));
             delete copyPart["stages"]
@@ -458,7 +458,7 @@ describe('End/Begin Stage', () => {
     describe('Fail when stages not present - end', () => {
         let returnObj, newPart;
         let stageName = "Test";
-        it('Should return success', async () => {
+        it('Should return failure', async () => {
             let participant = await participants.get(testPartId);
             let copyPart = JSON.parse(JSON.stringify(participant));
             delete copyPart["stages"]

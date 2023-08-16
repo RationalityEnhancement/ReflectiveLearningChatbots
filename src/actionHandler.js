@@ -421,6 +421,134 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
             }
             return ReturnMethods.returnSuccess(newPartSetBool);
 
+        // Set the value of any variable to a constant (makes setBooleanVar obsolete)
+        case "setVar" :
+            // First argument is name of the variable to save to
+            let svVarName = actionObj.args[0];
+            if(typeof svVarName !== "string"){
+                return ReturnMethods.returnFailure("ActHandler - setVar: Variable name must be string: " + svVarName);
+            }
+            // Second argument must be a token in a string
+            let svNewToken = actionObj.args[1];
+            if(typeof svNewToken !== "string"){
+                return ReturnMethods.returnFailure("ActHandler: (arg2) must be string token");
+            }
+
+            let svParamType;
+            try{
+                svParamType = participant.parameterTypes[svVarName];
+            } catch(err){
+                return ReturnMethods.returnFailure("ActHandler - setVar: parameterTypes field not present in participant obj");
+            }
+            let svReturnVal, newPartSv, svSavedVal, svNewVal, svParseObj;
+
+            if(DevConfig.RESERVED_VARIABLES.includes(svVarName)){
+                return ReturnMethods.returnFailure("ActHandler - setVar: Cannot update reserved variable!");
+            }
+            // Check which data type the target parameter is
+            switch(svParamType){
+                // For string and string array, no conversion required, since current Answer is already string array
+                case DevConfig.OPERAND_TYPES.STRING:
+                    // Ensure that the token is a string
+                    // Parse the string token
+                    svParseObj = ConfigParser.parseStringToken(svNewToken);
+                    if(svParseObj.returnCode === DevConfig.FAILURE_CODE){
+                        return ReturnMethods.returnFailure("ActHandler - setVar: Unable to parse string token"
+                            + "\n" + svParseObj.data)
+                    }
+                    svNewVal = svParseObj.data;
+                    try{
+                        newPartSv = await participants.updateParameter(participant.uniqueId, svVarName, svNewVal);
+                    } catch(err){
+                        return ReturnMethods.returnFailure("ActHandler - setVar(str): could not update participant params"
+                        + "\n" + newPartSv.data);
+                    }
+                    svReturnVal = newPartSv;
+                    svSavedVal = svNewVal;
+                    break;
+                case DevConfig.OPERAND_TYPES.STRING_ARRAY:
+                    // Ensure that the token is a string array
+                    // Parse the string token
+                    svParseObj = ConfigParser.parseStrArrToken(svNewToken)
+                    if(svParseObj.returnCode === DevConfig.FAILURE_CODE){
+                        return ReturnMethods.returnFailure("ActHandler - setVar: Unable to parse string arr token"
+                            + "\n" + svParseObj.data)
+                    }
+                    svNewVal = svParseObj.data;
+                    try{
+                        newPartSv = await participants.updateParameter(participant.uniqueId, svVarName, svNewVal);
+                    } catch(err){
+                        return ReturnMethods.returnFailure("ActHandler - setVar(strArr): could not update participant params"
+                            + "\n" + newPartSv.data);
+                    }
+                    svReturnVal = newPartSv;
+                    svSavedVal = svNewVal;
+                    break;
+                // Save to number variable if first entry can be parsed to number
+                case DevConfig.OPERAND_TYPES.NUMBER:
+                    // Ensure that the token is a number
+                    // Parse the string token
+                    svParseObj = ConfigParser.parseNumberToken(svNewToken)
+                    if(svParseObj.returnCode === DevConfig.FAILURE_CODE){
+                        return ReturnMethods.returnFailure("ActHandler - setVar: Unable to parse number token"
+                            + "\n" + svParseObj.data)
+                    }
+                    svNewVal = svParseObj.data;
+                    try{
+                        newPartSv = await participants.updateParameter(participant.uniqueId, svVarName, svNewVal);
+                    } catch(err){
+                        return ReturnMethods.returnFailure("ActHandler - setVar(num): could not update participant params"
+                            + "\n" + newPartSv.data);
+                    }
+                    svReturnVal = newPartSv;
+                    svSavedVal = svNewVal;
+                    break;
+                // Save to number array variable if first entry can be parsed to number array
+                case DevConfig.OPERAND_TYPES.NUMBER_ARRAY:
+                    // Ensure that the token is a number array
+                    // Parse the string token
+                    svParseObj = ConfigParser.parseNumArrToken(svNewToken)
+                    if(svParseObj.returnCode === DevConfig.FAILURE_CODE){
+                        return ReturnMethods.returnFailure("ActHandler - setVar: Unable to parse number array token"
+                            + "\n" + svParseObj.data)
+                    }
+                    svNewVal = svParseObj.data;
+                    try{
+                        newPartSv = await participants.updateParameter(participant.uniqueId, svVarName, svNewVal);
+                    } catch(err){
+                        return ReturnMethods.returnFailure("ActHandler - setVar(numArr): could not update participant params"
+                            + "\n" + newPartSv.data);
+                    }
+                    svReturnVal = newPartSv;
+                    svSavedVal = svNewVal;
+                    break;
+                // Save to number variable if first entry can be parsed to number
+                case DevConfig.OPERAND_TYPES.BOOLEAN:
+                    // Ensure that the token is a boolean
+                    // Parse the string token
+                    svParseObj = ConfigParser.parseBooleanToken(svNewToken)
+                    if(svParseObj.returnCode === DevConfig.FAILURE_CODE){
+                        return ReturnMethods.returnFailure("ActHandler - setVar: Unable to parse boolean token"
+                            + "\n" + svParseObj.data)
+                    }
+                    svNewVal = svParseObj.data;
+                    try{
+                        newPartSv = await participants.updateParameter(participant.uniqueId, svVarName, svNewVal);
+                    } catch(err){
+                        return ReturnMethods.returnFailure("ActHandler - setVar(bool): could not update participant params"
+                            + "\n" + newPartSv.data);
+                    }
+                    svReturnVal = newPartSv;
+                    svSavedVal = svNewVal;
+                    break;
+                default:
+                    return ReturnMethods.returnFailure("ActHandler - setVar: Cannot save to var of type " + svParamType);
+            }
+            if(config.debug.actionMessages){
+                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Answer "
+                    + svSavedVal.toString() + " saved to " + svVarName, true);
+            }
+            return ReturnMethods.returnSuccess(svReturnVal);
         // Clear the values of one or more parameters
         case "clearVars" :
             // All argument must be name of target variable strings

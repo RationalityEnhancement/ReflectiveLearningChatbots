@@ -774,6 +774,560 @@ describe('Processing actions', ()=>{
 
         })
     })
+    describe('SetVar', ()=>{
+        describe("SetVar boolean", () => {
+            describe('Set to true', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testBool", "$B{true}"]
+                }
+                let outString = true;
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    expect(typeof participant.parameters[actionObj.args[0]]).to.equal("boolean");
+                    expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+                })
+            })
+            describe('Set to false', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testBool", "$B{false}"]
+                }
+                let outString = false;
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = true;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    expect(typeof participant.parameters[actionObj.args[0]]).to.equal("boolean");
+                    expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+                })
+            })
+            describe('Fails', () => {
+                it('Should fail when type mismatch (variable)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testNum", "$B{true}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+                it('Should fail when type mismatch (token)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testBool", "$S{true}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+                it('Should fail when invalid boolean token', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testBool", "$B{trsue}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+            })
+        })
+        describe("SetVar string", () => {
+            describe('Set to nonempty string', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testStr", "$S{true}"]
+                }
+                let outString = "true";
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    expect(typeof participant.parameters[actionObj.args[0]]).to.equal("string");
+                    expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+                })
+            })
+            describe('Set to empty string', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testStr", "$S{}"]
+                }
+                let outString = "";
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    expect(typeof participant.parameters[actionObj.args[0]]).to.equal("string");
+                    expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+                })
+            })
+            describe('Fails', () => {
+                it('Should fail when type mismatch (variable)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testNum", "$S{true}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+                it('Should fail when type mismatch (token)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testStr", "$B{true}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+            })
+        })
+        describe("SetVar number", () => {
+            describe('Set to positive integer', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testNum", "$N{2}"]
+                }
+                let outString = 2;
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    expect(typeof participant.parameters[actionObj.args[0]]).to.equal("number");
+                    expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+                })
+            })
+            describe('Set to zero', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testNum", "$N{0}"]
+                }
+                let outString = 0;
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    expect(typeof participant.parameters[actionObj.args[0]]).to.equal("number");
+                    expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+                })
+            })
+            describe('Set to negative integer', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testNum", "$N{-2}"]
+                }
+                let outString = -2;
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    expect(typeof participant.parameters[actionObj.args[0]]).to.equal("number");
+                    expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+                })
+            })
+            describe('Set to real number', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testNum", "$N{-2.5}"]
+                }
+                let outString = -2.5;
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    expect(typeof participant.parameters[actionObj.args[0]]).to.equal("number");
+                    expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
+                })
+            })
+            describe('Fails', () => {
+                it('Should fail when type mismatch (variable)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testStr", "$N{2}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+                it('Should fail when type mismatch (token)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testNum", "$B{true}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+                it('Should fail when invalid number token', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testNum", "$N{peep}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+            })
+        })
+        describe("SetVar string array", () => {
+            describe('Set to nonempty string array (length 1)', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testStrArr", "$S*{true}"]
+                }
+                let outString = ["true"];
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                    expect(participant.parameters[actionObj.args[0]]).to.eql(outString);
+                })
+            })
+            describe('Set to nonempty string array (length 2)', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testStrArr", "$S*{true,false}"]
+                }
+                let outString = ["true","false"];
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                    expect(participant.parameters[actionObj.args[0]]).to.eql(outString);
+                })
+            })
+            describe('Set to nonempty string array with empty string (length 3)', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testStrArr", "$S*{true,,false}"]
+                }
+                let outString = ["true","","false"];
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                    expect(participant.parameters[actionObj.args[0]]).to.eql(outString);
+                })
+            })
+            describe('Set to empty string array (length 0)', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testStrArr", "$S*{}"]
+                }
+                let outString = [];
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                    expect(participant.parameters[actionObj.args[0]]).to.eql(outString);
+                })
+            })
+
+            describe('Fails', () => {
+                it('Should fail when type mismatch (variable)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testNum", "$S*{true}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+                it('Should fail when type mismatch (token)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testStrArr", "$B{true}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+            })
+        })
+        describe("SetVar number array", () => {
+            describe('Set to nonempty number array (length 1)', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testNumArr", "$N*{1}"]
+                }
+                let outString = [1];
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                    expect(participant.parameters[actionObj.args[0]]).to.eql(outString);
+                })
+            })
+            describe('Set to nonempty number array (length 3) + negatives + reals + zero', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testNumArr", "$N*{-1,0,1.2}"]
+                }
+                let outString = [-1,0,1.2];
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                    expect(participant.parameters[actionObj.args[0]]).to.eql(outString);
+                })
+            })
+            describe('Set to empty number array (length 0)', () => {
+                let returnObj;
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testNumArr", "$N*{}"]
+                }
+                let outString = [];
+                it('Should return success', async () => {
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    participant.parameters.testBool = false;
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+                    expect(returnObj.data["parameters"][actionObj.args[0]]).to.eql(outString)
+                })
+                it('Should have saved the parameter as string in the participant', async ()=>{
+                    let participant = await participants.get(testPartId);
+                    assert(Array.isArray(participant.parameters[actionObj.args[0]]));
+                    expect(participant.parameters[actionObj.args[0]]).to.eql(outString);
+                })
+            })
+
+            describe('Fails', () => {
+                it('Should fail when type mismatch (variable)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testNum", "$N*{1,2}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+                it('Should fail when type mismatch (token)', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testNumArr", "$N{1}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+                it('Should fail when invalid number array token', async () => {
+                    let actionObj = {
+                        aType : "setVar",
+                        args : ["testNumArr", "$N*{1,2,}"]
+                    }
+                    let participant = await participants.get(testPartId);
+                    participant.currentState = "answerReceived";
+                    returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                    expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                    console.log(returnObj.data);
+                })
+            })
+        })
+        describe('General Fails', () => {
+            let returnObj;
+
+            it('Should fail when variable name not string', async () => {
+                let actionObj = {
+                    aType : "setVar",
+                    args : [234, "$B{true}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when new value not string', async () => {
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testBool", true]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when new value not valid token', async () => {
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testBool", "{true}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when parameter missing', async () => {
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testBool"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+            it('Should fail when variable not recognized', async () => {
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["testBoolbs", "$B{true}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+
+            it('Should fail when trying to save to reserved variable', async () => {
+                let actionObj = {
+                    aType : "setVar",
+                    args : ["STAGE_DAY", "$B{true}"]
+                }
+                let participant = await participants.get(testPartId);
+                participant.currentState = "answerReceived";
+                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
+                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+                console.log(returnObj.data);
+            })
+
+        })
+    })
 
     describe('AddAnswerTo', ()=>{
         describe('String answer', () => {

@@ -46,7 +46,12 @@
   },
   "customParameters" : {
     "numAnsweredToday" : "number",
-    "satisfactionAnswer" : "string"
+    "satisfactionAnswer" : "string",
+    "testNum": "number",
+    "testNumArr": "numArr",
+    "testStr": "string",
+    "testBool": "boolean",
+    "testStrArr": "strArr"
   },
   "languages" : ["English", "Deutsch"],
   "defaultLanguage" : "English",

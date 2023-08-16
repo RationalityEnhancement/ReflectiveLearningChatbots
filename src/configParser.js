@@ -1203,6 +1203,62 @@ class ConfigParser{
     }
     /**
      *
+     * Parse a single string array token of the form $S*{...}. Return the value
+     * if valid, return error if not valid
+     *
+     * @param expression
+     */
+    static parseStrArrToken(expression){
+        if(typeof expression !== "string"){
+            return ReturnMethods.returnFailure("CParser: String array token must be string");
+        }
+        if(!expression.startsWith("$S*{") || !expression.endsWith("}")){
+            return ReturnMethods.returnFailure("CParser: String array token in incorrect format - must be $S*{...}");
+        }
+        let trimmedExpression = expression.substring(4,expression.length-1);
+        let strArr = trimmedExpression.split(",");
+        if(strArr.length === 1 && strArr[0].length === 0){
+            strArr = []
+        }
+        return ReturnMethods.returnSuccess(strArr);
+    }
+
+    /**
+     *
+     * Parse a single number array token of the form $S*{...}. Return the value
+     * if valid, return error if not valid
+     *
+     * @param expression
+     */
+    static parseNumArrToken(expression){
+        if(typeof expression !== "string"){
+            return ReturnMethods.returnFailure("CParser: Num array token must be string");
+        }
+        if(!expression.startsWith("$N*{") || !expression.endsWith("}")){
+            return ReturnMethods.returnFailure("CParser: Num array token in incorrect format - must be $N*{...}");
+        }
+        let trimmedExpression = expression.substring(4,expression.length-1);
+        let numStrArr = trimmedExpression.split(",");
+        let numArr = []
+        for(let i = 0; i < numStrArr.length; i++){
+            try {
+                let numVal = parseFloat(numStrArr[i])
+                if(isNaN(numVal) && numStrArr.length > 1){
+                    throw "NaN encountered in list"
+                }
+                numArr.push(numVal)
+            } catch(err){
+                return ReturnMethods.returnFailure("CParser: Every member of number array must be a real number or integer");
+            }
+        }
+        if(numArr.length === 1 && isNaN(numArr[0])){
+            numArr = []
+        }
+
+        return ReturnMethods.returnSuccess(numArr);
+    }
+    /**
+     *
      * Take a string value and get the corresponding boolean value
      * "TRUE" (case insensitive) => true
      * "FALSE" (case insensitive) => false

@@ -1374,7 +1374,167 @@ describe('Getting values from strings', () => {
 
         })
     })
+    describe('Parse String Array Token', () => {
+        it('Should return string array of size 1', () => {
+            let testStr = "$S*{tRuE}";
+            let expectedVal = ["tRuE"];
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
 
+        })
+        it('Should return string array of size 2', () => {
+            let testStr = "$S*{tRuE,FaLsE}";
+            let expectedVal = ["tRuE","FaLsE"];
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return string array of size 3 with empty string in between', () => {
+            let testStr = "$S*{tRuE,,FaLsE}";
+            let expectedVal = ["tRuE","","FaLsE"];
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return string array of size 3 with empty string in beginning', () => {
+            let testStr = "$S*{,tRuE,FaLsE}";
+            let expectedVal = ["","tRuE","FaLsE"];
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return string array of size 3 with empty string at end', () => {
+            let testStr = "$S*{tRuE,FaLsE,}";
+            let expectedVal = ["tRuE","FaLsE",""];
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return string array of size 2 with both empty strings', () => {
+            let testStr = "$S*{,}";
+            let expectedVal = ["",""];
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return empty string array', () => {
+            let testStr = "$S*{}";
+            let expectedVal = [];
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should string array with quotes', () => {
+            let testStr = "$S*{\"hello\",beans}";
+            let expectedVal = ["\"hello\"", "beans"];
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt start with $S*{ ', () => {
+            let testStr = "$S{true}";
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt end with } ', () => {
+            let testStr = "$S*{true";
+            let returnObj = ConfigParser.parseStrArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
+    describe('Parse Number Array Token', () => {
+        it('Should return number array of size 1', () => {
+            let testStr = "$N*{1}";
+            let expectedVal = [1];
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return number array of size 2', () => {
+            let testStr = "$N*{1,2}";
+            let expectedVal = [1,2];
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return number array with negative numbers', () => {
+            let testStr = "$N*{-1,2}";
+            let expectedVal = [-1,2];
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return number array with float', () => {
+            let testStr = "$N*{1.3462,2}";
+            let expectedVal = [1.3462,2];
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should return number array with zero', () => {
+            let testStr = "$N*{0,2}";
+            let expectedVal = [0,2];
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+
+        it('Should return empty number array', () => {
+            let testStr = "$N*{}";
+            let expectedVal = [];
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
+            expect(returnObj.data).to.eql(expectedVal)
+
+        })
+        it('Should fail with empty string in between', () => {
+            let testStr = "$N*{1,,2}";
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            console.log(returnObj)
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+
+        })
+        it('Should fail when not string', () => {
+            let testStr = 123;
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt start with $N*{ ', () => {
+            let testStr = "$N{1}";
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+        it('Should fail when string doesnt end with } ', () => {
+            let testStr = "$N*{1";
+            let returnObj = ConfigParser.parseNumArrToken(testStr);
+            expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
+
+        })
+    })
     describe('Parse Number Token', () => {
         it('Should return integer', () => {
             let testStr = "$N{12}";

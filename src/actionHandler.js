@@ -372,56 +372,8 @@ let processAction = async(bot, config, participant, actionObj, from="undefined")
                     + oSavedVal.toString() + " saved to " + oVarName, true);
             }
             return ReturnMethods.returnSuccess(oReturnVal);
-        // Set the value of a boolean variable to true or false
-        case "setBooleanVar" :
-            // First argument must be the name of the variable
-            let bVarName = actionObj.args[0];
-            if(typeof bVarName !== "string"){
-                return ReturnMethods.returnFailure("ActHandler: Variable name (arg1) must be string");
-            }
-            // Second argument must be a boolean token
-            let newVal = actionObj.args[1];
-            if(typeof newVal !== "string"){
-                return ReturnMethods.returnFailure("ActHandler: Boolean token (arg2) must be string");
-            }
-            let bParamType, newPartSetBool;
-            try{
-                bParamType = participant.parameterTypes[bVarName];
-            } catch(err){
-                return ReturnMethods.returnFailure("ActHandler: variable not found : " + bVarName);
-            }
-            if(DevConfig.RESERVED_VARIABLES.includes(bVarName)){
-                return ReturnMethods.returnFailure("ActHandler: Cannot update reserved variable!");
-            }
 
-            // Process only if target variable is boolean type
-            if(bParamType !== DevConfig.OPERAND_TYPES.BOOLEAN){
-                return ReturnMethods.returnFailure(
-                    "ActHandler: Can save boolean only to boolean param. Variable "
-                    + bVarName + " is type " + bParamType)
-            }
-
-
-            // Parse the boolean token
-            let boolValObj = ConfigParser.parseBooleanToken(newVal);
-            if(boolValObj.returnCode === DevConfig.FAILURE_CODE){
-                return ReturnMethods.returnFailure("ActHandler - setBooleanVar: Unable to parse boolean token")
-            }
-            let boolVal = boolValObj.data;
-
-            // Update the parameter with the new value
-            try{
-                newPartSetBool = await participants.updateParameter(participant.uniqueId, bVarName, boolVal);
-            } catch(err){
-                return ReturnMethods.returnFailure("ActHandler - setBooleanVar: could not update participant params");
-            }
-            if(config.debug.actionMessages){
-                await Communicator.sendMessage(bot, participant, secretMap.chatId, "(Debug) Var "
-                    + bVarName + " set to " + boolVal, true);
-            }
-            return ReturnMethods.returnSuccess(newPartSetBool);
-
-        // Set the value of any variable to a constant (makes setBooleanVar obsolete)
+        // Set the value of any variable to a constant
         case "setVar" :
             // First argument is name of the variable to save to
             let svVarName = actionObj.args[0];

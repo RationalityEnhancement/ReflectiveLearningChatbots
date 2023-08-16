@@ -19,7 +19,7 @@
     ],
     "nextActions" : [
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["reflectionStartedToday", "$B{true}"]
       }
     ]

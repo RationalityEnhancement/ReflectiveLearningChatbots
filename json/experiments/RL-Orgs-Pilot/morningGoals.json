@@ -9,7 +9,7 @@
     "nextQuestion" : "Morning-Goals-All.selectMorningQ",
     "nextActions" : [
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["reflectionStartedToday", "$B{false}"]
       },
       {
@@ -35,7 +35,7 @@
         "if": "${remindWorkIntention} == $B{true}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["remindWorkIntention", "$B{false}"]
           },
           {
@@ -64,7 +64,7 @@
         "if": "${remindRelIntention} == $B{true}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["remindRelIntention", "$B{false}"]
           },
           {
@@ -113,7 +113,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["dontAskInfoAgain", "$B{true}"]
           }
         ]
@@ -181,7 +181,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["dontAskExampleAgain", "$B{true}"]
           }
         ]
@@ -280,11 +280,11 @@
         "if" : "${workGoalsSetBefore} == $B{false}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["firstWorkGoalDay", "$B{true}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["workGoalsSetBefore", "$B{true}"]
           },
           {
@@ -292,7 +292,7 @@
             "args" : ["taskGoals"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["taskGoalsSetToday", "$B{true}"]
           }
         ],
@@ -302,7 +302,7 @@
             "args" : ["taskGoals"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["taskGoalsSetToday", "$B{true}"]
           }
         ]
@@ -472,7 +472,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["dontAskRelInfoAgain", "$B{true}"]
           }
         ]
@@ -540,7 +540,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["dontAskRelExampleAgain", "$B{true}"]
           }
         ]
@@ -637,11 +637,11 @@
         "if" : "${relGoalsSetBefore} == $B{false}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["firstRelGoalDay", "$B{true}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["relGoalsSetBefore", "$B{true}"]
           },
           {
@@ -649,7 +649,7 @@
             "args" : ["relGoals"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["relGoalsSetToday", "$B{true}"]
           }
         ],
@@ -659,7 +659,7 @@
             "args" : ["relGoals"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["relGoalsSetToday", "$B{true}"]
           }
         ]
@@ -813,11 +813,11 @@
         "if" : "${workGoalsSetBefore} == $B{false}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["firstWorkGoalDay", "$B{true}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["workGoalsSetBefore", "$B{true}"]
           },
           {
@@ -825,7 +825,7 @@
             "args" : ["taskGoals"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["taskGoalsSetToday", "$B{true}"]
           }
         ],
@@ -835,7 +835,7 @@
             "args" : ["taskGoals"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["taskGoalsSetToday", "$B{true}"]
           }
         ]
@@ -858,11 +858,11 @@
         "if" : "${relGoalsSetBefore} == $B{false}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["firstRelGoalDay", "$B{true}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["relGoalsSetBefore", "$B{true}"]
           },
           {
@@ -870,7 +870,7 @@
             "args" : ["relGoals"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["relGoalsSetToday", "$B{true}"]
           }
         ],
@@ -880,7 +880,7 @@
             "args" : ["relGoals"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["relGoalsSetToday", "$B{true}"]
           }
         ]

@@ -50,7 +50,6 @@
   },
   "VALID_ACTIONS_ARGS" : {
     "saveAnswerTo" : 1,
-    "setBooleanVar" : 2,
     "assignToCondition" : 0,
     "addAnswerTo" : 1,
     "clearVars" : -1,
@@ -64,7 +63,6 @@
   },
   "ACTION_ARG_TYPES" : {
     "saveAnswerTo" : ["_number,string,boolean,strArr"],
-    "setBooleanVar" : ["_boolean", "boolean"],
     "scheduleQuestions" : [],
     "assignToCondition" : [],
     "addAnswerTo" : ["_strArr,numArr"],

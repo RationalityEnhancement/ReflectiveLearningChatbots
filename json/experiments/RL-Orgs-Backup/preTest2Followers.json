@@ -41,7 +41,7 @@
     "continueStrings" : ["ABCDE", "12345"],
     "nextActions" : [
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["preTest2Complete", "$B{true}"]
       }
     ],

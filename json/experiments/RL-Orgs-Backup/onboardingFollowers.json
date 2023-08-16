@@ -23,7 +23,7 @@
     ],
     "nextActions" : [
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["onboardingComplete", "$B{true}"]
       },
       {

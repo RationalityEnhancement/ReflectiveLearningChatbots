@@ -23,7 +23,7 @@
         "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["warningGiven", "$B{true}"]
           }
         ]

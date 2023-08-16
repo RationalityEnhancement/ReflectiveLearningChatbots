@@ -40,9 +40,10 @@ The rest of the instructions will cover each of these steps in detail
 * If you need to edit your bot later, you can always come back to chat with [@BotFather](https://t.me/botfather) and follow instructions to do so.
 
 ### Software Setup
-* Download and install [Node.js](https://nodejs.org/en/download/releases/). If possible, download version 17.9.0, or the closest available version. This would minimize compatibility issues, as the chatbot software in this repository is built on that version.
-  *   Windows: download file "node-v17.9.0-x86.msi"
-  *   macOS: download file "node-v17.9.0.pkg"
+* Download and install [Node.js](https://nodejs.org/en/download/releases/). If possible, download version 17.9.1, or the closest available version. This would minimize compatibility issues, as the chatbot software in this repository is built on that version.
+  * Click on "Releases" next to the correct version number  
+  * Windows: download file "node-v17.9.1-x86.msi"
+  * macOS: download file "node-v17.9.1.pkg"
 * Use git to fork this repository into your own account, then clone that forked repository into a local directory of your choice. Navigate to the directory in which you have cloned this repository.
 * Open a [terminal](https://geekiam.io/what-is-a-terminal-window/) of your choice.
 * Run the command `npm install` in the directory where the repository is cloned. If there are any warnings about vulnerabilities, you may ignore them.

@@ -44,6 +44,6 @@ The following information is saved in each debug info object:
 * Timestamp of occurrence of action or question
 * Information about which action or question was initiated/completed
 * The function from which the action or question was initiated/completed
-* 
+
 
 The debug info can be viewed by using the command `npm run download-data include-debug` from the root directory. This will save the participant data to the `results/` folder, with each participant having an additional field for the list of debug info objects.

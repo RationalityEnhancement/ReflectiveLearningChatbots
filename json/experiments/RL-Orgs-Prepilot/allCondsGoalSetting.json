@@ -30,7 +30,7 @@
         "args" : ["taskGoals"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["taskGoalsSetToday", "$B{true}"]
       }
     ],
@@ -210,7 +210,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["dontAskInfoAgain", "$B{true}"]
           }
         ]
@@ -278,7 +278,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["dontAskExampleAgain", "$B{true}"]
           }
         ]
@@ -376,7 +376,7 @@
         "args" : ["relGoals"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["relGoalsSetToday", "$B{true}"]
       }
     ],
@@ -527,7 +527,7 @@
         "args" : ["lastReportedRelProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["relProgressReportedOnce", "$B{true}"]
       }
     ],
@@ -652,7 +652,7 @@
         "args" : ["lastReportedTaskProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["taskProgressReportedOnce", "$B{true}"]
       }
     ],

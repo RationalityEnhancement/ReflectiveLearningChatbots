@@ -18,7 +18,7 @@
       "if" : "(${STAGE_DAY} > $N{1}) AND (${warningGiven} != $B{true})",
       "then" : [
         {
-          "aType" : "setBooleanVar",
+          "aType" : "setVar",
           "args" : ["warningGiven", "$B{true}"]
         }
       ]
@@ -102,11 +102,11 @@
     "continueStrings" : ["MID2023", "TestBypass"],
     "nextActions" : [
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["preTest2Complete", "$B{true}"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["warningGiven", "$B{false}"]
       }
     ],

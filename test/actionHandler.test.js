@@ -99,7 +99,7 @@ describe('Validate action object', () => {
     })
     it('Should fail when number of args doesnt match atype', () => {
         let actionObj = {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["1"]
         }
         let ret = ActionHandler.validateActionObject(actionObj);
@@ -115,7 +115,7 @@ describe('Validate action object', () => {
     })
     it('Should fail when one arg is undefined', () => {
         let actionObj = {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["1", undefined]
         }
         let ret = ActionHandler.validateActionObject(actionObj);
@@ -123,7 +123,7 @@ describe('Validate action object', () => {
     })
     it('Should succeed when all is correct', () => {
         let actionObj = {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["1", "2"]
         }
         let ret = ActionHandler.validateActionObject(actionObj);
@@ -661,112 +661,6 @@ describe('Processing actions', ()=>{
                 participant.currentAnswer = ["4"];
                 participant.currentState = "answerReceived";
                 participant.currentQuestion = question;
-                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-                console.log(returnObj.data);
-            })
-
-        })
-    })
-    describe('SetBooleanVar', ()=>{
-        describe('Set to true', () => {
-            let returnObj;
-            let actionObj = {
-                aType : "setBooleanVar",
-                args : ["testBool", "$B{true}"]
-            }
-            let outString = true;
-            it('Should return success', async () => {
-                let participant = await participants.get(testPartId);
-                participant.currentState = "answerReceived";
-                participant.parameters.testBool = false;
-                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
-            })
-            it('Should have saved the parameter as string in the participant', async ()=>{
-                let participant = await participants.get(testPartId);
-                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("boolean");
-                expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
-            })
-        })
-        describe('Set to false', () => {
-            let returnObj;
-            let actionObj = {
-                aType : "setBooleanVar",
-                args : ["testBool", "$B{false}"]
-            }
-            let outString = false;
-            it('Should return success', async () => {
-                let participant = await participants.get(testPartId);
-                participant.currentState = "answerReceived";
-                participant.parameters.testBool = true;
-                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                expect(returnObj.returnCode).to.equal(DevConfig.SUCCESS_CODE);
-                expect(returnObj.data["parameters"][actionObj.args[0]]).to.equal(outString)
-            })
-            it('Should have saved the parameter as string in the participant', async ()=>{
-                let participant = await participants.get(testPartId);
-                expect(typeof participant.parameters[actionObj.args[0]]).to.equal("boolean");
-                expect(participant.parameters[actionObj.args[0]]).to.equal(outString);
-            })
-        })
-        describe('Fails', () => {
-            let returnObj;
-            let outString = "23";
-            let expectedOut = 23;
-
-            it('Should fail when variable name not string', async () => {
-                let actionObj = {
-                    aType : "setBooleanVar",
-                    args : [234, "$B{true}"]
-                }
-                let participant = await participants.get(testPartId);
-                participant.currentState = "answerReceived";
-                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-                console.log(returnObj.data);
-            })
-            it('Should fail when new value not string', async () => {
-                let actionObj = {
-                    aType : "setBooleanVar",
-                    args : ["testBool", true]
-                }
-                let participant = await participants.get(testPartId);
-                participant.currentState = "answerReceived";
-                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-                console.log(returnObj.data);
-            })
-            it('Should fail when variable not recognized', async () => {
-                let actionObj = {
-                    aType : "setBooleanVar",
-                    args : ["testBoolbs", "$B{true}"]
-                }
-                let participant = await participants.get(testPartId);
-                participant.currentState = "answerReceived";
-                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-                console.log(returnObj.data);
-            })
-            it('Should fail when cannot save to variable type', async () => {
-                let actionObj = {
-                    aType : "setBooleanVar",
-                    args : ["testNum", "$B{true}"]
-                }
-                let participant = await participants.get(testPartId);
-                participant.currentState = "answerReceived";
-                returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
-                expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
-                console.log(returnObj.data);
-            })
-            it('Should fail when trying to save to reserved variable', async () => {
-                let actionObj = {
-                    aType : "setBooleanVar",
-                    args : ["STAGE_DAY", "$B{true}"]
-                }
-                let participant = await participants.get(testPartId);
-                participant.currentState = "answerReceived";
                 returnObj = await ActionHandler.processAction(bot, config, participant, actionObj);
                 expect(returnObj.returnCode).to.equal(DevConfig.FAILURE_CODE);
                 console.log(returnObj.data);

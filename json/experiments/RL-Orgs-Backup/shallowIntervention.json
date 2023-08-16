@@ -50,7 +50,7 @@
         "args" : ["lastReportedRelProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["relProgressReportedOnce", "$B{true}"]
       }
     ],
@@ -298,7 +298,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["remindRelIntention", "$B{true}"]
           }
         ]
@@ -426,7 +426,7 @@
         "args" : ["lastReportedTaskProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["taskProgressReportedOnce", "$B{true}"]
       }
     ],
@@ -676,7 +676,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["remindWorkIntention", "$B{true}"]
           }
         ]

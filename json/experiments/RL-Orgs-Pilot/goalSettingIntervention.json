@@ -31,7 +31,7 @@
         "args" : ["relGoalsSetToday"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["inRelReflection", "$B{true}"]
       }
     ]
@@ -54,7 +54,7 @@
         "args" : ["lastReportedRelProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["relProgressReportedOnce", "$B{true}"]
       }
     ],
@@ -206,7 +206,7 @@
         "args" : ["taskGoalsSetToday"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["inRelReflection", "$B{false}"]
       }
     ]
@@ -228,7 +228,7 @@
         "args" : ["lastReportedTaskProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["taskProgressReportedOnce", "$B{true}"]
       }
     ],

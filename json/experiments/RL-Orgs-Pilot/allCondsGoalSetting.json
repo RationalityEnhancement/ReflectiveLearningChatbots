@@ -49,7 +49,7 @@
         "args" : ["lastReportedRelProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["relProgressReportedOnce", "$B{true}"]
       }
     ],
@@ -202,7 +202,7 @@
         "args" : ["lastReportedTaskProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["taskProgressReportedOnce", "$B{true}"]
       }
     ],

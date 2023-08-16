@@ -32,7 +32,7 @@
         "if" : "${pauseEnded} == $B{false}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["pauseEnded", "$B{true}"]
           }
         ]
@@ -41,7 +41,7 @@
         "if" : "(${STAGE_DAY} > $N{1}) AND (${warningGiven} != $B{true})",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["warningGiven", "$B{true}"]
           }
         ]

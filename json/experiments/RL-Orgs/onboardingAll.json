@@ -27,7 +27,7 @@
       "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
       "then" : [
         {
-          "aType" : "setBooleanVar",
+          "aType" : "setVar",
           "args" : ["warningGiven", "$B{true}"]
         }
       ]
@@ -102,11 +102,11 @@
     ],
     "nextActions" : [
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["onboardingComplete", "$B{true}"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["warningGiven", "$B{false}"]
       }
     ],

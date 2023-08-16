@@ -14,6 +14,7 @@ const origConfig = ConfigReader.getExpConfig();
 const config = JSON.parse(JSON.stringify(origConfig));
 const DevConfig = ConfigReader.getDevConfig();
 
+
 let testValues = {
   "number": 24,
   "string": "Europe/Berlin",
@@ -27,6 +28,7 @@ let testParameters = {}
 for(const [param, type] of Object.entries(parameterTypes)){
   testParameters[param] = testValues[type]
 }
+// ---------- Test Values ----------
 
 let fakeParticipantObj = {
   firstName: "testName",
@@ -48,6 +50,14 @@ let fakeParticipantObj = {
 
 let configFileInvalid = false;
 
+// ---------- Helper Functions ----------
+
+// Check whether, in a given object, all the languages defined in the configuration file are present
+let confirmAllLanguages = (langObj) => {
+  let intersect = lodash.intersection(Object.keys(langObj), config.languages);
+  return intersect.length === config.languages.length;
+}
+
 let assert = (exp, errorMsg) => {
   if(!exp){
     console.error('\x1b[41m\x1b[37m%s\x1b[0m', 'ERROR: ' + errorMsg);
@@ -64,6 +74,7 @@ module.exports.checkConfig = () => {
   ]
 
   // Main experiment information
+  // Checking the correctness of the types of the main information
   let fieldTypeChecks = {
     experimentName: (value) => typeof value === "string" && value.length > 0,
     experimentId: (value) => typeof value === "string" && value.length > 0,
@@ -157,10 +168,6 @@ module.exports.checkConfig = () => {
   let validateStagesObj = ConfigParser.validateStages(config.experimentStages, config.experimentConditions)
   assert(validateStagesObj.returnCode === DevConfig.SUCCESS_CODE, validateStagesObj.data)
 
-  let confirmAllLanguages = (langObj) => {
-    let intersect = lodash.intersection(Object.keys(langObj), config.languages);
-    return intersect.length === config.languages.length;
-  }
 
   // ---------- Phrases ------------
 

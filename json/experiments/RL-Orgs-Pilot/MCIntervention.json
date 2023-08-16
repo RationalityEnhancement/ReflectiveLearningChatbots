@@ -31,7 +31,7 @@
         "args" : ["relGoalsSetToday"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["inRelReflection", "$B{true}"]
       }
     ]
@@ -54,7 +54,7 @@
         "args" : ["lastReportedRelProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["relProgressReportedOnce", "$B{true}"]
       }
     ],
@@ -201,7 +201,7 @@
         "if" : "${firstRelGoalDay} == $B{true}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["firstRelGoalDay", "$B{false}"]
           }
         ]
@@ -439,7 +439,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["remindRelIntention", "$B{true}"]
           }
         ]
@@ -541,11 +541,11 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsMoreRelevant", "$B{False}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsEquallyRelevant", "$B{False}"]
           }
         ]
@@ -554,11 +554,11 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsMoreRelevant", "$B{True}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsEquallyRelevant", "$B{False}"]
           }
         ]
@@ -567,11 +567,11 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsMoreRelevant", "$B{False}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsEquallyRelevant", "$B{True}"]
           }
         ]
@@ -945,7 +945,7 @@
         "args" : ["taskGoalsSetToday"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["inRelReflection", "$B{false}"]
       }
     ]
@@ -967,7 +967,7 @@
         "args" : ["lastReportedTaskProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["taskProgressReportedOnce", "$B{true}"]
       }
     ],
@@ -1108,7 +1108,7 @@
         "if" : "${firstWorkGoalDay} == $B{true}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["firstWorkGoalDay", "$B{false}"]
           }
         ]
@@ -1359,7 +1359,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["remindWorkIntention", "$B{true}"]
           }
         ]
@@ -1456,11 +1456,11 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsMoreRelevant", "$B{False}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsEquallyRelevant", "$B{False}"]
           }
         ]
@@ -1469,11 +1469,11 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{3,4}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsMoreRelevant", "$B{True}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsEquallyRelevant", "$B{False}"]
           }
         ]
@@ -1482,11 +1482,11 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{2}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsMoreRelevant", "$B{False}"]
           },
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["goalsEquallyRelevant", "$B{True}"]
           }
         ]

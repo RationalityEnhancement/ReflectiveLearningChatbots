@@ -85,7 +85,7 @@ Sections 4 onwards contain detailed documentation of each part of the experiment
   <li><a href="#Setup">Setup Questions and Starting the Experiment</a></li>
   <li><a href="#Phrases">Mandatory Phrases</a></li>
   <li><a href="#Split">Splitting Up the Configuration File</a></li>
-  <li><a href="#DefaultParams">Manually Setting Default Values for Parameters</a></li>
+  <li><a href="#ConfigCheck">Verifying The Correctness of the Configuration</a></li>
 </ol>
 
 ## <span id="Overview"> Overview </span>
@@ -208,7 +208,7 @@ Reading the <a href="#Overview">Overview</a> section first may be useful before 
 
 How to run this example (assuming you have completed set-up as described [here](../README.md)): 
 * Step 1: open the example file in an IDE or text editor and copy all the text
-* Step 2: replace all the text in `json/config.json` with the copied text
+* Step 2: replace all the text in `json/essential/config.json` with the copied text
 * Step 3: navigate to the main folder (where you see the file `index.js`)
 * Step 4: run the command `npm run start-local`
 * Step 5: open Telegram and start chatting with your bot!
@@ -256,10 +256,10 @@ The following are fields that exist at the first level of the experiment JSON ob
 * `defaultLanguage` - String containing the default language
 * `msPerCharacterDelay` - Number of milliseconds the bot waits per character typed, in order to simulate typing.
 
-The following example shows the beginning of the experiment JSON file, titled `config.json`, stored in the directory `json`, which is located in the main directory of your project. If you want to copy the below object into your JSON file, copy only the object and not the text `"In json/config.json"`.
+The following example shows the beginning of the experiment JSON file, titled `config.json`, stored in the directory `json`, which is located in the main directory of your project. If you want to copy the below object into your JSON file, copy only the object and not the text `"In json/essential/config.json"`.
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -277,7 +277,7 @@ The `instructions` property will contain instructions that you would like to pre
 The `instructions` object contains a property for each language available for the experiment, with each language having a list of strings corresponding to the instruction text for that language.
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -312,7 +312,7 @@ This is an object of boolean properties that exists at the first level of the ex
 
 Continuation of the beginning of the experiment JSON file, if this were the actual deployed experiment:
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -351,7 +351,7 @@ These are all fields at the first level of the experiment JSON object.
   
 Continuation of the beginning of the experiment JSON file, adding two conditions of equal sizes:
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -422,7 +422,7 @@ Let us add some stages to our example experiment. For `"Condition1"`, we will ha
 For `"Condition2"`, we will have just one stage that lasts 4 days, but it only occurs on weekends. This means that the experiment will end 4 weekend days (in about two weeks) after the stage has been manually started.
 
 ```
-In experimentStages of json/config.json
+In experimentStages of json/essential/config.json
 
 {
   "Condition1" : [
@@ -458,7 +458,7 @@ In experimentStages of json/config.json
 Now, to add this to the experiment JSON object we are building, we must simply assign it to the `experimentStages` field.
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -532,7 +532,7 @@ The second parameter object is called `customParameters`. Here, the experimenter
 For example, let us define four parameters. The first one will be a number `numGoalsSet`, that stores the number of goals that the user set, the second one a string array `goalsSet` that stores each of the goals that the user set for themselves on that day, the third one a boolean `wantsToReflect`, indicating a user's preference on whether or not they want to reflect on that given day, and the fourth one `reflectionText` storing the user's answer to a reflection prompt.
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -587,7 +587,7 @@ Since our example experiment has two different conditions, the only questions we
 Let us create a question category called `"setupQuestions"` as the only category in our conditionless categories. Since we have not yet seen what question objects look like, we will make placeholders for them and revisit them in the section <a href="#Setup">Setup Questions</a> after we have discussed question objects at length.
 
 ```
-In questionCategories of json/config.json
+In questionCategories of json/essential/config.json
 
 {
   "setupQuestions" : [
@@ -610,7 +610,7 @@ In questionCategories of json/config.json
 We've successfully created a conditionless question category object! Now all we have to do is assign this to the field `questionCategories` at the first level of the experiment JSON object.
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -666,7 +666,7 @@ The experiment JSON object has, at the first level, another object called `"cond
 Let us already create the skeleton of this object with each of the conditions:
 
 ```
-In conditionQuestions of json/config.json
+In conditionQuestions of json/essential/config.json
 
 {
   "Condition1" : {...},
@@ -682,7 +682,7 @@ Imagine that we want to create, in the first condition, a category for questions
 Note that each of the lists corresponding to the question categories would be lists of "question objects", as mentioned before, but we will leave those out now because we haven't covered them yet.
 
 ```
-In conditionQuestions of json/config.json
+In conditionQuestions of json/essential/config.json
 
 {
   "Condition1" : {
@@ -702,7 +702,7 @@ In conditionQuestions of json/config.json
 Similarly, we can imagine that for our second condition, we only have one type of question that we want to ask every day. So we shall define just one question category.
 
 ```
-In conditionQuestions of json/config.json
+In conditionQuestions of json/essential/config.json
 
 {
   "Condition1" : {
@@ -728,7 +728,7 @@ Note how the question categories of `"Condition2"` are independent of those of `
 Finally, all we have to do is assign this entire object to the `conditionQuestions` field at the first level of the experiment JSON object. Doing this, we get:
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -1326,19 +1326,19 @@ So we finally come to the topic that has been teased a few times before - what i
 
 Each action has an action type, `aType`, and zero or more string arguments `args` that are required for a particular action. Together, these two fields form the 'action object', representing the execution of a single action. After seeing, in the following table, the descriptions of each action and their arguments, we will pick appropriate actions we might want to perform after our example question.
 
-| aType                  | description                                                                                 | arg 1               | arg 1 type                | arg 2                  | arg 2 type                                | example action object                                                                                                 | notes                                                                                                                                        |
-|------------------------|---------------------------------------------------------------------------------------------|---------------------|---------------------------|------------------------|-------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| `assignToCondition`    | Assigns user to a particular condition based on the `assignmentScheme`                      | none                | none                      | none                   | none                                      | `{ "aType" : "assignToCondition" }`                                                                                   |                                                                                                                                              |
-| `startStage`           | Starts a certain experiment stage at day 1, ending the previous stage if any was running    | name of valid stage | string                    | none                   | none                                      | `{ "aType" : "startStage", args : ["Pre-Test"] }`                                                                     | If the experiment has conditions, execute only when user is **already assigned to a condition**                                              |
-| `incrementStageDay`    | Manually increment the current day of a stage by 1                                          | name of valid stage | string                    | none                   | none                                      | `{ "aType" : "incrementStageDay", args : ["Test"] }`                                                                  | incrementing of stage day occurs automatically on a daily basis already                                                                      | 
-| `endExperiment`        | Manually causes the experiment to end                                                       | none                | none                      | none                   | none                                      | `{ "aType" : "incrementStageDay" }`                                                                                   | ending experiment occurs automatically after the end of last stage (if it has finite length)                                                 |
-| `saveAnswerTo`         | Save the user's answer to the current question to a certain variable (parameter)            | valid variable name | string, strArr, or number | none                   | none                                      | `{ "aType" : "saveAnswerTo", args : ["numGoalsSet"] }`                                                                | save to number only when `qType` is `"number"`                                                                                               |
-| `saveOptionIdxTo`      | Save the index of the user's answer in the list of options to a variable (parameter)        | valid variable name | number, numArr            | none                   | none                                      | `{ "aType" : "saveOptionIdxTo", args : ["selectedGoalIdx"] }`                                                         | only possible for `singleChoice` and `multiChoice` type questions. `multiChoice` type question saves array of indices of all chosen answers. |
-| `addAnswerTo`          | Add the user's current answer to the end of a certain array variable (parameter)            | valid variable name | strArr or numArr          | none                   | none                                      | `{ "aType" : "addAnswerTo", args : ["goalsSetToday"] }`                                                               | add to number array only when `qType` is `"number"`                                                                                          |
-| `setBooleanVar`        | Set the value of a particular boolean variable to either true or false                      | valid variable name | boolean                   | new value              | <a href="#Constants">boolean constant</a> | `{ "aType" : "setBooleanVar", args : ["wantsToReflect", "$B{true}"] }`                                                |                                                                                                                                              |
-| `addValueTo`           | Add a number value to a number variable                                                     | valid variable name | number                    | added value            | <a href="#Constants">number constant</a>  | `{ "aType" : "addValueTo", args : ["numGoalsSet", "$N{2}"] }`                                                         |                                                                                                                                              |
-| `clearVars`            | Clears one or several variables to default value (see <a href="#Parameters">Parameters</a>) | valid variable name | any parameter type        | none or valid var name | none or any parameter type                | `{ "aType" : "clearVars", args : ["goalsSetToday", "reflectionStarted"] }`                                            | Takes any number of arguments, each of which is a variable name. At least one argument required.                                             |
-| `rescheduleCurrentStage` | Reschedules the questions in the current stage without updating stage name or day           | none | none | none | none | `{ "aType" : "rescheduleCurrentStage" }` | Useful, e.g., when changing the time at which user wants to receive questions.                                                               |
+| aType                    | description                                                                                 | arg 1               | arg 1 type                | arg 2                  | arg 2 type                               | example action object                                                                                                 | notes                                                                                                                                        |
+|--------------------------|---------------------------------------------------------------------------------------------|---------------------|---------------------------|------------------------|------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `assignToCondition`      | Assigns user to a particular condition based on the `assignmentScheme`                      | none                | none                      | none                   | none                                     | `{ "aType" : "assignToCondition" }`                                                                                   |                                                                                                                                              |
+| `startStage`             | Starts a certain experiment stage at day 1, ending the previous stage if any was running    | name of valid stage | string                    | none                   | none                                     | `{ "aType" : "startStage", args : ["Pre-Test"] }`                                                                     | If the experiment has conditions, execute only when user is **already assigned to a condition**                                              |
+| `incrementStageDay`      | Manually increment the current day of a stage by 1                                          | name of valid stage | string                    | none                   | none                                     | `{ "aType" : "incrementStageDay", args : ["Test"] }`                                                                  | incrementing of stage day occurs automatically on a daily basis already                                                                      | 
+| `endExperiment`          | Manually causes the experiment to end                                                       | none                | none                      | none                   | none                                     | `{ "aType" : "incrementStageDay" }`                                                                                   | ending experiment occurs automatically after the end of last stage (if it has finite length)                                                 |
+| `saveAnswerTo`           | Save the user's answer to the current question to a certain variable (parameter)            | valid variable name | string, strArr, or number | none                   | none                                     | `{ "aType" : "saveAnswerTo", args : ["numGoalsSet"] }`                                                                | save to number only when `qType` is `"number"`                                                                                               |
+| `saveOptionIdxTo`        | Save the index of the user's answer in the list of options to a variable (parameter)        | valid variable name | number, numArr            | none                   | none                                     | `{ "aType" : "saveOptionIdxTo", args : ["selectedGoalIdx"] }`                                                         | only possible for `singleChoice` and `multiChoice` type questions. `multiChoice` type question saves array of indices of all chosen answers. |
+| `addAnswerTo`            | Add the user's current answer to the end of a certain array variable (parameter)            | valid variable name | strArr or numArr          | none                   | none                                     | `{ "aType" : "addAnswerTo", args : ["goalsSetToday"] }`                                                               | add to number array only when `qType` is `"number"`                                                                                          |
+| `setVar`                 | Manually set the value of a particular variable to a constant value                         | valid variable name | any parameter type        | new value              | valid constant of same type as arg1      | `{ "aType" : "setVar", args : ["wantsToReflect", "$B{true}"] }`                                                |                                                                                                                                              |
+| `addValueTo`             | Add a number value to a number variable                                                     | valid variable name | number                    | added value            | <a href="#Constants">number constant</a> | `{ "aType" : "addValueTo", args : ["numGoalsSet", "$N{2}"] }`                                                         |                                                                                                                                              |
+| `clearVars`              | Clears one or several variables to default value (see <a href="#Parameters">Parameters</a>) | valid variable name | any parameter type        | none or valid var name | none or any parameter type               | `{ "aType" : "clearVars", args : ["goalsSetToday", "reflectionStarted"] }`                                            | Takes any number of arguments, each of which is a variable name. At least one argument required.                                             |
+| `rescheduleCurrentStage` | Reschedules the questions in the current stage without updating stage name or day           | none | none                      | none | none                                     | `{ "aType" : "rescheduleCurrentStage" }` | Useful, e.g., when changing the time at which user wants to receive questions.                                                               |
 
 
 As you may see in the examples already, building an action object requires a field `aType` and a field `args`. If there are no required arguments for a given `aType`, the `args` field can be omitted from the action object. If there are arguments, then `args` must be a **list of strings**, even if there is only one argument.
@@ -1572,7 +1572,7 @@ Example question object 1
       "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
       "then" : [
         {
-          "aType" : "setBooleanVar",
+          "aType" : "setVar",
           "args" : ["wantsToReflect", "$B{true}"]
         },
         {
@@ -1582,7 +1582,7 @@ Example question object 1
       ],
       "else" : [
         {
-          "aType" : "setBooleanVar",
+          "aType" : "setVar",
           "args" : ["wantsToReflect", "$B{false}"]
         },
         {
@@ -1600,7 +1600,7 @@ Now you can see why the experimenter configuration file tends to get very long!
 Having added these conditional operations, we can finally say we are done with our example question object! Now, we will add it to the question category `testMorningQs` of `Condition1`. This is done by just making the entire object above an element of the list `testMorningQs` (order doesn't matter).
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -1674,7 +1674,7 @@ Example question object 2
 And that's it! We can now add this to our experimenter configuration file like before. In the section <a href="#Scheduled">Scheduled Questions</a>, we will schedule this dummy question so that every day, the first question is selected based on which day that is!
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -1789,7 +1789,7 @@ In the section on <a href="#Parameters">Participant Parameters</a>, you learned 
 
 There are two possible types of variables - reserved variables and custom variables. The former are values related to the state of the chatbot that the experimenter has access to, but cannot alter. The latter are those that the experimenter has access to and can manipulate as needed.
 
-In addition to variables, there are also "constants". These define values of a certain data type, and are mainly used in <a href="#Conditions">Conditional Expressions</a>, though also finding a use in the <a href="#Actions">action</a> `setBooleanVar`.
+In addition to variables, there are also "constants". These define values of a certain data type, and are mainly used in <a href="#Conditions">Conditional Expressions</a>, though also finding a use in the <a href="#Actions">action</a> `setVar`.
 
 ### <span id="ReservedVars"> Reserved Variables </span>
 
@@ -1854,7 +1854,7 @@ If the variable does not exist - i.e., is neither the name of a reserved variabl
 
 Constants are used to represent a value of a particular data type. It is important to represent the value in the correct way so that the chatbot software understands exactly what it is you want to achieve. Unfortunately, it is not very flexible in its interpretations of certain symbols, particularly when processing <a href="#Conditions">conditional expressions</a>. Therefore, it is important that you specify exactly what data it is that you are trying to represent, and that is done using constants.
 
-Constants find their biggest use in conditional expressions, when evaluating the value of a variable with respect to a certain value that is not present in another variable. This certain value is represented by a constant of the desired data type. However, there is currently one other use of boolean constants, namely in the <a href="#Actions">action</a> `setBooleanVar`.
+Constants find their biggest use in conditional expressions, when evaluating the value of a variable with respect to a certain value that is not present in another variable. This certain value is represented by a constant of the desired data type. However, there is currently one other use of boolean constants, namely in the <a href="#Actions">action</a> `setVar`.
 
 Corresponding to the <a href="#Parameters">five possible data types</a> that variables can take, there are five possible constants that you can represent. Representing a constant involves a particular syntax, namely enclosing the desired values in particular characters.
 
@@ -1971,20 +1971,20 @@ Following is a table of all available operators as well as the operands on which
 
 Keep in mind that the operators are **NOT commutative**. This means that `"A op B"` is not the same as `"B op A"`, therefore making the order of operands in the expression important!
 
-| operator          | description                                                   | operand 1 type      | operand 2 type | example                                         | example outcome                                                                                     | notes                                                                                                           |
-|-------------------|---------------------------------------------------------------|---------------------|----------------|-------------------------------------------------|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `==`              | Checks equality between two values of the same data type      | any                 | any            | `"${STAGE_NAME} == $S{Test}"`                   | `true` when var `STAGE_NAME` has value `"Test"`                                                     | operands must be of same data type                                                                              |
-| `!=`              | Checks inequality between two values of the same data type    | any                 | any            | `"${STAGE_NAME} != $S{Test}"`                   | `true` when var `STAGE_NAME` does not have value `"Test"`                                           | operands must be of same data type                                                                              |
-| `>=`              | Checks whether op1 greater than or equal to op2               | number              | number         | `"${STAGE_DAY} >= $N{3}"`                       | `true` when var `STAGE_DAY` has value `>= 3`                                                        |                                                                                                                 |
-| `>=`              | Checks whether op1 strictly greater than op2                  | number              | number         | `"${STAGE_DAY} > $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                         |                                                                                                                 |
-| `<=`              | Checks whether op1 lesser than or equal to op2                | number              | number         | `"${STAGE_DAY} <= $N{3}"`                       | `true` when var `STAGE_DAY` has value `>= 3`                                                        |                                                                                                                 |
-| `<`               | Checks whether op1 strictly lesser than op2                   | number              | number         | `"${STAGE_DAY} < $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                         |                                                                                                                 |
+| operator         | description                                                   | operand 1 type      | operand 2 type | example                                         | example outcome                                                                                     | notes                                                                                                           |
+|------------------|---------------------------------------------------------------|---------------------|----------------|-------------------------------------------------|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| `==`             | Checks equality between two values of the same data type      | any                 | any            | `"${STAGE_NAME} == $S{Test}"`                   | `true` when var `STAGE_NAME` has value `"Test"`                                                     | operands must be of same data type                                                                              |
+| `!=`             | Checks inequality between two values of the same data type    | any                 | any            | `"${STAGE_NAME} != $S{Test}"`                   | `true` when var `STAGE_NAME` does not have value `"Test"`                                           | operands must be of same data type                                                                              |
+| `>=`             | Checks whether op1 greater than or equal to op2               | number              | number         | `"${STAGE_DAY} >= $N{3}"`                       | `true` when var `STAGE_DAY` has value `>= 3`                                                        |                                                                                                                 |
+| `>`              | Checks whether op1 strictly greater than op2                  | number              | number         | `"${STAGE_DAY} > $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                         |                                                                                                                 |
+| `<=`             | Checks whether op1 lesser than or equal to op2                | number              | number         | `"${STAGE_DAY} <= $N{3}"`                       | `true` when var `STAGE_DAY` has value `>= 3`                                                        |                                                                                                                 |
+| `<`              | Checks whether op1 strictly lesser than op2                   | number              | number         | `"${STAGE_DAY} < $N{3}"`                        | `true` when var `STAGE_DAY` has value `> 3`                                                         |                                                                                                                 |
 | `CONTAINS_STRING` | Checks whether op1 contains the string op2                    | string, strArr      | string         | `"${STAGE_NAME} CONTAINS_STRING $S{"Pre"}"`     | `true` when var `STAGE_NAME` has `"Pre"` anywhere as a substring (e.g., `"Pre-Test"`, `"rePresent"`)      | When op1 is a strArr, then returns `true` if any of the strings in the array contains op2 as substring            |
-| `IN_ARRAY`        | Checks whether op1 is an element in the array op2             | string, number      | strArr, numArr | `"${progress} IN_ARRAY $N*{10,20,30}"`          | `true` when var `progress` has value `10`, `20`, or `30`                                            |                                                                                                                 |
-| `MULTIPLE_OF`     | Checks whether op1 is a multiple of op2                       | number              | number         | `"${STAGE_DAY} MULTIPLE_OF $N{2}"`              | `true` when var `STAGE_DAY` is an even number                                                       |                                                                                                                 |
-| `HAS_CHOICE_IDX`  | Checks whether certain option(s) were chosen on a choice question | `${CURRENT_ANSWER}` | numArr         | `"${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,3}"` | `true` when the index of the chosen answer in the `options` list is either `0`, `1`, or `3`         | can only be used exclusively for this purpose and in this manner with `singleChoice` or `multiChoice` questions |
-| `AND`             | Logical AND checks whether op1 and op2 are both true          | boolean             | boolean        | `"${setGoalsToday} AND ${wantsToReflect}"`      | `true` when the both variables `setGoalsToday` and `wantsToReflect` are `true`                      |                                                                                                                 |
-| `OR`               | Logical OR checks whether op1 or op2 are true               | boolean             | boolean        | `"${setGoalsToday} OR ${wantsToReflect}"`       | `true` when either variables `setGoalsToday` or `wantsToReflect` is `true`, or when both are `true` |                                                                                                                 |
+| `IN_ARRAY`       | Checks whether op1 is an element in the array op2             | string, number      | strArr, numArr | `"${progress} IN_ARRAY $N*{10,20,30}"`          | `true` when var `progress` has value `10`, `20`, or `30`                                            |                                                                                                                 |
+| `MULTIPLE_OF`    | Checks whether op1 is a multiple of op2                       | number              | number         | `"${STAGE_DAY} MULTIPLE_OF $N{2}"`              | `true` when var `STAGE_DAY` is an even number                                                       |                                                                                                                 |
+| `HAS_CHOICE_IDX` | Checks whether certain option(s) were chosen on a choice question | `${CURRENT_ANSWER}` | numArr         | `"${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0,1,3}"` | `true` when the index of the chosen answer in the `options` list is either `0`, `1`, or `3`         | can only be used exclusively for this purpose and in this manner with `singleChoice` or `multiChoice` questions |
+| `AND`            | Logical AND checks whether op1 and op2 are both true          | boolean             | boolean        | `"${setGoalsToday} AND ${wantsToReflect}"`      | `true` when the both variables `setGoalsToday` and `wantsToReflect` are `true`                      |                                                                                                                 |
+| `OR`              | Logical OR checks whether op1 or op2 are true               | boolean             | boolean        | `"${setGoalsToday} OR ${wantsToReflect}"`       | `true` when either variables `setGoalsToday` or `wantsToReflect` is `true`, or when both are `true` |                                                                                                                 |
 
 See section <a href="CondNextSteps">Conditional Next Steps</a> for an example of `HAS_CHOICE_IDX`.
 
@@ -2088,7 +2088,7 @@ Example schedule object 2
 Finally, we will create a question that is scheduled to present a survey only in the stages `Pre-Test` and `Post-Test`. After we create this, we will take all schedule objects and combine them into a list, which we will assign to `scheduledQuestions` of `Condition1`.
 
 ```
-In configQuestions > Condition1 > scheduledQuestions of json/config.json
+In configQuestions > Condition1 > scheduledQuestions of json/essential/config.json
 
 [
   {
@@ -2117,7 +2117,7 @@ In configQuestions > Condition1 > scheduledQuestions of json/config.json
 Now, we will assign this list to the field `scheduledQuestions` of `Condition1` in the experimenter configuration file.
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -2157,7 +2157,7 @@ Similarly, we may want to create a list containing a single scheduled question f
 This time, we will skip a step and directly added it to the configuration file under `Condition2` of `conditionQuestions`.
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -2315,7 +2315,7 @@ In a similar manner, it is possible to define questions that can only be prompte
 Now, we can simply add this list to the property `userPromptedQuestions` of `Condition1` in our experimenter configuration file:
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -2376,7 +2376,7 @@ The first thing that you would likely want to get from your participant is their
 Here, we have an example language question:
 
 ```
-In first question of questionCategories > setupQuestions of json/config.json
+In first question of questionCategories > setupQuestions of json/essential/config.json
 
 {
   "qId" : "language",
@@ -2412,7 +2412,7 @@ A few things to notice about this:
 This will now be added to our list of setupQuestions:
 
 ```
-In questionCategories > setupQuestions of json/config.json
+In questionCategories > setupQuestions of json/essential/config.json
 [
   {
     "qId" : "language",
@@ -2444,7 +2444,7 @@ It is possible to skip this field if your `assignmentScheme` is not `"pid"`. How
 Now that the user has selected a language, we can start having separate texts for different languages. So we will build up our PID question in the following way:
 
 ```
-In second question of questionCategories > setupQuestions of json/config.json
+In second question of questionCategories > setupQuestions of json/essential/config.json
 
 {
   "qId" : "PID",
@@ -2472,7 +2472,7 @@ A few things to note here:
 Now, we can add this as well to the list of setup questions
 
 ```
-In questionCategories > setupQuestions of json/config.json
+In questionCategories > setupQuestions of json/essential/config.json
 [
   { "qId" : "language", ... },
   {
@@ -2502,7 +2502,7 @@ Since the timezone is the last information we need from the participant for setu
 For the following question, we will use some fairly common timezones as options, but this list can and should be expanded.
 
 ```
-In third question of questionCategories > setupQuestions of json/config.json
+In third question of questionCategories > setupQuestions of json/essential/config.json
 
 {
   "qId" : "timezone",
@@ -2531,7 +2531,7 @@ In third question of questionCategories > setupQuestions of json/config.json
 Now, we can add this as well to the list of setup questions
 
 ```
-In questionCategories > setupQuestions of json/config.json
+In questionCategories > setupQuestions of json/essential/config.json
 [
   { "qId" : "language", ... },
   { "qId" : "PID", ... },
@@ -2567,7 +2567,7 @@ As mentioned in the section on [scheduled questions](#span-idscheduled-schedulin
 Since it is important for the `atTime` property of a scheduled question to strictly have the format `HH:MM`, we will ask the users to select from options that are already in this format, so that we don't rely on the user to enter their preferred time in the correct format.
 
 ```
-In fourth question of questionCategories > setupQuestions of json/config.json
+In fourth question of questionCategories > setupQuestions of json/essential/config.json
 
 {
   "qId" : "eveningTime",
@@ -2593,7 +2593,7 @@ In fourth question of questionCategories > setupQuestions of json/config.json
 As before, we can add this question to the list of setup questions:
 
 ```
-In questionCategories > setupQuestions of json/config.json
+In questionCategories > setupQuestions of json/essential/config.json
 [
   { "qId" : "language", ... },
   { "qId" : "PID", ... },
@@ -2658,7 +2658,7 @@ However, such a question would only work in the case that _all of the conditions
 Since our conditions have different first stages, we will have to use the field `cNextActions` in this question instead of `nextActions`, to select the stage to be started based on the condition of the participant. In `Condition1`, we also want the first question of the experiment to be asked right after finishing setup, so we will add that in the `cNextQuestions` also.
 
 ```
-In fifth question of questionCategories > setupQuestions of json/config.json
+In fifth question of questionCategories > setupQuestions of json/essential/config.json
 
 {
   "qId" : "startFirstStage",
@@ -2699,7 +2699,7 @@ To get around this issue, we have defined a stage in between setup and `Test`, c
 We'll first create the `dummy` type question in the `intermediate` question category of `Condition2`. This question does nothing else but start a new stage, when it is invoked...
 
 ```
-First question of conditionQuestions > Condition2 > questionCategories > intermediate of json/config.json
+First question of conditionQuestions > Condition2 > questionCategories > intermediate of json/essential/config.json
 
 {
   "qId" : "startStage",
@@ -2716,7 +2716,7 @@ First question of conditionQuestions > Condition2 > questionCategories > interme
 ... then we'll create the schedule object so that the above question is invoked in the morning, when the stage is `Intermediate` ...
 
 ```
-New schedule object for conditionQuestions > Condition1 > scheduledQuestions of json/config.json
+New schedule object for conditionQuestions > Condition1 > scheduledQuestions of json/essential/config.json
 
 {
   "qId" : "intermediate.startStage",
@@ -2730,7 +2730,7 @@ New schedule object for conditionQuestions > Condition1 > scheduledQuestions of 
 ... and then we'll add them both to the experimenter JSON object under `questionCategories` and `scheduledQuestions` respectively of `Condition2`!
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -2777,7 +2777,7 @@ To summarize, we have started the first stage of the experiment differently for 
 Now that we are finally done starting our first stages in the appropriate way, we can add our question startFirstStage to the list `setupQuestions`, and then add this list to the experimenter configuration, under the question category `setupQuestions` of the **default** object `questionCategories`. We will do this in one step:
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -3093,7 +3093,7 @@ That's a big object! This is another reason why the experimenter configuration f
 To include this in the experimenter configuration file, all you need to do is add this object to the `phrases` field at the first level of the experimenter JSON object, like so:
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -3177,7 +3177,7 @@ In json/cond1ScheduledQuestions.json
 Now, we will replace the properties in the main experimenter file with the links to these files instead.
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -3211,7 +3211,7 @@ This has already cut down the experiment configuration file by hundreds of lines
 If done right, your experiment configuration file may look like this:
 
 ```
-In json/config.json
+In json/essential/config.json
 
 {
   "experimentName" : "ReflectiveLearning",
@@ -3256,3 +3256,14 @@ In json/config.json
 Notice how the file `json/morningQs.json` is mentioned more than once, for both `Condition1` and `Condition2`. This ensures that this question category will be exactly the same for both conditions. Therefore, this method of replacing also helps with reusability of portions of the experiment configuration file. So, if you need to make a change to a certain question in this question category, you would not have to make that change in several places - you would just change it once, in the file `json/morningQs.json`, and everything in the configuration file that links to this file will automatically adopt that change!
 
 Keep in mind: **only** lists and objects can be replaced this way. Notice how the property `assignmentScheme` cannot be replaced in such a manner, since it requires a string in its place. This also means that any file that you link to must contain **only one JSON list or JSON object** at the main level (there can, of course, be several nested JSON lists and objects)!
+
+
+## <span id="ConfigCheck">Verifying the Correctness of the Config File</span>
+
+Once you are finished with the configuration file, you can automatically verify whether your experiment has all of the necessary components, and that you don't accidentally have any erroneous definitions. This can be done by running the following command in the terminal from the root directory of your repository (NOTE: NOT from the `json` folder.)
+
+`npm run check-config`
+
+The terminal will then inform you whether the configuration file is valid (with the green message, Config file valid), or with a red error message telling you which part of your experiment definition causes an error.
+
+Keep in mind: passing this verification step does NOT guarantee that your experiment is error free!! While this ensures that the syntax of your configuration file is correct, it does not ensure that the logic of your experiment is correct as you intended. It is still advised to extensively test the experiment yourself through direct interaction with the resulting chatbot.

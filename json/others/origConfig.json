@@ -382,7 +382,7 @@
             ],
             "nextActions" : [
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["preInterventionComplete", "$B{true}"]
               }
             ],
@@ -438,7 +438,7 @@
                 "args" : ["taskGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
             ],
@@ -530,7 +530,7 @@
                 "args" : ["relGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["relGoalsSetToday", "$B{true}"]
               }
             ],
@@ -595,7 +595,7 @@
                 "args" : ["relGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["relGoalsSetToday", "$B{true}"]
               }
             ]
@@ -642,7 +642,7 @@
                 "args" : ["relGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["relGoalsSetToday", "$B{true}"]
               }
             ],
@@ -663,7 +663,7 @@
                 "args" : ["taskGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
             ]
@@ -809,7 +809,7 @@
                 "args" : ["lastReportedTaskProgress"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["taskProgressReportedOnce", "$B{true}"]
               }
             ]
@@ -840,7 +840,7 @@
             ],
             "nextActions" : [
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["postInterventionComplete", "$B{true}"]
               },
               {
@@ -919,7 +919,7 @@
             ],
             "nextActions" : [
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["preInterventionComplete", "$B{true}"]
               }
             ],
@@ -960,7 +960,7 @@
                 "if": "${remindIntention} == $B{true}",
                 "then" : [
                   {
-                    "aType" : "setBooleanVar",
+                    "aType" : "setVar",
                     "args" : ["remindIntention", "$B{false}"]
                   },
                   {
@@ -968,7 +968,7 @@
                     "args" : ["intention"]
                   },
                   {
-                    "aType" : "setBooleanVar",
+                    "aType" : "setVar",
                     "args" : ["intentionReminded", "$B{true}"]
                   }
                 ]
@@ -997,7 +997,7 @@
             ],
             "nextActions" : [
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["intentionReminded", "$B{false}"]
               }
             ]
@@ -1019,7 +1019,7 @@
                 "args" : ["taskGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
             ],
@@ -1111,7 +1111,7 @@
                 "args" : ["relGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["relGoalsSetToday", "$B{true}"]
               }
             ],
@@ -1176,7 +1176,7 @@
                 "args" : ["relGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["relGoalsSetToday", "$B{true}"]
               }
             ]
@@ -1223,7 +1223,7 @@
                 "args" : ["relGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["relGoalsSetToday", "$B{true}"]
               }
             ],
@@ -1244,7 +1244,7 @@
                 "args" : ["taskGoals"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["taskGoalsSetToday", "$B{true}"]
               }
             ]
@@ -1361,7 +1361,7 @@
                 "args" : ["lastReportedTaskProgress"]
               },
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["taskProgressReportedOnce", "$B{true}"]
               }
             ],
@@ -1669,13 +1669,13 @@
                 "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
                 "then" : [
                   {
-                    "aType" : "setBooleanVar",
+                    "aType" : "setVar",
                     "args" : ["remindIntention", "$B{true}"]
                   }
                 ],
                 "else" : [
                   {
-                    "aType" : "setBooleanVar",
+                    "aType" : "setVar",
                     "args" : ["remindIntention", "$B{false}"]
                   }
                 ]
@@ -1853,7 +1853,7 @@
             ],
             "nextActions" : [
               {
-                "aType" : "setBooleanVar",
+                "aType" : "setVar",
                 "args" : ["postInterventionComplete", "$B{true}"]
               },
               {

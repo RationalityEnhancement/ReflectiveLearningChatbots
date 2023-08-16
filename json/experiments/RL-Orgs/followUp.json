@@ -32,7 +32,7 @@
         "if" : "${pauseEnded} == $B{false}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["pauseEnded", "$B{true}"]
           }
         ]
@@ -41,7 +41,7 @@
         "if" : "(${STAGE_DAY} > $N{4}) AND (${warningGiven} != $B{true})",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["warningGiven", "$B{true}"]
           }
         ]
@@ -134,11 +134,11 @@
     "continueStrings" : ["FOL2023", "TestBypass"],
     "nextActions" : [
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["followUpComplete", "$B{true}"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["warningGiven", "$B{false}"]
       }
     ],

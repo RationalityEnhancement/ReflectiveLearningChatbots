@@ -50,7 +50,7 @@
         "args" : ["lastReportedRelProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["relProgressReportedOnce", "$B{true}"]
       }
     ],
@@ -193,7 +193,7 @@
         "if" : "${firstRelGoalDay} == $B{true}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["firstRelGoalDay", "$B{false}"]
           }
         ]
@@ -316,7 +316,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["remindRelIntention", "$B{true}"]
           }
         ]
@@ -481,7 +481,7 @@
         "args" : ["taskGoalsSetToday"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["inRelReflection", "$B{false}"]
       }
     ]
@@ -503,7 +503,7 @@
         "args" : ["lastReportedTaskProgress"]
       },
       {
-        "aType" : "setBooleanVar",
+        "aType" : "setVar",
         "args" : ["taskProgressReportedOnce", "$B{true}"]
       }
     ],
@@ -745,7 +745,7 @@
         "if" : "${CURRENT_ANSWER} HAS_CHOICE_IDX $N*{0}",
         "then" : [
           {
-            "aType" : "setBooleanVar",
+            "aType" : "setVar",
             "args" : ["remindWorkIntention", "$B{true}"]
           }
         ]

@@ -24,15 +24,38 @@
       "English" : ["Thank you for choosing a language"],
       "Deutsch": ["Vielen Dank, dass Sie eine Sprache ausgewählt haben."]
     },
-    "nextQuestion": "setupQuestions.introduceInstructions"
+    "nextQuestion": "setupQuestions.displayBenefits"
+  },
+  {
+    "qId" : "displayBenefits",
+    "qType" : "dummy",
+    "nextQuestion" : "setupQuestions.continueFromBenefits",
+    "replyMessages" : "$F{json/experiments/RL-Orgs/benefits.json}"
+  },
+  {
+    "qId" : "continueFromBenefits",
+    "qType" : "singleChoice",
+    "text" : {
+      "English" : "Click <i>Continue</i> when you are ready to move on to the instructions!",
+      "Deutsch" : "Klicken Sie auf <i>Weiter</i>, wenn Sie mit den Anweisungen fortfahren möchten!"
+    },
+    "inputPrompt" : {
+      "English" : "(Hint: send /repeat if the <i>Continue</i> button is no longer visible.)",
+      "Deutsch" : "(Hinweis: /repeat eingeben, falls der Button <i>Weiter</i> nicht mehr angezeigt wird.)"
+    },
+    "nextQuestion" : "setupQuestions.introduceInstructions",
+    "options": {
+      "English" : ["Continue"],
+      "Deutsch" : ["Weiter"]
+    }
   },
   {
     "qId" : "introduceInstructions",
     "qType" : "dummy",
     "nextQuestion" : "setupQuestions.displayInstructions",
     "replyMessages" : {
-      "English" : ["Before we move on, let me explain how you can interact with me!"],
-      "Deutsch" : ["Bevor wir fortfahren, erkläre ich Ihnen, wie Sie mit mir kommunizieren können!"]
+      "English" : ["Before we move on to the program, let me explain how you can interact with me!"],
+      "Deutsch" : ["Bevor wir mit dem Programm fortfahren, erkläre ich Ihnen, wie Sie mit mir kommunizieren können!"]
     }
   },
   {
